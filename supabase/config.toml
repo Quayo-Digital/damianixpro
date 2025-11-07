@@ -1,0 +1,8 @@
+
+project_id = "qbazneoxrgbttbzrsjho"
+
+[functions.paystack-webhook]
+verify_jwt = false
+
+[functions.paystack-shortlet-webhook]
+verify_jwt = false

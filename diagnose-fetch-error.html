@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Supabase Connection Diagnostic</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .test {
+            background: white;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 5px;
+            border-left: 4px solid #ccc;
+        }
+        .pass { border-left-color: #4caf50; }
+        .fail { border-left-color: #f44336; }
+        .info { border-left-color: #2196f3; }
+        button {
+            background: #2196f3;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover { background: #1976d2; }
+        pre {
+            background: #f5f5f5;
+            padding: 10px;
+            border-radius: 3px;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔍 Supabase Connection Diagnostic</h1>
+    <p>This tool will help identify why "Failed to fetch" errors are occurring.</p>
+    
+    <button onclick="runAllTests()">Run All Tests</button>
+    <button onclick="clearResults()">Clear Results</button>
+    
+    <div id="results"></div>
+
+    <script>
+        const SUPABASE_URL = "https://qbazneoxrgbttbzrsjho.supabase.co";
+        const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFiYXpuZW94cmdidHRienJzamhvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjExOTQyOTQsImV4cCI6MjA3Njc3MDI5NH0.a6iW9clWbo2i2wNsN3J25VPC2Du98LVX9d8jk9h9tMc";
+
+        function addResult(title, status, message, details = '') {
+            const results = document.getElementById('results');
+            const div = document.createElement('div');
+            div.className = `test ${status}`;
+            div.innerHTML = `
+                <h3>${status === 'pass' ? '✅' : status === 'fail' ? '❌' : 'ℹ️'} ${title}</h3>
+                <p>${message}</p>
+                ${details ? `<pre>${details}</pre>` : ''}
+            `;
+            results.appendChild(div);
+        }
+
+        function clearResults() {
+            document.getElementById('results').innerHTML = '';
+        }
+
+        async function test1_BasicConnection() {
+            addResult('Test 1: Basic Network Connection', 'info', 'Testing if we can reach Supabase...');
+            try {
+                const response = await fetch(`${SUPABASE_URL}/rest/v1/`, {
+                    method: 'GET',
+                    headers: {
+                        'apikey': SUPABASE_KEY,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                if (response.ok || response.status === 404) {
+                    addResult('Test 1: Basic Network Connection', 'pass', 
+                        'Successfully connected to Supabase!', 
+                        `Status: ${response.status}`);
+                } else {
+                    addResult('Test 1: Basic Network Connection', 'fail', 
+                        'Connection failed', 
+                        `Status: ${response.status} ${response.statusText}`);
+                }
+            } catch (error) {
+                addResult('Test 1: Basic Network Connection', 'fail', 
+                    'Network error - Cannot reach Supabase', 
+                    error.message);
+            }
+        }
+
+        async function test2_AuthEndpoint() {
+            addResult('Test 2: Auth Endpoint', 'info', 'Testing authentication endpoint...');
+            try {
+                const response = await fetch(`${SUPABASE_URL}/auth/v1/health`, {
+                    method: 'GET',
+                    headers: {
+                        'apikey': SUPABASE_KEY
+                    }
+                });
+                
+                if (response.ok) {
+                    addResult('Test 2: Auth Endpoint', 'pass', 
+                        'Auth endpoint is accessible', 
+                        `Status: ${response.status}`);
+                } else {
+                    addResult('Test 2: Auth Endpoint', 'fail', 
+                        'Auth endpoint not accessible', 
+                        `Status: ${response.status}`);
+                }
+            } catch (error) {
+                addResult('Test 2: Auth Endpoint', 'fail', 
+                    'Cannot reach auth endpoint', 
+                    error.message);
+            }
+        }
+
+        async function test3_UserRolesTable() {
+            addResult('Test 3: User Roles Table', 'info', 'Testing if user_roles table exists and is accessible...');
+            try {
+                const response = await fetch(`${SUPABASE_URL}/rest/v1/user_roles?select=*&limit=1`, {
+                    method: 'GET',
+                    headers: {
+                        'apikey': SUPABASE_KEY,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    addResult('Test 3: User Roles Table', 'pass', 
+                        'user_roles table is accessible', 
+                        `Found ${data.length} rows (showing first row only)`);
+                } else if (response.status === 404) {
+                    addResult('Test 3: User Roles Table', 'fail', 
+                        'user_roles table does not exist', 
+                        'You may need to run migrations');
+                } else {
+                    addResult('Test 3: User Roles Table', 'fail', 
+                        'Cannot access user_roles table', 
+                        `Status: ${response.status} ${response.statusText}`);
+                }
+            } catch (error) {
+                addResult('Test 3: User Roles Table', 'fail', 
+                    'Error accessing user_roles table', 
+                    error.message);
+            }
+        }
+
+        async function test4_ProfilesTable() {
+            addResult('Test 4: Profiles Table', 'info', 'Testing if profiles table exists...');
+            try {
+                const response = await fetch(`${SUPABASE_URL}/rest/v1/profiles?select=*&limit=1`, {
+                    method: 'GET',
+                    headers: {
+                        'apikey': SUPABASE_KEY,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    addResult('Test 4: Profiles Table', 'pass', 
+                        'profiles table is accessible', 
+                        `Found ${data.length} rows`);
+                } else {
+                    addResult('Test 4: Profiles Table', 'fail', 
+                        'Cannot access profiles table', 
+                        `Status: ${response.status}`);
+                }
+            } catch (error) {
+                addResult('Test 4: Profiles Table', 'fail', 
+                    'Error accessing profiles table', 
+                    error.message);
+            }
+        }
+
+        async function test5_CORS() {
+            addResult('Test 5: CORS Configuration', 'info', 'Testing CORS headers...');
+            try {
+                const response = await fetch(`${SUPABASE_URL}/rest/v1/`, {
+                    method: 'OPTIONS',
+                    headers: {
+                        'Origin': window.location.origin,
+                        'Access-Control-Request-Method': 'GET'
+                    }
+                });
+                
+                const corsHeader = response.headers.get('Access-Control-Allow-Origin');
+                if (corsHeader) {
+                    addResult('Test 5: CORS Configuration', 'pass', 
+                        'CORS is configured', 
+                        `Access-Control-Allow-Origin: ${corsHeader}`);
+                } else {
+                    addResult('Test 5: CORS Configuration', 'info', 
+                        'CORS headers not visible (may still work)', 
+                        'This is normal for some endpoints');
+                }
+            } catch (error) {
+                addResult('Test 5: CORS Configuration', 'fail', 
+                    'CORS test failed', 
+                    error.message);
+            }
+        }
+
+        async function test6_BrowserInfo() {
+            addResult('Test 6: Browser Information', 'info', 'Checking browser capabilities...');
+            const info = {
+                'User Agent': navigator.userAgent,
+                'Online Status': navigator.onLine ? 'Online' : 'Offline',
+                'Cookies Enabled': navigator.cookieEnabled ? 'Yes' : 'No',
+                'Local Storage': typeof(Storage) !== 'undefined' ? 'Available' : 'Not Available',
+                'Fetch API': typeof(fetch) !== 'undefined' ? 'Available' : 'Not Available'
+            };
+            
+            addResult('Test 6: Browser Information', 'pass', 
+                'Browser capabilities check', 
+                JSON.stringify(info, null, 2));
+        }
+
+        async function runAllTests() {
+            clearResults();
+            addResult('Starting Diagnostics', 'info', 'Running all tests...', '');
+            
+            await test6_BrowserInfo();
+            await test1_BasicConnection();
+            await test2_AuthEndpoint();
+            await test3_UserRolesTable();
+            await test4_ProfilesTable();
+            await test5_CORS();
+            
+            addResult('Diagnostics Complete', 'info', 'All tests finished. Review results above.', '');
+        }
+
+        // Auto-run on load
+        window.onload = () => {
+            addResult('Ready', 'info', 'Click "Run All Tests" to start diagnostics', '');
+        };
+    </script>
+</body>
+</html>
+

@@ -1,0 +1,78 @@
+{
+  "total": 10,
+  "passed": 9,
+  "failed": 1,
+  "warnings": 0,
+  "details": [
+    {
+      "name": "AI Matching Types",
+      "status": "passed",
+      "message": "All required types are defined",
+      "timestamp": "2025-08-01T11:21:16.711Z",
+      "details": null
+    },
+    {
+      "name": "AI Matching Service",
+      "status": "failed",
+      "message": "Missing methods: generateRecommendations, trackPropertyInteraction",
+      "timestamp": "2025-08-01T11:21:16.713Z",
+      "details": null
+    },
+    {
+      "name": "Predictive Maintenance Types",
+      "status": "passed",
+      "message": "All required types are defined",
+      "timestamp": "2025-08-01T11:21:16.714Z",
+      "details": null
+    },
+    {
+      "name": "Predictive Maintenance Service",
+      "status": "passed",
+      "message": "All required methods are implemented",
+      "timestamp": "2025-08-01T11:21:16.716Z",
+      "details": null
+    },
+    {
+      "name": "React Hooks",
+      "status": "passed",
+      "message": "All required hooks are implemented",
+      "timestamp": "2025-08-01T11:21:16.718Z",
+      "details": null
+    },
+    {
+      "name": "UI Components",
+      "status": "passed",
+      "message": "All required components are implemented",
+      "timestamp": "2025-08-01T11:21:16.721Z",
+      "details": null
+    },
+    {
+      "name": "Database Migrations",
+      "status": "passed",
+      "message": "All required migrations are created",
+      "timestamp": "2025-08-01T11:21:16.722Z",
+      "details": null
+    },
+    {
+      "name": "Dashboard Integrations",
+      "status": "passed",
+      "message": "AI features integrated into dashboards",
+      "timestamp": "2025-08-01T11:21:16.724Z",
+      "details": null
+    },
+    {
+      "name": "Onboarding Integration",
+      "status": "passed",
+      "message": "Enhanced onboarding with AI preferences integrated",
+      "timestamp": "2025-08-01T11:21:16.724Z",
+      "details": null
+    },
+    {
+      "name": "Dependencies",
+      "status": "passed",
+      "message": "All required dependencies are installed",
+      "timestamp": "2025-08-01T11:21:16.725Z",
+      "details": null
+    }
+  ]
+}
