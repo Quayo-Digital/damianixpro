@@ -83,7 +83,7 @@ export class RealEstateAnalyticsEngine {
         RESIDENTIAL: 25000000,
         COMMERCIAL: 45000000,
         LAND: 8000000,
-        INDUSTRIAL: 35000000
+        INDUSTRIAL: 35000000,
       },
       growthRate: 0.14, // 14% annual
       demandIndex: 85,
@@ -91,7 +91,7 @@ export class RealEstateAnalyticsEngine {
       liquidityIndex: 78,
       populationGrowth: 0.035,
       gdpContribution: 0.25,
-      infrastructureScore: 75
+      infrastructureScore: 75,
     });
 
     // Abuja market data
@@ -100,7 +100,7 @@ export class RealEstateAnalyticsEngine {
         RESIDENTIAL: 22000000,
         COMMERCIAL: 38000000,
         LAND: 12000000,
-        INDUSTRIAL: 28000000
+        INDUSTRIAL: 28000000,
       },
       growthRate: 0.11,
       demandIndex: 72,
@@ -108,7 +108,7 @@ export class RealEstateAnalyticsEngine {
       liquidityIndex: 68,
       populationGrowth: 0.042,
       gdpContribution: 0.15,
-      infrastructureScore: 82
+      infrastructureScore: 82,
     });
 
     // Port Harcourt market data
@@ -117,15 +117,15 @@ export class RealEstateAnalyticsEngine {
         RESIDENTIAL: 18000000,
         COMMERCIAL: 32000000,
         LAND: 6000000,
-        INDUSTRIAL: 42000000
+        INDUSTRIAL: 42000000,
       },
-      growthRate: 0.10,
+      growthRate: 0.1,
       demandIndex: 68,
       supplyIndex: 72,
       liquidityIndex: 62,
       populationGrowth: 0.028,
       gdpContribution: 0.12,
-      infrastructureScore: 65
+      infrastructureScore: 65,
     });
   }
 
@@ -144,10 +144,14 @@ export class RealEstateAnalyticsEngine {
   /**
    * Analyze market trends for a specific location and property type
    */
-  async analyzeMarketTrends(location: string, propertyType: MarketTrend['propertyType']): Promise<MarketTrend> {
-    const marketData = this.nigerianMarketData.get(location.toLowerCase()) || this.getDefaultMarketData();
+  async analyzeMarketTrends(
+    location: string,
+    propertyType: MarketTrend['propertyType']
+  ): Promise<MarketTrend> {
+    const marketData =
+      this.nigerianMarketData.get(location.toLowerCase()) || this.getDefaultMarketData();
     const currentPrice = marketData.averagePrice[propertyType];
-    
+
     // Calculate price changes (simulated with market volatility)
     const volatility = this.calculateMarketVolatility(location, propertyType);
     const priceChange30Days = (Math.random() - 0.5) * volatility * 0.1;
@@ -162,7 +166,11 @@ export class RealEstateAnalyticsEngine {
     // Determine growth potential and risk
     const growthPotential = this.assessGrowthPotential(demandScore, supplyScore, priceChange1Year);
     const riskLevel = this.assessRiskLevel(volatility, liquidityScore, location);
-    const recommendedAction = this.generateRecommendation(growthPotential, riskLevel, priceChange1Year);
+    const recommendedAction = this.generateRecommendation(
+      growthPotential,
+      riskLevel,
+      priceChange1Year
+    );
 
     return {
       location,
@@ -177,40 +185,50 @@ export class RealEstateAnalyticsEngine {
       liquidityScore,
       growthPotential,
       riskLevel,
-      recommendedAction
+      recommendedAction,
     };
   }
 
   /**
    * Perform comprehensive investment analysis
    */
-  async analyzeInvestment(propertyId: string, purchasePrice: number, location: string, propertyType: string): Promise<InvestmentAnalysis> {
-    const marketData = this.nigerianMarketData.get(location.toLowerCase()) || this.getDefaultMarketData();
-    
+  async analyzeInvestment(
+    propertyId: string,
+    purchasePrice: number,
+    location: string,
+    propertyType: string
+  ): Promise<InvestmentAnalysis> {
+    const marketData =
+      this.nigerianMarketData.get(location.toLowerCase()) || this.getDefaultMarketData();
+
     // Calculate rental yield (Nigerian market averages)
     const rentalYield = this.calculateRentalYield(propertyType, location);
     const monthlyRent = (purchasePrice * rentalYield) / 12;
-    
+
     // Calculate expenses (maintenance, taxes, management)
     const monthlyExpenses = monthlyRent * 0.25; // 25% of rent
     const netCashFlow = monthlyRent - monthlyExpenses;
-    
+
     // Calculate ROI and payback period
     const annualCashFlow = netCashFlow * 12;
     const expectedROI = (annualCashFlow / purchasePrice) * 100;
     const paybackPeriod = purchasePrice / annualCashFlow / 12; // in months
-    
+
     // Calculate appreciation rate
     const appreciationRate = marketData.growthRate * 100;
-    
+
     // Calculate scores
     const riskScore = this.calculateRiskScore(location, propertyType, purchasePrice);
     const marketScore = this.calculateMarketScore(location, propertyType);
     const locationScore = this.calculateLocationScore(location);
     const overallScore = (marketScore + locationScore + (100 - riskScore)) / 3;
-    
+
     // Generate insights
-    const recommendation = this.generateInvestmentRecommendation(overallScore, expectedROI, riskScore);
+    const recommendation = this.generateInvestmentRecommendation(
+      overallScore,
+      expectedROI,
+      riskScore
+    );
     const keyFactors = this.identifyKeyFactors(location, propertyType, overallScore);
     const risks = this.identifyRisks(location, propertyType, riskScore);
     const opportunities = this.identifyOpportunities(location, propertyType, marketScore);
@@ -228,7 +246,7 @@ export class RealEstateAnalyticsEngine {
       recommendation,
       keyFactors,
       risks,
-      opportunities
+      opportunities,
     };
   }
 
@@ -236,8 +254,9 @@ export class RealEstateAnalyticsEngine {
    * Generate neighborhood insights
    */
   async analyzeNeighborhood(location: string): Promise<NeighborhoodInsights> {
-    const marketData = this.nigerianMarketData.get(location.toLowerCase()) || this.getDefaultMarketData();
-    
+    const marketData =
+      this.nigerianMarketData.get(location.toLowerCase()) || this.getDefaultMarketData();
+
     // Simulate neighborhood data (in production, this would come from various APIs)
     const populationGrowth = marketData.populationGrowth * 100;
     const averageIncome = this.estimateAverageIncome(location);
@@ -246,7 +265,7 @@ export class RealEstateAnalyticsEngine {
     const schoolRating = this.estimateSchoolRating(location);
     const transportScore = this.calculateTransportScore(location);
     const amenitiesScore = this.calculateAmenitiesScore(location);
-    
+
     const developmentProjects = this.getDevelopmentProjects(location);
     const futureOutlook = this.assessFutureOutlook(location, populationGrowth, employmentRate);
     const investmentGrade = this.calculateInvestmentGrade(location, marketData);
@@ -262,43 +281,49 @@ export class RealEstateAnalyticsEngine {
       amenitiesScore,
       developmentProjects,
       futureOutlook,
-      investmentGrade
+      investmentGrade,
     };
   }
 
   /**
    * Generate predictive insights
    */
-  async generatePredictiveInsights(location: string, propertyType: string, timeframe: PredictiveInsights['timeframe']): Promise<PredictiveInsights> {
-    const marketData = this.nigerianMarketData.get(location.toLowerCase()) || this.getDefaultMarketData();
-    const currentPrice = marketData.averagePrice[propertyType as keyof typeof marketData.averagePrice];
-    
+  async generatePredictiveInsights(
+    location: string,
+    propertyType: string,
+    timeframe: PredictiveInsights['timeframe']
+  ): Promise<PredictiveInsights> {
+    const marketData =
+      this.nigerianMarketData.get(location.toLowerCase()) || this.getDefaultMarketData();
+    const currentPrice =
+      marketData.averagePrice[propertyType as keyof typeof marketData.averagePrice];
+
     // Calculate time multiplier
     const timeMultiplier = {
       '3M': 0.25,
       '6M': 0.5,
       '1Y': 1,
       '2Y': 2,
-      '5Y': 5
+      '5Y': 5,
     }[timeframe];
 
     // Base projection using growth rate
     const baseGrowth = marketData.growthRate * timeMultiplier;
     const priceProjection = currentPrice * (1 + baseGrowth);
-    
+
     // Calculate confidence level based on data quality and market stability
     const confidenceLevel = this.calculateConfidenceLevel(location, timeframe);
-    
+
     // Identify market drivers and risk factors
     const marketDrivers = this.identifyMarketDrivers(location, propertyType);
     const riskFactors = this.identifyMarketRisks(location, propertyType);
-    
+
     // Generate scenarios
     const volatility = this.calculateMarketVolatility(location, propertyType);
     const scenarios = {
       optimistic: priceProjection * (1 + volatility * 0.5),
       realistic: priceProjection,
-      pessimistic: priceProjection * (1 - volatility * 0.3)
+      pessimistic: priceProjection * (1 - volatility * 0.3),
     };
 
     return {
@@ -307,46 +332,64 @@ export class RealEstateAnalyticsEngine {
       confidenceLevel,
       marketDrivers,
       riskFactors,
-      scenarios
+      scenarios,
     };
   }
 
   // Helper methods
   private getDefaultMarketData() {
     return {
-      averagePrice: { RESIDENTIAL: 15000000, COMMERCIAL: 25000000, LAND: 5000000, INDUSTRIAL: 20000000 },
+      averagePrice: {
+        RESIDENTIAL: 15000000,
+        COMMERCIAL: 25000000,
+        LAND: 5000000,
+        INDUSTRIAL: 20000000,
+      },
       growthRate: 0.08,
       demandIndex: 60,
       supplyIndex: 70,
       liquidityIndex: 55,
       populationGrowth: 0.025,
       gdpContribution: 0.05,
-      infrastructureScore: 50
+      infrastructureScore: 50,
     };
   }
 
   private calculateMarketVolatility(location: string, propertyType: string): number {
     const baseVolatility = 0.15; // 15% base volatility
     const locationMultiplier = location === 'lagos' ? 1.2 : location === 'abuja' ? 1.0 : 0.8;
-    const typeMultiplier = propertyType === 'LAND' ? 1.5 : propertyType === 'COMMERCIAL' ? 1.3 : 1.0;
+    const typeMultiplier =
+      propertyType === 'LAND' ? 1.5 : propertyType === 'COMMERCIAL' ? 1.3 : 1.0;
     return baseVolatility * locationMultiplier * typeMultiplier;
   }
 
-  private assessGrowthPotential(demandScore: number, supplyScore: number, priceChange: number): 'HIGH' | 'MEDIUM' | 'LOW' {
-    const growthScore = (demandScore - supplyScore) + (priceChange * 100);
+  private assessGrowthPotential(
+    demandScore: number,
+    supplyScore: number,
+    priceChange: number
+  ): 'HIGH' | 'MEDIUM' | 'LOW' {
+    const growthScore = demandScore - supplyScore + priceChange * 100;
     if (growthScore > 20) return 'HIGH';
     if (growthScore > 0) return 'MEDIUM';
     return 'LOW';
   }
 
-  private assessRiskLevel(volatility: number, liquidityScore: number, location: string): 'LOW' | 'MEDIUM' | 'HIGH' {
+  private assessRiskLevel(
+    volatility: number,
+    liquidityScore: number,
+    location: string
+  ): 'LOW' | 'MEDIUM' | 'HIGH' {
     const riskScore = volatility * 100 + (100 - liquidityScore) * 0.5;
     if (riskScore > 25) return 'HIGH';
     if (riskScore > 15) return 'MEDIUM';
     return 'LOW';
   }
 
-  private generateRecommendation(growthPotential: string, riskLevel: string, priceChange: number): 'BUY' | 'SELL' | 'HOLD' | 'WATCH' {
+  private generateRecommendation(
+    growthPotential: string,
+    riskLevel: string,
+    priceChange: number
+  ): 'BUY' | 'SELL' | 'HOLD' | 'WATCH' {
     if (growthPotential === 'HIGH' && riskLevel !== 'HIGH') return 'BUY';
     if (growthPotential === 'LOW' && priceChange < 0) return 'SELL';
     if (riskLevel === 'HIGH') return 'WATCH';
@@ -361,62 +404,75 @@ export class RealEstateAnalyticsEngine {
 
   private calculateRiskScore(location: string, propertyType: string, price: number): number {
     let riskScore = 30; // Base risk
-    
+
     // Location risk
     if (location === 'lagos') riskScore += 10; // Higher volatility
     if (location === 'port-harcourt') riskScore += 15; // Oil dependency
-    
+
     // Property type risk
     if (propertyType === 'LAND') riskScore += 20; // Higher speculation
     if (propertyType === 'COMMERCIAL') riskScore += 10; // Business cycle risk
-    
+
     // Price risk (higher prices = higher risk)
     if (price > 50000000) riskScore += 15;
-    
+
     return Math.min(100, riskScore);
   }
 
   private calculateMarketScore(location: string, propertyType: string): number {
-    const marketData = this.nigerianMarketData.get(location.toLowerCase()) || this.getDefaultMarketData();
-    return (marketData.demandIndex + marketData.liquidityIndex + marketData.infrastructureScore) / 3;
+    const marketData =
+      this.nigerianMarketData.get(location.toLowerCase()) || this.getDefaultMarketData();
+    return (
+      (marketData.demandIndex + marketData.liquidityIndex + marketData.infrastructureScore) / 3
+    );
   }
 
   private calculateLocationScore(location: string): number {
-    const marketData = this.nigerianMarketData.get(location.toLowerCase()) || this.getDefaultMarketData();
-    return marketData.infrastructureScore + (marketData.gdpContribution * 100);
+    const marketData =
+      this.nigerianMarketData.get(location.toLowerCase()) || this.getDefaultMarketData();
+    return marketData.infrastructureScore + marketData.gdpContribution * 100;
   }
 
-  private generateInvestmentRecommendation(overallScore: number, roi: number, riskScore: number): string {
-    if (overallScore > 80 && roi > 12) return "Excellent investment opportunity with strong fundamentals";
-    if (overallScore > 65 && roi > 8) return "Good investment with solid returns expected";
-    if (overallScore > 50) return "Moderate investment opportunity, consider market timing";
-    return "High-risk investment, thorough due diligence required";
+  private generateInvestmentRecommendation(
+    overallScore: number,
+    roi: number,
+    riskScore: number
+  ): string {
+    if (overallScore > 80 && roi > 12)
+      return 'Excellent investment opportunity with strong fundamentals';
+    if (overallScore > 65 && roi > 8) return 'Good investment with solid returns expected';
+    if (overallScore > 50) return 'Moderate investment opportunity, consider market timing';
+    return 'High-risk investment, thorough due diligence required';
   }
 
   private identifyKeyFactors(location: string, propertyType: string, score: number): string[] {
     const factors = [];
-    if (location === 'lagos') factors.push("Commercial capital advantage", "High liquidity market");
-    if (location === 'abuja') factors.push("Government stability", "Planned city infrastructure");
-    if (propertyType === 'RESIDENTIAL') factors.push("Growing population demand");
-    if (score > 70) factors.push("Strong market fundamentals");
+    if (location === 'lagos') factors.push('Commercial capital advantage', 'High liquidity market');
+    if (location === 'abuja') factors.push('Government stability', 'Planned city infrastructure');
+    if (propertyType === 'RESIDENTIAL') factors.push('Growing population demand');
+    if (score > 70) factors.push('Strong market fundamentals');
     return factors;
   }
 
   private identifyRisks(location: string, propertyType: string, riskScore: number): string[] {
     const risks = [];
-    if (riskScore > 60) risks.push("High market volatility");
-    if (location === 'port-harcourt') risks.push("Oil price dependency");
-    if (propertyType === 'LAND') risks.push("Regulatory and title risks");
-    risks.push("Currency devaluation risk", "Infrastructure development delays");
+    if (riskScore > 60) risks.push('High market volatility');
+    if (location === 'port-harcourt') risks.push('Oil price dependency');
+    if (propertyType === 'LAND') risks.push('Regulatory and title risks');
+    risks.push('Currency devaluation risk', 'Infrastructure development delays');
     return risks;
   }
 
-  private identifyOpportunities(location: string, propertyType: string, marketScore: number): string[] {
+  private identifyOpportunities(
+    location: string,
+    propertyType: string,
+    marketScore: number
+  ): string[] {
     const opportunities = [];
-    if (marketScore > 70) opportunities.push("Strong rental demand");
-    if (location === 'lagos') opportunities.push("Tech hub development", "Port expansion projects");
-    if (propertyType === 'COMMERCIAL') opportunities.push("Business district growth");
-    opportunities.push("Government housing initiatives", "Foreign investment inflows");
+    if (marketScore > 70) opportunities.push('Strong rental demand');
+    if (location === 'lagos') opportunities.push('Tech hub development', 'Port expansion projects');
+    if (propertyType === 'COMMERCIAL') opportunities.push('Business district growth');
+    opportunities.push('Government housing initiatives', 'Foreign investment inflows');
     return opportunities;
   }
 
@@ -453,22 +509,34 @@ export class RealEstateAnalyticsEngine {
 
   private getDevelopmentProjects(location: string): string[] {
     const projects = {
-      lagos: ["Fourth Mainland Bridge", "Lagos-Calabar Coastal Railway", "Lekki Deep Sea Port"],
-      abuja: ["Abuja Light Rail Extension", "New Airport Terminal", "Smart City Initiative"],
-      'port-harcourt': ["Port Expansion Project", "Industrial Park Development", "Gas Processing Plant"]
+      lagos: ['Fourth Mainland Bridge', 'Lagos-Calabar Coastal Railway', 'Lekki Deep Sea Port'],
+      abuja: ['Abuja Light Rail Extension', 'New Airport Terminal', 'Smart City Initiative'],
+      'port-harcourt': [
+        'Port Expansion Project',
+        'Industrial Park Development',
+        'Gas Processing Plant',
+      ],
     };
-    return projects[location as keyof typeof projects] || ["Infrastructure upgrades"];
+    return projects[location as keyof typeof projects] || ['Infrastructure upgrades'];
   }
 
-  private assessFutureOutlook(location: string, populationGrowth: number, employmentRate: number): 'POSITIVE' | 'NEUTRAL' | 'NEGATIVE' {
+  private assessFutureOutlook(
+    location: string,
+    populationGrowth: number,
+    employmentRate: number
+  ): 'POSITIVE' | 'NEUTRAL' | 'NEGATIVE' {
     const score = populationGrowth * 10 + employmentRate;
     if (score > 110) return 'POSITIVE';
     if (score > 80) return 'NEUTRAL';
     return 'NEGATIVE';
   }
 
-  private calculateInvestmentGrade(location: string, marketData: any): 'A+' | 'A' | 'B+' | 'B' | 'C+' | 'C' | 'D' {
-    const score = (marketData.infrastructureScore + marketData.demandIndex + marketData.liquidityIndex) / 3;
+  private calculateInvestmentGrade(
+    location: string,
+    marketData: any
+  ): 'A+' | 'A' | 'B+' | 'B' | 'C+' | 'C' | 'D' {
+    const score =
+      (marketData.infrastructureScore + marketData.demandIndex + marketData.liquidityIndex) / 3;
     if (score > 85) return 'A+';
     if (score > 80) return 'A';
     if (score > 75) return 'B+';
@@ -480,34 +548,34 @@ export class RealEstateAnalyticsEngine {
 
   private calculateConfidenceLevel(location: string, timeframe: string): number {
     let confidence = 85; // Base confidence
-    
+
     // Reduce confidence for longer timeframes
     if (timeframe === '2Y') confidence -= 15;
     if (timeframe === '5Y') confidence -= 25;
-    
+
     // Adjust for location data quality
     if (location === 'lagos' || location === 'abuja') confidence += 5;
-    
+
     return Math.max(50, Math.min(95, confidence));
   }
 
   private identifyMarketDrivers(location: string, propertyType: string): string[] {
-    const drivers = ["Population growth", "Economic development", "Infrastructure investment"];
-    
-    if (location === 'lagos') drivers.push("Commercial activity", "Port development");
-    if (location === 'abuja') drivers.push("Government spending", "Diplomatic presence");
-    if (propertyType === 'RESIDENTIAL') drivers.push("Urbanization trend");
-    if (propertyType === 'COMMERCIAL') drivers.push("Business expansion");
-    
+    const drivers = ['Population growth', 'Economic development', 'Infrastructure investment'];
+
+    if (location === 'lagos') drivers.push('Commercial activity', 'Port development');
+    if (location === 'abuja') drivers.push('Government spending', 'Diplomatic presence');
+    if (propertyType === 'RESIDENTIAL') drivers.push('Urbanization trend');
+    if (propertyType === 'COMMERCIAL') drivers.push('Business expansion');
+
     return drivers;
   }
 
   private identifyMarketRisks(location: string, propertyType: string): string[] {
-    const risks = ["Economic volatility", "Currency fluctuation", "Regulatory changes"];
-    
-    if (location === 'port-harcourt') risks.push("Oil price volatility");
-    if (propertyType === 'LAND') risks.push("Title disputes", "Zoning changes");
-    
+    const risks = ['Economic volatility', 'Currency fluctuation', 'Regulatory changes'];
+
+    if (location === 'port-harcourt') risks.push('Oil price volatility');
+    if (propertyType === 'LAND') risks.push('Title disputes', 'Zoning changes');
+
     return risks;
   }
 }

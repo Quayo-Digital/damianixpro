@@ -1,9 +1,8 @@
-
-import { useRef, ChangeEvent, useState } from "react";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { UploadCloud } from "lucide-react";
-import { toast } from "@/components/ui/sonner";
+import { useRef, ChangeEvent, useState } from 'react';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { UploadCloud } from 'lucide-react';
+import { toast } from '@/components/ui/sonner';
 
 interface FileUploadFieldProps {
   selectedFileName: string;
@@ -23,15 +22,15 @@ export function FileUploadField({
       const file = e.target.files[0];
       // File size validation (max 10MB)
       if (file.size > 10 * 1024 * 1024) {
-        toast.error("File size must be less than 10MB");
+        toast.error('File size must be less than 10MB');
         e.target.value = '';
-        setSelectedFileName("");
+        setSelectedFileName('');
         return;
       }
       setSelectedFileName(file.name);
       onFileSelected(file);
     } else {
-      setSelectedFileName("");
+      setSelectedFileName('');
     }
   };
 
@@ -45,17 +44,15 @@ export function FileUploadField({
             type="file"
             ref={fileInputRef}
             onChange={handleFileChange}
-            className="opacity-0 absolute inset-0 w-full h-full cursor-pointer"
+            className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
           />
-          <div className="border rounded-md px-3 py-2 flex items-center justify-between text-sm">
-            <span className="truncate">{selectedFileName || "Select file..."}</span>
+          <div className="flex items-center justify-between rounded-md border px-3 py-2 text-sm">
+            <span className="truncate">{selectedFileName || 'Select file...'}</span>
             <UploadCloud size={16} className="opacity-70" />
           </div>
         </div>
       </div>
-      <p className="text-xs text-muted-foreground">
-        Maximum file size: 10MB
-      </p>
+      <p className="text-xs text-muted-foreground">Maximum file size: 10MB</p>
     </div>
   );
 }

@@ -10,11 +10,11 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Progress } from '@/components/ui/progress';
 import { Separator } from '@/components/ui/separator';
-import { 
-  Shield, 
-  CheckCircle, 
-  XCircle, 
-  Clock, 
+import {
+  Shield,
+  CheckCircle,
+  XCircle,
+  Clock,
   AlertTriangle,
   Wallet,
   Network,
@@ -26,7 +26,7 @@ import {
   TestTube,
   Play,
   Pause,
-  RotateCcw
+  RotateCcw,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
@@ -59,7 +59,7 @@ export const BlockchainTests: React.FC = () => {
     validateAddress,
     formatAddress,
     getNetworkConfig,
-    estimateGasCost
+    estimateGasCost,
   } = useBlockchain();
 
   const [testSuites, setTestSuites] = useState<TestSuite[]>([]);
@@ -76,10 +76,10 @@ export const BlockchainTests: React.FC = () => {
         tests: [
           { name: 'Check subscription access', status: 'pending', message: '' },
           { name: 'Validate premium features', status: 'pending', message: '' },
-          { name: 'Test feature gating', status: 'pending', message: '' }
+          { name: 'Test feature gating', status: 'pending', message: '' },
         ],
         status: 'pending',
-        progress: 0
+        progress: 0,
       },
       {
         name: 'Wallet Integration',
@@ -89,10 +89,10 @@ export const BlockchainTests: React.FC = () => {
           { name: 'Test wallet connection', status: 'pending', message: '' },
           { name: 'Validate address format', status: 'pending', message: '' },
           { name: 'Test address formatting', status: 'pending', message: '' },
-          { name: 'Test balance retrieval', status: 'pending', message: '' }
+          { name: 'Test balance retrieval', status: 'pending', message: '' },
         ],
         status: 'pending',
-        progress: 0
+        progress: 0,
       },
       {
         name: 'Network Management',
@@ -101,10 +101,10 @@ export const BlockchainTests: React.FC = () => {
           { name: 'Test network configurations', status: 'pending', message: '' },
           { name: 'Validate network switching', status: 'pending', message: '' },
           { name: 'Test RPC connectivity', status: 'pending', message: '' },
-          { name: 'Validate chain IDs', status: 'pending', message: '' }
+          { name: 'Validate chain IDs', status: 'pending', message: '' },
         ],
         status: 'pending',
-        progress: 0
+        progress: 0,
       },
       {
         name: 'Transaction Management',
@@ -113,10 +113,10 @@ export const BlockchainTests: React.FC = () => {
           { name: 'Test gas estimation', status: 'pending', message: '' },
           { name: 'Validate transaction format', status: 'pending', message: '' },
           { name: 'Test transaction signing', status: 'pending', message: '' },
-          { name: 'Monitor transaction status', status: 'pending', message: '' }
+          { name: 'Monitor transaction status', status: 'pending', message: '' },
         ],
         status: 'pending',
-        progress: 0
+        progress: 0,
       },
       {
         name: 'Smart Contract Integration',
@@ -125,10 +125,10 @@ export const BlockchainTests: React.FC = () => {
           { name: 'Test contract ABI loading', status: 'pending', message: '' },
           { name: 'Validate contract addresses', status: 'pending', message: '' },
           { name: 'Test property registration', status: 'pending', message: '' },
-          { name: 'Test escrow creation', status: 'pending', message: '' }
+          { name: 'Test escrow creation', status: 'pending', message: '' },
         ],
         status: 'pending',
-        progress: 0
+        progress: 0,
       },
       {
         name: 'Security & Validation',
@@ -137,46 +137,61 @@ export const BlockchainTests: React.FC = () => {
           { name: 'Test address validation', status: 'pending', message: '' },
           { name: 'Validate transaction amounts', status: 'pending', message: '' },
           { name: 'Test error handling', status: 'pending', message: '' },
-          { name: 'Validate user permissions', status: 'pending', message: '' }
+          { name: 'Validate user permissions', status: 'pending', message: '' },
         ],
         status: 'pending',
-        progress: 0
-      }
+        progress: 0,
+      },
     ];
 
     setTestSuites(suites);
   }, []);
 
   // Update test status
-  const updateTestStatus = (suiteIndex: number, testIndex: number, updates: Partial<TestResult>) => {
-    setTestSuites(prev => prev.map((suite, sIndex) => {
-      if (sIndex === suiteIndex) {
-        const updatedTests = suite.tests.map((test, tIndex) => 
-          tIndex === testIndex ? { ...test, ...updates } : test
-        );
-        const completedTests = updatedTests.filter(t => t.status === 'passed' || t.status === 'failed').length;
-        const progress = (completedTests / updatedTests.length) * 100;
-        
-        return {
-          ...suite,
-          tests: updatedTests,
-          progress,
-          status: progress === 100 ? 'completed' : suite.status
-        };
-      }
-      return suite;
-    }));
+  const updateTestStatus = (
+    suiteIndex: number,
+    testIndex: number,
+    updates: Partial<TestResult>
+  ) => {
+    setTestSuites((prev) =>
+      prev.map((suite, sIndex) => {
+        if (sIndex === suiteIndex) {
+          const updatedTests = suite.tests.map((test, tIndex) =>
+            tIndex === testIndex ? { ...test, ...updates } : test
+          );
+          const completedTests = updatedTests.filter(
+            (t) => t.status === 'passed' || t.status === 'failed'
+          ).length;
+          const progress = (completedTests / updatedTests.length) * 100;
+
+          return {
+            ...suite,
+            tests: updatedTests,
+            progress,
+            status: progress === 100 ? 'completed' : suite.status,
+          };
+        }
+        return suite;
+      })
+    );
   };
 
   // Run individual test
-  const runTest = async (suiteIndex: number, testIndex: number, testName: string): Promise<void> => {
+  const runTest = async (
+    suiteIndex: number,
+    testIndex: number,
+    testName: string
+  ): Promise<void> => {
     const startTime = Date.now();
     setCurrentTest(testName);
-    
+
     updateTestStatus(suiteIndex, testIndex, { status: 'running', message: 'Running...' });
 
     try {
-      let result: { passed: boolean; message: string; details?: any } = { passed: false, message: 'Not implemented' };
+      let result: { passed: boolean; message: string; details?: any } = {
+        passed: false,
+        message: 'Not implemented',
+      };
 
       // Feature Access & Subscription Tests
       if (suiteIndex === 0) {
@@ -184,22 +199,26 @@ export const BlockchainTests: React.FC = () => {
           case 0: // Check subscription access
             result = {
               passed: canUseBlockchain.allowed,
-              message: canUseBlockchain.allowed ? 'Blockchain features accessible' : 'Premium subscription required',
-              details: { allowed: canUseBlockchain.allowed, remaining: canUseBlockchain.remaining }
+              message: canUseBlockchain.allowed
+                ? 'Blockchain features accessible'
+                : 'Premium subscription required',
+              details: { allowed: canUseBlockchain.allowed, remaining: canUseBlockchain.remaining },
             };
             break;
           case 1: // Validate premium features
             result = {
               passed: true,
               message: 'Premium feature validation working',
-              details: { features: ['wallet_connection', 'smart_contracts', 'escrow', 'property_tokens'] }
+              details: {
+                features: ['wallet_connection', 'smart_contracts', 'escrow', 'property_tokens'],
+              },
             };
             break;
           case 2: // Test feature gating
             result = {
               passed: true,
               message: 'Feature gating properly implemented',
-              details: { gated: !canUseBlockchain.allowed }
+              details: { gated: !canUseBlockchain.allowed },
             };
             break;
         }
@@ -212,47 +231,63 @@ export const BlockchainTests: React.FC = () => {
             result = {
               passed: typeof window !== 'undefined' && !!window.ethereum,
               message: window.ethereum ? 'Wallet detected (MetaMask/Web3)' : 'No wallet detected',
-              details: { ethereum: !!window.ethereum, provider: window.ethereum?.isMetaMask ? 'MetaMask' : 'Unknown' }
+              details: {
+                ethereum: !!window.ethereum,
+                provider: window.ethereum?.isMetaMask ? 'MetaMask' : 'Unknown',
+              },
             };
             break;
           case 1: // Test wallet connection
             result = {
               passed: isConnected,
-              message: isConnected ? `Connected to ${formatAddress(walletConnection!.address)}` : 'Wallet not connected',
-              details: { connected: isConnected, address: walletConnection?.address }
+              message: isConnected
+                ? `Connected to ${formatAddress(walletConnection!.address)}`
+                : 'Wallet not connected',
+              details: { connected: isConnected, address: walletConnection?.address },
             };
             break;
-          case 2: // Validate address format
+          case 2: {
+            // Validate address format
             const testAddresses = [
               '0x1234567890123456789012345678901234567890',
               '0xInvalidAddress',
               '1234567890123456789012345678901234567890',
-              ''
+              '',
             ];
-            const validationResults = testAddresses.map(addr => ({
+            const validationResults = testAddresses.map((addr) => ({
               address: addr,
-              valid: validateAddress(addr)
+              valid: validateAddress(addr),
             }));
             result = {
-              passed: validationResults[0].valid && !validationResults[1].valid && !validationResults[2].valid && !validationResults[3].valid,
+              passed:
+                validationResults[0].valid &&
+                !validationResults[1].valid &&
+                !validationResults[2].valid &&
+                !validationResults[3].valid,
               message: 'Address validation working correctly',
-              details: validationResults
+              details: validationResults,
             };
             break;
-          case 3: // Test address formatting
+          }
+          case 3: {
+            // Test address formatting
             const testAddr = '0x1234567890123456789012345678901234567890';
             const formatted = formatAddress(testAddr);
             result = {
-              passed: formatted.includes('0x1234') && formatted.includes('7890') && formatted.length < testAddr.length,
+              passed:
+                formatted.includes('0x1234') &&
+                formatted.includes('7890') &&
+                formatted.length < testAddr.length,
               message: `Address formatting: ${formatted}`,
-              details: { original: testAddr, formatted }
+              details: { original: testAddr, formatted },
             };
             break;
+          }
           case 4: // Test balance retrieval
             result = {
               passed: isConnected,
               message: isConnected ? 'Balance retrieval available' : 'Requires wallet connection',
-              details: { connected: isConnected }
+              details: { connected: isConnected },
             };
             break;
         }
@@ -261,9 +296,16 @@ export const BlockchainTests: React.FC = () => {
       // Network Management Tests
       else if (suiteIndex === 2) {
         switch (testIndex) {
-          case 0: // Test network configurations
-            const networks: BlockchainNetwork[] = ['ethereum', 'polygon', 'bsc', 'arbitrum', 'optimism'];
-            const configs = networks.map(network => {
+          case 0: {
+            // Test network configurations
+            const networks: BlockchainNetwork[] = [
+              'ethereum',
+              'polygon',
+              'bsc',
+              'arbitrum',
+              'optimism',
+            ];
+            const configs = networks.map((network) => {
               try {
                 const config = getNetworkConfig();
                 return { network, valid: !!config.name && !!config.chainId };
@@ -272,39 +314,45 @@ export const BlockchainTests: React.FC = () => {
               }
             });
             result = {
-              passed: configs.every(c => c.valid),
-              message: `${configs.filter(c => c.valid).length}/${configs.length} networks configured`,
-              details: configs
+              passed: configs.every((c) => c.valid),
+              message: `${configs.filter((c) => c.valid).length}/${configs.length} networks configured`,
+              details: configs,
             };
             break;
+          }
           case 1: // Validate network switching
             result = {
               passed: true,
               message: 'Network switching functionality available',
-              details: { currentNetwork, available: ['ethereum', 'polygon', 'bsc', 'arbitrum', 'optimism'] }
+              details: {
+                currentNetwork,
+                available: ['ethereum', 'polygon', 'bsc', 'arbitrum', 'optimism'],
+              },
             };
             break;
           case 2: // Test RPC connectivity
             result = {
               passed: true,
               message: 'RPC connectivity test passed',
-              details: { network: currentNetwork, rpc: getNetworkConfig().rpcUrl }
+              details: { network: currentNetwork, rpc: getNetworkConfig().rpcUrl },
             };
             break;
-          case 3: // Validate chain IDs
+          case 3: {
+            // Validate chain IDs
             const chainIds = {
               ethereum: 1,
               polygon: 137,
               bsc: 56,
               arbitrum: 42161,
-              optimism: 10
+              optimism: 10,
             };
             result = {
               passed: true,
               message: 'Chain ID validation working',
-              details: chainIds
+              details: chainIds,
             };
             break;
+          }
         }
       }
 
@@ -321,20 +369,20 @@ export const BlockchainTests: React.FC = () => {
                 result = {
                   passed: !!estimate && parseFloat(estimate) > 0,
                   message: `Gas estimation: ${estimate} ETH`,
-                  details: { estimate }
+                  details: { estimate },
                 };
               } catch (error) {
                 result = {
                   passed: false,
                   message: 'Gas estimation failed',
-                  details: { error: error.message }
+                  details: { error: error.message },
                 };
               }
             } else {
               result = {
                 passed: false,
                 message: 'Requires wallet connection',
-                details: { connected: false }
+                details: { connected: false },
               };
             }
             break;
@@ -342,21 +390,21 @@ export const BlockchainTests: React.FC = () => {
             result = {
               passed: true,
               message: 'Transaction format validation working',
-              details: { format: 'EIP-1559 compatible' }
+              details: { format: 'EIP-1559 compatible' },
             };
             break;
           case 2: // Test transaction signing
             result = {
               passed: isConnected,
               message: isConnected ? 'Transaction signing available' : 'Requires wallet connection',
-              details: { signerAvailable: isConnected }
+              details: { signerAvailable: isConnected },
             };
             break;
           case 3: // Monitor transaction status
             result = {
               passed: true,
               message: 'Transaction monitoring functionality available',
-              details: { monitoring: true }
+              details: { monitoring: true },
             };
             break;
         }
@@ -369,28 +417,28 @@ export const BlockchainTests: React.FC = () => {
             result = {
               passed: true,
               message: 'Contract ABI loading working',
-              details: { contracts: ['propertyRegistry', 'escrow', 'payment', 'identity'] }
+              details: { contracts: ['propertyRegistry', 'escrow', 'payment', 'identity'] },
             };
             break;
           case 1: // Validate contract addresses
             result = {
               passed: true,
               message: 'Contract address validation working',
-              details: { networks: ['ethereum', 'polygon', 'bsc', 'arbitrum', 'optimism'] }
+              details: { networks: ['ethereum', 'polygon', 'bsc', 'arbitrum', 'optimism'] },
             };
             break;
           case 2: // Test property registration
             result = {
               passed: true,
               message: 'Property registration functionality available',
-              details: { available: true }
+              details: { available: true },
             };
             break;
           case 3: // Test escrow creation
             result = {
               passed: true,
               message: 'Escrow creation functionality available',
-              details: { available: true }
+              details: { available: true },
             };
             break;
         }
@@ -399,43 +447,45 @@ export const BlockchainTests: React.FC = () => {
       // Security & Validation Tests
       else if (suiteIndex === 5) {
         switch (testIndex) {
-          case 0: // Test address validation
+          case 0: {
+            // Test address validation
             const securityTests = [
               { addr: '0x1234567890123456789012345678901234567890', expected: true },
               { addr: '0x', expected: false },
               { addr: 'invalid', expected: false },
-              { addr: '', expected: false }
+              { addr: '', expected: false },
             ];
-            const securityResults = securityTests.map(test => ({
+            const securityResults = securityTests.map((test) => ({
               ...test,
               actual: validateAddress(test.addr),
-              passed: validateAddress(test.addr) === test.expected
+              passed: validateAddress(test.addr) === test.expected,
             }));
             result = {
-              passed: securityResults.every(r => r.passed),
+              passed: securityResults.every((r) => r.passed),
               message: 'Address validation security working',
-              details: securityResults
+              details: securityResults,
             };
             break;
+          }
           case 1: // Validate transaction amounts
             result = {
               passed: true,
               message: 'Transaction amount validation working',
-              details: { validation: 'positive numbers only' }
+              details: { validation: 'positive numbers only' },
             };
             break;
           case 2: // Test error handling
             result = {
               passed: true,
               message: 'Error handling implemented',
-              details: { errorTypes: ['network', 'wallet', 'transaction', 'validation'] }
+              details: { errorTypes: ['network', 'wallet', 'transaction', 'validation'] },
             };
             break;
           case 3: // Validate user permissions
             result = {
               passed: true,
               message: 'User permission validation working',
-              details: { subscription: canUseBlockchain.allowed, wallet: isConnected }
+              details: { subscription: canUseBlockchain.allowed, wallet: isConnected },
             };
             break;
         }
@@ -446,16 +496,15 @@ export const BlockchainTests: React.FC = () => {
         status: result.passed ? 'passed' : 'failed',
         message: result.message,
         duration,
-        details: result.details
+        details: result.details,
       });
-
     } catch (error) {
       const duration = Date.now() - startTime;
       updateTestStatus(suiteIndex, testIndex, {
         status: 'failed',
         message: `Error: ${error.message}`,
         duration,
-        details: { error: error.message }
+        details: { error: error.message },
       });
     }
   };
@@ -469,34 +518,34 @@ export const BlockchainTests: React.FC = () => {
     let completedTests = 0;
 
     // Count total tests
-    testSuites.forEach(suite => {
+    testSuites.forEach((suite) => {
       totalTests += suite.tests.length;
     });
 
     // Run tests sequentially
     for (let suiteIndex = 0; suiteIndex < testSuites.length; suiteIndex++) {
       const suite = testSuites[suiteIndex];
-      
+
       // Update suite status
-      setTestSuites(prev => prev.map((s, i) => 
-        i === suiteIndex ? { ...s, status: 'running' } : s
-      ));
+      setTestSuites((prev) =>
+        prev.map((s, i) => (i === suiteIndex ? { ...s, status: 'running' } : s))
+      );
 
       for (let testIndex = 0; testIndex < suite.tests.length; testIndex++) {
         const test = suite.tests[testIndex];
         await runTest(suiteIndex, testIndex, test.name);
-        
+
         completedTests++;
         setOverallProgress((completedTests / totalTests) * 100);
-        
+
         // Small delay between tests
-        await new Promise(resolve => setTimeout(resolve, 100));
+        await new Promise((resolve) => setTimeout(resolve, 100));
       }
 
       // Update suite status
-      setTestSuites(prev => prev.map((s, i) => 
-        i === suiteIndex ? { ...s, status: 'completed' } : s
-      ));
+      setTestSuites((prev) =>
+        prev.map((s, i) => (i === suiteIndex ? { ...s, status: 'completed' } : s))
+      );
     }
 
     setIsRunning(false);
@@ -506,18 +555,20 @@ export const BlockchainTests: React.FC = () => {
 
   // Reset tests
   const resetTests = () => {
-    setTestSuites(prev => prev.map(suite => ({
-      ...suite,
-      status: 'pending',
-      progress: 0,
-      tests: suite.tests.map(test => ({
-        ...test,
+    setTestSuites((prev) =>
+      prev.map((suite) => ({
+        ...suite,
         status: 'pending',
-        message: '',
-        duration: undefined,
-        details: undefined
+        progress: 0,
+        tests: suite.tests.map((test) => ({
+          ...test,
+          status: 'pending',
+          message: '',
+          duration: undefined,
+          details: undefined,
+        })),
       }))
-    })));
+    );
     setOverallProgress(0);
     setCurrentTest('');
   };
@@ -530,7 +581,7 @@ export const BlockchainTests: React.FC = () => {
       case 'failed':
         return <XCircle className="h-4 w-4 text-red-500" />;
       case 'running':
-        return <Clock className="h-4 w-4 text-blue-500 animate-spin" />;
+        return <Clock className="h-4 w-4 animate-spin text-blue-500" />;
       case 'skipped':
         return <AlertTriangle className="h-4 w-4 text-yellow-500" />;
       default:
@@ -540,11 +591,13 @@ export const BlockchainTests: React.FC = () => {
 
   // Calculate overall stats
   const totalTests = testSuites.reduce((sum, suite) => sum + suite.tests.length, 0);
-  const passedTests = testSuites.reduce((sum, suite) => 
-    sum + suite.tests.filter(test => test.status === 'passed').length, 0
+  const passedTests = testSuites.reduce(
+    (sum, suite) => sum + suite.tests.filter((test) => test.status === 'passed').length,
+    0
   );
-  const failedTests = testSuites.reduce((sum, suite) => 
-    sum + suite.tests.filter(test => test.status === 'failed').length, 0
+  const failedTests = testSuites.reduce(
+    (sum, suite) => sum + suite.tests.filter((test) => test.status === 'failed').length,
+    0
   );
 
   return (
@@ -557,14 +610,15 @@ export const BlockchainTests: React.FC = () => {
             <span>Blockchain Integration Tests</span>
           </CardTitle>
           <CardDescription>
-            Comprehensive testing suite for blockchain wallet connections, smart contracts, and secure transactions
+            Comprehensive testing suite for blockchain wallet connections, smart contracts, and
+            secure transactions
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           {/* Test Controls */}
           <div className="flex items-center space-x-2">
-            <Button 
-              onClick={runAllTests} 
+            <Button
+              onClick={runAllTests}
               disabled={isRunning}
               className="flex items-center space-x-2"
             >
@@ -580,13 +634,9 @@ export const BlockchainTests: React.FC = () => {
                 </>
               )}
             </Button>
-            
-            <Button 
-              variant="outline" 
-              onClick={resetTests}
-              disabled={isRunning}
-            >
-              <RotateCcw className="h-4 w-4 mr-2" />
+
+            <Button variant="outline" onClick={resetTests} disabled={isRunning}>
+              <RotateCcw className="mr-2 h-4 w-4" />
               Reset Tests
             </Button>
           </div>
@@ -629,14 +679,15 @@ export const BlockchainTests: React.FC = () => {
           {testSuites.map((suite, index) => (
             <TabsTrigger key={index} value={index.toString()}>
               <div className="flex items-center space-x-1">
-                {suite.status === 'completed' && suite.tests.every(t => t.status === 'passed') && (
-                  <CheckCircle className="h-3 w-3 text-green-500" />
-                )}
-                {suite.status === 'completed' && suite.tests.some(t => t.status === 'failed') && (
+                {suite.status === 'completed' &&
+                  suite.tests.every((t) => t.status === 'passed') && (
+                    <CheckCircle className="h-3 w-3 text-green-500" />
+                  )}
+                {suite.status === 'completed' && suite.tests.some((t) => t.status === 'failed') && (
                   <XCircle className="h-3 w-3 text-red-500" />
                 )}
                 {suite.status === 'running' && (
-                  <Clock className="h-3 w-3 text-blue-500 animate-spin" />
+                  <Clock className="h-3 w-3 animate-spin text-blue-500" />
                 )}
                 <span className="hidden sm:inline">{suite.name.split(' ')[0]}</span>
               </div>
@@ -651,29 +702,35 @@ export const BlockchainTests: React.FC = () => {
                 <CardTitle className="flex items-center justify-between">
                   <span>{suite.name}</span>
                   <Badge variant="outline">
-                    {suite.tests.filter(t => t.status === 'passed').length} / {suite.tests.length} passed
+                    {suite.tests.filter((t) => t.status === 'passed').length} / {suite.tests.length}{' '}
+                    passed
                   </Badge>
                 </CardTitle>
                 <CardDescription>{suite.description}</CardDescription>
-                {suite.progress > 0 && (
-                  <Progress value={suite.progress} className="h-2" />
-                )}
+                {suite.progress > 0 && <Progress value={suite.progress} className="h-2" />}
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">
                   {suite.tests.map((test, testIndex) => (
-                    <div key={testIndex} className="flex items-center justify-between p-3 border rounded">
+                    <div
+                      key={testIndex}
+                      className="flex items-center justify-between rounded border p-3"
+                    >
                       <div className="flex items-center space-x-3">
                         {getStatusIcon(test.status)}
                         <div>
                           <div className="font-medium">{test.name}</div>
                           {test.message && (
-                            <div className={cn(
-                              'text-sm',
-                              test.status === 'passed' ? 'text-green-600' :
-                              test.status === 'failed' ? 'text-red-600' :
-                              'text-muted-foreground'
-                            )}>
+                            <div
+                              className={cn(
+                                'text-sm',
+                                test.status === 'passed'
+                                  ? 'text-green-600'
+                                  : test.status === 'failed'
+                                    ? 'text-red-600'
+                                    : 'text-muted-foreground'
+                              )}
+                            >
                               {test.message}
                             </div>
                           )}
@@ -681,9 +738,7 @@ export const BlockchainTests: React.FC = () => {
                       </div>
                       <div className="text-right">
                         {test.duration && (
-                          <div className="text-sm text-muted-foreground">
-                            {test.duration}ms
-                          </div>
+                          <div className="text-sm text-muted-foreground">{test.duration}ms</div>
                         )}
                         {test.details && (
                           <Button

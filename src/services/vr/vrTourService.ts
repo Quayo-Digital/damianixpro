@@ -1,12 +1,12 @@
 // VR/AR Property Tours Service
 // Comprehensive service for immersive property experiences
 
-import { 
-  VRTour, 
-  VRScene, 
-  VRHotspot, 
-  VRTourSettings, 
-  VRTourSession, 
+import {
+  VRTour,
+  VRScene,
+  VRHotspot,
+  VRTourSettings,
+  VRTourSession,
   VRTourEvent,
   TourAnalytics,
   DeviceInfo,
@@ -16,7 +16,7 @@ import {
   MediaAsset,
   VRTourFilter,
   VRTourSort,
-  VRTourSearchResult
+  VRTourSearchResult,
 } from '@/types/vrTours';
 
 class VRTourService {
@@ -43,14 +43,14 @@ class VRTourService {
     try {
       const capabilities = await this.detectDeviceCapabilities();
       const performance = await this.measureDevicePerformance();
-      
+
       this.deviceInfo = {
         type: this.detectDeviceType(),
         platform: navigator.platform,
         browser: this.detectBrowser(),
         version: this.detectBrowserVersion(),
         capabilities,
-        performance
+        performance,
       };
     } catch (error) {
       console.error('Failed to initialize device detection:', error);
@@ -69,15 +69,15 @@ class VRTourService {
       gamepad: 'getGamepads' in navigator,
       touchscreen: 'ontouchstart' in window,
       camera: false,
-      microphone: false
+      microphone: false,
     };
 
     // Check media device access
     if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
       try {
         const devices = await navigator.mediaDevices.enumerateDevices();
-        capabilities.camera = devices.some(device => device.kind === 'videoinput');
-        capabilities.microphone = devices.some(device => device.kind === 'audioinput');
+        capabilities.camera = devices.some((device) => device.kind === 'videoinput');
+        capabilities.microphone = devices.some((device) => device.kind === 'audioinput');
       } catch (error) {
         console.warn('Could not enumerate media devices:', error);
       }
@@ -106,7 +106,7 @@ class VRTourService {
 
   private detectDeviceType(): 'desktop' | 'mobile' | 'tablet' | 'vr-headset' | 'ar-device' {
     const userAgent = navigator.userAgent.toLowerCase();
-    
+
     // Check for VR/AR devices
     if (userAgent.includes('oculus') || userAgent.includes('quest') || userAgent.includes('vive')) {
       return 'vr-headset';
@@ -114,7 +114,7 @@ class VRTourService {
     if (userAgent.includes('hololens') || userAgent.includes('magic leap')) {
       return 'ar-device';
     }
-    
+
     // Check for mobile/tablet
     if (/android|iphone|ipad|ipod|blackberry|iemobile|opera mini/i.test(userAgent)) {
       if (/ipad|android(?!.*mobile)/i.test(userAgent)) {
@@ -122,7 +122,7 @@ class VRTourService {
       }
       return 'mobile';
     }
-    
+
     return 'desktop';
   }
 
@@ -144,15 +144,15 @@ class VRTourService {
   private async measureDevicePerformance(): Promise<any> {
     // Basic performance measurement
     const start = performance.now();
-    
+
     // Simulate some work to measure performance
     for (let i = 0; i < 100000; i++) {
       Math.random();
     }
-    
+
     const end = performance.now();
     const computeTime = end - start;
-    
+
     return {
       fps: 60, // Will be updated during actual rendering
       loadTime: 0,
@@ -161,7 +161,7 @@ class VRTourService {
       gpuUsage: 0,
       networkSpeed: (navigator as any).connection?.downlink || 0,
       batteryLevel: await this.getBatteryLevel(),
-      thermalState: 'normal'
+      thermalState: 'normal',
     };
   }
 
@@ -195,7 +195,7 @@ class VRTourService {
       accessibility: tourData.accessibility || this.getDefaultAccessibility(),
       analytics: this.getDefaultAnalytics(),
       createdAt: new Date(),
-      updatedAt: new Date()
+      updatedAt: new Date(),
     };
 
     this.tours.set(tour.id, tour);
@@ -213,7 +213,7 @@ class VRTourService {
     const updatedTour = {
       ...tour,
       ...updates,
-      updatedAt: new Date()
+      updatedAt: new Date(),
     };
 
     this.tours.set(tourId, updatedTour);
@@ -224,33 +224,38 @@ class VRTourService {
     return this.tours.delete(tourId);
   }
 
-  async searchTours(filter: VRTourFilter, sort: VRTourSort, page: number = 1, limit: number = 20): Promise<VRTourSearchResult> {
+  async searchTours(
+    filter: VRTourFilter,
+    sort: VRTourSort,
+    page: number = 1,
+    limit: number = 20
+  ): Promise<VRTourSearchResult> {
     let tours = Array.from(this.tours.values());
 
     // Apply filters
     if (filter.propertyType?.length) {
-      tours = tours.filter(tour => 
+      tours = tours.filter((tour) =>
         filter.propertyType!.includes(tour.metadata.propertyDetails.propertyType)
       );
     }
 
     if (filter.tourType?.length) {
-      tours = tours.filter(tour => filter.tourType!.includes(tour.tourType));
+      tours = tours.filter((tour) => filter.tourType!.includes(tour.tourType));
     }
 
     if (filter.quality?.length) {
-      tours = tours.filter(tour => filter.quality!.includes(tour.quality));
+      tours = tours.filter((tour) => filter.quality!.includes(tour.quality));
     }
 
     if (filter.status?.length) {
-      tours = tours.filter(tour => filter.status!.includes(tour.status));
+      tours = tours.filter((tour) => filter.status!.includes(tour.status));
     }
 
     // Apply sorting
     tours.sort((a, b) => {
       const aValue = this.getSortValue(a, sort.field);
       const bValue = this.getSortValue(b, sort.field);
-      
+
       if (sort.order === 'asc') {
         return aValue < bValue ? -1 : aValue > bValue ? 1 : 0;
       } else {
@@ -270,7 +275,7 @@ class VRTourService {
       limit,
       hasMore: endIndex < tours.length,
       filters: filter,
-      sort
+      sort,
     };
   }
 
@@ -307,7 +312,7 @@ class VRTourService {
       device: this.deviceInfo!,
       events: [],
       performance: this.getDefaultPerformanceMetrics(),
-      completed: false
+      completed: false,
     };
 
     this.sessions.set(session.id, session);
@@ -318,7 +323,7 @@ class VRTourService {
       type: 'scene-enter',
       timestamp: new Date(),
       sessionId: session.id,
-      data: { tourId, entryPoint: true }
+      data: { tourId, entryPoint: true },
     });
 
     return session;
@@ -335,7 +340,7 @@ class VRTourService {
     await this.updateTourAnalytics(session.tourId, session);
 
     this.sessions.set(sessionId, session);
-    
+
     if (this.currentSession?.id === sessionId) {
       this.currentSession = null;
     }
@@ -347,7 +352,7 @@ class VRTourService {
   trackEvent(event: Omit<VRTourEvent, 'timestamp'>): void {
     const fullEvent: VRTourEvent = {
       ...event,
-      timestamp: new Date()
+      timestamp: new Date(),
     };
 
     if (this.currentSession) {
@@ -369,7 +374,7 @@ class VRTourService {
     if (session.duration) {
       const currentAvg = tour.analytics.averageViewTime;
       const totalSessions = tour.analytics.totalViews;
-      tour.analytics.averageViewTime = 
+      tour.analytics.averageViewTime =
         (currentAvg * (totalSessions - 1) + session.duration) / totalSessions;
     }
 
@@ -386,7 +391,10 @@ class VRTourService {
     return this.settings.get(userId) || null;
   }
 
-  async updateUserSettings(userId: string, settings: Partial<VRTourSettings>): Promise<VRTourSettings> {
+  async updateUserSettings(
+    userId: string,
+    settings: Partial<VRTourSettings>
+  ): Promise<VRTourSettings> {
     const currentSettings = this.settings.get(userId) || this.getDefaultSettings(userId);
     const updatedSettings = { ...currentSettings, ...settings };
     this.settings.set(userId, updatedSettings);
@@ -409,7 +417,7 @@ class VRTourService {
         yearBuilt: new Date().getFullYear(),
         features: [],
         amenities: [],
-        neighborhood: ''
+        neighborhood: '',
       },
       captureInfo: {
         captureDate: new Date(),
@@ -418,7 +426,7 @@ class VRTourService {
         processingDate: new Date(),
         software: 'VR Tour Builder',
         version: '1.0.0',
-        notes: ''
+        notes: '',
       },
       technicalSpecs: {
         totalScenes: 0,
@@ -433,9 +441,9 @@ class VRTourService {
           storage: '1GB',
           bandwidth: '5 Mbps',
           browser: ['Chrome 80+', 'Firefox 75+', 'Safari 13+'],
-          webgl: 'WebGL 2.0'
+          webgl: 'WebGL 2.0',
         },
-        maxConcurrentUsers: 100
+        maxConcurrentUsers: 100,
       },
       seoData: {
         title: '',
@@ -444,10 +452,10 @@ class VRTourService {
         ogImage: '',
         ogTitle: '',
         ogDescription: '',
-        structuredData: {}
+        structuredData: {},
       },
       tags: [],
-      categories: []
+      categories: [],
     };
   }
 
@@ -461,7 +469,7 @@ class VRTourService {
       highContrast: false,
       textToSpeech: false,
       gestureControls: false,
-      customizations: []
+      customizations: [],
     };
   }
 
@@ -482,8 +490,8 @@ class VRTourService {
         shareRate: 0,
         favoriteRate: 0,
         contactRate: 0,
-        tourCompletionToInquiry: 0
-      }
+        tourCompletionToInquiry: 0,
+      },
     };
   }
 
@@ -497,21 +505,21 @@ class VRTourService {
         initial: 0,
         sceneTransitions: [],
         assetLoading: [],
-        totalAssetSize: 0
+        totalAssetSize: 0,
       },
       memoryUsage: {
         peak: 0,
         average: 0,
         current: 0,
-        garbageCollections: 0
+        garbageCollections: 0,
       },
       networkMetrics: {
         totalBytesDownloaded: 0,
         averageDownloadSpeed: 0,
         connectionType: 'unknown',
         latency: 0,
-        packetLoss: 0
-      }
+        packetLoss: 0,
+      },
     };
   }
 
@@ -525,7 +533,7 @@ class VRTourService {
         enableAudio: true,
         preferredQuality: 'auto',
         language: 'en',
-        favoriteFeatures: []
+        favoriteFeatures: [],
       },
       controls: {
         movementSpeed: 1.0,
@@ -537,7 +545,7 @@ class VRTourService {
         handTracking: false,
         eyeTracking: false,
         voiceCommands: false,
-        gestureControls: false
+        gestureControls: false,
       },
       quality: {
         resolution: 'auto',
@@ -547,7 +555,7 @@ class VRTourService {
         reflections: true,
         particleEffects: true,
         postProcessing: true,
-        adaptiveQuality: true
+        adaptiveQuality: true,
       },
       accessibility: {
         screenReaderEnabled: false,
@@ -559,7 +567,7 @@ class VRTourService {
         textToSpeechEnabled: false,
         motionReductionEnabled: false,
         fontSize: 'medium',
-        colorScheme: 'default'
+        colorScheme: 'default',
       },
       privacy: {
         allowAnalytics: true,
@@ -567,8 +575,8 @@ class VRTourService {
         allowDeviceInfo: true,
         allowCookies: true,
         shareUsageData: false,
-        personalizedExperience: true
-      }
+        personalizedExperience: true,
+      },
     };
   }
 
@@ -587,17 +595,17 @@ class VRTourService {
 
   getOptimalQuality(): string {
     if (!this.deviceInfo) return 'medium';
-    
+
     const { type, performance } = this.deviceInfo;
-    
+
     if (type === 'mobile' && performance.memoryUsage < 1000000000) {
       return 'low';
     }
-    
+
     if (type === 'desktop' && performance.memoryUsage > 4000000000) {
       return 'ultra';
     }
-    
+
     return 'high';
   }
 }

@@ -1,6 +1,5 @@
-
-import { FormLabel } from "@/components/ui/form";
-import { EnhancedPropertyImageUpload } from "@/components/properties/EnhancedPropertyImageUpload";
+import { FormLabel } from '@/components/ui/form';
+import { EnhancedPropertyImageUpload } from '@/components/properties/EnhancedPropertyImageUpload';
 
 interface ImageUploadSectionProps {
   imageUrl: string | null;
@@ -10,7 +9,7 @@ interface ImageUploadSectionProps {
 export function ImageUploadSection({ imageUrl, onImageUploaded }: ImageUploadSectionProps) {
   return (
     <div>
-      <FormLabel className="block mb-2">📱 Issue Documentation</FormLabel>
+      <FormLabel className="mb-2 block">📱 Issue Documentation</FormLabel>
       <EnhancedPropertyImageUpload
         onImageUploaded={onImageUploaded}
         initialImageUrl={imageUrl}
@@ -18,9 +17,9 @@ export function ImageUploadSection({ imageUrl, onImageUploaded }: ImageUploadSec
         maxImages={5}
         title="📸 Maintenance Issue Photos"
       />
-      <p className="text-xs mt-2 text-muted-foreground">
-        📱 Capture photos of the maintenance issue with your camera or upload from device. 
-        Multiple photos help technicians understand the problem better.
+      <p className="mt-2 text-xs text-muted-foreground">
+        📱 Capture photos of the maintenance issue with your camera or upload from device. Multiple
+        photos help technicians understand the problem better.
       </p>
     </div>
   );

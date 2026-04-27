@@ -1,6 +1,12 @@
 import { useState } from 'react';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
 import { PaymentCategory } from '@/utils/PaymentTypes';
 import { CreditCard, RepeatIcon } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -17,50 +23,54 @@ interface PaymentDialogProps {
   initialCategory?: PaymentCategory;
 }
 
-export const PaymentDialog = ({ 
-  isOpen, 
-  setIsOpen, 
-  onPaymentSuccess, 
+export const PaymentDialog = ({
+  isOpen,
+  setIsOpen,
+  onPaymentSuccess,
   tenantId,
-  initialCategory = 'rent' 
+  initialCategory = 'rent',
 }: PaymentDialogProps) => {
   // Common state
   const [paymentTab, setPaymentTab] = useState<'one-time' | 'recurring'>('one-time');
-  
+
   // One-time payment state
   const [amount, setAmount] = useState<number>(50000);
   const [category, setCategory] = useState<PaymentCategory>(initialCategory);
   const [description, setDescription] = useState('');
-  
+
   // Recurring payment state
   const [recurringAmount, setRecurringAmount] = useState<number>(50000);
   const [recurringCategory, setRecurringCategory] = useState<PaymentCategory>('rent');
-  const [recurringType, setRecurringType] = useState<'monthly' | 'quarterly' | 'annually'>('monthly');
+  const [recurringType, setRecurringType] = useState<'monthly' | 'quarterly' | 'annually'>(
+    'monthly'
+  );
   const [recurringDescription, setRecurringDescription] = useState('');
-  
+
   // Payment handlers
   const { isProcessing, handleOneTimePayment } = usePaymentHandler({
     tenantId,
     onPaymentSuccess,
-    setIsOpen
+    setIsOpen,
   });
-  
-  const { isProcessing: isRecurringProcessing, handleSetupRecurringPayment } = useRecurringPaymentHandler({
-    tenantId,
-    setIsOpen
-  });
-  
+
+  const { isProcessing: isRecurringProcessing, handleSetupRecurringPayment } =
+    useRecurringPaymentHandler({
+      tenantId,
+      setIsOpen,
+    });
+
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle>Make a Payment</DialogTitle>
-          <DialogDescription>
-            Enter payment details and complete the transaction.
-          </DialogDescription>
+          <DialogDescription>Enter payment details and complete the transaction.</DialogDescription>
         </DialogHeader>
 
-        <Tabs value={paymentTab} onValueChange={(value) => setPaymentTab(value as 'one-time' | 'recurring')}>
+        <Tabs
+          value={paymentTab}
+          onValueChange={(value) => setPaymentTab(value as 'one-time' | 'recurring')}
+        >
           <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger value="one-time" className="flex items-center gap-2">
               <CreditCard className="h-4 w-4" />
@@ -71,7 +81,7 @@ export const PaymentDialog = ({
               Recurring
             </TabsTrigger>
           </TabsList>
-          
+
           <TabsContent value="one-time" className="pt-4">
             <OneTimePaymentForm
               category={category}
@@ -84,7 +94,7 @@ export const PaymentDialog = ({
               isProcessing={isProcessing}
             />
           </TabsContent>
-          
+
           <TabsContent value="recurring" className="pt-4">
             <RecurringPaymentForm
               recurringType={recurringType}
@@ -95,18 +105,20 @@ export const PaymentDialog = ({
               setRecurringAmount={setRecurringAmount}
               recurringDescription={recurringDescription}
               setRecurringDescription={setRecurringDescription}
-              onSubmit={() => handleSetupRecurringPayment(
-                recurringAmount,
-                recurringType,
-                recurringCategory,
-                recurringDescription
-              )}
+              onSubmit={() =>
+                handleSetupRecurringPayment(
+                  recurringAmount,
+                  recurringType,
+                  recurringCategory,
+                  recurringDescription
+                )
+              }
               isProcessing={isRecurringProcessing}
             />
           </TabsContent>
         </Tabs>
-        
-        <div className="flex justify-end mt-2">
+
+        <div className="mt-2 flex justify-end">
           <Button variant="outline" onClick={() => setIsOpen(false)}>
             Cancel
           </Button>

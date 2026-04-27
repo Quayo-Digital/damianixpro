@@ -1,6 +1,12 @@
-
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
 
 interface ImageDialogProps {
   open: boolean;
@@ -10,22 +16,27 @@ interface ImageDialogProps {
 
 export function ImageDialog({ open, onOpenChange, imageUrl }: ImageDialogProps) {
   if (!imageUrl) return null;
-  
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
           <DialogTitle>Maintenance Request Image</DialogTitle>
+          <DialogDescription>
+            View the image attached to this maintenance request.
+          </DialogDescription>
         </DialogHeader>
         <div className="flex items-center justify-center">
-          <img 
-            src={imageUrl} 
-            alt="Request image" 
-            className="max-w-full max-h-[500px] object-contain rounded-md"
+          <img
+            src={imageUrl}
+            alt="Request image"
+            className="max-h-[500px] max-w-full rounded-md object-contain"
           />
         </div>
         <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)}>Close</Button>
+          <Button variant="outline" onClick={() => onOpenChange(false)}>
+            Close
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

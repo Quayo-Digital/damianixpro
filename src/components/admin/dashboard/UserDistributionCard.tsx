@@ -1,6 +1,5 @@
-
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
-import { ResponsiveContainer, PieChart as RechartsPie, Pie, Cell, Tooltip } from "recharts";
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
+import { ResponsiveContainer, PieChart as RechartsPie, Pie, Cell, Tooltip } from 'recharts';
 
 interface UserTypeDatum {
   name: string;
@@ -30,9 +29,7 @@ export function UserDistributionCard({ data }: UserDistributionCardProps) {
               outerRadius={80}
               fill="#8884d8"
               dataKey="value"
-              label={({ name, percent }) =>
-                `${name} ${(percent * 100).toFixed(0)}%`
-              }
+              label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
             >
               {data.map((entry, index) => (
                 <Cell key={`cell-${index}`} fill={entry.color} />

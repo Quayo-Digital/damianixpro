@@ -1,10 +1,10 @@
-
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { pathForTenantSection } from '@/utils/tenantPortalRoutes';
 import { LeaseExpirationNotice } from '@/components/leases/LeaseExpirationNotice';
 import { LeaseManagementDialog } from '@/components/leases/LeaseManagementDialog';
 import { getActiveLease } from '@/services/leases/leaseTerminationService';
-import { useAuth } from '@/contexts/auth';
+import { useAuthSession } from '@/contexts/auth';
 import { supabase } from '@/integrations/supabase/client';
 import { WelcomeCard } from './dashboard/WelcomeCard';
 import { QuickActions } from './dashboard/QuickActions';
@@ -17,7 +17,7 @@ interface TenantDashboardProps {
 
 export function TenantDashboard({ onMakePayment }: TenantDashboardProps) {
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user } = useAuthSession();
   const [tenantId, setTenantId] = useState<string | null>(null);
   const [activeLease, setActiveLease] = useState<any | null>(null);
   const [leaseDialogOpen, setLeaseDialogOpen] = useState(false);
@@ -40,14 +40,15 @@ export function TenantDashboard({ onMakePayment }: TenantDashboardProps) {
   useEffect(() => {
     const fetchTenantData = async () => {
       if (!user?.id) return;
-      
+
       try {
         setLoading(true);
-        
+
         // Get the tenant data with profile information
         const { data: tenantInfo, error: tenantError } = await supabase
           .from('tenants')
-          .select(`
+          .select(
+            `
             id,
             first_name,
             last_name,
@@ -55,21 +56,22 @@ export function TenantDashboard({ onMakePayment }: TenantDashboardProps) {
             phone,
             status,
             created_at
-          `)
+          `
+          )
           .eq('user_id', user.id)
           .limit(1)
           .maybeSingle();
-          
+
         if (tenantError) throw tenantError;
-        
+
         if (tenantInfo) {
           setTenantId(tenantInfo.id);
           setTenantData(tenantInfo);
-          
+
           // Get active lease information
           const lease = await getActiveLease(tenantInfo.id);
           setActiveLease(lease);
-          
+
           // Get property information if lease exists
           if (lease?.property_id) {
             const { data: property, error: propertyError } = await supabase
@@ -77,12 +79,12 @@ export function TenantDashboard({ onMakePayment }: TenantDashboardProps) {
               .select('id, title, address, type')
               .eq('id', lease.property_id)
               .single();
-              
+
             if (!propertyError && property) {
               setPropertyData(property);
             }
           }
-          
+
           // Fetch recent activity (payments, maintenance, messages)
           await fetchRecentActivity(tenantInfo.id);
         }
@@ -92,32 +94,58 @@ export function TenantDashboard({ onMakePayment }: TenantDashboardProps) {
         setLoading(false);
       }
     };
-    
+
     fetchTenantData();
   }, [user?.id]);
 
   const fetchRecentActivity = async (tenantId: string) => {
     try {
       const activities = [];
-      
-      // Fetch recent payments
-      const { data: payments } = await supabase
-        .from('finance_transactions')
-        .select('*')
-        .eq('tenant_id', tenantId)
-        .order('created_at', { ascending: false })
-        .limit(3);
-        
-      if (payments) {
-        activities.push(...payments.map(payment => ({
-          id: `payment_${payment.id}`,
-          type: 'payment' as const,
-          description: `${payment.category} payment of ₦${payment.amount.toLocaleString()}`,
-          date: payment.date,
-          status: 'completed' as const
-        })));
+
+      // Recent rent payments via property_tenants (finance_transactions is not in schema)
+      const { data: ptRows } = await supabase
+        .from('property_tenants')
+        .select('id')
+        .eq('tenant_id', tenantId);
+
+      const propertyTenantIds = ptRows?.map((pt) => pt.id) ?? [];
+      let payments:
+        | {
+            id: string;
+            amount: number;
+            payment_date: string | null;
+            due_date: string | null;
+            category: string | null;
+            description: string | null;
+            status: string;
+          }[]
+        | null = null;
+
+      if (propertyTenantIds.length > 0) {
+        const res = await supabase
+          .from('rent_payments')
+          .select('id, amount, payment_date, due_date, category, description, status')
+          .in('property_tenant_id', propertyTenantIds)
+          .eq('status', 'successful')
+          .order('payment_date', { ascending: false })
+          .limit(3);
+        payments = res.data as typeof payments;
       }
-      
+
+      if (payments) {
+        activities.push(
+          ...payments.map((payment) => ({
+            id: `payment_${payment.id}`,
+            type: 'payment' as const,
+            description:
+              payment.description ||
+              `${payment.category || 'Rent'} payment of \u20A6${Number(payment.amount).toLocaleString()}`,
+            date: payment.payment_date || payment.due_date || new Date().toISOString(),
+            status: 'completed' as const,
+          }))
+        );
+      }
+
       // Fetch recent maintenance requests
       const { data: maintenance } = await supabase
         .from('maintenance_requests')
@@ -125,35 +153,42 @@ export function TenantDashboard({ onMakePayment }: TenantDashboardProps) {
         .eq('tenant_id', tenantId)
         .order('created_at', { ascending: false })
         .limit(3);
-        
+
       if (maintenance) {
-        activities.push(...maintenance.map(request => ({
-          id: `maintenance_${request.id}`,
-          type: 'maintenance' as const,
-          description: `Maintenance request: ${request.title}`,
-          date: request.created_at.split('T')[0],
-          status: request.status as 'completed' | 'in-progress' | 'unread'
-        })));
+        activities.push(
+          ...maintenance.map((request) => ({
+            id: `maintenance_${request.id}`,
+            type: 'maintenance' as const,
+            description: `Maintenance request: ${request.title}`,
+            date: request.created_at.split('T')[0],
+            status: request.status as 'completed' | 'in-progress' | 'unread',
+          }))
+        );
       }
-      
+
       // Sort by date and limit to 5 most recent
       const sortedActivities = activities
         .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
         .slice(0, 5);
-        
+
       setRecentActivity(sortedActivities);
     } catch (error) {
       console.error('Error fetching recent activity:', error);
       // Set fallback activity if database query fails
       setRecentActivity([
-        { id: 1, type: 'message' as const, description: 'Welcome to your tenant dashboard!', date: new Date().toISOString().split('T')[0], status: 'unread' as const }
+        {
+          id: 1,
+          type: 'message' as const,
+          description: 'Welcome to your tenant dashboard!',
+          date: new Date().toISOString().split('T')[0],
+          status: 'unread' as const,
+        },
       ]);
     }
   };
 
   const handleNavigateTo = (section: string) => {
-    // Navigate to tenant portal with the specific section
-    navigate(`/tenant-portal#${section}`);
+    navigate(pathForTenantSection(section));
   };
 
   const handleRenewClick = () => {
@@ -170,9 +205,9 @@ export function TenantDashboard({ onMakePayment }: TenantDashboardProps) {
     return (
       <div className="space-y-6">
         <div className="animate-pulse">
-          <div className="bg-gray-200 rounded-lg h-48 mb-4"></div>
-          <div className="bg-gray-200 rounded-lg h-32 mb-4"></div>
-          <div className="bg-gray-200 rounded-lg h-24"></div>
+          <div className="mb-4 h-48 rounded-lg bg-gray-200"></div>
+          <div className="mb-4 h-32 rounded-lg bg-gray-200"></div>
+          <div className="h-24 rounded-lg bg-gray-200"></div>
         </div>
       </div>
     );
@@ -189,24 +224,21 @@ export function TenantDashboard({ onMakePayment }: TenantDashboardProps) {
         paymentAmount={tenant.paymentAmount}
         onMakePayment={onMakePayment}
       />
-      
+
       {/* AI Smart Recommendations */}
-      <SmartRecommendations 
+      <SmartRecommendations
         limit={3}
         showHeader={true}
-        className="bg-gradient-to-r from-purple-50 to-blue-50 border-purple-200"
+        className="border-purple-200 bg-gradient-to-r from-purple-50 to-blue-50"
       />
-      
+
       {/* Lease Expiration Notice (will only show if lease is expiring within 90 days) */}
       {tenantId && activeLease && (
-        <LeaseExpirationNotice
-          onRenew={handleRenewClick}
-          onTerminate={handleTerminateClick}
-        />
+        <LeaseExpirationNotice onRenew={handleRenewClick} onTerminate={handleTerminateClick} />
       )}
-      
+
       <QuickActions onNavigate={handleNavigateTo} />
-      
+
       <RecentActivity activities={recentActivity} />
 
       {/* Lease Management Dialog */}

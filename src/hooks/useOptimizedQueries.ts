@@ -4,7 +4,11 @@
  */
 
 import { useQuery, useInfiniteQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { DatabaseOptimizer, CacheOptimizer, PerformanceMonitor } from '@/services/performance/performanceOptimizer';
+import {
+  DatabaseOptimizer,
+  CacheOptimizer,
+  PerformanceMonitor,
+} from '@/services/performance/performanceOptimizer';
 import { supabase } from '@/integrations/supabase/client';
 import { Property, User, Lease, MaintenanceRequest } from '@/integrations/supabase/types';
 
@@ -41,14 +45,11 @@ export const useOptimizedProperties = (filters: {
       }
 
       // Fetch with performance monitoring
-      const result = await PerformanceMonitor.measurePerformance(
-        'Properties Query',
-        async () => {
-          const { data, error } = await DatabaseOptimizer.searchPropertiesOptimized(filters);
-          if (error) throw error;
-          return data;
-        }
-      );
+      const result = await PerformanceMonitor.measurePerformance('Properties Query', async () => {
+        const { data, error } = await DatabaseOptimizer.searchPropertiesOptimized(filters);
+        if (error) throw error;
+        return data;
+      });
 
       // Cache the result
       CacheOptimizer.set(cacheKey, result, 5); // 5 minutes cache
@@ -144,25 +145,36 @@ export const useOptimizedDashboardStats = (userId: string, userRole: string) => 
           if (userRole === 'owner') {
             operations.push(
               () => supabase.from('properties').select('id').eq('owner_id', userId),
-              () => supabase.from('leases').select('id, monthly_rent').eq('property.owner_id', userId),
-              () => supabase.from('maintenance_requests').select('id, status').eq('property.owner_id', userId)
+              () =>
+                supabase.from('leases').select('id, monthly_rent').eq('property.owner_id', userId),
+              () =>
+                supabase
+                  .from('maintenance_requests')
+                  .select('id, status')
+                  .eq('property.owner_id', userId)
             );
           } else if (userRole === 'tenant') {
             operations.push(
               () => supabase.from('leases').select('id, monthly_rent').eq('tenant_id', userId),
-              () => supabase.from('maintenance_requests').select('id, status').eq('tenant_id', userId)
+              () =>
+                supabase.from('maintenance_requests').select('id, status').eq('tenant_id', userId)
             );
           }
 
           const results = await DatabaseOptimizer.batchOperations(operations);
-          
+
           // Process results into dashboard stats
           const stats = {
             totalProperties: results[0]?.data?.length || 0,
-            totalRevenue: results[1]?.data?.reduce((sum: number, lease: any) => sum + (lease.monthly_rent || 0), 0) || 0,
+            totalRevenue:
+              results[1]?.data?.reduce(
+                (sum: number, lease: any) => sum + (lease.monthly_rent || 0),
+                0
+              ) || 0,
             activeLeases: results[1]?.data?.length || 0,
             maintenanceRequests: results[2]?.data?.length || 0,
-            pendingMaintenance: results[2]?.data?.filter((req: any) => req.status === 'pending').length || 0,
+            pendingMaintenance:
+              results[2]?.data?.filter((req: any) => req.status === 'pending').length || 0,
           };
 
           return stats;
@@ -191,12 +203,11 @@ export const useOptimizedSearch = (searchTerm: string, filters: any) => {
       const cached = CacheOptimizer.get(cacheKey);
       if (cached) return cached;
 
-      const result = await PerformanceMonitor.measurePerformance(
-        'Search Query',
-        async () => {
-          const { data, error } = await supabase
-            .from('properties')
-            .select(`
+      const result = await PerformanceMonitor.measurePerformance('Search Query', async () => {
+        const { data, error } = await supabase
+          .from('properties')
+          .select(
+            `
               id,
               name,
               description,
@@ -206,15 +217,17 @@ export const useOptimizedSearch = (searchTerm: string, filters: any) => {
               bedrooms,
               bathrooms,
               images
-            `)
-            .or(`name.ilike.%${searchTerm}%,description.ilike.%${searchTerm}%,location.ilike.%${searchTerm}%`)
-            .eq('status', 'available')
-            .limit(20);
+            `
+          )
+          .or(
+            `name.ilike.%${searchTerm}%,description.ilike.%${searchTerm}%,location.ilike.%${searchTerm}%`
+          )
+          .eq('status', 'available')
+          .limit(20);
 
-          if (error) throw error;
-          return data || [];
-        }
-      );
+        if (error) throw error;
+        return data || [];
+      });
 
       CacheOptimizer.set(cacheKey, result, 5); // 5 minutes cache
       return result;
@@ -233,28 +246,25 @@ export const useOptimizedPropertyMutation = () => {
 
   return useMutation({
     mutationFn: async (propertyData: Partial<Property>) => {
-      return PerformanceMonitor.measurePerformance(
-        'Property Mutation',
-        async () => {
-          const { data, error } = await supabase
-            .from('properties')
-            .insert(propertyData)
-            .select()
-            .single();
+      return PerformanceMonitor.measurePerformance('Property Mutation', async () => {
+        const { data, error } = await supabase
+          .from('properties')
+          .insert(propertyData)
+          .select()
+          .single();
 
-          if (error) throw error;
-          return data;
-        }
-      );
+        if (error) throw error;
+        return data;
+      });
     },
     onSuccess: (data) => {
       // Invalidate related queries efficiently
       queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.PROPERTIES] });
       queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.DASHBOARD_STATS] });
-      
+
       // Clear related cache entries
       CacheOptimizer.clear();
-      
+
       // Optionally update the cache directly for immediate UI update
       queryClient.setQueryData([QUERY_KEYS.PROPERTY_DETAIL, data.id], data);
     },
@@ -286,7 +296,7 @@ export const usePrefetchRelatedData = () => {
           .from('properties')
           .select('*')
           .eq('owner_id', userId);
-        
+
         if (error) throw error;
         return data;
       },
@@ -314,9 +324,7 @@ export const useBackgroundSync = (userId: string) => {
     ];
 
     await Promise.allSettled(
-      criticalQueries.map(queryKey =>
-        queryClient.refetchQueries({ queryKey })
-      )
+      criticalQueries.map((queryKey) => queryClient.refetchQueries({ queryKey }))
     );
   };
 

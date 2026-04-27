@@ -1,7 +1,7 @@
-// Enhanced Service Worker for Nigeria Homes Platform PWA
+// Enhanced Service Worker for DamianixPro Platform PWA
 // Optimized for Nigerian mobile networks and app-like experience
 
-const CACHE_VERSION = '2.0.0';
+const CACHE_VERSION = '2.0.3';
 const CACHE_NAME = `nigeria-homes-v${CACHE_VERSION}`;
 const STATIC_CACHE_NAME = `nigeria-homes-static-v${CACHE_VERSION}`;
 const DYNAMIC_CACHE_NAME = `nigeria-homes-dynamic-v${CACHE_VERSION}`;
@@ -37,9 +37,6 @@ const CRITICAL_RESOURCES = [
   '/manifest.json',
   '/favicon.ico',
   '/offline.html',
-  // Core app shell files
-  '/static/js/main.js',
-  '/static/css/main.css',
   // Critical pages
   '/properties',
   '/dashboard',
@@ -51,6 +48,11 @@ const OFFLINE_PROPERTY_CACHE = 'offline-properties';
 const OFFLINE_USER_DATA = 'offline-user-data';
 const OFFLINE_SEARCH_CACHE = 'offline-searches';
 
+// Throttle fallback logs to avoid console spam (max once per 30s per message type)
+const FALLBACK_LOG_INTERVAL = 30 * 1000;
+let lastPropertiesFallbackLog = 0;
+let lastApiFallbackLog = 0;
+
 // Install event - Cache critical resources
 self.addEventListener('install', (event) => {
   console.log('[SW] Enhanced service worker installing...');
@@ -58,9 +60,15 @@ self.addEventListener('install', (event) => {
   event.waitUntil(
     Promise.all([
       // Cache critical resources
-      caches.open(STATIC_CACHE_NAME).then(cache => {
+      caches.open(STATIC_CACHE_NAME).then(async (cache) => {
         console.log('[SW] Caching critical resources');
-        return cache.addAll(CRITICAL_RESOURCES);
+        await Promise.all(
+          CRITICAL_RESOURCES.map((resource) =>
+            cache.add(resource).catch((error) => {
+              console.warn('[SW] Failed to precache resource:', resource, error);
+            })
+          )
+        );
       }),
       
       // Initialize offline storage
@@ -99,6 +107,12 @@ self.addEventListener('fetch', (event) => {
   if (request.method !== 'GET') {
     return;
   }
+
+  // Vite dev server: never intercept source modules, deps, or HMR — false "API" matches like
+  // /src/services/property/api/queries.ts (contains "/api/") caused 503 + broken lazy imports.
+  if (isViteDevelopmentAsset(url)) {
+    return;
+  }
   
   // Route requests based on type
   if (isPropertyRequest(request)) {
@@ -134,22 +148,28 @@ async function handlePropertyRequest(request) {
     
     // Try network
     const networkResponse = await fetch(request);
-    if (networkResponse.ok) {
-      // Cache successful response
-      const cache = await caches.open(DYNAMIC_CACHE_NAME);
-      cache.put(request, networkResponse.clone());
-      
-      // Store in offline cache for property data
-      if (request.url.includes('/properties')) {
-        await storeOfflinePropertyData(request, networkResponse.clone());
-      }
-      
+    // Pass through real HTTP errors (503, 429, …) so Supabase/PostgREST clients see the real status,
+    // not synthetic "offline" JSON that breaks error handling.
+    if (!networkResponse.ok) {
       return networkResponse;
     }
-    
-    throw new Error('Network response not ok');
+
+    // Cache successful response
+    const cache = await caches.open(DYNAMIC_CACHE_NAME);
+    cache.put(request, networkResponse.clone());
+
+    // Store in offline cache only for the properties table (not other /rest/v1/* URLs)
+    if (isRestV1PropertiesUrl(request.url)) {
+      await storeOfflinePropertyData(request, networkResponse.clone());
+    }
+
+    return networkResponse;
   } catch (error) {
-    console.log('[SW] Network failed, trying cache for properties');
+    const now = Date.now();
+    if (now - lastPropertiesFallbackLog > FALLBACK_LOG_INTERVAL) {
+      console.debug('[SW] Network failed for properties, using cache/offline data');
+      lastPropertiesFallbackLog = now;
+    }
     
     // Try cache as fallback
     const cachedResponse = await caches.match(request);
@@ -167,13 +187,12 @@ async function handleAnalyticsRequest(request) {
   try {
     // Always try network first for analytics
     const networkResponse = await fetch(request);
-    if (networkResponse.ok) {
-      // Cache for short duration
-      const cache = await caches.open(API_CACHE_NAME);
-      cache.put(request, networkResponse.clone());
+    if (!networkResponse.ok) {
       return networkResponse;
     }
-    throw new Error('Network response not ok');
+    const cache = await caches.open(API_CACHE_NAME);
+    cache.put(request, networkResponse.clone());
+    return networkResponse;
   } catch (error) {
     // Fallback to cached analytics data
     const cachedResponse = await caches.match(request);
@@ -228,17 +247,21 @@ async function handleAPIRequest(request) {
     
     const networkResponse = await fetch(request, { signal: controller.signal });
     clearTimeout(timeoutId);
-    
-    if (networkResponse.ok) {
-      // Cache API response
-      const cache = await caches.open(API_CACHE_NAME);
-      cache.put(request, networkResponse.clone());
+
+    if (!networkResponse.ok) {
       return networkResponse;
     }
-    
-    throw new Error('API response not ok');
+
+    // Cache API response
+    const cache = await caches.open(API_CACHE_NAME);
+    cache.put(request, networkResponse.clone());
+    return networkResponse;
   } catch (error) {
-    console.log('[SW] API request failed, trying cache');
+    const now = Date.now();
+    if (now - lastApiFallbackLog > FALLBACK_LOG_INTERVAL) {
+      console.debug('[SW] API request failed, trying cache');
+      lastApiFallbackLog = now;
+    }
     
     // Try cache
     const cachedResponse = await caches.match(request);
@@ -249,6 +272,46 @@ async function handleAPIRequest(request) {
     // Return offline API response
     return getOfflineAPIResponse(request);
   }
+}
+
+// Generic offline API response handler
+async function getOfflineAPIResponse(request) {
+  const url = new URL(request.url);
+  
+  // Check if it's a property-related request
+  if (url.pathname.includes('/properties') || url.pathname.includes('/listings')) {
+    return getOfflinePropertyResponse(request);
+  }
+  
+  // Check if it's a bookings request
+  if (url.pathname.includes('/bookings')) {
+    return buildOfflineJsonResponse({
+      endpoint: 'bookings',
+      message: 'Booking data is unavailable while offline',
+      data: []
+    });
+  }
+  
+  // Check if it's an analytics request
+  if (url.pathname.includes('/analytics') || url.pathname.includes('/stats')) {
+    return getOfflineAnalyticsResponse();
+  }
+  
+  // For Supabase REST API requests, always return explicit offline response
+  if (url.hostname.includes('supabase.co')) {
+    return buildOfflineJsonResponse({
+      endpoint: 'supabase',
+      message: 'This operation requires an internet connection',
+      data: null
+    });
+  }
+  
+  // Default offline response for other API requests
+  return buildOfflineJsonResponse({
+    endpoint: 'api',
+    message: 'This data is not available offline',
+    data: []
+  });
 }
 
 // Handle static assets with cache-first strategy
@@ -313,7 +376,15 @@ async function storeOfflinePropertyData(request, response) {
     // Check if response is JSON
     const contentType = response.headers.get('content-type');
     if (!contentType || !contentType.includes('application/json')) {
-      console.log('[SW] Skipping non-JSON response for offline storage:', request.url);
+      // Only log once per URL to avoid spam (Supabase responses may not always be JSON)
+      const skipLogCache = self.__skipLogCache || new Map();
+      if (!skipLogCache.has(request.url)) {
+        // Log once per URL, then suppress for 10 minutes
+        console.debug('[SW] Skipping non-JSON response for offline storage:', request.url);
+        skipLogCache.set(request.url, true);
+        setTimeout(() => skipLogCache.delete(request.url), 10 * 60 * 1000); // 10 minutes
+        self.__skipLogCache = skipLogCache;
+      }
       return;
     }
     
@@ -322,23 +393,33 @@ async function storeOfflinePropertyData(request, response) {
     const tx = db.transaction([OFFLINE_PROPERTY_CACHE], 'readwrite');
     const store = tx.objectStore(OFFLINE_PROPERTY_CACHE);
     
+    const isValidIdbKey = (id) => {
+      const t = typeof id;
+      return (t === 'string' && id.length > 0) || t === 'number';
+    };
+
     if (Array.isArray(data)) {
-      // Store multiple properties
-      data.forEach(property => {
+      data.forEach((property, index) => {
+        const rawId = property && property.id;
+        const id = isValidIdbKey(rawId) ? rawId : `orphan-${Date.now()}-${index}`;
+        if (!isValidIdbKey(rawId)) {
+          console.warn('[SW] Skipping invalid property.id for offline cache; using synthetic key');
+        }
         store.put({
-          id: property.id,
+          id,
           data: property,
           timestamp: Date.now(),
-          url: request.url
+          url: request.url,
         });
       });
     } else {
-      // Store single property
+      const rawId = data && data.id;
+      const id = isValidIdbKey(rawId) ? rawId : `row-${Date.now()}`;
       store.put({
-        id: data.id || Date.now(),
+        id,
         data: data,
         timestamp: Date.now(),
-        url: request.url
+        url: request.url,
       });
     }
   } catch (error) {
@@ -358,12 +439,26 @@ async function getOfflinePropertyResponse(request) {
       .filter(item => Date.now() - item.timestamp < 24 * 60 * 60 * 1000)
       .map(item => item.data);
     
-    return new Response(JSON.stringify(recentProperties), {
-      headers: { 'Content-Type': 'application/json' }
+    if (recentProperties.length > 0) {
+      // Cached data is real but stale; keep status 200 and mark explicitly.
+      return buildOfflineJsonResponse({
+        endpoint: 'properties',
+        message: 'Serving cached property data while offline',
+        data: recentProperties,
+        status: 200
+      });
+    }
+
+    return buildOfflineJsonResponse({
+      endpoint: 'properties',
+      message: 'No cached property data is available offline',
+      data: []
     });
   } catch (error) {
-    return new Response(JSON.stringify([]), {
-      headers: { 'Content-Type': 'application/json' }
+    return buildOfflineJsonResponse({
+      endpoint: 'properties',
+      message: 'Unable to read cached property data',
+      data: []
     });
   }
 }
@@ -379,9 +474,31 @@ async function getOfflineAnalyticsResponse() {
     lastUpdated: new Date().toISOString()
   };
   
-  return new Response(JSON.stringify(offlineData), {
-    headers: { 'Content-Type': 'application/json' }
+  return buildOfflineJsonResponse({
+    endpoint: 'analytics',
+    message: 'Serving limited analytics data while offline',
+    data: offlineData
   });
+}
+
+function buildOfflineJsonResponse({ endpoint, message, data, status = 503 }) {
+  return new Response(
+    JSON.stringify({
+      offline: true,
+      stale: status === 200,
+      endpoint,
+      message,
+      data,
+      timestamp: new Date().toISOString()
+    }),
+    {
+      status,
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Offline-Fallback': 'true'
+      }
+    }
+  );
 }
 
 // Network detection for Nigerian conditions
@@ -402,12 +519,33 @@ function getNetworkType() {
 }
 
 // Utility functions
-function isPropertyRequest(request) {
-  return request.url.includes('/properties') || request.url.includes('/api/properties');
+/** Only the PostgREST `properties` table — avoids matching `property_tour_*`, `property_images`, etc. */
+function isRestV1PropertiesUrl(url) {
+  try {
+    const { pathname } = new URL(url);
+    return /^\/rest\/v1\/properties$/i.test(pathname);
+  } catch {
+    return false;
+  }
 }
 
+function isPropertyRequest(request) {
+  try {
+    const p = new URL(request.url).pathname;
+    return isRestV1PropertiesUrl(request.url) || p === '/api/properties' || p.startsWith('/api/properties/');
+  } catch {
+    return false;
+  }
+}
+
+/** Must not use url.includes('analytics') — matches e.g. TenantAnalytics.tsx */
 function isAnalyticsRequest(request) {
-  return request.url.includes('/analytics') || request.url.includes('/api/analytics');
+  try {
+    const p = new URL(request.url).pathname;
+    return p === '/api/analytics' || p.startsWith('/api/analytics/');
+  } catch {
+    return false;
+  }
 }
 
 function isImageRequest(request) {
@@ -415,7 +553,34 @@ function isImageRequest(request) {
 }
 
 function isAPIRequest(request) {
-  return request.url.includes('/api/') || request.url.includes('supabase.co');
+  try {
+    const u = new URL(request.url);
+    if (u.hostname.includes('supabase.co')) return true;
+    // Same-origin backend only — not /src/.../api/foo.ts (Vite source tree)
+    return u.pathname.startsWith('/api/');
+  } catch {
+    return false;
+  }
+}
+
+function isViteDevelopmentAsset(url) {
+  const p = url.pathname;
+  // Vite module graph — never intercept (any host: LAN IP, ngrok, etc. all use /src/ + /@…).
+  if (
+    p.startsWith('/src/') ||
+    p.startsWith('/@') ||
+    p.startsWith('/node_modules/') ||
+    p.includes('/.vite/')
+  ) {
+    return true;
+  }
+  const host = url.hostname;
+  const isLocal =
+    host === 'localhost' ||
+    host === '127.0.0.1' ||
+    host === '[::1]' ||
+    host.endsWith('.local');
+  return isLocal && (p.startsWith('/@fs/') || p.startsWith('/@vite/') || p.startsWith('/@react-refresh'));
 }
 
 function isStaticAsset(request) {
@@ -500,42 +665,64 @@ async function syncOfflineData() {
   // Implement offline data sync logic
 }
 
-// Push notifications for property alerts
+// Web Push (VAPID) — payload JSON: { title, body, url }
 self.addEventListener('push', (event) => {
-  console.log('[SW] Push notification received');
-  
-  const options = {
-    body: event.data ? event.data.text() : 'New property alert!',
-    icon: '/icons/icon-192x192.png',
-    badge: '/icons/icon-72x72.png',
-    tag: 'property-alert',
-    requireInteraction: true,
-    actions: [
-      {
-        action: 'view',
-        title: 'View Property'
-      },
-      {
-        action: 'dismiss',
-        title: 'Dismiss'
-      }
-    ]
-  };
-  
   event.waitUntil(
-    self.registration.showNotification('Nigeria Homes', options)
+    (async () => {
+      let title = 'DamianixPro';
+      let body = 'You have a new notification.';
+      let url = '/';
+      if (event.data) {
+        try {
+          const json = event.data.json();
+          if (json.title) title = String(json.title);
+          if (json.body) body = String(json.body);
+          if (json.url) url = String(json.url);
+        } catch {
+          const text = event.data.text();
+          if (text) body = text;
+        }
+      }
+      await self.registration.showNotification(title, {
+        body,
+        icon: '/icons/icon-192x192.png',
+        badge: '/icons/icon-72x72.png',
+        tag: 'damianixpro-push',
+        data: { url },
+        requireInteraction: false,
+        actions: [
+          { action: 'open', title: 'Open' },
+          { action: 'dismiss', title: 'Dismiss' },
+        ],
+      });
+    })()
   );
 });
 
-// Handle notification clicks
 self.addEventListener('notificationclick', (event) => {
   event.notification.close();
-  
-  if (event.action === 'view') {
-    event.waitUntil(
-      clients.openWindow('/properties')
-    );
+  const data = event.notification.data || {};
+  const raw = data.url || '/';
+  const targetUrl = raw.startsWith('http')
+    ? raw
+    : new URL(raw, self.location.origin).href;
+
+  if (event.action === 'dismiss') {
+    return;
   }
+
+  event.waitUntil(
+    self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((windowClients) => {
+      for (const client of windowClients) {
+        if (client.url === targetUrl && 'focus' in client) {
+          return client.focus();
+        }
+      }
+      if (self.clients.openWindow) {
+        return self.clients.openWindow(targetUrl);
+      }
+    })
+  );
 });
 
-console.log('[SW] Enhanced service worker loaded for Nigeria Homes PWA');
+console.log('[SW] Enhanced service worker loaded for DamianixPro PWA');

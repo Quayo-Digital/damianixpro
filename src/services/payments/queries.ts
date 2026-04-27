@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { Payment } from '@/utils/PaymentTypes';
 import { toast } from '@/components/ui/sonner';
@@ -9,7 +8,7 @@ import { toast } from '@/components/ui/sonner';
 export const fetchPayments = async (tenantId?: string): Promise<Payment[]> => {
   try {
     let paymentQuery = supabase.from('rent_payments').select('*');
-    
+
     if (tenantId) {
       const { data: propertyTenants, error: ptError } = await supabase
         .from('property_tenants')
@@ -24,18 +23,22 @@ export const fetchPayments = async (tenantId?: string): Promise<Payment[]> => {
       const propertyTenantIds = propertyTenants.map((pt) => pt.id);
       paymentQuery = paymentQuery.in('property_tenant_id', propertyTenantIds);
     }
-    
-    const { data: payments, error: paymentsError } = await paymentQuery.order('due_date', { ascending: false });
-    
+
+    const { data: payments, error: paymentsError } = await paymentQuery.order('due_date', {
+      ascending: false,
+    });
+
     if (paymentsError) {
       throw paymentsError;
     }
-    
+
     if (!payments || payments.length === 0) {
       return [];
     }
 
-    const allPropertyTenantIds = [...new Set(payments.map(p => p.property_tenant_id).filter(Boolean))];
+    const allPropertyTenantIds = [
+      ...new Set(payments.map((p) => p.property_tenant_id).filter(Boolean)),
+    ];
 
     let ptMap = new Map();
     if (allPropertyTenantIds.length > 0) {
@@ -46,10 +49,10 @@ export const fetchPayments = async (tenantId?: string): Promise<Payment[]> => {
 
       if (ptDetailsError) throw ptDetailsError;
       if (ptDetails) {
-        ptMap = new Map(ptDetails.map(pt => [pt.id, pt]));
+        ptMap = new Map(ptDetails.map((pt) => [pt.id, pt]));
       }
     }
-    
+
     return payments.map((payment: any) => {
       return {
         id: payment.id,
@@ -62,7 +65,7 @@ export const fetchPayments = async (tenantId?: string): Promise<Payment[]> => {
         description: payment.description || '',
         is_recurring: payment.is_recurring || false,
         recurring_type: payment.recurring_type,
-        next_payment_date: payment.next_payment_date
+        next_payment_date: payment.next_payment_date,
       };
     });
   } catch (error) {

@@ -1,10 +1,15 @@
-
-import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { UseFormReturn } from "react-hook-form";
-import { z } from "zod";
+import { FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { UseFormReturn } from 'react-hook-form';
+import { z } from 'zod';
 
 // Define the schema for easy reuse
 export const formSchema = z.object({
@@ -20,7 +25,7 @@ export type MaintenanceFormValues = z.infer<typeof formSchema>;
 interface FormFieldsProps {
   form: UseFormReturn<MaintenanceFormValues>;
   isLoadingProperties: boolean;
-  properties: Array<{ id: string, name: string }>;
+  properties: Array<{ id: string; name: string }>;
 }
 
 export function FormFields({ form, isLoadingProperties, properties }: FormFieldsProps) {
@@ -39,14 +44,14 @@ export function FormFields({ form, isLoadingProperties, properties }: FormFields
           </FormItem>
         )}
       />
-      
+
       <FormField
         control={form.control}
         name="property"
         render={({ field }) => (
           <FormItem>
             <FormLabel>Property</FormLabel>
-            <PropertySelector 
+            <PropertySelector
               field={field}
               properties={properties}
               isLoadingProperties={isLoadingProperties}
@@ -55,7 +60,7 @@ export function FormFields({ form, isLoadingProperties, properties }: FormFields
           </FormItem>
         )}
       />
-      
+
       <FormField
         control={form.control}
         name="tenant"
@@ -69,7 +74,7 @@ export function FormFields({ form, isLoadingProperties, properties }: FormFields
           </FormItem>
         )}
       />
-      
+
       <FormField
         control={form.control}
         name="priority"
@@ -92,7 +97,7 @@ export function FormFields({ form, isLoadingProperties, properties }: FormFields
           </FormItem>
         )}
       />
-      
+
       <FormField
         control={form.control}
         name="description"
@@ -100,9 +105,9 @@ export function FormFields({ form, isLoadingProperties, properties }: FormFields
           <FormItem>
             <FormLabel>Description</FormLabel>
             <FormControl>
-              <Textarea 
-                placeholder="Describe the issue in detail" 
-                {...field} 
+              <Textarea
+                placeholder="Describe the issue in detail"
+                {...field}
                 className="min-h-[120px]"
               />
             </FormControl>
@@ -117,7 +122,7 @@ export function FormFields({ form, isLoadingProperties, properties }: FormFields
 // Property selector sub-component
 interface PropertySelectorProps {
   field: any;
-  properties: Array<{ id: string, name: string }>;
+  properties: Array<{ id: string; name: string }>;
   isLoadingProperties: boolean;
 }
 
@@ -130,19 +135,42 @@ function PropertySelector({ field, properties, isLoadingProperties }: PropertySe
       </div>
     );
   }
-  
+
+  if (properties.length === 0) {
+    return (
+      <>
+        <FormControl>
+          <Select disabled>
+            <SelectTrigger>
+              <SelectValue placeholder="No properties available" />
+            </SelectTrigger>
+          </Select>
+        </FormControl>
+        <p className="mt-1 text-sm text-muted-foreground">
+          No properties found. Please contact support if you believe this is an error.
+        </p>
+      </>
+    );
+  }
+
   return (
     <FormControl>
-      <Select onValueChange={field.onChange} value={field.value}>
+      <Select onValueChange={field.onChange} value={field.value || ''}>
         <SelectTrigger>
           <SelectValue placeholder="Select property" />
         </SelectTrigger>
         <SelectContent>
-          {properties.map(property => (
-            <SelectItem key={property.id} value={property.id}>
-              {property.name}
+          {properties.length > 0 ? (
+            properties.map((property) => (
+              <SelectItem key={property.id} value={property.id}>
+                {property.name || property.id}
+              </SelectItem>
+            ))
+          ) : (
+            <SelectItem value="no-properties" disabled>
+              No properties available
             </SelectItem>
-          ))}
+          )}
         </SelectContent>
       </Select>
     </FormControl>

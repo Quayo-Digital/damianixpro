@@ -1,4 +1,3 @@
-
 import { PageLayout } from '@/components/layout/PageLayout';
 import { OwnerPayments } from '@/components/owner/OwnerPayments';
 

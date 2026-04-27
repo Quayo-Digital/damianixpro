@@ -1,4 +1,3 @@
-
 import { Property } from '@/services/property';
 import { Badge } from '@/components/ui/badge';
 import { MapPin } from 'lucide-react';
@@ -9,11 +8,11 @@ interface PropertyHeaderProps {
 
 export const PropertyHeader = ({ property }: PropertyHeaderProps) => {
   return (
-    <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+    <div className="flex flex-col justify-between gap-4 md:flex-row md:items-center">
       <div>
         <h1 className="text-3xl font-bold">{property.name}</h1>
-        <div className="flex items-center mt-2 text-muted-foreground">
-          <MapPin className="h-4 w-4 mr-1" />
+        <div className="mt-2 flex items-center text-muted-foreground">
+          <MapPin className="mr-1 h-4 w-4" />
           <span>{property.location}</span>
         </div>
       </div>

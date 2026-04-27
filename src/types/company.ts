@@ -1,7 +1,7 @@
 import { z } from 'zod';
 
 // Company Profile Types
-export type CompanyType = 
+export type CompanyType =
   | 'REAL_ESTATE_AGENCY'
   | 'PROPERTY_MANAGEMENT'
   | 'CONSTRUCTION'
@@ -16,9 +16,22 @@ export type VerificationStatus = 'PENDING' | 'VERIFIED' | 'REJECTED' | 'SUSPENDE
 export type SubscriptionStatus = 'ACTIVE' | 'INACTIVE' | 'SUSPENDED' | 'CANCELLED';
 export type AccessLevel = 'ADMIN' | 'MANAGER' | 'AGENT' | 'STAFF' | 'VIEWER';
 export type TeamMemberStatus = 'ACTIVE' | 'INACTIVE' | 'SUSPENDED';
-export type DocumentType = 'BUSINESS_LICENSE' | 'TAX_CERTIFICATE' | 'INSURANCE' | 'CERTIFICATION' | 'REGISTRATION' | 'PERMIT' | 'OTHER';
+export type DocumentType =
+  | 'BUSINESS_LICENSE'
+  | 'TAX_CERTIFICATE'
+  | 'INSURANCE'
+  | 'CERTIFICATION'
+  | 'REGISTRATION'
+  | 'PERMIT'
+  | 'OTHER';
 export type DocumentVerificationStatus = 'PENDING' | 'VERIFIED' | 'REJECTED';
-export type AnnualRevenueRange = 'UNDER_1M' | '1M_5M' | '5M_10M' | '10M_50M' | '50M_100M' | 'OVER_100M';
+export type AnnualRevenueRange =
+  | 'UNDER_1M'
+  | '1M_5M'
+  | '5M_10M'
+  | '10M_50M'
+  | '50M_100M'
+  | 'OVER_100M';
 
 export interface BusinessHours {
   monday: { open: string; close: string; closed: boolean };
@@ -68,80 +81,80 @@ export interface ComplianceCertificate {
 export interface CompanyProfile {
   id: string;
   user_id: string;
-  
+
   // Basic Company Information
   company_name: string;
   company_type: CompanyType;
   business_registration_number?: string;
   tax_identification_number?: string;
   vat_number?: string;
-  
+
   // Contact Information
   business_email?: string;
   business_phone?: string;
   website_url?: string;
-  
+
   // Address Information
   business_address?: string;
   city?: string;
   state?: string;
   country: string;
   postal_code?: string;
-  
+
   // Nigerian Business Registration
   cac_registration_number?: string;
   tin_number?: string;
   business_permit_number?: string;
-  
+
   // Company Details
   description?: string;
   founded_year?: number;
   number_of_employees?: number;
   annual_revenue_range?: AnnualRevenueRange;
-  
+
   // Verification Status
   verification_status: VerificationStatus;
   verification_date?: string;
   verified_by?: string;
   verification_notes?: string;
-  
+
   // Business License and Certifications
   business_license_url?: string;
   insurance_certificate_url?: string;
   professional_certifications: ProfessionalCertification[];
-  
+
   // Nigerian Regulatory Compliance
   real_estate_license_number?: string;
   professional_body_membership?: string;
   compliance_certificates: ComplianceCertificate[];
-  
+
   // Banking Information
   bank_name?: string;
   account_number?: string;
   account_name?: string;
   bank_code?: string;
-  
+
   // Social Media and Marketing
   logo_url?: string;
   social_media_links: SocialMediaLinks;
   marketing_materials: string[];
-  
+
   // Performance Metrics
   total_properties_managed: number;
   total_transactions_completed: number;
   average_rating: number;
   total_reviews: number;
-  
+
   // Subscription and Plan Information
   subscription_plan: string;
   subscription_status: SubscriptionStatus;
   subscription_start_date?: string;
   subscription_end_date?: string;
-  
+
   // Settings and Preferences
   business_hours: BusinessHours;
   notification_preferences: NotificationPreferences;
-  
+
   // Audit Fields
   created_at: string;
   updated_at: string;
@@ -153,22 +166,22 @@ export interface CompanyTeamMember {
   id: string;
   company_id: string;
   user_id: string;
-  
+
   // Team Member Information
   role_title: string;
   department?: string;
   permissions: string[];
   access_level: AccessLevel;
-  
+
   // Status
   status: TeamMemberStatus;
   join_date: string;
   leave_date?: string;
-  
+
   // Audit Fields
   created_at: string;
   updated_at: string;
-  
+
   // Related data
   user?: {
     id: string;
@@ -182,24 +195,24 @@ export interface CompanyTeamMember {
 export interface CompanyDocument {
   id: string;
   company_id: string;
-  
+
   // Document Information
   document_name: string;
   document_type: DocumentType;
   document_url: string;
   file_size?: number;
   file_type?: string;
-  
+
   // Verification
   verification_status: DocumentVerificationStatus;
   verification_date?: string;
   verified_by?: string;
   verification_notes?: string;
-  
+
   // Expiry Management
   expiry_date?: string;
   renewal_reminder_sent: boolean;
-  
+
   // Audit Fields
   created_at: string;
   updated_at: string;
@@ -227,34 +240,36 @@ export const companyProfileFormSchema = z.object({
     'FINANCIAL_SERVICES',
     'CONSULTING',
     'DEVELOPMENT',
-    'OTHER'
+    'OTHER',
   ]),
   business_registration_number: z.string().optional(),
   tax_identification_number: z.string().optional(),
   vat_number: z.string().optional(),
-  
+
   business_email: z.string().email('Invalid email address').optional().or(z.literal('')),
   business_phone: z.string().optional(),
   website_url: z.string().url('Invalid website URL').optional().or(z.literal('')),
-  
+
   business_address: z.string().optional(),
   city: z.string().optional(),
   state: z.string().optional(),
   country: z.string().default('Nigeria'),
   postal_code: z.string().optional(),
-  
+
   cac_registration_number: z.string().optional(),
   tin_number: z.string().optional(),
   business_permit_number: z.string().optional(),
-  
+
   description: z.string().optional(),
   founded_year: z.number().min(1900).max(new Date().getFullYear()).optional(),
   number_of_employees: z.number().min(1).optional(),
-  annual_revenue_range: z.enum(['UNDER_1M', '1M_5M', '5M_10M', '10M_50M', '50M_100M', 'OVER_100M']).optional(),
-  
+  annual_revenue_range: z
+    .enum(['UNDER_1M', '1M_5M', '5M_10M', '10M_50M', '50M_100M', 'OVER_100M'])
+    .optional(),
+
   real_estate_license_number: z.string().optional(),
   professional_body_membership: z.string().optional(),
-  
+
   bank_name: z.string().optional(),
   account_number: z.string().optional(),
   account_name: z.string().optional(),
@@ -271,7 +286,15 @@ export const teamMemberFormSchema = z.object({
 
 export const companyDocumentFormSchema = z.object({
   document_name: z.string().min(1, 'Document name is required'),
-  document_type: z.enum(['BUSINESS_LICENSE', 'TAX_CERTIFICATE', 'INSURANCE', 'CERTIFICATION', 'REGISTRATION', 'PERMIT', 'OTHER']),
+  document_type: z.enum([
+    'BUSINESS_LICENSE',
+    'TAX_CERTIFICATE',
+    'INSURANCE',
+    'CERTIFICATION',
+    'REGISTRATION',
+    'PERMIT',
+    'OTHER',
+  ]),
   document_url: z.string().url('Invalid document URL'),
   expiry_date: z.string().optional(),
 });
@@ -290,14 +313,14 @@ export const COMPANY_TYPE_LABELS: Record<CompanyType, string> = {
   FINANCIAL_SERVICES: 'Financial Services',
   CONSULTING: 'Consulting',
   DEVELOPMENT: 'Development Company',
-  OTHER: 'Other'
+  OTHER: 'Other',
 };
 
 export const VERIFICATION_STATUS_LABELS: Record<VerificationStatus, string> = {
   PENDING: 'Pending Verification',
   VERIFIED: 'Verified',
   REJECTED: 'Verification Rejected',
-  SUSPENDED: 'Suspended'
+  SUSPENDED: 'Suspended',
 };
 
 export const ACCESS_LEVEL_LABELS: Record<AccessLevel, string> = {
@@ -305,7 +328,7 @@ export const ACCESS_LEVEL_LABELS: Record<AccessLevel, string> = {
   MANAGER: 'Manager',
   AGENT: 'Agent',
   STAFF: 'Staff Member',
-  VIEWER: 'Viewer'
+  VIEWER: 'Viewer',
 };
 
 export const DOCUMENT_TYPE_LABELS: Record<DocumentType, string> = {
@@ -315,7 +338,7 @@ export const DOCUMENT_TYPE_LABELS: Record<DocumentType, string> = {
   CERTIFICATION: 'Professional Certification',
   REGISTRATION: 'Registration Document',
   PERMIT: 'Business Permit',
-  OTHER: 'Other Document'
+  OTHER: 'Other Document',
 };
 
 export const ANNUAL_REVENUE_LABELS: Record<AnnualRevenueRange, string> = {
@@ -324,15 +347,47 @@ export const ANNUAL_REVENUE_LABELS: Record<AnnualRevenueRange, string> = {
   '5M_10M': '₦5M - ₦10M',
   '10M_50M': '₦10M - ₦50M',
   '50M_100M': '₦50M - ₦100M',
-  OVER_100M: 'Over ₦100M'
+  OVER_100M: 'Over ₦100M',
 };
 
 export const NIGERIAN_STATES = [
-  'Abia', 'Adamawa', 'Akwa Ibom', 'Anambra', 'Bauchi', 'Bayelsa', 'Benue', 'Borno',
-  'Cross River', 'Delta', 'Ebonyi', 'Edo', 'Ekiti', 'Enugu', 'FCT', 'Gombe',
-  'Imo', 'Jigawa', 'Kaduna', 'Kano', 'Katsina', 'Kebbi', 'Kogi', 'Kwara',
-  'Lagos', 'Nasarawa', 'Niger', 'Ogun', 'Ondo', 'Osun', 'Oyo', 'Plateau',
-  'Rivers', 'Sokoto', 'Taraba', 'Yobe', 'Zamfara'
+  'Abia',
+  'Adamawa',
+  'Akwa Ibom',
+  'Anambra',
+  'Bauchi',
+  'Bayelsa',
+  'Benue',
+  'Borno',
+  'Cross River',
+  'Delta',
+  'Ebonyi',
+  'Edo',
+  'Ekiti',
+  'Enugu',
+  'FCT',
+  'Gombe',
+  'Imo',
+  'Jigawa',
+  'Kaduna',
+  'Kano',
+  'Katsina',
+  'Kebbi',
+  'Kogi',
+  'Kwara',
+  'Lagos',
+  'Nasarawa',
+  'Niger',
+  'Ogun',
+  'Ondo',
+  'Osun',
+  'Oyo',
+  'Plateau',
+  'Rivers',
+  'Sokoto',
+  'Taraba',
+  'Yobe',
+  'Zamfara',
 ];
 
 export const NIGERIAN_BANKS = [
@@ -354,7 +409,7 @@ export const NIGERIAN_BANKS = [
   { name: 'United Bank For Africa', code: '033' },
   { name: 'Unity Bank', code: '215' },
   { name: 'Wema Bank', code: '035' },
-  { name: 'Zenith Bank', code: '057' }
+  { name: 'Zenith Bank', code: '057' },
 ];
 
 export const NIGERIAN_PROFESSIONAL_BODIES = [
@@ -365,5 +420,5 @@ export const NIGERIAN_PROFESSIONAL_BODIES = [
   { name: 'NIOB', fullName: 'Nigerian Institute of Building' },
   { name: 'NSE', fullName: 'Nigerian Society of Engineers' },
   { name: 'NITP', fullName: 'Nigerian Institute of Town Planners' },
-  { name: 'RICS Nigeria', fullName: 'Royal Institution of Chartered Surveyors - Nigeria' }
+  { name: 'RICS Nigeria', fullName: 'Royal Institution of Chartered Surveyors - Nigeria' },
 ];

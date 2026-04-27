@@ -1,7 +1,10 @@
-
 import { useState, useEffect, useMemo } from 'react';
 import { toast } from '@/components/ui/sonner';
-import { fetchMilestones, updateMilestoneNotificationSent, checkAndSyncMilestones } from '@/services/tenants/milestoneApi';
+import {
+  fetchMilestones,
+  updateMilestoneNotificationSent,
+  checkAndSyncMilestones,
+} from '@/services/tenants/milestoneApi';
 import { Milestone, MilestoneFilterType } from './types';
 
 export function useRentalMilestones() {
@@ -42,11 +45,7 @@ export function useRentalMilestones() {
     try {
       toast.loading('Sending notification...');
       const updatedMilestone = await updateMilestoneNotificationSent(milestoneId);
-      setMilestones(prev => 
-        prev.map(m => 
-          m.id === milestoneId ? updatedMilestone : m
-        )
-      );
+      setMilestones((prev) => prev.map((m) => (m.id === milestoneId ? updatedMilestone : m)));
       toast.success('Notification sent successfully');
     } catch (error) {
       console.error('Error sending notification:', error);
@@ -54,9 +53,10 @@ export function useRentalMilestones() {
     }
   };
 
-  const filteredMilestones = useMemo(() => filter === 'all' 
-    ? milestones 
-    : milestones.filter(m => m.status === filter), [filter, milestones]);
+  const filteredMilestones = useMemo(
+    () => (filter === 'all' ? milestones : milestones.filter((m) => m.status === filter)),
+    [filter, milestones]
+  );
 
   return {
     isLoading,

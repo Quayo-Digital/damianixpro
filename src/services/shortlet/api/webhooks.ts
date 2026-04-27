@@ -1,6 +1,5 @@
 /**
- * Paystack Webhook Handlers
- * Processes Paystack webhook events for short-let payments
+ * Payment webhook handlers (Flutterwave-first; compatible payloads for short-let bookings)
  */
 
 import { supabase } from '@/integrations/supabase/client';
@@ -27,7 +26,7 @@ export interface PaystackWebhookEvent {
 }
 
 /**
- * Verify webhook signature (Paystack sends a signature header)
+ * Verify webhook signature (provider sends a signature header)
  * Uses HMAC SHA512 to verify the signature
  */
 export function verifyWebhookSignature(
@@ -58,7 +57,7 @@ export function verifyWebhookSignature(
 }
 
 /**
- * Handle Paystack webhook events
+ * Handle payment webhook events
  */
 export async function handlePaystackWebhook(
   event: PaystackWebhookEvent
@@ -86,14 +85,14 @@ export async function handlePaystackWebhook(
         console.log(`Unhandled webhook event: ${eventType}`);
         return {
           success: true,
-          message: `Event ${eventType} acknowledged but not processed`
+          message: `Event ${eventType} acknowledged but not processed`,
         };
     }
   } catch (error) {
     console.error('Webhook handling error:', error);
     return {
       success: false,
-      error: error instanceof Error ? error.message : 'Webhook processing failed'
+      error: error instanceof Error ? error.message : 'Webhook processing failed',
     };
   }
 }
@@ -109,7 +108,7 @@ async function handleChargeSuccess(data: PaystackWebhookEvent['data']): Promise<
   if (!data.reference) {
     return {
       success: false,
-      error: 'Missing payment reference'
+      error: 'Missing payment reference',
     };
   }
 
@@ -119,12 +118,12 @@ async function handleChargeSuccess(data: PaystackWebhookEvent['data']): Promise<
   if (result.success) {
     return {
       success: true,
-      message: `Payment verified for booking ${result.booking?.id}`
+      message: `Payment verified for booking ${result.booking?.id}`,
     };
   } else {
     return {
       success: false,
-      error: result.error
+      error: result.error,
     };
   }
 }
@@ -140,7 +139,7 @@ async function handleChargeFailed(data: PaystackWebhookEvent['data']): Promise<{
   if (!data.reference) {
     return {
       success: false,
-      error: 'Missing payment reference'
+      error: 'Missing payment reference',
     };
   }
 
@@ -149,20 +148,20 @@ async function handleChargeFailed(data: PaystackWebhookEvent['data']): Promise<{
     .from('transactions')
     .update({
       status: TransactionStatus.FAILED,
-      updated_at: new Date().toISOString()
+      updated_at: new Date().toISOString(),
     })
     .eq('provider_ref', data.reference);
 
   if (error) {
     return {
       success: false,
-      error: 'Failed to update transaction status'
+      error: 'Failed to update transaction status',
     };
   }
 
   return {
     success: true,
-    message: 'Payment failure recorded'
+    message: 'Payment failure recorded',
   };
 }
 
@@ -178,7 +177,7 @@ async function handleTransferSuccess(data: PaystackWebhookEvent['data']): Promis
   if (!transfer?.transfer_code) {
     return {
       success: false,
-      error: 'Missing transfer code'
+      error: 'Missing transfer code',
     };
   }
 
@@ -187,7 +186,7 @@ async function handleTransferSuccess(data: PaystackWebhookEvent['data']): Promis
     .from('transactions')
     .update({
       status: TransactionStatus.SUCCESS,
-      updated_at: new Date().toISOString()
+      updated_at: new Date().toISOString(),
     })
     .eq('provider_ref', transfer.transfer_code)
     .eq('type', TransactionType.PAYOUT);
@@ -195,13 +194,13 @@ async function handleTransferSuccess(data: PaystackWebhookEvent['data']): Promis
   if (error) {
     return {
       success: false,
-      error: 'Failed to update transfer status'
+      error: 'Failed to update transfer status',
     };
   }
 
   return {
     success: true,
-    message: 'Payout successful'
+    message: 'Payout successful',
   };
 }
 
@@ -217,7 +216,7 @@ async function handleTransferFailed(data: PaystackWebhookEvent['data']): Promise
   if (!transfer?.transfer_code) {
     return {
       success: false,
-      error: 'Missing transfer code'
+      error: 'Missing transfer code',
     };
   }
 
@@ -226,7 +225,7 @@ async function handleTransferFailed(data: PaystackWebhookEvent['data']): Promise
     .from('transactions')
     .update({
       status: TransactionStatus.FAILED,
-      updated_at: new Date().toISOString()
+      updated_at: new Date().toISOString(),
     })
     .eq('provider_ref', transfer.transfer_code)
     .eq('type', TransactionType.PAYOUT);
@@ -234,13 +233,13 @@ async function handleTransferFailed(data: PaystackWebhookEvent['data']): Promise
   if (error) {
     return {
       success: false,
-      error: 'Failed to update transfer status'
+      error: 'Failed to update transfer status',
     };
   }
 
   return {
     success: true,
-    message: 'Payout failure recorded'
+    message: 'Payout failure recorded',
   };
 }
 
@@ -255,7 +254,7 @@ async function handleRefundSuccess(data: PaystackWebhookEvent['data']): Promise<
   if (!data.reference) {
     return {
       success: false,
-      error: 'Missing refund reference'
+      error: 'Missing refund reference',
     };
   }
 
@@ -264,7 +263,7 @@ async function handleRefundSuccess(data: PaystackWebhookEvent['data']): Promise<
     .from('transactions')
     .update({
       status: TransactionStatus.SUCCESS,
-      updated_at: new Date().toISOString()
+      updated_at: new Date().toISOString(),
     })
     .eq('provider_ref', data.reference)
     .eq('type', TransactionType.REFUND);
@@ -272,13 +271,12 @@ async function handleRefundSuccess(data: PaystackWebhookEvent['data']): Promise<
   if (error) {
     return {
       success: false,
-      error: 'Failed to update refund status'
+      error: 'Failed to update refund status',
     };
   }
 
   return {
     success: true,
-    message: 'Refund processed successfully'
+    message: 'Refund processed successfully',
   };
 }
-

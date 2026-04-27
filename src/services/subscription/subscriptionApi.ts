@@ -1,4 +1,7 @@
-
+/**
+ * Legacy subscription helpers targeting table `subscriptions` (not `user_subscriptions`).
+ * No in-repo callers — prefer `useSubscription` + Flutterwave + `flutterwave-webhook`.
+ */
 import { supabase } from '@/integrations/supabase/client';
 import { Subscription } from './types';
 
@@ -27,17 +30,17 @@ export const createPendingSubscription = async (
 };
 
 export const getUserSubscription = async (userId: string): Promise<Subscription | null> => {
-    const { data, error } = await supabase
-        .from('subscriptions')
-        .select('*')
-        .eq('user_id', userId)
-        .in('status', ['active', 'past_due'])
-        .maybeSingle();
+  const { data, error } = await supabase
+    .from('subscriptions')
+    .select('*')
+    .eq('user_id', userId)
+    .in('status', ['active', 'past_due'])
+    .maybeSingle();
 
-    if (error) {
-        console.error('Error fetching user subscription', error);
-        throw error;
-    }
+  if (error) {
+    console.error('Error fetching user subscription', error);
+    throw error;
+  }
 
-    return data as Subscription | null;
-}
+  return data as Subscription | null;
+};

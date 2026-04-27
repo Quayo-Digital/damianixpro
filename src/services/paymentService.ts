@@ -1,14 +1,32 @@
 import { supabase } from '@/integrations/supabase/client';
+import { logger } from '@/utils/logger';
+import {
+  clearPropertyTenantsRelationMissingCache,
+  isMissingSupabaseRelationError,
+  isPropertyTenantsRelationMissing,
+  markPropertyTenantsRelationMissing,
+} from '@/utils/supabaseErrors';
+import { flutterwaveInitialize, flutterwaveVerify } from '@/services/payments/edgeFunctionApi';
+import {
+  mapRentRowToPaymentUi,
+  verificationStatusToRentStatus,
+  type RentPaymentRow,
+} from '@/services/payments/rentPaymentCompat';
 
 // Payment interfaces
 export interface PaymentRequest {
   tenant_id: string;
+  /** Legacy alias: callers pass `property_tenants.id` here (active tenancy row). */
   lease_id: string;
+  /** Optional explicit `property_tenants.id`; when set, overrides `lease_id` for inserts. */
+  property_tenant_id?: string;
   amount: number;
   payment_type: 'rent' | 'deposit' | 'late_fee' | 'utility' | 'maintenance' | 'other';
   payment_method: 'bank_transfer' | 'card' | 'mobile_money' | 'ussd';
   description: string;
   due_date: string;
+  /** When true, successful Flutterwave card charges may store a recurring mandate (webhook). */
+  recurring_opt_in?: boolean;
 }
 
 export interface PaymentResponse {
@@ -31,9 +49,14 @@ export interface PaymentVerification {
   fees?: number;
 }
 
-// Nigerian Payment Providers Configuration
-const PAYSTACK_PUBLIC_KEY = import.meta.env.VITE_PAYSTACK_PUBLIC_KEY || 'pk_test_your_paystack_public_key';
-const FLUTTERWAVE_PUBLIC_KEY = import.meta.env.VITE_FLUTTERWAVE_PUBLIC_KEY || 'FLWPUBK_TEST-your_flutterwave_public_key';
+function propertyTenantIdFromRequest(paymentRequest: PaymentRequest): string {
+  return paymentRequest.property_tenant_id ?? paymentRequest.lease_id;
+}
+
+function dueDateOnly(isoOrDate: string): string {
+  if (!isoOrDate) return new Date().toISOString().split('T')[0];
+  return isoOrDate.includes('T') ? isoOrDate.split('T')[0] : isoOrDate;
+}
 
 // Payment Service Class
 export class PaymentService {
@@ -46,122 +69,74 @@ export class PaymentService {
     return PaymentService.instance;
   }
 
-  // Initialize payment with Paystack
-  async initializePaystackPayment(paymentRequest: PaymentRequest): Promise<PaymentResponse> {
-    try {
-      const response = await fetch('https://api.paystack.co/transaction/initialize', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${import.meta.env.VITE_PAYSTACK_SECRET_KEY}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          email: 'tenant@example.com', // This should come from tenant data
-          amount: paymentRequest.amount * 100, // Paystack expects amount in kobo
-          reference: this.generateReference(),
-          callback_url: `${window.location.origin}/payment/callback`,
-          metadata: {
-            tenant_id: paymentRequest.tenant_id,
-            lease_id: paymentRequest.lease_id,
-            payment_type: paymentRequest.payment_type,
-            description: paymentRequest.description,
-          },
-        }),
-      });
-
-      const data = await response.json();
-
-      if (data.status) {
-        // Save payment record to database
-        await this.savePaymentRecord({
-          ...paymentRequest,
-          reference_number: data.data.reference,
-          payment_status: 'pending',
-          gateway: 'paystack',
-          access_code: data.data.access_code,
-        });
-
-        return {
-          success: true,
-          payment_id: data.data.reference,
-          reference_number: data.data.reference,
-          authorization_url: data.data.authorization_url,
-          access_code: data.data.access_code,
-        };
-      } else {
-        return {
-          success: false,
-          error: data.message || 'Payment initialization failed',
-        };
-      }
-    } catch (error) {
-      console.error('Paystack initialization error:', error);
-      return {
-        success: false,
-        error: 'Network error occurred',
-      };
-    }
-  }
-
-  // Initialize payment with Flutterwave
+  // Initialize payment with Flutterwave (via Edge Function - secret key server-side only)
   async initializeFlutterwavePayment(paymentRequest: PaymentRequest): Promise<PaymentResponse> {
+    const ptId = propertyTenantIdFromRequest(paymentRequest);
+    const txRef = this.generateReference();
+    const paymentId = crypto.randomUUID();
+
     try {
-      const response = await fetch('https://api.flutterwave.com/v3/payments', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${import.meta.env.VITE_FLUTTERWAVE_SECRET_KEY}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          tx_ref: this.generateReference(),
-          amount: paymentRequest.amount,
-          currency: 'NGN',
-          redirect_url: `${window.location.origin}/payment/callback`,
-          customer: {
-            email: 'tenant@example.com', // This should come from tenant data
-            name: 'Tenant Name', // This should come from tenant data
-          },
-          customizations: {
-            title: 'Nigeria Homes - Rent Payment',
-            description: paymentRequest.description,
-            logo: `${window.location.origin}/logo.png`,
-          },
-          meta: {
-            tenant_id: paymentRequest.tenant_id,
-            lease_id: paymentRequest.lease_id,
-            payment_type: paymentRequest.payment_type,
-          },
-        }),
+      await this.insertPendingRentPayment({
+        id: paymentId,
+        property_tenant_id: ptId,
+        amount: paymentRequest.amount,
+        reference: txRef,
+        payment_type: paymentRequest.payment_type,
+        payment_method: 'card',
+        description: paymentRequest.description,
+        due_date: dueDateOnly(paymentRequest.due_date),
       });
 
-      const data = await response.json();
+      const { data: ptMeta } = await supabase
+        .from('property_tenants')
+        .select('property_id')
+        .eq('id', ptId)
+        .maybeSingle();
 
-      if (data.status === 'success') {
-        // Save payment record to database
-        await this.savePaymentRecord({
-          ...paymentRequest,
-          reference_number: data.data.tx_ref,
-          payment_status: 'pending',
-          gateway: 'flutterwave',
-        });
+      const result = await flutterwaveInitialize({
+        email: 'tenant@example.com',
+        amount: paymentRequest.amount,
+        tx_ref: txRef,
+        redirect_url: `${window.location.origin}/payment/callback`,
+        meta: {
+          tenant_id: paymentRequest.tenant_id,
+          lease_id: ptId,
+          property_id: ptMeta?.property_id,
+          payment_type: paymentRequest.payment_type,
+          description: paymentRequest.description,
+          internal_payment_id: paymentId,
+          recurring_opt_in: paymentRequest.recurring_opt_in === true,
+        },
+      });
 
+      if (result.status === 'success' && result.data) {
         return {
           success: true,
-          payment_id: data.data.tx_ref,
-          reference_number: data.data.tx_ref,
-          authorization_url: data.data.link,
-        };
-      } else {
-        return {
-          success: false,
-          error: data.message || 'Payment initialization failed',
+          payment_id: paymentId,
+          reference_number: result.data.tx_ref,
+          authorization_url: result.data.link,
         };
       }
-    } catch (error) {
-      console.error('Flutterwave initialization error:', error);
+
+      await supabase.from('rent_payments').update({ status: 'failed' }).eq('id', paymentId);
       return {
         success: false,
-        error: 'Network error occurred',
+        error: result.message || 'Payment initialization failed',
+      };
+    } catch (error) {
+      const errMsg = error instanceof Error ? error.message : 'Unknown error';
+      logger.error('Flutterwave initialization error', error, {
+        tenant_id: paymentRequest.tenant_id,
+        amount: paymentRequest.amount,
+      });
+      await supabase.from('rent_payments').update({ status: 'failed' }).eq('id', paymentId);
+
+      const isEdgeFunctionError = errMsg.includes('Edge Function') || errMsg.includes('non-2xx');
+      return {
+        success: false,
+        error: isEdgeFunctionError
+          ? 'Payment gateway not configured. Ask the admin to set the FLUTTERWAVE_SECRET_KEY in Supabase Edge Function secrets.'
+          : 'Network error occurred',
       };
     }
   }
@@ -170,17 +145,19 @@ export class PaymentService {
   async initializeBankTransferPayment(paymentRequest: PaymentRequest): Promise<PaymentResponse> {
     try {
       const reference = this.generateReference();
-      
-      // Save payment record to database
-      await this.savePaymentRecord({
-        ...paymentRequest,
-        reference_number: reference,
-        payment_status: 'pending',
-        gateway: 'bank_transfer',
+      const ptId = propertyTenantIdFromRequest(paymentRequest);
+
+      await this.insertPendingRentPayment({
+        id: crypto.randomUUID(),
+        property_tenant_id: ptId,
+        amount: paymentRequest.amount,
+        reference,
+        payment_type: paymentRequest.payment_type,
+        payment_method: 'bank_transfer',
+        description: paymentRequest.description,
+        due_date: dueDateOnly(paymentRequest.due_date),
       });
 
-      // In a real implementation, you would integrate with a bank API
-      // to generate dedicated account numbers for each payment
       return {
         success: true,
         payment_id: reference,
@@ -188,7 +165,10 @@ export class PaymentService {
         message: 'Bank transfer details generated. Please make payment to the provided account.',
       };
     } catch (error) {
-      console.error('Bank transfer initialization error:', error);
+      logger.error('Bank transfer initialization error', error, {
+        tenant_id: paymentRequest.tenant_id,
+        amount: paymentRequest.amount,
+      });
       return {
         success: false,
         error: 'Failed to generate bank transfer details',
@@ -200,17 +180,20 @@ export class PaymentService {
   async initializeUSSDPayment(paymentRequest: PaymentRequest): Promise<PaymentResponse> {
     try {
       const reference = this.generateReference();
-      
-      // Save payment record to database
-      await this.savePaymentRecord({
-        ...paymentRequest,
-        reference_number: reference,
-        payment_status: 'pending',
-        gateway: 'ussd',
+      const ptId = propertyTenantIdFromRequest(paymentRequest);
+
+      await this.insertPendingRentPayment({
+        id: crypto.randomUUID(),
+        property_tenant_id: ptId,
+        amount: paymentRequest.amount,
+        reference,
+        payment_type: paymentRequest.payment_type,
+        payment_method: 'mobile_money',
+        description: paymentRequest.description,
+        due_date: dueDateOnly(paymentRequest.due_date),
       });
 
-      // Generate USSD codes for different banks
-      const ussdCodes = this.generateUSSDCodes(paymentRequest.amount, reference);
+      this.generateUSSDCodes(paymentRequest.amount, reference);
 
       return {
         success: true,
@@ -219,7 +202,7 @@ export class PaymentService {
         message: `USSD payment initiated. Use any of the provided USSD codes to complete payment.`,
       };
     } catch (error) {
-      console.error('USSD initialization error:', error);
+      logger.error('USSD initialization error:', error);
       return {
         success: false,
         error: 'Failed to generate USSD payment codes',
@@ -233,9 +216,6 @@ export class PaymentService {
       let verificationData;
 
       switch (gateway) {
-        case 'paystack':
-          verificationData = await this.verifyPaystackPayment(reference);
-          break;
         case 'flutterwave':
           verificationData = await this.verifyFlutterwavePayment(reference);
           break;
@@ -246,15 +226,16 @@ export class PaymentService {
           verificationData = await this.verifyUSSDPayment(reference);
           break;
         default:
-          throw new Error('Unsupported payment gateway');
+          // Legacy 'paystack' or unknown - try Flutterwave
+          verificationData = await this.verifyFlutterwavePayment(reference);
+          break;
       }
 
-      // Update payment record in database
       await this.updatePaymentRecord(reference, verificationData);
 
       return verificationData;
     } catch (error) {
-      console.error('Payment verification error:', error);
+      logger.error('Payment verification error:', error);
       return {
         success: false,
         status: 'failed',
@@ -272,113 +253,83 @@ export class PaymentService {
     return `NH_${timestamp}_${random}`.toUpperCase();
   }
 
-  private async savePaymentRecord(paymentData: any): Promise<void> {
-    try {
-      const { error } = await supabase
-        .from('tenant_payments')
-        .insert({
-          tenant_id: paymentData.tenant_id,
-          lease_id: paymentData.lease_id,
-          amount: paymentData.amount,
-          payment_type: paymentData.payment_type,
-          payment_method: paymentData.payment_method,
-          payment_status: paymentData.payment_status,
-          reference_number: paymentData.reference_number,
-          description: paymentData.description,
-          due_date: paymentData.due_date,
-          gateway: paymentData.gateway,
-          access_code: paymentData.access_code,
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-        });
+  private async insertPendingRentPayment(params: {
+    id: string;
+    property_tenant_id: string;
+    amount: number;
+    reference: string;
+    payment_type: string;
+    payment_method: string;
+    description: string;
+    due_date: string;
+  }): Promise<void> {
+    const now = new Date().toISOString();
+    const { error } = await supabase.from('rent_payments').insert({
+      id: params.id,
+      property_tenant_id: params.property_tenant_id,
+      amount: params.amount,
+      reference: params.reference,
+      status: 'pending',
+      category: params.payment_type,
+      description: params.description,
+      due_date: params.due_date,
+      payment_method: params.payment_method,
+      payment_date: null,
+      is_recurring: false,
+      created_at: now,
+      updated_at: now,
+    });
 
-      if (error) {
-        console.error('Error saving payment record:', error);
-        throw error;
-      }
-    } catch (error) {
-      console.error('Database error:', error);
+    if (error) {
+      logger.error('Error saving rent payment record:', error);
       throw error;
     }
   }
 
-  private async updatePaymentRecord(reference: string, verificationData: PaymentVerification): Promise<void> {
+  private async updatePaymentRecord(
+    reference: string,
+    verificationData: PaymentVerification
+  ): Promise<void> {
     try {
+      const nextStatus = verificationStatusToRentStatus(verificationData.status);
+      const patch: Record<string, unknown> = {
+        status: nextStatus,
+        updated_at: new Date().toISOString(),
+      };
+
+      if (verificationData.status === 'completed' && verificationData.paid_at) {
+        patch.payment_date = verificationData.paid_at;
+      }
+
       const { error } = await supabase
-        .from('tenant_payments')
-        .update({
-          payment_status: verificationData.status,
-          gateway_response: verificationData.gateway_response,
-          paid_at: verificationData.paid_at,
-          fees: verificationData.fees,
-          updated_at: new Date().toISOString(),
-        })
-        .eq('reference_number', reference);
+        .from('rent_payments')
+        .update(patch)
+        .eq('reference', reference);
 
       if (error) {
-        console.error('Error updating payment record:', error);
+        logger.error('Error updating rent payment record:', error);
         throw error;
       }
     } catch (error) {
-      console.error('Database update error:', error);
-      throw error;
-    }
-  }
-
-  private async verifyPaystackPayment(reference: string): Promise<PaymentVerification> {
-    try {
-      const response = await fetch(`https://api.paystack.co/transaction/verify/${reference}`, {
-        headers: {
-          'Authorization': `Bearer ${import.meta.env.VITE_PAYSTACK_SECRET_KEY}`,
-        },
-      });
-
-      const data = await response.json();
-
-      if (data.status && data.data) {
-        return {
-          success: true,
-          status: data.data.status === 'success' ? 'completed' : 'failed',
-          amount: data.data.amount / 100, // Convert from kobo to naira
-          reference: data.data.reference,
-          gateway_response: data.data.gateway_response,
-          paid_at: data.data.paid_at,
-          fees: data.data.fees / 100,
-        };
-      } else {
-        return {
-          success: false,
-          status: 'failed',
-          amount: 0,
-          reference,
-          gateway_response: data.message || 'Verification failed',
-        };
-      }
-    } catch (error) {
-      console.error('Paystack verification error:', error);
+      logger.error('Database update error:', error);
       throw error;
     }
   }
 
   private async verifyFlutterwavePayment(reference: string): Promise<PaymentVerification> {
     try {
-      const response = await fetch(`https://api.flutterwave.com/v3/transactions/verify_by_reference?tx_ref=${reference}`, {
-        headers: {
-          'Authorization': `Bearer ${import.meta.env.VITE_FLUTTERWAVE_SECRET_KEY}`,
-        },
-      });
+      const result = await flutterwaveVerify(reference);
 
-      const data = await response.json();
-
-      if (data.status === 'success' && data.data) {
+      if (result.status === 'success' && result.data) {
+        const data = result.data;
         return {
           success: true,
-          status: data.data.status === 'successful' ? 'completed' : 'failed',
-          amount: data.data.amount,
-          reference: data.data.tx_ref,
-          gateway_response: data.data.processor_response,
-          paid_at: data.data.created_at,
-          fees: data.data.app_fee,
+          status: data.status === 'successful' ? 'completed' : 'failed',
+          amount: data.amount,
+          reference: data.tx_ref,
+          gateway_response: data.processor_response,
+          paid_at: data.created_at,
+          fees: data.app_fee,
         };
       } else {
         return {
@@ -386,21 +337,19 @@ export class PaymentService {
           status: 'failed',
           amount: 0,
           reference,
-          gateway_response: data.message || 'Verification failed',
+          gateway_response: result.message || 'Verification failed',
         };
       }
     } catch (error) {
-      console.error('Flutterwave verification error:', error);
+      logger.error('Flutterwave verification error', error);
       throw error;
     }
   }
 
   private async verifyBankTransferPayment(reference: string): Promise<PaymentVerification> {
-    // In a real implementation, this would check with bank APIs
-    // For now, we'll simulate manual verification
     return {
       success: true,
-      status: 'pending', // Bank transfers require manual verification
+      status: 'pending',
       amount: 0,
       reference,
       gateway_response: 'Awaiting bank confirmation',
@@ -408,11 +357,9 @@ export class PaymentService {
   }
 
   private async verifyUSSDPayment(reference: string): Promise<PaymentVerification> {
-    // In a real implementation, this would check with bank APIs
-    // For now, we'll simulate verification
     return {
       success: true,
-      status: 'pending', // USSD payments require verification
+      status: 'pending',
       amount: 0,
       reference,
       gateway_response: 'Awaiting USSD confirmation',
@@ -420,34 +367,61 @@ export class PaymentService {
   }
 
   private generateUSSDCodes(amount: number, reference: string): { [bank: string]: string } {
-    // Generate USSD codes for major Nigerian banks
     return {
-      'GTBank': `*737*1*${amount}*${reference}#`,
+      GTBank: `*737*1*${amount}*${reference}#`,
       'Access Bank': `*901*0*${amount}*${reference}#`,
       'First Bank': `*894*0*${amount}*${reference}#`,
-      'UBA': `*919*0*${amount}*${reference}#`,
+      UBA: `*919*0*${amount}*${reference}#`,
       'Zenith Bank': `*966*0*${amount}*${reference}#`,
       'Fidelity Bank': `*770*0*${amount}*${reference}#`,
     };
   }
 
-  // Get payment history for a tenant
+  private async propertyTenantIdsForTenant(tenantId: string): Promise<string[]> {
+    if (isPropertyTenantsRelationMissing()) {
+      return [];
+    }
+    const { data, error } = await supabase
+      .from('property_tenants')
+      .select('id')
+      .eq('tenant_id', tenantId);
+    if (error) {
+      if (isMissingSupabaseRelationError(error)) {
+        markPropertyTenantsRelationMissing();
+        if (import.meta.env.DEV) {
+          logger.debug('property_tenants not available; empty payment scope', { tenantId });
+        }
+      } else {
+        logger.error('Error resolving property_tenants for tenant', error);
+      }
+      return [];
+    }
+    clearPropertyTenantsRelationMissingCache();
+    return (data ?? []).map((r) => r.id);
+  }
+
+  // Get payment history for a tenant (unified rent_payments ledger)
   async getPaymentHistory(tenantId: string): Promise<any[]> {
     try {
+      const ptIds = await this.propertyTenantIdsForTenant(tenantId);
+      if (ptIds.length === 0) return [];
+
       const { data, error } = await supabase
-        .from('tenant_payments')
+        .from('rent_payments')
         .select('*')
-        .eq('tenant_id', tenantId)
+        .in('property_tenant_id', ptIds)
         .order('created_at', { ascending: false });
 
       if (error) {
-        console.error('Error fetching payment history:', error);
+        logger.error('Error fetching payment history:', error);
         return [];
       }
 
-      return data || [];
+      return (
+        (data as RentPaymentRow[] | null)?.map((row) => mapRentRowToPaymentUi(row, tenantId)) ?? []
+      );
     } catch (error) {
-      console.error('Payment history error:', error);
+      logger.error('Payment history error:', error);
       return [];
     }
   }
@@ -455,21 +429,26 @@ export class PaymentService {
   // Get pending payments for a tenant
   async getPendingPayments(tenantId: string): Promise<any[]> {
     try {
+      const ptIds = await this.propertyTenantIdsForTenant(tenantId);
+      if (ptIds.length === 0) return [];
+
       const { data, error } = await supabase
-        .from('tenant_payments')
+        .from('rent_payments')
         .select('*')
-        .eq('tenant_id', tenantId)
-        .eq('payment_status', 'pending')
+        .in('property_tenant_id', ptIds)
+        .in('status', ['pending', 'active'])
         .order('due_date', { ascending: true });
 
       if (error) {
-        console.error('Error fetching pending payments:', error);
+        logger.error('Error fetching pending payments:', error);
         return [];
       }
 
-      return data || [];
+      return (
+        (data as RentPaymentRow[] | null)?.map((row) => mapRentRowToPaymentUi(row, tenantId)) ?? []
+      );
     } catch (error) {
-      console.error('Pending payments error:', error);
+      logger.error('Pending payments error:', error);
       return [];
     }
   }

@@ -1,4 +1,4 @@
-# 🏠 Nigeria Homes - Property Management Platform
+# 🏠 DamianixPro - Property Management Platform
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
@@ -10,11 +10,12 @@
 
 ## 🌟 Overview
 
-Nigeria Homes is a comprehensive, AI-powered property management platform that revolutionizes how property owners, tenants, agents, and vendors interact in the Nigerian real estate ecosystem. Built with modern web technologies and localized for the Nigerian market, it offers enterprise-grade features with a focus on user experience and security.
+DamianixPro is a comprehensive, AI-powered property management platform that revolutionizes how property owners, tenants, agents, and vendors interact in the Nigerian real estate ecosystem. Built with modern web technologies and localized for the Nigerian market, it offers enterprise-grade features with a focus on user experience and security.
 
 ## ✨ Key Features
 
 ### 🎯 **Multi-Role Dashboard System**
+
 - **Admin Dashboard**: Complete platform oversight and management
 - **Enhanced Owner Dashboard**: Advanced portfolio management with ROI analysis
 - **Enhanced Agent Dashboard**: Lead management and commission tracking
@@ -22,13 +23,14 @@ Nigeria Homes is a comprehensive, AI-powered property management platform that r
 - **Enhanced Vendor Dashboard**: Service management and job tracking
 
 ### 💳 **Real Payment Processing**
-- **Paystack Integration**: Cards, bank transfers, USSD codes
-- **Flutterwave Support**: Alternative payment methods
+
+- **Flutterwave**: Cards, bank transfers, USSD, and mobile money
 - **Bank Transfer**: Direct transfers with account details
 - **USSD Payments**: Mobile payments for major Nigerian banks
 - **Payment History**: Complete transaction tracking and receipts
 
 ### 🤖 **AI-Powered Features**
+
 - **Smart Property Matching**: AI-driven tenant-property recommendations
 - **Predictive Maintenance**: Equipment failure prediction and alerts
 - **Document Intelligence**: OCR and automated document processing
@@ -36,6 +38,7 @@ Nigeria Homes is a comprehensive, AI-powered property management platform that r
 - **Market Analytics**: Investment insights and trend analysis
 
 ### 🔗 **Nigerian Market Integration**
+
 - **Banking APIs**: BVN, NIN verification
 - **Government Services**: CAC, land registry integration
 - **Local Compliance**: Nigerian regulations and standards
@@ -43,6 +46,7 @@ Nigeria Homes is a comprehensive, AI-powered property management platform that r
 - **Local Payment Methods**: Bank transfers, USSD, mobile money
 
 ### 🔒 **Enterprise Security**
+
 - **Row Level Security (RLS)**: Database-level access control
 - **Role-Based Access Control**: Granular permissions system
 - **Data Encryption**: End-to-end encryption for sensitive data
@@ -50,6 +54,7 @@ Nigeria Homes is a comprehensive, AI-powered property management platform that r
 - **Multi-Factor Authentication**: Enhanced security for admin accounts
 
 ### 🚀 **Advanced Technology Stack**
+
 - **Blockchain Integration**: Secure transactions and property registry
 - **VR/AR Property Tours**: Immersive viewing experiences
 - **Real-Time Analytics**: Live performance metrics
@@ -59,6 +64,7 @@ Nigeria Homes is a comprehensive, AI-powered property management platform that r
 ## 🛠️ Technology Stack
 
 ### **Frontend**
+
 - **React 18** - Modern UI library with hooks
 - **TypeScript** - Type-safe development
 - **Vite** - Fast build tool and dev server
@@ -71,6 +77,7 @@ Nigeria Homes is a comprehensive, AI-powered property management platform that r
 - **Zod** - Schema validation
 
 ### **Backend & Database**
+
 - **Supabase** - Backend-as-a-Service
 - **PostgreSQL** - Relational database
 - **Row Level Security** - Database-level security
@@ -78,23 +85,26 @@ Nigeria Homes is a comprehensive, AI-powered property management platform that r
 - **Edge Functions** - Serverless API endpoints
 
 ### **Payment Processing**
-- **Paystack** - Nigerian payment gateway
-- **Flutterwave** - Alternative payment processing
+
+- **Flutterwave** - Primary Nigerian payment gateway
 - **Stripe** - International payment support
 
 ### **AI & Analytics**
+
 - **TensorFlow.js** - Client-side machine learning
 - **Web Speech API** - Voice recognition and synthesis
 - **Chart.js** - Data visualization
 - **Custom AI Services** - Property matching and analytics
 
 ### **Maps & Location**
+
 - **Mapbox** - Interactive maps and geocoding
 - **MapLibre GL** - Open-source mapping
 
 ## 🚀 Quick Start
 
 ### Prerequisites
+
 - **Node.js** 18+ and npm
 - **Git** for version control
 - **Supabase Account** for backend services
@@ -115,7 +125,20 @@ cp .env.example .env
 
 # Start development server
 npm run dev
+
+# Apply database migrations (required for AI Preferences and other features)
+npm run db:push
 ```
+
+### AI Preferences (Smart Matching)
+
+The AI Preferences feature powers personalized property recommendations. Ensure the migration is applied:
+
+```bash
+npm run db:push
+```
+
+See [AI_PREFERENCES_SETUP.md](./AI_PREFERENCES_SETUP.md) for details.
 
 ### Environment Variables
 
@@ -126,18 +149,28 @@ Create a `.env` file in the root directory:
 VITE_SUPABASE_URL=your_supabase_url
 VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
 
-# Payment Gateways
-VITE_PAYSTACK_PUBLIC_KEY=pk_test_your_paystack_key
-VITE_PAYSTACK_SECRET_KEY=sk_test_your_paystack_secret
+# Payment Gateways (Flutterwave primary)
 VITE_FLUTTERWAVE_PUBLIC_KEY=FLWPUBK_TEST-your_flutterwave_key
-VITE_FLUTTERWAVE_SECRET_KEY=FLWSECK_TEST-your_flutterwave_secret
+# Optional legacy key if still using paystack-payments edge routes:
+# VITE_PAYSTACK_PUBLIC_KEY=pk_test_your_paystack_key
 
 # Maps
 VITE_MAPTILER_API_KEY=your_maptiler_key
 
-# Optional: AI Services
-VITE_OPENAI_API_KEY=your_openai_key
+# Optional public client keys only
+VITE_APP_NAME=Nigeria Homes
 ```
+
+Never place secret keys in `VITE_*` variables. Frontend `VITE_*` values are bundled and visible to end users.
+For Nigerian verification providers, store secrets in Supabase Edge Function runtime:
+
+```bash
+supabase secrets set YOUVERIFY_API_KEY=your_key
+supabase secrets set APPRUVE_API_KEY=your_key
+supabase secrets set FLUTTERWAVE_SECRET_KEY=your_key
+```
+
+See `SECURITY_ENV_POLICY.md` for the full environment and secret handling policy.
 
 ## 📁 Project Structure
 
@@ -167,9 +200,14 @@ supabase/
 └── functions/           # Edge functions
 ```
 
+### Runtime architecture
+
+The SPA, Supabase, **`server/`** (voice + property HTTP sidecar), and **`fintech-api/`** (ledger / wallet API) are **different processes** with different ports and webhook paths. Before changing payments or Flutterwave, read **[docs/ARCHITECTURE_RUNTIMES.md](docs/ARCHITECTURE_RUNTIMES.md)**. Before production deploy, use **[docs/DEPLOYMENT_CHECKLIST.md](docs/DEPLOYMENT_CHECKLIST.md)**. For apply → approve → lease → listing sync, see **[docs/LEASING_WORKFLOW.md](docs/LEASING_WORKFLOW.md)**.
+
 ## 🎯 User Roles & Permissions
 
 ### **Admin**
+
 - Complete platform oversight
 - User management and role assignment
 - System configuration and settings
@@ -177,6 +215,7 @@ supabase/
 - Payment and subscription management
 
 ### **Owner**
+
 - Property portfolio management
 - Tenant management and screening
 - Financial analytics and reporting
@@ -184,6 +223,7 @@ supabase/
 - Document management
 
 ### **Agent**
+
 - Lead management and tracking
 - Property assignment and showing
 - Commission tracking
@@ -191,6 +231,7 @@ supabase/
 - Performance analytics
 
 ### **Tenant**
+
 - Property search and application
 - Lease management
 - Payment processing
@@ -198,6 +239,7 @@ supabase/
 - Document upload and management
 
 ### **Vendor**
+
 - Service category management
 - Job assignment and tracking
 - Invoice and payment management
@@ -207,11 +249,13 @@ supabase/
 ## 🧪 Testing & Quality Assurance
 
 ### **Testing Pages**
+
 - **`/testing`** - Comprehensive testing suite
 - **`/payment-testing`** - Payment functionality testing
 - **`/platform-optimization`** - Performance and security assessment
 
 ### **Available Tests**
+
 - **Payment System Tests** - End-to-end payment processing
 - **Dashboard Tests** - All enhanced dashboard functionality
 - **AI Feature Tests** - Smart matching and predictive analytics
@@ -279,6 +323,7 @@ npm run preview
 ```
 
 ### **Environment Setup**
+
 1. Set up production Supabase project
 2. Configure payment gateway accounts
 3. Set up domain and SSL certificates
@@ -286,6 +331,7 @@ npm run preview
 5. Deploy to your preferred hosting platform
 
 ### **Recommended Hosting**
+
 - **Vercel** - Optimal for React applications
 - **Netlify** - Great for static site deployment
 - **Railway** - Full-stack application hosting
@@ -306,6 +352,7 @@ Access optimization tools at `/platform-optimization`
 ## 🔒 Security
 
 ### **Security Features**
+
 - **HTTPS Enforcement** - All traffic encrypted
 - **Content Security Policy** - XSS protection
 - **Row Level Security** - Database access control
@@ -314,6 +361,7 @@ Access optimization tools at `/platform-optimization`
 - **Audit Logging** - Complete activity tracking
 
 ### **Security Best Practices**
+
 - Regular security audits
 - Dependency vulnerability scanning
 - Secure environment variable management
@@ -323,6 +371,7 @@ Access optimization tools at `/platform-optimization`
 ## 🌍 Nigerian Market Features
 
 ### **Localization**
+
 - **Currency**: Nigerian Naira (₦) support
 - **Language**: English (Nigerian variant)
 - **Time Zone**: West Africa Time (WAT)
@@ -330,12 +379,14 @@ Access optimization tools at `/platform-optimization`
 - **Addresses**: Nigerian address formats
 
 ### **Payment Methods**
+
 - **Bank Transfer** - Direct bank account transfers
 - **USSD Codes** - Mobile banking integration
 - **Card Payments** - Visa, Mastercard, Verve
 - **Mobile Money** - MTN, Airtel, Glo, 9mobile
 
 ### **Banking Integration**
+
 - **BVN Verification** - Bank Verification Number
 - **NIN Integration** - National Identification Number
 - **CAC Integration** - Corporate Affairs Commission
@@ -344,6 +395,7 @@ Access optimization tools at `/platform-optimization`
 ## 📚 API Documentation
 
 ### **Authentication Endpoints**
+
 ```typescript
 POST /auth/signup        # User registration
 POST /auth/signin        # User login
@@ -352,6 +404,7 @@ GET  /auth/user          # Get current user
 ```
 
 ### **Property Endpoints**
+
 ```typescript
 GET    /api/properties           # List properties
 POST   /api/properties           # Create property
@@ -361,6 +414,7 @@ DELETE /api/properties/:id       # Delete property
 ```
 
 ### **Payment Endpoints**
+
 ```typescript
 POST /api/payments/initialize    # Initialize payment
 POST /api/payments/verify        # Verify payment
@@ -369,6 +423,7 @@ POST /api/payments/refund        # Process refund
 ```
 
 ### **Tenant Endpoints**
+
 ```typescript
 GET  /api/tenants               # List tenants
 POST /api/tenants               # Create tenant
@@ -378,9 +433,10 @@ PUT  /api/tenants/:id           # Update tenant
 
 ## 🤝 Contributing
 
-We welcome contributions to Nigeria Homes! Please follow these guidelines:
+We welcome contributions to DamianixPro! Please follow these guidelines:
 
 ### **Development Process**
+
 1. Fork the repository
 2. Create a feature branch (`git checkout -b feature/amazing-feature`)
 3. Commit your changes (`git commit -m 'Add amazing feature'`)
@@ -388,6 +444,7 @@ We welcome contributions to Nigeria Homes! Please follow these guidelines:
 5. Open a Pull Request
 
 ### **Code Standards**
+
 - Follow TypeScript best practices
 - Use ESLint and Prettier configurations
 - Write comprehensive tests
@@ -395,6 +452,7 @@ We welcome contributions to Nigeria Homes! Please follow these guidelines:
 - Follow conventional commit messages
 
 ### **Pull Request Process**
+
 1. Update documentation for new features
 2. Add tests for new functionality
 3. Ensure all tests pass
@@ -408,6 +466,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ## 🆘 Support
 
 ### **Getting Help**
+
 - **Documentation**: Check this README and inline code comments
 - **Issues**: Report bugs and request features on GitHub Issues
 - **Discussions**: Join community discussions on GitHub Discussions
@@ -418,6 +477,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 #### **Common Issues**
 
 **Build Errors**
+
 ```bash
 # Clear node_modules and reinstall
 rm -rf node_modules package-lock.json
@@ -425,6 +485,7 @@ npm install
 ```
 
 **Database Connection Issues**
+
 ```bash
 # Check environment variables
 echo $VITE_SUPABASE_URL
@@ -432,6 +493,7 @@ echo $VITE_SUPABASE_ANON_KEY
 ```
 
 **Payment Integration Issues**
+
 - Verify API keys in environment variables
 - Check payment gateway dashboard for errors
 - Review network requests in browser dev tools
@@ -439,36 +501,42 @@ echo $VITE_SUPABASE_ANON_KEY
 ## 🗺️ Roadmap
 
 ### **Phase 1: Core Platform** ✅
+
 - Multi-role dashboard system
 - Payment processing integration
 - Basic property management
 - User authentication and authorization
 
 ### **Phase 2: AI Enhancement** ✅
+
 - Smart property matching
 - Predictive maintenance
 - Document intelligence
 - Voice assistant integration
 
 ### **Phase 3: Market Integration** ✅
+
 - Nigerian banking APIs
 - Government service integration
 - Local payment methods
 - Compliance features
 
 ### **Phase 4: Advanced Features** ✅
+
 - Blockchain integration
 - VR/AR property tours
 - Real-time analytics
 - Subscription models
 
 ### **Phase 5: Optimization & Polish** 🚧
+
 - Performance optimization
 - Security hardening
 - Mobile app development
 - International expansion
 
 ### **Future Enhancements**
+
 - **Mobile App**: React Native companion app
 - **WhatsApp Integration**: Communication via WhatsApp Business
 - **IoT Integration**: Smart building management
@@ -498,7 +566,8 @@ The platform tracks comprehensive metrics:
 
 **Built with ❤️ for the Nigerian real estate market**
 
-*Nigeria Homes - Revolutionizing Property Management in Nigeria*
+_DamianixPro - Revolutionizing Property Management in Nigeria_
+
 - Edit files directly within the Codespace and commit and push your changes once you're done.
 
 ## What technologies are used for this project?
@@ -513,12 +582,31 @@ This project is built with:
 
 ## How can I deploy this project?
 
-Simply open [Lovable](https://lovable.dev/projects/034bc93d-59a6-438e-940a-1d2e95f81206) and click on Share -> Publish.
+This project can be deployed to any hosting platform that supports Node.js and Vite:
 
-## Can I connect a custom domain to my Lovable project?
+- **Vercel**: Connect your GitHub repository and deploy automatically
+- **Netlify**: Connect your repository and configure build settings
+- **Railway**: Deploy directly from GitHub
+- **AWS Amplify**: Connect repository and configure build settings
+- **Self-hosted**: Build with `npm run build` and serve the `dist` folder
 
-Yes, you can!
+### Build for Production
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+```bash
+npm run build
+```
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
+The production build will be in the `dist` folder.
+
+## Can I connect a custom domain?
+
+Yes! Most hosting platforms allow you to connect custom domains:
+
+- **Vercel**: Project Settings > Domains
+- **Netlify**: Site Settings > Domain Management
+- **Railway**: Settings > Domains
+
+After connecting your domain, make sure to update:
+
+- Supabase redirect URLs (Authentication > URL Configuration)
+- Google OAuth redirect URIs (if using Google login)

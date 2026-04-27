@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
@@ -14,23 +13,25 @@ interface BlogCardProps {
 
 export function BlogCard({ post, className, featured = false }: BlogCardProps) {
   return (
-    <Card className={cn(
-      "overflow-hidden transition-all hover:shadow-md", 
-      featured ? "md:grid md:grid-cols-2 md:items-stretch" : "",
-      className
-    )}>
-      <div className={cn("relative", featured ? "" : "")}>
+    <Card
+      className={cn(
+        'overflow-hidden transition-all hover:shadow-md',
+        featured ? 'md:grid md:grid-cols-2 md:items-stretch' : '',
+        className
+      )}
+    >
+      <div className={cn('relative', featured ? '' : '')}>
         <Link to={`/blog/${post.slug}`}>
           <AspectRatio ratio={16 / 9}>
-            <img 
-              src={post.coverImage} 
-              alt={post.title} 
-              className="object-cover h-full w-full rounded-t-lg"
+            <img
+              src={post.coverImage}
+              alt={post.title}
+              className="h-full w-full rounded-t-lg object-cover"
             />
           </AspectRatio>
         </Link>
       </div>
-      <div className="flex flex-col h-full">
+      <div className="flex h-full flex-col">
         <CardHeader className="p-4 pb-2">
           <div className="space-y-1">
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
@@ -39,38 +40,35 @@ export function BlogCard({ post, className, featured = false }: BlogCardProps) {
               <span>{post.readTime}</span>
             </div>
             <Link to={`/blog/${post.slug}`} className="hover:underline">
-              <h3 className={cn(
-                "font-semibold line-clamp-2 text-foreground hover:text-primary",
-                featured ? "text-2xl" : "text-lg"
-              )}>
+              <h3
+                className={cn(
+                  'line-clamp-2 font-semibold text-foreground hover:text-primary',
+                  featured ? 'text-2xl' : 'text-lg'
+                )}
+              >
                 {post.title}
               </h3>
             </Link>
           </div>
         </CardHeader>
-        <CardContent className="p-4 pt-0 flex-1">
-          <p className={cn(
-            "text-muted-foreground",
-            featured ? "line-clamp-3" : "line-clamp-2"
-          )}>
+        <CardContent className="flex-1 p-4 pt-0">
+          <p className={cn('text-muted-foreground', featured ? 'line-clamp-3' : 'line-clamp-2')}>
             {post.excerpt}
           </p>
         </CardContent>
-        <CardFooter className="p-4 pt-0 flex items-center gap-2">
+        <CardFooter className="flex items-center gap-2 p-4 pt-0">
           <div className="flex flex-wrap gap-2">
             {post.tags.slice(0, 2).map((tag, index) => (
-              <Link 
-                key={index} 
+              <Link
+                key={index}
                 to={`/blog/tag/${tag.toLowerCase().replace(/\s+/g, '-')}`}
-                className="text-xs px-2 py-1 bg-secondary rounded-full hover:bg-secondary/80 transition-colors"
+                className="rounded-full bg-secondary px-2 py-1 text-xs transition-colors hover:bg-secondary/80"
               >
                 {tag}
               </Link>
             ))}
           </div>
-          <div className="ml-auto text-sm text-muted-foreground">
-            By {post.author}
-          </div>
+          <div className="ml-auto text-sm text-muted-foreground">By {post.author}</div>
         </CardFooter>
       </div>
     </Card>

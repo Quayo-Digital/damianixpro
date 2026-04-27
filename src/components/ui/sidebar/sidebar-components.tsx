@@ -1,4 +1,3 @@
-
 // Re-export all components from the components directory
 export {
   Sidebar,
@@ -9,5 +8,5 @@ export {
   SidebarInput,
   SidebarRail,
   SidebarSeparator,
-  SidebarTrigger
+  SidebarTrigger,
 } from './components';

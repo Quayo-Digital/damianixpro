@@ -1,5 +1,4 @@
-
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from '@/integrations/supabase/client';
 
 export interface Property {
   id: string;
@@ -18,9 +17,7 @@ export interface Tenant {
 }
 
 export async function fetchTenants(): Promise<Tenant[]> {
-  const { data: tenantsData, error: tenantsError } = await supabase
-    .from('tenants')
-    .select('*');
+  const { data: tenantsData, error: tenantsError } = await supabase.from('tenants').select('*');
 
   if (tenantsError) throw tenantsError;
 

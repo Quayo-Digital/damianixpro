@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -9,13 +8,14 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
+  DialogDescription,
 } from '@/components/ui/dialog';
 import {
-  Select, 
-  SelectContent, 
-  SelectItem, 
-  SelectTrigger, 
-  SelectValue 
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
 } from '@/components/ui/select';
 import { CommunicationTemplate } from '@/utils/communicationTemplates';
 
@@ -31,11 +31,11 @@ interface TemplateDialogProps {
   }) => void;
 }
 
-export function TemplateDialog({ 
-  open, 
-  onOpenChange, 
-  editingTemplate, 
-  onSave 
+export function TemplateDialog({
+  open,
+  onOpenChange,
+  editingTemplate,
+  onSave,
 }: TemplateDialogProps) {
   const [title, setTitle] = useState('');
   const [subject, setSubject] = useState('');
@@ -72,24 +72,27 @@ export function TemplateDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[600px]">
         <DialogHeader>
-          <DialogTitle>
-            {editingTemplate ? 'Edit Template' : 'Create New Template'}
-          </DialogTitle>
+          <DialogTitle>{editingTemplate ? 'Edit Template' : 'Create New Template'}</DialogTitle>
+          <DialogDescription>
+            {editingTemplate
+              ? 'Update the template details below.'
+              : 'Create a reusable communication template for tenant communications.'}
+          </DialogDescription>
         </DialogHeader>
-        
+
         <div className="space-y-4 py-4">
           <div className="space-y-2">
             <label className="text-sm font-medium">Title</label>
-            <Input 
+            <Input
               placeholder="Enter template title"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
             />
           </div>
-          
+
           <div className="space-y-2">
             <label className="text-sm font-medium">Subject (Optional)</label>
-            <Input 
+            <Input
               placeholder="Enter email subject line"
               value={subject}
               onChange={(e) => setSubject(e.target.value)}
@@ -98,24 +101,25 @@ export function TemplateDialog({
               This will be used as the subject line for email communications
             </p>
           </div>
-          
+
           <div className="space-y-2">
             <label className="text-sm font-medium">Message Body</label>
-            <Textarea 
-              placeholder="Enter template message" 
+            <Textarea
+              placeholder="Enter template message"
               className="min-h-[150px]"
               value={body}
               onChange={(e) => setBody(e.target.value)}
             />
             <p className="text-xs text-muted-foreground">
-              Use placeholder tags like [Tenant Name], [Amount], [Due Date], etc. These will be replaced with actual values when using the template.
+              Use placeholder tags like [Tenant Name], [Amount], [Due Date], etc. These will be
+              replaced with actual values when using the template.
             </p>
           </div>
-          
+
           <div className="space-y-2">
             <label className="text-sm font-medium">Category</label>
-            <Select 
-              value={category} 
+            <Select
+              value={category}
               onValueChange={(value) => setCategory(value as CommunicationTemplate['category'])}
             >
               <SelectTrigger>
@@ -131,7 +135,7 @@ export function TemplateDialog({
             </Select>
           </div>
         </div>
-        
+
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)}>
             Cancel

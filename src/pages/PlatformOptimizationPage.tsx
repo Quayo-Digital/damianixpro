@@ -9,16 +9,18 @@ import { TrendingUp, Zap, Shield, Smartphone, Activity } from 'lucide-react';
 const PlatformOptimizationPage: React.FC = () => {
   return (
     <PageLayout>
-      <PageContent 
-        title="Platform Optimization & Polish" 
+      <PageContent
+        title="Platform Optimization & Polish"
         description="Comprehensive platform assessment, performance monitoring, and optimization tools"
       >
         <div className="space-y-6">
           <Alert>
             <TrendingUp className="h-4 w-4" />
             <AlertDescription>
-              This comprehensive optimization suite analyzes your platform across 8 key areas: Performance, Security, Mobile Responsiveness, 
-              User Experience, Database Optimization, SEO, Accessibility, and Documentation. Use these tools to achieve production-ready quality.
+              This comprehensive optimization suite analyzes your platform across 8 key areas:
+              Performance, Security, Mobile Responsiveness, User Experience, Database Optimization,
+              SEO, Accessibility, and Documentation. Use these tools to achieve production-ready
+              quality.
             </AlertDescription>
           </Alert>
 
@@ -87,7 +89,8 @@ const PlatformOptimizationPage: React.FC = () => {
                 Platform Optimization Suite
               </CardTitle>
               <CardDescription>
-                Comprehensive platform assessment and optimization tools for production-ready quality
+                Comprehensive platform assessment and optimization tools for production-ready
+                quality
               </CardDescription>
             </CardHeader>
             <CardContent>

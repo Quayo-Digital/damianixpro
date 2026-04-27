@@ -1,8 +1,16 @@
-
 export interface Tenant {
   id: string;
   user_id: string;
   name: string;
+  property: string;
+  property_id: string;
+}
+
+export interface LandlordAgent {
+  id: string; // profile id (user_id)
+  user_id: string; // same as id, for consistency
+  name: string;
+  role: 'owner' | 'agent';
   property: string;
   property_id: string;
 }

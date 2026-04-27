@@ -1,6 +1,6 @@
 // Intelligent Document Processing System Types
 
-export type DocumentType = 
+export type DocumentType =
   | 'lease_agreement'
   | 'tenant_application'
   | 'id_card'
@@ -18,7 +18,7 @@ export type DocumentType =
   | 'contract'
   | 'other';
 
-export type DocumentStatus = 
+export type DocumentStatus =
   | 'uploaded'
   | 'processing'
   | 'processed'
@@ -29,7 +29,7 @@ export type DocumentStatus =
 
 export type ExtractionConfidence = 'high' | 'medium' | 'low';
 
-export type ProcessingStage = 
+export type ProcessingStage =
   | 'upload'
   | 'classification'
   | 'ocr_extraction'
@@ -162,7 +162,12 @@ export interface DocumentValidation {
 export interface ValidationRule {
   rule_id: string;
   rule_name: string;
-  rule_type: 'required_field' | 'format_check' | 'date_validation' | 'amount_validation' | 'cross_reference';
+  rule_type:
+    | 'required_field'
+    | 'format_check'
+    | 'date_validation'
+    | 'amount_validation'
+    | 'cross_reference';
   rule_description: string;
   is_critical: boolean;
 }
@@ -194,7 +199,12 @@ export interface FraudDetection {
 }
 
 export interface FraudAnomaly {
-  anomaly_type: 'altered_text' | 'inconsistent_fonts' | 'suspicious_patterns' | 'duplicate_document' | 'invalid_format';
+  anomaly_type:
+    | 'altered_text'
+    | 'inconsistent_fonts'
+    | 'suspicious_patterns'
+    | 'duplicate_document'
+    | 'invalid_format';
   description: string;
   confidence: number;
   location?: {
@@ -208,7 +218,12 @@ export interface FraudAnomaly {
 export interface DocumentWorkflow {
   id: string;
   document_id: string;
-  workflow_type: 'tenant_onboarding' | 'lease_processing' | 'kyc_verification' | 'maintenance_claim' | 'payment_verification';
+  workflow_type:
+    | 'tenant_onboarding'
+    | 'lease_processing'
+    | 'kyc_verification'
+    | 'maintenance_claim'
+    | 'payment_verification';
   current_stage: string;
   stages: WorkflowStage[];
   assigned_to?: string;
@@ -258,7 +273,12 @@ export interface TemplateField {
 
 export interface DocumentInsight {
   id: string;
-  insight_type: 'processing_efficiency' | 'error_patterns' | 'compliance_trends' | 'fraud_detection' | 'user_behavior';
+  insight_type:
+    | 'processing_efficiency'
+    | 'error_patterns'
+    | 'compliance_trends'
+    | 'fraud_detection'
+    | 'user_behavior';
   title: string;
   description: string;
   metrics: Record<string, number>;

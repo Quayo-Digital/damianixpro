@@ -1,7 +1,13 @@
-
 import { useState } from 'react';
-import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Button } from '@/components/ui/button';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
 import { Plus } from 'lucide-react';
 import { MaintenanceRequestForm } from './MaintenanceRequestForm';
 import { MaintenanceRequest } from './maintenance-data';
@@ -12,11 +18,11 @@ interface MaintenanceRequestDialogProps {
 
 export function MaintenanceRequestDialog({ onSuccess }: MaintenanceRequestDialogProps) {
   const [open, setOpen] = useState(false);
-  
+
   const handleClose = () => {
     setOpen(false);
   };
-  
+
   const handleSuccess = (newRequest: MaintenanceRequest) => {
     if (onSuccess) {
       onSuccess(newRequest);

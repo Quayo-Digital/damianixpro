@@ -4,6 +4,7 @@
  */
 
 import { supabase } from '@/integrations/supabase/client';
+import { logger } from '@/utils/logger';
 import { releasePendingFunds } from '../api/wallets';
 import { getBookingById } from '../api/bookings';
 import { BookingStatus } from '../types';
@@ -12,9 +13,7 @@ import { BookingStatus } from '../types';
  * Release funds for completed bookings after clearance period
  * Should be called by a scheduled job/cron
  */
-export async function releaseFundsForCompletedBookings(
-  clearanceHours: number = 24
-): Promise<{
+export async function releaseFundsForCompletedBookings(clearanceHours: number = 24): Promise<{
   released: number;
   errors: string[];
 }> {
@@ -57,20 +56,22 @@ export async function releaseFundsForCompletedBookings(
         );
 
         released++;
-        console.log(`Released funds for booking ${booking.id}`);
+        logger.info('Released funds for booking', { bookingId: booking.id });
       } catch (bookingError) {
         const errorMsg = `Failed to release funds for booking ${booking.id}: ${bookingError instanceof Error ? bookingError.message : 'Unknown error'}`;
         errors.push(errorMsg);
-        console.error(errorMsg);
+        logger.error('Failed to release funds for booking', bookingError, {
+          bookingId: booking.id,
+        });
       }
     }
 
     return { released, errors };
   } catch (error) {
-    console.error('Error releasing funds:', error);
+    logger.error('Error releasing funds', error);
     return {
       released,
-      errors: [...errors, error instanceof Error ? error.message : 'Unknown error']
+      errors: [...errors, error instanceof Error ? error.message : 'Unknown error'],
     };
   }
 }
@@ -84,42 +85,38 @@ export async function releaseFundsForBooking(bookingId: string): Promise<{
 }> {
   try {
     const booking = await getBookingById(bookingId);
-    
+
     if (!booking) {
       return {
         success: false,
-        error: 'Booking not found'
+        error: 'Booking not found',
       };
     }
 
     if (booking.status !== BookingStatus.COMPLETED) {
       return {
         success: false,
-        error: 'Booking must be completed before releasing funds'
+        error: 'Booking must be completed before releasing funds',
       };
     }
 
     if (!booking.owner_id || !booking.payout_amount) {
       return {
         success: false,
-        error: 'Invalid booking data for payout'
+        error: 'Invalid booking data for payout',
       };
     }
 
-    await releasePendingFunds(
-      booking.owner_id,
-      Number(booking.payout_amount),
-      bookingId
-    );
+    await releasePendingFunds(booking.owner_id, Number(booking.payout_amount), bookingId);
 
     return {
-      success: true
+      success: true,
     };
   } catch (error) {
-    console.error('Release funds error:', error);
+    logger.error('Release funds error', error);
     return {
       success: false,
-      error: error instanceof Error ? error.message : 'Failed to release funds'
+      error: error instanceof Error ? error.message : 'Failed to release funds',
     };
   }
 }
@@ -127,15 +124,14 @@ export async function releaseFundsForBooking(bookingId: string): Promise<{
 /**
  * Get bookings ready for fund release
  */
-export async function getBookingsReadyForRelease(
-  clearanceHours: number = 24
-): Promise<any[]> {
+export async function getBookingsReadyForRelease(clearanceHours: number = 24): Promise<any[]> {
   const clearanceDate = new Date();
   clearanceDate.setHours(clearanceDate.getHours() - clearanceHours);
 
   const { data, error } = await supabase
     .from('bookings')
-    .select(`
+    .select(
+      `
       id,
       checkout_date,
       owner_id,
@@ -147,7 +143,8 @@ export async function getBookingsReadyForRelease(
           name
         )
       )
-    `)
+    `
+    )
     .eq('status', BookingStatus.COMPLETED)
     .lte('checkout_date', clearanceDate.toISOString().split('T')[0])
     .not('payout_amount', 'is', null)
@@ -156,4 +153,3 @@ export async function getBookingsReadyForRelease(
   if (error) throw error;
   return data || [];
 }
-

@@ -45,7 +45,7 @@ export class ImageOptimizer {
       maxHeight: 300,
       lazy: true,
       placeholder: 'blur' as const,
-      nigerianOptimized: true
+      nigerianOptimized: true,
     },
     property_gallery: {
       quality: 80,
@@ -54,7 +54,7 @@ export class ImageOptimizer {
       maxHeight: 600,
       lazy: true,
       placeholder: 'skeleton' as const,
-      nigerianOptimized: true
+      nigerianOptimized: true,
     },
     profile_avatar: {
       quality: 85,
@@ -63,7 +63,7 @@ export class ImageOptimizer {
       maxHeight: 200,
       lazy: false,
       placeholder: 'empty' as const,
-      nigerianOptimized: true
+      nigerianOptimized: true,
     },
     hero_banner: {
       quality: 70,
@@ -72,7 +72,7 @@ export class ImageOptimizer {
       maxHeight: 600,
       lazy: false,
       placeholder: 'blur' as const,
-      nigerianOptimized: true
+      nigerianOptimized: true,
     },
     document_preview: {
       quality: 90,
@@ -81,13 +81,13 @@ export class ImageOptimizer {
       maxHeight: 800,
       lazy: true,
       placeholder: 'skeleton' as const,
-      nigerianOptimized: true
-    }
+      nigerianOptimized: true,
+    },
   };
 
   // Generate responsive image URLs with Nigerian network optimization
   generateResponsiveUrls(
-    baseUrl: string, 
+    baseUrl: string,
     preset: keyof typeof ImageOptimizer.NIGERIAN_PRESETS,
     sizes?: ResponsiveImageSizes
   ): {
@@ -101,46 +101,48 @@ export class ImageOptimizer {
     const defaultSizes: ResponsiveImageSizes = {
       mobile: { width: Math.min(config.maxWidth, 400), height: Math.min(config.maxHeight, 300) },
       tablet: { width: Math.min(config.maxWidth, 600), height: Math.min(config.maxHeight, 450) },
-      desktop: { width: config.maxWidth, height: config.maxHeight }
+      desktop: { width: config.maxWidth, height: config.maxHeight },
     };
 
     const actualSizes = sizes || defaultSizes;
 
     // Nigerian network-optimized quality settings
-    const nigerianQuality = config.nigerianOptimized ? Math.max(config.quality - 10, 60) : config.quality;
+    const nigerianQuality = config.nigerianOptimized
+      ? Math.max(config.quality - 10, 60)
+      : config.quality;
 
     return {
       mobile: this.buildImageUrl(baseUrl, {
         ...config,
         quality: nigerianQuality,
         maxWidth: actualSizes.mobile.width,
-        maxHeight: actualSizes.mobile.height
+        maxHeight: actualSizes.mobile.height,
       }),
       tablet: this.buildImageUrl(baseUrl, {
         ...config,
         quality: nigerianQuality + 5,
         maxWidth: actualSizes.tablet.width,
-        maxHeight: actualSizes.tablet.height
+        maxHeight: actualSizes.tablet.height,
       }),
       desktop: this.buildImageUrl(baseUrl, {
         ...config,
         maxWidth: actualSizes.desktop.width,
-        maxHeight: actualSizes.desktop.height
+        maxHeight: actualSizes.desktop.height,
       }),
       webp: this.buildImageUrl(baseUrl, { ...config, format: 'webp' }),
-      fallback: this.buildImageUrl(baseUrl, { ...config, format: 'jpeg' })
+      fallback: this.buildImageUrl(baseUrl, { ...config, format: 'jpeg' }),
     };
   }
 
   // Build optimized image URL with query parameters
   private buildImageUrl(baseUrl: string, config: ImageOptimizationConfig): string {
     const params = new URLSearchParams();
-    
+
     params.set('q', config.quality.toString());
     params.set('f', config.format);
     params.set('w', config.maxWidth.toString());
     params.set('h', config.maxHeight.toString());
-    
+
     if (config.nigerianOptimized) {
       params.set('ng', '1'); // Nigerian optimization flag
     }
@@ -157,25 +159,27 @@ export class ImageOptimizer {
     try {
       const img = new Image();
       img.crossOrigin = 'anonymous';
-      
+
       return new Promise((resolve) => {
         img.onload = () => {
           // Create small blur placeholder (40x40 for Nigerian networks)
           this.canvas!.width = 40;
           this.canvas!.height = 40;
-          
+
           this.ctx!.filter = 'blur(4px)';
           this.ctx!.drawImage(img, 0, 0, 40, 40);
-          
+
           const blurDataUrl = this.canvas!.toDataURL('image/jpeg', 0.1);
           resolve(blurDataUrl);
         };
-        
+
         img.onerror = () => {
           // Fallback placeholder
-          resolve('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHZpZXdCb3g9IjAgMCA0MCA0MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjQwIiBoZWlnaHQ9IjQwIiBmaWxsPSIjRjNGNEY2Ii8+Cjwvc3ZnPgo=');
+          resolve(
+            'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHZpZXdCb3g9IjAgMCA0MCA0MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjQwIiBoZWlnaHQ9IjQwIiBmaWxsPSIjRjNGNEY2Ii8+Cjwvc3ZnPgo='
+          );
         };
-        
+
         img.src = imageUrl;
       });
     } catch (error) {
@@ -185,48 +189,57 @@ export class ImageOptimizer {
   }
 
   // Compress image for Nigerian networks
-  async compressImage(file: File, preset: keyof typeof ImageOptimizer.NIGERIAN_PRESETS): Promise<File> {
+  async compressImage(
+    file: File,
+    preset: keyof typeof ImageOptimizer.NIGERIAN_PRESETS
+  ): Promise<File> {
     if (!this.canvas || !this.ctx) {
       return file;
     }
 
     const config = ImageOptimizer.NIGERIAN_PRESETS[preset];
-    
+
     return new Promise((resolve) => {
       const img = new Image();
-      
+
       img.onload = () => {
         // Calculate optimal dimensions
         const { width, height } = this.calculateOptimalDimensions(
-          img.width, 
-          img.height, 
-          config.maxWidth, 
+          img.width,
+          img.height,
+          config.maxWidth,
           config.maxHeight
         );
-        
+
         this.canvas!.width = width;
         this.canvas!.height = height;
-        
+
         // Clear and draw
         this.ctx!.clearRect(0, 0, width, height);
         this.ctx!.drawImage(img, 0, 0, width, height);
-        
+
         // Convert to blob with Nigerian optimization
-        const quality = config.nigerianOptimized ? config.quality / 100 * 0.8 : config.quality / 100;
-        
-        this.canvas!.toBlob((blob) => {
-          if (blob) {
-            const compressedFile = new File([blob], file.name, {
-              type: config.format === 'webp' ? 'image/webp' : 'image/jpeg',
-              lastModified: Date.now()
-            });
-            resolve(compressedFile);
-          } else {
-            resolve(file);
-          }
-        }, config.format === 'webp' ? 'image/webp' : 'image/jpeg', quality);
+        const quality = config.nigerianOptimized
+          ? (config.quality / 100) * 0.8
+          : config.quality / 100;
+
+        this.canvas!.toBlob(
+          (blob) => {
+            if (blob) {
+              const compressedFile = new File([blob], file.name, {
+                type: config.format === 'webp' ? 'image/webp' : 'image/jpeg',
+                lastModified: Date.now(),
+              });
+              resolve(compressedFile);
+            } else {
+              resolve(file);
+            }
+          },
+          config.format === 'webp' ? 'image/webp' : 'image/jpeg',
+          quality
+        );
       };
-      
+
       img.onerror = () => resolve(file);
       img.src = URL.createObjectURL(file);
     });
@@ -234,37 +247,37 @@ export class ImageOptimizer {
 
   // Calculate optimal dimensions maintaining aspect ratio
   private calculateOptimalDimensions(
-    originalWidth: number, 
-    originalHeight: number, 
-    maxWidth: number, 
+    originalWidth: number,
+    originalHeight: number,
+    maxWidth: number,
     maxHeight: number
   ): { width: number; height: number } {
     const aspectRatio = originalWidth / originalHeight;
-    
+
     let width = originalWidth;
     let height = originalHeight;
-    
+
     if (width > maxWidth) {
       width = maxWidth;
       height = width / aspectRatio;
     }
-    
+
     if (height > maxHeight) {
       height = maxHeight;
       width = height * aspectRatio;
     }
-    
+
     return { width: Math.round(width), height: Math.round(height) };
   }
 
   // Check if WebP is supported
   static supportsWebP(): boolean {
     if (typeof window === 'undefined') return false;
-    
+
     const canvas = document.createElement('canvas');
     canvas.width = 1;
     canvas.height = 1;
-    
+
     return canvas.toDataURL('image/webp').indexOf('data:image/webp') === 0;
   }
 
@@ -301,29 +314,29 @@ export class ImageOptimizer {
     return new Promise((resolve) => {
       const startTime = performance.now();
       const img = new Image();
-      
+
       img.onload = () => {
         const loadTime = performance.now() - startTime;
-        
+
         // Estimate size (approximate)
         const size = img.naturalWidth * img.naturalHeight * 3; // RGB estimate
-        
+
         resolve({
           loadTime,
           size,
-          success: true
+          success: true,
         });
       };
-      
+
       img.onerror = () => {
         const loadTime = performance.now() - startTime;
         resolve({
           loadTime,
           size: 0,
-          success: false
+          success: false,
         });
       };
-      
+
       img.src = imageUrl;
     });
   }
@@ -340,17 +353,17 @@ export const getOptimizedImageProps = (
 ) => {
   const urls = imageOptimizer.generateResponsiveUrls(src, preset);
   const config = ImageOptimizer.NIGERIAN_PRESETS[preset];
-  
+
   return {
     src: urls.fallback,
     srcSet: `${urls.mobile} 400w, ${urls.tablet} 600w, ${urls.desktop} 800w`,
     sizes: '(max-width: 400px) 400px, (max-width: 600px) 600px, 800px',
     alt,
-    loading: config.lazy ? 'lazy' as const : 'eager' as const,
+    loading: config.lazy ? ('lazy' as const) : ('eager' as const),
     decoding: 'async' as const,
     style: {
-      aspectRatio: `${config.maxWidth}/${config.maxHeight}`
-    }
+      aspectRatio: `${config.maxWidth}/${config.maxHeight}`,
+    },
   };
 };
 
@@ -363,17 +376,17 @@ export const useNigerianImageLoading = () => {
     if (typeof window !== 'undefined' && 'connection' in navigator) {
       const connection = (navigator as any).connection;
       setConnectionType(connection?.effectiveType || 'unknown');
-      
+
       // Optimize aggressively for 2G/3G
       setShouldOptimize(['2g', '3g', 'slow-2g'].includes(connection?.effectiveType));
-      
+
       const handleConnectionChange = () => {
         setConnectionType(connection?.effectiveType || 'unknown');
         setShouldOptimize(['2g', '3g', 'slow-2g'].includes(connection?.effectiveType));
       };
-      
+
       connection?.addEventListener('change', handleConnectionChange);
-      
+
       return () => {
         connection?.removeEventListener('change', handleConnectionChange);
       };
@@ -383,7 +396,7 @@ export const useNigerianImageLoading = () => {
   return {
     connectionType,
     shouldOptimize,
-    isSlowConnection: ['2g', '3g', 'slow-2g'].includes(connectionType)
+    isSlowConnection: ['2g', '3g', 'slow-2g'].includes(connectionType),
   };
 };
 

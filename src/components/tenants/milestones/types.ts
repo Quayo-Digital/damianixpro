@@ -1,4 +1,3 @@
-
 export interface Milestone {
   id: string;
   tenant_id: string;

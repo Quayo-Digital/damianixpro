@@ -1,86 +1,60 @@
+import React, { useState } from 'react';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { toast } from 'sonner';
+import { useAuthSession, useAuthActions } from '@/contexts/auth';
+import { supabase } from '@/integrations/supabase/client';
+import { Loader2, AlertCircle } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
-import React, { useState } from "react";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { toast } from "sonner";
-import { useAuth } from "@/contexts/auth";
-import { supabase } from "@/integrations/supabase/client";
-import { Loader2, AlertCircle } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+type RedeemResult = { ok?: boolean; error?: string };
+
+const errorMessages: Record<string, string> = {
+  not_authenticated: 'You must be signed in to redeem this code.',
+  invalid_code: 'Invalid or already used code.',
+  super_admin_exists: 'A super admin is already configured for this project.',
+};
 
 export default function RedeemSuperAdmin() {
-  const { user } = useAuth();
-  const [code, setCode] = useState("");
+  const { user } = useAuthSession();
+  const { refreshUserRole } = useAuthActions();
+  const [code, setCode] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
   const handleRedeem = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!user?.id) {
+      toast.error('You must be signed in to redeem this code.');
+      return;
+    }
+
     setLoading(true);
 
     try {
-      // Fetch invite
-      const { data: invite, error } = await supabase
-        .from("super_admin_invite")
-        .select("*")
-        .eq("code", code)
-        .eq("used", false)
-        .maybeSingle();
+      const { data, error } = await supabase.rpc('redeem_super_admin_invite', {
+        p_code: code.trim(),
+      });
 
-      if (error || !invite) {
-        toast.error("Invalid or used code.");
-        setLoading(false);
+      if (error) {
+        toast.error(error.message || 'Redeem failed.');
         return;
       }
 
-      // Check if super admin already exists
-      const { data: existing, error: roleErr } = await supabase
-        .from("user_roles")
-        .select("user_id")
-        .eq("role", "super_admin")
-        .maybeSingle();
-
-      if (roleErr) {
-        toast.error("Error checking existing super admin.");
-        setLoading(false);
-        return;
-      }
-      if (existing) {
-        toast.error("A super admin already exists.");
-        setLoading(false);
+      const result = data as RedeemResult | null;
+      if (!result?.ok) {
+        const key = result?.error ?? 'invalid_code';
+        toast.error(errorMessages[key] ?? 'Could not redeem code.');
         return;
       }
 
-      // Set this user as super_admin
-      const { error: upsertError } = await supabase
-        .from("user_roles")
-        .upsert({ user_id: user?.id, role: "super_admin" }, { onConflict: "user_id" });
-
-      if (upsertError) {
-        toast.error("Failed to set super admin role.");
-        setLoading(false);
-        return;
-      }
-
-      // Mark code as used
-      const { error: markUsedError } = await supabase
-        .from("super_admin_invite")
-        .update({
-          used: true,
-          used_by: user?.id,
-          used_at: new Date().toISOString(),
-        })
-        .eq("id", invite.id);
-
-      if (markUsedError) {
-        toast.warning("Role set, but could not mark code used. Contact support.");
-      }
-
-      toast.success("You are now the super admin!");
-      setTimeout(() => navigate("/admin/dashboard"), 1200);
-    } catch (err: any) {
-      toast.error("Unexpected error: " + err.message);
+      await refreshUserRole();
+      toast.success('You are now the super admin!');
+      setTimeout(() => navigate('/admin/dashboard'), 1200);
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : String(err);
+      toast.error('Unexpected error: ' + message);
     } finally {
       setLoading(false);
     }
@@ -96,7 +70,8 @@ export default function RedeemSuperAdmin() {
           <div className="flex items-center space-x-2 text-sm text-blue-600">
             <AlertCircle className="h-4 w-4" />
             <span>
-              Enter your one-time super admin code. Only the first user to redeem this becomes super admin.
+              Enter your one-time super admin code while signed in. Only the first successful redeem
+              becomes super admin.
             </span>
           </div>
           <form onSubmit={handleRedeem} className="space-y-4">
@@ -106,14 +81,14 @@ export default function RedeemSuperAdmin() {
               value={code}
               onChange={(e) => setCode(e.target.value)}
             />
-            <Button type="submit" className="w-full" disabled={loading || !code}>
+            <Button type="submit" className="w-full" disabled={loading || !code.trim()}>
               {loading ? (
                 <>
-                  <Loader2 className="animate-spin mr-2 h-4 w-4" />
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                   Verifying...
                 </>
               ) : (
-                "Redeem Code"
+                'Redeem Code'
               )}
             </Button>
           </form>

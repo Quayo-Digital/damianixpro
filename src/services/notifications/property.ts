@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { Property } from '@/services/property';
 import { User } from '@supabase/supabase-js';
@@ -9,8 +8,8 @@ export async function sendViewingRequestNotification(
   requester: User
 ): Promise<{ success: boolean; error: any }> {
   if (!agentId) {
-    console.error("Agent ID is missing, cannot send notification.");
-    return { success: false, error: new Error("Agent ID is missing.") };
+    console.error('Agent ID is missing, cannot send notification.');
+    return { success: false, error: new Error('Agent ID is missing.') };
   }
 
   const { error } = await supabase.from('notifications').insert({
@@ -19,10 +18,10 @@ export async function sendViewingRequestNotification(
     description: `A user (${requester.email}) has requested a viewing for your property.`,
     type: 'general',
     link: `/properties/${property.id}`,
-    metadata: { 
+    metadata: {
       property_id: property.id,
       requester_id: requester.id,
-      requester_email: requester.email
+      requester_email: requester.email,
     },
   });
 

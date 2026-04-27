@@ -5,20 +5,20 @@ import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { 
-  Shield, 
-  Lock, 
-  Key, 
-  Eye, 
-  AlertTriangle, 
-  CheckCircle, 
+import {
+  Shield,
+  Lock,
+  Key,
+  Eye,
+  AlertTriangle,
+  CheckCircle,
   XCircle,
   Globe,
   Database,
   Users,
   FileText,
   Wifi,
-  Server
+  Server,
 } from 'lucide-react';
 
 interface SecurityCheck {
@@ -56,7 +56,7 @@ export const SecurityAuditTool: React.FC = () => {
       status: 'not_tested',
       severity: 'critical',
       description: 'Verify that all authentication endpoints use HTTPS',
-      recommendation: 'Implement SSL/TLS certificates and redirect HTTP to HTTPS'
+      recommendation: 'Implement SSL/TLS certificates and redirect HTTP to HTTPS',
     },
     {
       id: 'auth-session',
@@ -65,7 +65,7 @@ export const SecurityAuditTool: React.FC = () => {
       status: 'not_tested',
       severity: 'high',
       description: 'Check session timeout and secure cookie settings',
-      recommendation: 'Implement secure session management with proper timeouts'
+      recommendation: 'Implement secure session management with proper timeouts',
     },
     {
       id: 'auth-mfa',
@@ -74,7 +74,7 @@ export const SecurityAuditTool: React.FC = () => {
       status: 'not_tested',
       severity: 'medium',
       description: 'Verify MFA implementation for sensitive operations',
-      recommendation: 'Implement MFA for admin and high-privilege accounts'
+      recommendation: 'Implement MFA for admin and high-privilege accounts',
     },
     {
       id: 'auth-password',
@@ -83,7 +83,7 @@ export const SecurityAuditTool: React.FC = () => {
       status: 'not_tested',
       severity: 'medium',
       description: 'Check password complexity and storage security',
-      recommendation: 'Enforce strong password policies and secure hashing'
+      recommendation: 'Enforce strong password policies and secure hashing',
     },
 
     // Authorization Checks
@@ -94,7 +94,7 @@ export const SecurityAuditTool: React.FC = () => {
       status: 'not_tested',
       severity: 'high',
       description: 'Verify proper role-based access implementation',
-      recommendation: 'Implement comprehensive RBAC with principle of least privilege'
+      recommendation: 'Implement comprehensive RBAC with principle of least privilege',
     },
     {
       id: 'authz-rls',
@@ -103,7 +103,7 @@ export const SecurityAuditTool: React.FC = () => {
       status: 'not_tested',
       severity: 'high',
       description: 'Check database RLS policies implementation',
-      recommendation: 'Ensure all sensitive tables have proper RLS policies'
+      recommendation: 'Ensure all sensitive tables have proper RLS policies',
     },
     {
       id: 'authz-api',
@@ -112,7 +112,7 @@ export const SecurityAuditTool: React.FC = () => {
       status: 'not_tested',
       severity: 'high',
       description: 'Verify API endpoint authorization checks',
-      recommendation: 'Implement proper authorization for all API endpoints'
+      recommendation: 'Implement proper authorization for all API endpoints',
     },
 
     // Data Protection Checks
@@ -123,7 +123,7 @@ export const SecurityAuditTool: React.FC = () => {
       status: 'not_tested',
       severity: 'critical',
       description: 'Check encryption of sensitive data at rest and in transit',
-      recommendation: 'Implement end-to-end encryption for all sensitive data'
+      recommendation: 'Implement end-to-end encryption for all sensitive data',
     },
     {
       id: 'data-backup',
@@ -132,7 +132,7 @@ export const SecurityAuditTool: React.FC = () => {
       status: 'not_tested',
       severity: 'medium',
       description: 'Verify backup encryption and access controls',
-      recommendation: 'Implement encrypted backups with secure access controls'
+      recommendation: 'Implement encrypted backups with secure access controls',
     },
     {
       id: 'data-retention',
@@ -141,7 +141,7 @@ export const SecurityAuditTool: React.FC = () => {
       status: 'not_tested',
       severity: 'medium',
       description: 'Check data retention and deletion policies',
-      recommendation: 'Implement automated data retention and secure deletion'
+      recommendation: 'Implement automated data retention and secure deletion',
     },
     {
       id: 'data-pii',
@@ -150,7 +150,7 @@ export const SecurityAuditTool: React.FC = () => {
       status: 'not_tested',
       severity: 'high',
       description: 'Verify protection of personally identifiable information',
-      recommendation: 'Implement PII masking and access logging'
+      recommendation: 'Implement PII masking and access logging',
     },
 
     // Network Security Checks
@@ -161,7 +161,7 @@ export const SecurityAuditTool: React.FC = () => {
       status: 'not_tested',
       severity: 'medium',
       description: 'Check CSP headers implementation',
-      recommendation: 'Implement comprehensive CSP headers to prevent XSS'
+      recommendation: 'Implement comprehensive CSP headers to prevent XSS',
     },
     {
       id: 'network-cors',
@@ -170,7 +170,7 @@ export const SecurityAuditTool: React.FC = () => {
       status: 'not_tested',
       severity: 'medium',
       description: 'Verify CORS policy configuration',
-      recommendation: 'Configure restrictive CORS policies for production'
+      recommendation: 'Configure restrictive CORS policies for production',
     },
     {
       id: 'network-rate-limit',
@@ -179,7 +179,7 @@ export const SecurityAuditTool: React.FC = () => {
       status: 'not_tested',
       severity: 'medium',
       description: 'Check API rate limiting implementation',
-      recommendation: 'Implement rate limiting to prevent abuse'
+      recommendation: 'Implement rate limiting to prevent abuse',
     },
 
     // Infrastructure Checks
@@ -190,7 +190,7 @@ export const SecurityAuditTool: React.FC = () => {
       status: 'not_tested',
       severity: 'high',
       description: 'Check for exposed sensitive environment variables',
-      recommendation: 'Secure all sensitive environment variables'
+      recommendation: 'Secure all sensitive environment variables',
     },
     {
       id: 'infra-dependencies',
@@ -199,7 +199,7 @@ export const SecurityAuditTool: React.FC = () => {
       status: 'not_tested',
       severity: 'medium',
       description: 'Scan for known vulnerabilities in dependencies',
-      recommendation: 'Regularly update dependencies and scan for vulnerabilities'
+      recommendation: 'Regularly update dependencies and scan for vulnerabilities',
     },
     {
       id: 'infra-logging',
@@ -208,30 +208,30 @@ export const SecurityAuditTool: React.FC = () => {
       status: 'not_tested',
       severity: 'medium',
       description: 'Verify security event logging and monitoring',
-      recommendation: 'Implement comprehensive security logging and alerting'
-    }
+      recommendation: 'Implement comprehensive security logging and alerting',
+    },
   ];
 
   const runSecurityAudit = async () => {
     setIsRunning(true);
     const updatedChecks = [...securityChecks];
-    
+
     for (let i = 0; i < updatedChecks.length; i++) {
       const check = updatedChecks[i];
       setCurrentCheck(check.name);
-      
+
       // Simulate security check
-      await new Promise(resolve => setTimeout(resolve, 500));
-      
+      await new Promise((resolve) => setTimeout(resolve, 500));
+
       // Perform actual security checks
       const result = await performSecurityCheck(check);
       updatedChecks[i] = { ...check, ...result };
     }
 
     // Calculate overall score
-    const passed = updatedChecks.filter(c => c.status === 'pass').length;
-    const warnings = updatedChecks.filter(c => c.status === 'warning').length;
-    const failed = updatedChecks.filter(c => c.status === 'fail').length;
+    const passed = updatedChecks.filter((c) => c.status === 'pass').length;
+    const warnings = updatedChecks.filter((c) => c.status === 'warning').length;
+    const failed = updatedChecks.filter((c) => c.status === 'fail').length;
     const overallScore = Math.round((passed / updatedChecks.length) * 100);
 
     const recommendations = generateSecurityRecommendations(updatedChecks);
@@ -243,7 +243,7 @@ export const SecurityAuditTool: React.FC = () => {
       warnings,
       failed,
       checks: updatedChecks,
-      recommendations
+      recommendations,
     });
 
     setIsRunning(false);
@@ -252,80 +252,85 @@ export const SecurityAuditTool: React.FC = () => {
 
   const performSecurityCheck = async (check: SecurityCheck): Promise<Partial<SecurityCheck>> => {
     switch (check.id) {
-      case 'auth-https':
+      case 'auth-https': {
         const isHttps = location.protocol === 'https:' || location.hostname === 'localhost';
         return {
           status: isHttps ? 'pass' : 'fail',
-          details: isHttps ? 'HTTPS is properly configured' : 'Site is not served over HTTPS'
+          details: isHttps ? 'HTTPS is properly configured' : 'Site is not served over HTTPS',
         };
+      }
 
-      case 'network-csp':
+      case 'network-csp': {
         const hasCsp = document.querySelector('meta[http-equiv="Content-Security-Policy"]');
         return {
           status: hasCsp ? 'pass' : 'warning',
-          details: hasCsp ? 'CSP headers detected' : 'No CSP headers found'
+          details: hasCsp ? 'CSP headers detected' : 'No CSP headers found',
         };
+      }
 
-      case 'infra-env-vars':
-        const hasEnvVars = import.meta.env.VITE_SUPABASE_URL;
+      case 'infra-env-vars': {
         const hasSecrets = import.meta.env.VITE_SUPABASE_ANON_KEY;
         return {
           status: hasSecrets ? 'warning' : 'pass',
-          details: hasSecrets ? 'Sensitive keys detected in client environment' : 'Environment variables properly secured'
+          details: hasSecrets
+            ? 'Sensitive keys detected in client environment'
+            : 'Environment variables properly secured',
         };
+      }
 
       case 'authz-rls':
         // Simulate RLS check - in real implementation, this would query the database
         return {
           status: 'pass',
-          details: 'RLS policies are implemented for sensitive tables'
+          details: 'RLS policies are implemented for sensitive tables',
         };
 
       case 'data-encryption':
         return {
           status: 'pass',
-          details: 'Data encryption is implemented via Supabase'
+          details: 'Data encryption is implemented via Supabase',
         };
 
       case 'network-cors':
         return {
           status: 'warning',
-          details: 'CORS configuration should be reviewed for production'
+          details: 'CORS configuration should be reviewed for production',
         };
 
       case 'auth-mfa':
         return {
           status: 'warning',
-          details: 'MFA is not implemented for all user types'
+          details: 'MFA is not implemented for all user types',
         };
 
       case 'network-rate-limit':
         return {
           status: 'warning',
-          details: 'Rate limiting should be implemented for API endpoints'
+          details: 'Rate limiting should be implemented for API endpoints',
         };
 
-      default:
+      default: {
         // Random result for demonstration
         const statuses: ('pass' | 'warning' | 'fail')[] = ['pass', 'warning', 'fail'];
         const weights = [0.7, 0.2, 0.1]; // 70% pass, 20% warning, 10% fail
         const random = Math.random();
         let status: 'pass' | 'warning' | 'fail' = 'pass';
-        
+
         if (random < weights[2]) status = 'fail';
         else if (random < weights[1] + weights[2]) status = 'warning';
-        
+
         return {
           status,
-          details: `Security check completed with ${status} status`
+          details: `Security check completed with ${status} status`,
         };
+      }
     }
   };
 
   const generateSecurityRecommendations = (checks: SecurityCheck[]): string[] => {
     const recommendations: string[] = [];
-    
-    checks.forEach(check => {
+
+    checks.forEach((check) => {
       if (check.status === 'fail' || check.status === 'warning') {
         recommendations.push(check.recommendation);
       }
@@ -398,14 +403,18 @@ export const SecurityAuditTool: React.FC = () => {
     }
   };
 
-  const groupedChecks = auditResult?.checks.reduce((groups, check) => {
-    const category = check.category;
-    if (!groups[category]) {
-      groups[category] = [];
-    }
-    groups[category].push(check);
-    return groups;
-  }, {} as Record<string, SecurityCheck[]>) || {};
+  const groupedChecks =
+    auditResult?.checks.reduce(
+      (groups, check) => {
+        const category = check.category;
+        if (!groups[category]) {
+          groups[category] = [];
+        }
+        groups[category].push(check);
+        return groups;
+      },
+      {} as Record<string, SecurityCheck[]>
+    ) || {};
 
   return (
     <div className="space-y-6">
@@ -416,11 +425,7 @@ export const SecurityAuditTool: React.FC = () => {
             Comprehensive security assessment and vulnerability scanning
           </p>
         </div>
-        <Button 
-          onClick={runSecurityAudit} 
-          disabled={isRunning}
-          className="min-w-[200px]"
-        >
+        <Button onClick={runSecurityAudit} disabled={isRunning} className="min-w-[200px]">
           {isRunning ? (
             <>
               <Shield className="mr-2 h-4 w-4 animate-spin" />
@@ -443,14 +448,14 @@ export const SecurityAuditTool: React.FC = () => {
                 <CardTitle className="text-sm">Overall Security Score</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold mb-2">{auditResult.overallScore}/100</div>
+                <div className="mb-2 text-2xl font-bold">{auditResult.overallScore}/100</div>
                 <Progress value={auditResult.overallScore} className="h-2" />
               </CardContent>
             </Card>
-            
+
             <Card>
               <CardHeader className="pb-3">
-                <CardTitle className="text-sm flex items-center gap-2">
+                <CardTitle className="flex items-center gap-2 text-sm">
                   <CheckCircle className="h-4 w-4 text-green-500" />
                   Passed
                 </CardTitle>
@@ -462,7 +467,7 @@ export const SecurityAuditTool: React.FC = () => {
 
             <Card>
               <CardHeader className="pb-3">
-                <CardTitle className="text-sm flex items-center gap-2">
+                <CardTitle className="flex items-center gap-2 text-sm">
                   <AlertTriangle className="h-4 w-4 text-yellow-500" />
                   Warnings
                 </CardTitle>
@@ -474,7 +479,7 @@ export const SecurityAuditTool: React.FC = () => {
 
             <Card>
               <CardHeader className="pb-3">
-                <CardTitle className="text-sm flex items-center gap-2">
+                <CardTitle className="flex items-center gap-2 text-sm">
                   <XCircle className="h-4 w-4 text-red-500" />
                   Failed
                 </CardTitle>
@@ -503,12 +508,8 @@ export const SecurityAuditTool: React.FC = () => {
                         {check.name}
                       </CardTitle>
                       <div className="flex gap-2">
-                        <Badge className={getStatusColor(check.status)}>
-                          {check.status}
-                        </Badge>
-                        <Badge className={getSeverityColor(check.severity)}>
-                          {check.severity}
-                        </Badge>
+                        <Badge className={getStatusColor(check.status)}>{check.status}</Badge>
+                        <Badge className={getSeverityColor(check.severity)}>{check.severity}</Badge>
                       </div>
                     </div>
                     <CardDescription>{check.description}</CardDescription>
@@ -516,7 +517,7 @@ export const SecurityAuditTool: React.FC = () => {
                   {(check.details || check.recommendation) && (
                     <CardContent className="pt-0">
                       {check.details && (
-                        <p className="text-sm text-muted-foreground mb-2">{check.details}</p>
+                        <p className="mb-2 text-sm text-muted-foreground">{check.details}</p>
                       )}
                       {(check.status === 'warning' || check.status === 'fail') && (
                         <p className="text-sm text-blue-600">
@@ -540,7 +541,10 @@ export const SecurityAuditTool: React.FC = () => {
                   </CardHeader>
                   <CardContent className="space-y-3">
                     {checks.map((check, index) => (
-                      <div key={index} className="flex items-center justify-between p-3 border rounded-lg">
+                      <div
+                        key={index}
+                        className="flex items-center justify-between rounded-lg border p-3"
+                      >
                         <div className="flex items-center gap-3">
                           {getStatusIcon(check.status)}
                           <div>
@@ -549,9 +553,7 @@ export const SecurityAuditTool: React.FC = () => {
                           </div>
                         </div>
                         <div className="flex gap-2">
-                          <Badge className={getStatusColor(check.status)}>
-                            {check.status}
-                          </Badge>
+                          <Badge className={getStatusColor(check.status)}>{check.status}</Badge>
                           <Badge className={getSeverityColor(check.severity)}>
                             {check.severity}
                           </Badge>
@@ -578,7 +580,7 @@ export const SecurityAuditTool: React.FC = () => {
                   <ul className="space-y-3">
                     {auditResult.recommendations.map((recommendation, index) => (
                       <li key={index} className="flex items-start gap-3">
-                        <CheckCircle className="h-4 w-4 text-blue-500 mt-0.5 flex-shrink-0" />
+                        <CheckCircle className="mt-0.5 h-4 w-4 flex-shrink-0 text-blue-500" />
                         <span className="text-sm">{recommendation}</span>
                       </li>
                     ))}
@@ -594,7 +596,8 @@ export const SecurityAuditTool: React.FC = () => {
         <Alert>
           <Shield className="h-4 w-4" />
           <AlertDescription>
-            Click "Run Security Audit" to perform a comprehensive security assessment of your platform.
+            Click "Run Security Audit" to perform a comprehensive security assessment of your
+            platform.
           </AlertDescription>
         </Alert>
       )}

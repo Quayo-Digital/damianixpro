@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { PageLayout } from '@/components/layout/PageLayout';
 import { PageContent } from '@/components/layout/PageContent';
@@ -6,23 +5,17 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
-import { useAuth } from '@/contexts/auth';
+import { useAuthSession } from '@/contexts/auth';
 import { useEnhancedVendorData } from '@/hooks/useEnhancedVendorData';
 import { VendorDashboardOverview } from '@/components/vendor/VendorDashboardOverview';
 import { VendorJobManagement } from '@/components/vendor/VendorJobManagement';
 import { VendorPerformanceAnalytics } from '@/components/vendor/VendorPerformanceAnalytics';
 import { VendorProfileManagement } from '@/components/vendor/VendorProfileManagement';
-import { 
-  LayoutDashboard, 
-  Briefcase, 
-  BarChart3, 
-  User, 
-  AlertCircle,
-  Loader2
-} from 'lucide-react';
+import { LayoutDashboard, Briefcase, BarChart3, User, AlertCircle, Loader2 } from 'lucide-react';
+import { RoleScreeningBanner } from '@/components/screening/RoleScreeningBanner';
 
 const VendorDashboardPage = () => {
-  const { user } = useAuth();
+  const { user } = useAuthSession();
   const {
     profile,
     jobs,
@@ -33,7 +26,7 @@ const VendorDashboardPage = () => {
     updateJobStatus,
     updateJobCost,
     updateProfile,
-    uploadImage
+    uploadImage,
   } = useEnhancedVendorData();
 
   if (isLoading) {
@@ -42,8 +35,8 @@ const VendorDashboardPage = () => {
         <PageContent title="Vendor Dashboard">
           <Card>
             <CardContent className="flex items-center justify-center py-12">
-              <div className="text-center space-y-4">
-                <Loader2 className="h-8 w-8 animate-spin mx-auto text-blue-600" />
+              <div className="space-y-4 text-center">
+                <Loader2 className="mx-auto h-8 w-8 animate-spin text-blue-600" />
                 <p className="text-muted-foreground">Loading your dashboard...</p>
               </div>
             </CardContent>
@@ -59,9 +52,7 @@ const VendorDashboardPage = () => {
         <PageContent title="Vendor Dashboard">
           <Alert variant="destructive">
             <AlertCircle className="h-4 w-4" />
-            <AlertDescription>
-              {error}
-            </AlertDescription>
+            <AlertDescription>{error}</AlertDescription>
           </Alert>
         </PageContent>
       </PageLayout>
@@ -92,22 +83,18 @@ const VendorDashboardPage = () => {
 
   return (
     <PageLayout>
-      <PageContent 
-        title="Vendor Dashboard" 
-        subtitle={`Welcome back, ${profile.name}!`}
-      >
+      <PageContent title="Vendor Dashboard" subtitle={`Welcome back, ${profile.name}!`}>
         <div className="space-y-6">
+          <RoleScreeningBanner />
           {/* Status Badge */}
           <div className="flex items-center gap-2">
-            <Badge 
-              variant={profile.is_available ? "default" : "secondary"}
-              className={profile.is_available ? "bg-green-600" : ""}
+            <Badge
+              variant={profile.is_available ? 'default' : 'secondary'}
+              className={profile.is_available ? 'bg-green-600' : ''}
             >
-              {profile.is_available ? "Available for Jobs" : "Not Available"}
+              {profile.is_available ? 'Available for Jobs' : 'Not Available'}
             </Badge>
-            <Badge variant="outline">
-              {profile.category}
-            </Badge>
+            <Badge variant="outline">{profile.category}</Badge>
           </div>
 
           {/* Main Dashboard Tabs */}

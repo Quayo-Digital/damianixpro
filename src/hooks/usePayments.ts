@@ -1,13 +1,13 @@
 import { useState, useEffect } from 'react';
 import { fetchPayments, recordPayment, updatePaymentStatus } from '@/services/payments';
 import { Payment } from '@/utils/PaymentTypes';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuthSession } from '@/contexts/AuthContext';
 
 export const usePayments = (tenantId?: string) => {
   const [payments, setPayments] = useState<Payment[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const { user } = useAuth();
+  const { user } = useAuthSession();
 
   useEffect(() => {
     const loadPayments = async () => {
@@ -32,33 +32,34 @@ export const usePayments = (tenantId?: string) => {
   const addPayment = async (payment: Omit<Payment, 'id'>) => {
     const newPayment = await recordPayment(payment);
     if (newPayment) {
-      setPayments(prevPayments => [newPayment, ...prevPayments]);
+      setPayments((prevPayments) => [newPayment, ...prevPayments]);
       return true;
     }
     return false;
   };
 
-  const updateStatus = async (id: string, status: 'successful' | 'pending' | 'failed' | 'active') => {
+  const updateStatus = async (
+    id: string,
+    status: 'successful' | 'pending' | 'failed' | 'active'
+  ) => {
     const success = await updatePaymentStatus(id, status);
     if (success) {
-      setPayments(prevPayments =>
-        prevPayments.map(payment =>
-          payment.id === id ? { ...payment, status } : payment
-        )
+      setPayments((prevPayments) =>
+        prevPayments.map((payment) => (payment.id === id ? { ...payment, status } : payment))
       );
     }
     return success;
   };
 
-  const getPendingPayments = () => payments.filter(p => p.status === 'pending');
-  
-  const getSuccessfulPayments = () => payments.filter(p => p.status === 'successful');
-  
-  const getFailedPayments = () => payments.filter(p => p.status === 'failed');
-  
-  const getTotalReceived = () => 
+  const getPendingPayments = () => payments.filter((p) => p.status === 'pending');
+
+  const getSuccessfulPayments = () => payments.filter((p) => p.status === 'successful');
+
+  const getFailedPayments = () => payments.filter((p) => p.status === 'failed');
+
+  const getTotalReceived = () =>
     payments
-      .filter(p => p.status === 'successful')
+      .filter((p) => p.status === 'successful')
       .reduce((sum, payment) => sum + payment.amount, 0);
 
   return {
@@ -70,6 +71,6 @@ export const usePayments = (tenantId?: string) => {
     getPendingPayments,
     getSuccessfulPayments,
     getFailedPayments,
-    getTotalReceived
+    getTotalReceived,
   };
 };

@@ -52,7 +52,7 @@ export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoun
 
     // Log error to monitoring service
     console.error('Error caught by boundary:', error, errorInfo);
-    
+
     // Call custom error handler
     this.props.onError?.(error, errorInfo);
   }
@@ -85,15 +85,16 @@ export const DefaultErrorFallback = ({ error, retry }: ErrorFallbackProps) => {
   const isDevelopment = process.env.NODE_ENV === 'development';
 
   return (
-    <div className="min-h-[400px] flex items-center justify-center p-4">
+    <div className="flex min-h-[400px] items-center justify-center p-4">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
-          <div className="mx-auto mb-4 h-12 w-12 rounded-full bg-red-100 flex items-center justify-center">
+          <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-red-100">
             <AlertTriangle className="h-6 w-6 text-red-600" />
           </div>
           <CardTitle className="text-red-900">Something went wrong</CardTitle>
           <CardDescription>
-            An unexpected error occurred. Please try again or contact support if the problem persists.
+            An unexpected error occurred. Please try again or contact support if the problem
+            persists.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -102,18 +103,22 @@ export const DefaultErrorFallback = ({ error, retry }: ErrorFallbackProps) => {
               <RefreshCw className="mr-2 h-4 w-4" />
               Try Again
             </Button>
-            <Button variant="outline" onClick={() => window.location.href = '/'} className="w-full">
+            <Button
+              variant="outline"
+              onClick={() => (window.location.href = '/')}
+              className="w-full"
+            >
               <Home className="mr-2 h-4 w-4" />
               Go Home
             </Button>
           </div>
-          
+
           {isDevelopment && (
             <details className="mt-4">
               <summary className="cursor-pointer text-sm text-muted-foreground hover:text-foreground">
                 Error Details (Development)
               </summary>
-              <pre className="mt-2 text-xs bg-muted p-2 rounded overflow-auto max-h-32">
+              <pre className="mt-2 max-h-32 overflow-auto rounded bg-muted p-2 text-xs">
                 {error.message}
                 {error.stack}
               </pre>
@@ -133,7 +138,7 @@ export const NetworkError = ({ onRetry }: { onRetry?: () => void }) => (
     <AlertDescription className="text-orange-800">
       Unable to connect to the server. Please check your internet connection and try again.
       {onRetry && (
-        <Button variant="link" onClick={onRetry} className="p-0 h-auto ml-2 text-orange-700">
+        <Button variant="link" onClick={onRetry} className="ml-2 h-auto p-0 text-orange-700">
           Retry
         </Button>
       )}
@@ -149,11 +154,11 @@ interface ValidationErrorProps {
 
 export const ValidationError = ({ errors, className }: ValidationErrorProps) => {
   const errorEntries = Object.entries(errors).filter(([_, messages]) => messages.length > 0);
-  
+
   if (errorEntries.length === 0) return null;
 
   return (
-    <Alert className={cn("border-red-200 bg-red-50", className)}>
+    <Alert className={cn('border-red-200 bg-red-50', className)}>
       <AlertTriangle className="h-4 w-4 text-red-600" />
       <AlertTitle className="text-red-900">Please fix the following errors:</AlertTitle>
       <AlertDescription className="text-red-800">
@@ -179,11 +184,7 @@ interface FieldErrorProps {
 export const FieldError = ({ error, className }: FieldErrorProps) => {
   if (!error) return null;
 
-  return (
-    <p className={cn("text-sm text-red-600 mt-1", className)}>
-      {error}
-    </p>
-  );
+  return <p className={cn('mt-1 text-sm text-red-600', className)}>{error}</p>;
 };
 
 // API Error Handler Hook
@@ -245,7 +246,7 @@ export const useErrorHandler = () => {
     }
 
     setError(appError);
-    
+
     // Log error for monitoring
     console.error('Application error:', appError);
   }, []);
@@ -267,12 +268,12 @@ interface ErrorAlertProps {
 
 export const ErrorAlert = ({ error, onRetry, onDismiss, className }: ErrorAlertProps) => {
   return (
-    <Alert className={cn("border-red-200 bg-red-50", className)}>
+    <Alert className={cn('border-red-200 bg-red-50', className)}>
       <AlertTriangle className="h-4 w-4 text-red-600" />
       <AlertTitle className="text-red-900">{error.message}</AlertTitle>
       <AlertDescription className="text-red-800">
         {error.details}
-        <div className="flex space-x-2 mt-3">
+        <div className="mt-3 flex space-x-2">
           {error.retryable && onRetry && (
             <Button size="sm" variant="outline" onClick={onRetry}>
               <RefreshCw className="mr-2 h-3 w-3" />
@@ -291,29 +292,29 @@ export const ErrorAlert = ({ error, onRetry, onDismiss, className }: ErrorAlertP
 };
 
 // 404 Not Found Component
-export const NotFound = ({ 
-  title = "Page Not Found",
+export const NotFound = ({
+  title = 'Page Not Found',
   description = "The page you're looking for doesn't exist or has been moved.",
-  showHomeButton = true 
+  showHomeButton = true,
 }: {
   title?: string;
   description?: string;
   showHomeButton?: boolean;
 }) => (
-  <div className="min-h-[60vh] flex items-center justify-center p-4">
+  <div className="flex min-h-[60vh] items-center justify-center p-4">
     <div className="text-center">
-      <div className="mx-auto mb-4 h-24 w-24 rounded-full bg-muted flex items-center justify-center">
+      <div className="mx-auto mb-4 flex h-24 w-24 items-center justify-center rounded-full bg-muted">
         <span className="text-4xl font-bold text-muted-foreground">404</span>
       </div>
-      <h1 className="text-2xl font-bold mb-2">{title}</h1>
-      <p className="text-muted-foreground mb-6 max-w-md">{description}</p>
+      <h1 className="mb-2 text-2xl font-bold">{title}</h1>
+      <p className="mb-6 max-w-md text-muted-foreground">{description}</p>
       <div className="flex justify-center space-x-2">
         <Button variant="outline" onClick={() => window.history.back()}>
           <ArrowLeft className="mr-2 h-4 w-4" />
           Go Back
         </Button>
         {showHomeButton && (
-          <Button onClick={() => window.location.href = '/'}>
+          <Button onClick={() => (window.location.href = '/')}>
             <Home className="mr-2 h-4 w-4" />
             Go Home
           </Button>
@@ -325,23 +326,21 @@ export const NotFound = ({
 
 // Unauthorized Access Component
 export const Unauthorized = () => (
-  <div className="min-h-[60vh] flex items-center justify-center p-4">
+  <div className="flex min-h-[60vh] items-center justify-center p-4">
     <Card className="w-full max-w-md">
       <CardHeader className="text-center">
-        <div className="mx-auto mb-4 h-12 w-12 rounded-full bg-yellow-100 flex items-center justify-center">
+        <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-yellow-100">
           <AlertTriangle className="h-6 w-6 text-yellow-600" />
         </div>
         <CardTitle>Access Denied</CardTitle>
-        <CardDescription>
-          You don't have permission to access this page.
-        </CardDescription>
+        <CardDescription>You don't have permission to access this page.</CardDescription>
       </CardHeader>
       <CardContent>
         <div className="flex flex-col space-y-2">
-          <Button onClick={() => window.location.href = '/auth/signin'} className="w-full">
+          <Button onClick={() => (window.location.href = '/auth/signin')} className="w-full">
             Sign In
           </Button>
-          <Button variant="outline" onClick={() => window.location.href = '/'} className="w-full">
+          <Button variant="outline" onClick={() => (window.location.href = '/')} className="w-full">
             <Home className="mr-2 h-4 w-4" />
             Go Home
           </Button>
@@ -353,16 +352,14 @@ export const Unauthorized = () => (
 
 // Server Error Component
 export const ServerError = ({ onRetry }: { onRetry?: () => void }) => (
-  <div className="min-h-[60vh] flex items-center justify-center p-4">
+  <div className="flex min-h-[60vh] items-center justify-center p-4">
     <Card className="w-full max-w-md">
       <CardHeader className="text-center">
-        <div className="mx-auto mb-4 h-12 w-12 rounded-full bg-red-100 flex items-center justify-center">
+        <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-red-100">
           <Bug className="h-6 w-6 text-red-600" />
         </div>
         <CardTitle>Server Error</CardTitle>
-        <CardDescription>
-          Something went wrong on our end. We're working to fix it.
-        </CardDescription>
+        <CardDescription>Something went wrong on our end. We're working to fix it.</CardDescription>
       </CardHeader>
       <CardContent>
         <div className="flex flex-col space-y-2">
@@ -372,7 +369,7 @@ export const ServerError = ({ onRetry }: { onRetry?: () => void }) => (
               Try Again
             </Button>
           )}
-          <Button variant="outline" onClick={() => window.location.href = '/'} className="w-full">
+          <Button variant="outline" onClick={() => (window.location.href = '/')} className="w-full">
             <Home className="mr-2 h-4 w-4" />
             Go Home
           </Button>
@@ -409,8 +406,8 @@ export const ConnectionStatus = () => {
   if (isOnline) return null;
 
   return (
-    <div className="fixed top-0 left-0 right-0 bg-red-600 text-white text-center py-2 text-sm z-50">
-      <WifiOff className="inline mr-2 h-4 w-4" />
+    <div className="fixed left-0 right-0 top-0 z-50 bg-red-600 py-2 text-center text-sm text-white">
+      <WifiOff className="mr-2 inline h-4 w-4" />
       You're offline. Some features may not work properly.
     </div>
   );
@@ -421,25 +418,28 @@ export const useRetry = (maxAttempts = 3, delay = 1000) => {
   const [attempts, setAttempts] = React.useState(0);
   const [isRetrying, setIsRetrying] = React.useState(false);
 
-  const retry = React.useCallback(async (fn: () => Promise<any>) => {
-    if (attempts >= maxAttempts) {
-      throw new Error(`Max retry attempts (${maxAttempts}) exceeded`);
-    }
+  const retry = React.useCallback(
+    async (fn: () => Promise<any>) => {
+      if (attempts >= maxAttempts) {
+        throw new Error(`Max retry attempts (${maxAttempts}) exceeded`);
+      }
 
-    setIsRetrying(true);
-    
-    try {
-      await new Promise(resolve => setTimeout(resolve, delay * Math.pow(2, attempts)));
-      const result = await fn();
-      setAttempts(0); // Reset on success
-      return result;
-    } catch (error) {
-      setAttempts(prev => prev + 1);
-      throw error;
-    } finally {
-      setIsRetrying(false);
-    }
-  }, [attempts, maxAttempts, delay]);
+      setIsRetrying(true);
+
+      try {
+        await new Promise((resolve) => setTimeout(resolve, delay * Math.pow(2, attempts)));
+        const result = await fn();
+        setAttempts(0); // Reset on success
+        return result;
+      } catch (error) {
+        setAttempts((prev) => prev + 1);
+        throw error;
+      } finally {
+        setIsRetrying(false);
+      }
+    },
+    [attempts, maxAttempts, delay]
+  );
 
   const reset = React.useCallback(() => {
     setAttempts(0);

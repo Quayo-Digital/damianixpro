@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Control } from 'react-hook-form';
 import { Input } from '@/components/ui/input';
@@ -12,8 +11,8 @@ interface PersonalInfoSectionProps {
 const PersonalInfoSection = ({ control }: PersonalInfoSectionProps) => {
   return (
     <div>
-      <h3 className="text-lg font-medium mb-4">Personal Information</h3>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <h3 className="mb-4 text-lg font-medium">Personal Information</h3>
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
         <FormField
           control={control}
           name="firstName"
@@ -27,7 +26,7 @@ const PersonalInfoSection = ({ control }: PersonalInfoSectionProps) => {
             </FormItem>
           )}
         />
-        
+
         <FormField
           control={control}
           name="lastName"
@@ -41,7 +40,7 @@ const PersonalInfoSection = ({ control }: PersonalInfoSectionProps) => {
             </FormItem>
           )}
         />
-        
+
         <FormField
           control={control}
           name="email"
@@ -55,7 +54,7 @@ const PersonalInfoSection = ({ control }: PersonalInfoSectionProps) => {
             </FormItem>
           )}
         />
-        
+
         <FormField
           control={control}
           name="phone"
@@ -64,6 +63,20 @@ const PersonalInfoSection = ({ control }: PersonalInfoSectionProps) => {
               <FormLabel>Phone Number</FormLabel>
               <FormControl>
                 <Input placeholder="Enter your phone number" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={control}
+          name="validId"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Valid ID (National ID/Passport)</FormLabel>
+              <FormControl>
+                <Input placeholder="Enter your National ID or Passport number" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>

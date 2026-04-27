@@ -1,4 +1,3 @@
-
 import { Document } from './documentTypes';
 import { FileText, Receipt, IdCard, List } from 'lucide-react';
 
@@ -20,29 +19,26 @@ export const formatFileSize = (sizeInBytes: number): string => {
  */
 export const groupDocumentsByCategory = (documents: Document[]): Record<string, Document[]> => {
   const grouped: Record<string, Document[]> = {};
-  
-  documents.forEach(doc => {
+
+  documents.forEach((doc) => {
     const category = doc.category || 'Uncategorized';
     if (!grouped[category]) {
       grouped[category] = [];
     }
     grouped[category].push(doc);
   });
-  
+
   return grouped;
 };
 
 /**
  * Filters documents by document type
  */
-export const filterDocumentsByType = (
-  documents: Document[], 
-  types: string[]
-): Document[] => {
+export const filterDocumentsByType = (documents: Document[], types: string[]): Document[] => {
   if (!types.length) return documents;
-  
-  return documents.filter(doc => 
-    types.some(type => doc.category?.toLowerCase().includes(type.toLowerCase()))
+
+  return documents.filter((doc) =>
+    types.some((type) => doc.category?.toLowerCase().includes(type.toLowerCase()))
   );
 };
 
@@ -51,7 +47,7 @@ export const filterDocumentsByType = (
  */
 export const getDocumentTypeIcon = (docType: string): string => {
   const type = docType.toLowerCase();
-  
+
   if (type.includes('lease') || type.includes('contract')) {
     return 'file-text';
   } else if (type.includes('receipt') || type.includes('payment')) {
@@ -70,9 +66,9 @@ export const getDocumentTypeIcon = (docType: string): string => {
  */
 export const getDocumentTypeBadgeColor = (docType?: string): string => {
   if (!docType) return 'bg-gray-200 text-gray-700';
-  
+
   const type = docType.toLowerCase();
-  
+
   if (type.includes('lease') || type.includes('contract')) {
     return 'bg-blue-100 text-blue-800';
   } else if (type.includes('receipt') || type.includes('payment')) {
@@ -89,11 +85,13 @@ export const getDocumentTypeBadgeColor = (docType?: string): string => {
 /**
  * Gets document icon component based on type
  */
-export const getDocumentIcon = (docType?: 'lease' | 'receipt' | 'identity' | 'maintenance' | string) => {
+export const getDocumentIcon = (
+  docType?: 'lease' | 'receipt' | 'identity' | 'maintenance' | string
+) => {
   if (!docType) return FileText;
-  
+
   const type = typeof docType === 'string' ? docType.toLowerCase() : docType;
-  
+
   switch (type) {
     case 'receipt':
       return Receipt;

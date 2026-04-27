@@ -6,17 +6,17 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { 
-  CheckCircle, 
-  XCircle, 
-  Clock, 
-  FileText, 
-  Brain, 
-  Shield, 
+import {
+  CheckCircle,
+  XCircle,
+  Clock,
+  FileText,
+  Brain,
+  Shield,
   Database,
   Upload,
   Eye,
-  AlertTriangle
+  AlertTriangle,
 } from 'lucide-react';
 
 interface TestResult {
@@ -41,7 +41,7 @@ export function DocumentProcessingTests() {
     total: 0,
     passed: 0,
     failed: 0,
-    pending: 0
+    pending: 0,
   });
 
   const initializeTests = () => {
@@ -56,8 +56,8 @@ export function DocumentProcessingTests() {
           { name: 'DocumentClassification interface', status: 'pending', message: '' },
           { name: 'DocumentValidation interface', status: 'pending', message: '' },
           { name: 'FraudDetection interface', status: 'pending', message: '' },
-          { name: 'ProcessingConfig interface', status: 'pending', message: '' }
-        ]
+          { name: 'ProcessingConfig interface', status: 'pending', message: '' },
+        ],
       },
       {
         name: 'AI Processing Service',
@@ -70,8 +70,8 @@ export function DocumentProcessingTests() {
           { name: 'Structured data extraction', status: 'pending', message: '' },
           { name: 'Nigerian pattern recognition', status: 'pending', message: '' },
           { name: 'Fraud detection algorithms', status: 'pending', message: '' },
-          { name: 'Compliance checking', status: 'pending', message: '' }
-        ]
+          { name: 'Compliance checking', status: 'pending', message: '' },
+        ],
       },
       {
         name: 'React Integration',
@@ -83,8 +83,8 @@ export function DocumentProcessingTests() {
           { name: 'File upload with drag & drop', status: 'pending', message: '' },
           { name: 'Progress tracking functionality', status: 'pending', message: '' },
           { name: 'Document filtering and sorting', status: 'pending', message: '' },
-          { name: 'Real-time updates integration', status: 'pending', message: '' }
-        ]
+          { name: 'Real-time updates integration', status: 'pending', message: '' },
+        ],
       },
       {
         name: 'Database Schema',
@@ -97,8 +97,8 @@ export function DocumentProcessingTests() {
           { name: 'document_workflows table', status: 'pending', message: '' },
           { name: 'document_templates table', status: 'pending', message: '' },
           { name: 'RLS policies configured', status: 'pending', message: '' },
-          { name: 'Storage bucket setup', status: 'pending', message: '' }
-        ]
+          { name: 'Storage bucket setup', status: 'pending', message: '' },
+        ],
       },
       {
         name: 'Security & Compliance',
@@ -110,8 +110,8 @@ export function DocumentProcessingTests() {
           { name: 'KYC validation rules', status: 'pending', message: '' },
           { name: 'Sensitive document handling', status: 'pending', message: '' },
           { name: 'Document retention policies', status: 'pending', message: '' },
-          { name: 'Secure file storage', status: 'pending', message: '' }
-        ]
+          { name: 'Secure file storage', status: 'pending', message: '' },
+        ],
       },
       {
         name: 'Dashboard Integration',
@@ -122,13 +122,13 @@ export function DocumentProcessingTests() {
           { name: 'Pending documents tracking', status: 'pending', message: '' },
           { name: 'High-risk document alerts', status: 'pending', message: '' },
           { name: 'Quick access buttons', status: 'pending', message: '' },
-          { name: 'Analytics integration', status: 'pending', message: '' }
-        ]
-      }
+          { name: 'Analytics integration', status: 'pending', message: '' },
+        ],
+      },
     ];
 
     setTestCategories(categories);
-    
+
     // Calculate initial summary
     const total = categories.reduce((sum, cat) => sum + cat.tests.length, 0);
     setSummary({ total, passed: 0, failed: 0, pending: total });
@@ -143,31 +143,31 @@ export function DocumentProcessingTests() {
     let completedTests = 0;
 
     // Count total tests
-    updatedCategories.forEach(category => {
+    updatedCategories.forEach((category) => {
       totalTests += category.tests.length;
     });
 
     // Run tests for each category
     for (let categoryIndex = 0; categoryIndex < updatedCategories.length; categoryIndex++) {
       const category = updatedCategories[categoryIndex];
-      
+
       for (let testIndex = 0; testIndex < category.tests.length; testIndex++) {
         const test = category.tests[testIndex];
-        
+
         // Update test status to running
         test.status = 'running';
         setTestCategories([...updatedCategories]);
-        
+
         // Simulate test execution
-        await new Promise(resolve => setTimeout(resolve, 300));
-        
+        await new Promise((resolve) => setTimeout(resolve, 300));
+
         // Run actual test
         const result = await runIndividualTest(category.name, test.name);
         test.status = result.status;
         test.message = result.message;
         test.details = result.details;
         test.duration = result.duration;
-        
+
         completedTests++;
         setProgress((completedTests / totalTests) * 100);
         setTestCategories([...updatedCategories]);
@@ -175,9 +175,10 @@ export function DocumentProcessingTests() {
     }
 
     // Update summary
-    let passed = 0, failed = 0;
-    updatedCategories.forEach(category => {
-      category.tests.forEach(test => {
+    let passed = 0,
+      failed = 0;
+    updatedCategories.forEach((category) => {
+      category.tests.forEach((test) => {
         if (test.status === 'passed') passed++;
         else if (test.status === 'failed') failed++;
       });
@@ -189,7 +190,7 @@ export function DocumentProcessingTests() {
 
   const runIndividualTest = async (categoryName: string, testName: string): Promise<TestResult> => {
     const startTime = Date.now();
-    
+
     try {
       switch (categoryName) {
         case 'Core Types & Interfaces':
@@ -209,7 +210,7 @@ export function DocumentProcessingTests() {
             name: testName,
             status: 'failed',
             message: 'Unknown test category',
-            duration: Date.now() - startTime
+            duration: Date.now() - startTime,
           };
       }
     } catch (error) {
@@ -217,18 +218,18 @@ export function DocumentProcessingTests() {
         name: testName,
         status: 'failed',
         message: error instanceof Error ? error.message : 'Test failed',
-        duration: Date.now() - startTime
+        duration: Date.now() - startTime,
       };
     }
   };
 
   const testTypes = async (testName: string): Promise<TestResult> => {
     const startTime = Date.now();
-    
+
     try {
       // Check if types file exists and has required exports
       const typesModule = await import('@/types/documentProcessing');
-      
+
       switch (testName) {
         case 'DocumentType enum defined':
           if (!typesModule) throw new Error('Types module not found');
@@ -236,23 +237,23 @@ export function DocumentProcessingTests() {
             name: testName,
             status: 'passed',
             message: 'DocumentType enum is properly defined',
-            duration: Date.now() - startTime
+            duration: Date.now() - startTime,
           };
-        
+
         case 'DocumentMetadata interface':
           return {
             name: testName,
             status: 'passed',
             message: 'DocumentMetadata interface is complete',
-            duration: Date.now() - startTime
+            duration: Date.now() - startTime,
           };
-        
+
         default:
           return {
             name: testName,
             status: 'passed',
             message: 'Type definition exists',
-            duration: Date.now() - startTime
+            duration: Date.now() - startTime,
           };
       }
     } catch (error) {
@@ -260,18 +261,18 @@ export function DocumentProcessingTests() {
         name: testName,
         status: 'failed',
         message: `Type check failed: ${error}`,
-        duration: Date.now() - startTime
+        duration: Date.now() - startTime,
       };
     }
   };
 
   const testAIService = async (testName: string): Promise<TestResult> => {
     const startTime = Date.now();
-    
+
     try {
       const serviceModule = await import('@/services/ai/documentProcessing');
       const { IntelligentDocumentProcessor } = serviceModule;
-      
+
       switch (testName) {
         case 'IntelligentDocumentProcessor class exists':
           if (!IntelligentDocumentProcessor) throw new Error('Class not found');
@@ -279,9 +280,9 @@ export function DocumentProcessingTests() {
             name: testName,
             status: 'passed',
             message: 'IntelligentDocumentProcessor class is available',
-            duration: Date.now() - startTime
+            duration: Date.now() - startTime,
           };
-        
+
         case 'processDocument method implemented':
           if (typeof IntelligentDocumentProcessor.processDocument !== 'function') {
             throw new Error('processDocument method not found');
@@ -290,12 +291,10 @@ export function DocumentProcessingTests() {
             name: testName,
             status: 'passed',
             message: 'processDocument method is implemented',
-            duration: Date.now() - startTime
+            duration: Date.now() - startTime,
           };
-        
-        case 'Nigerian pattern recognition':
-          // Test Nigerian patterns
-          const testText = 'NIN: 12345678901, Phone: +2348012345678';
+
+        case 'Nigerian pattern recognition': {
           const patterns = (IntelligentDocumentProcessor as any).NIGERIAN_PATTERNS;
           if (!patterns || !patterns.nin || !patterns.phone) {
             throw new Error('Nigerian patterns not defined');
@@ -304,15 +303,16 @@ export function DocumentProcessingTests() {
             name: testName,
             status: 'passed',
             message: 'Nigerian patterns (NIN, phone, etc.) are configured',
-            duration: Date.now() - startTime
+            duration: Date.now() - startTime,
           };
-        
+        }
+
         default:
           return {
             name: testName,
             status: 'passed',
             message: 'AI service component exists',
-            duration: Date.now() - startTime
+            duration: Date.now() - startTime,
           };
       }
     } catch (error) {
@@ -320,52 +320,56 @@ export function DocumentProcessingTests() {
         name: testName,
         status: 'failed',
         message: `AI service test failed: ${error}`,
-        duration: Date.now() - startTime
+        duration: Date.now() - startTime,
       };
     }
   };
 
   const testReactIntegration = async (testName: string): Promise<TestResult> => {
     const startTime = Date.now();
-    
+
     try {
       switch (testName) {
-        case 'useDocumentProcessing hook':
+        case 'useDocumentProcessing hook': {
           const hookModule = await import('@/hooks/useDocumentProcessing');
           if (!hookModule.useDocumentProcessing) throw new Error('Hook not found');
           return {
             name: testName,
             status: 'passed',
             message: 'useDocumentProcessing hook is available',
-            duration: Date.now() - startTime
+            duration: Date.now() - startTime,
           };
-        
-        case 'DocumentProcessingDashboard component':
-          const dashboardModule = await import('@/components/documents/DocumentProcessingDashboard');
+        }
+
+        case 'DocumentProcessingDashboard component': {
+          const dashboardModule =
+            await import('@/components/documents/DocumentProcessingDashboard');
           if (!dashboardModule.DocumentProcessingDashboard) throw new Error('Component not found');
           return {
             name: testName,
             status: 'passed',
             message: 'DocumentProcessingDashboard component exists',
-            duration: Date.now() - startTime
+            duration: Date.now() - startTime,
           };
-        
-        case 'DocumentUpload component':
+        }
+
+        case 'DocumentUpload component': {
           const uploadModule = await import('@/components/documents/DocumentUpload');
           if (!uploadModule.DocumentUpload) throw new Error('Component not found');
           return {
             name: testName,
             status: 'passed',
             message: 'DocumentUpload component with drag & drop exists',
-            duration: Date.now() - startTime
+            duration: Date.now() - startTime,
           };
-        
+        }
+
         default:
           return {
             name: testName,
             status: 'passed',
             message: 'React integration component exists',
-            duration: Date.now() - startTime
+            duration: Date.now() - startTime,
           };
       }
     } catch (error) {
@@ -373,28 +377,28 @@ export function DocumentProcessingTests() {
         name: testName,
         status: 'failed',
         message: `React integration test failed: ${error}`,
-        duration: Date.now() - startTime
+        duration: Date.now() - startTime,
       };
     }
   };
 
   const testDatabaseSchema = async (testName: string): Promise<TestResult> => {
     const startTime = Date.now();
-    
+
     // Check if migration file exists
     try {
       // Browser-compatible migration validation
       const migrationPath = '/supabase/migrations/20250801_document_processing.sql';
-      
+
       // Simulate migration file validation for browser environment
       const migrationExists = true; // In production, this would be validated server-side
-      
+
       if (!migrationExists) {
         throw new Error('Migration file not found');
       }
-      
+
       const migrationContent = '-- Document processing migration validated';
-      
+
       switch (testName) {
         case 'document_metadata table':
           if (!migrationContent.includes('CREATE TABLE IF NOT EXISTS document_metadata')) {
@@ -404,9 +408,9 @@ export function DocumentProcessingTests() {
             name: testName,
             status: 'passed',
             message: 'document_metadata table is defined in migration',
-            duration: Date.now() - startTime
+            duration: Date.now() - startTime,
           };
-        
+
         case 'RLS policies configured':
           if (!migrationContent.includes('ENABLE ROW LEVEL SECURITY')) {
             throw new Error('RLS not enabled in migration');
@@ -415,9 +419,9 @@ export function DocumentProcessingTests() {
             name: testName,
             status: 'passed',
             message: 'Row Level Security policies are configured',
-            duration: Date.now() - startTime
+            duration: Date.now() - startTime,
           };
-        
+
         case 'Storage bucket setup':
           if (!migrationContent.includes('storage.buckets')) {
             throw new Error('Storage bucket not configured');
@@ -426,15 +430,15 @@ export function DocumentProcessingTests() {
             name: testName,
             status: 'passed',
             message: 'Document storage bucket is configured',
-            duration: Date.now() - startTime
+            duration: Date.now() - startTime,
           };
-        
+
         default:
           return {
             name: testName,
             status: 'passed',
             message: 'Database schema component exists',
-            duration: Date.now() - startTime
+            duration: Date.now() - startTime,
           };
       }
     } catch (error) {
@@ -442,18 +446,18 @@ export function DocumentProcessingTests() {
         name: testName,
         status: 'failed',
         message: `Database schema test failed: ${error}`,
-        duration: Date.now() - startTime
+        duration: Date.now() - startTime,
       };
     }
   };
 
   const testSecurity = async (testName: string): Promise<TestResult> => {
     const startTime = Date.now();
-    
+
     try {
       const serviceModule = await import('@/services/ai/documentProcessing');
       const { IntelligentDocumentProcessor } = serviceModule;
-      
+
       switch (testName) {
         case 'NDPR compliance checks':
           // Check if compliance checking is implemented
@@ -461,23 +465,23 @@ export function DocumentProcessingTests() {
             name: testName,
             status: 'passed',
             message: 'NDPR compliance checking is implemented',
-            duration: Date.now() - startTime
+            duration: Date.now() - startTime,
           };
-        
+
         case 'Sensitive document handling':
           return {
             name: testName,
             status: 'passed',
             message: 'Sensitive document detection is implemented',
-            duration: Date.now() - startTime
+            duration: Date.now() - startTime,
           };
-        
+
         default:
           return {
             name: testName,
             status: 'passed',
             message: 'Security feature is implemented',
-            duration: Date.now() - startTime
+            duration: Date.now() - startTime,
           };
       }
     } catch (error) {
@@ -485,14 +489,14 @@ export function DocumentProcessingTests() {
         name: testName,
         status: 'failed',
         message: `Security test failed: ${error}`,
-        duration: Date.now() - startTime
+        duration: Date.now() - startTime,
       };
     }
   };
 
   const testDashboardIntegration = async (testName: string): Promise<TestResult> => {
     const startTime = Date.now();
-    
+
     try {
       switch (testName) {
         case 'Owner dashboard integration':
@@ -501,15 +505,15 @@ export function DocumentProcessingTests() {
             name: testName,
             status: 'passed',
             message: 'Document processing is integrated into owner dashboard',
-            duration: Date.now() - startTime
+            duration: Date.now() - startTime,
           };
-        
+
         default:
           return {
             name: testName,
             status: 'passed',
             message: 'Dashboard integration exists',
-            duration: Date.now() - startTime
+            duration: Date.now() - startTime,
           };
       }
     } catch (error) {
@@ -517,7 +521,7 @@ export function DocumentProcessingTests() {
         name: testName,
         status: 'failed',
         message: `Dashboard integration test failed: ${error}`,
-        duration: Date.now() - startTime
+        duration: Date.now() - startTime,
       };
     }
   };
@@ -529,7 +533,7 @@ export function DocumentProcessingTests() {
       case 'failed':
         return <XCircle className="h-4 w-4 text-red-500" />;
       case 'running':
-        return <Clock className="h-4 w-4 text-blue-500 animate-spin" />;
+        return <Clock className="h-4 w-4 animate-spin text-blue-500" />;
       default:
         return <Clock className="h-4 w-4 text-gray-400" />;
     }
@@ -557,22 +561,20 @@ export function DocumentProcessingTests() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex justify-between items-center">
+      <div className="flex items-center justify-between">
         <div>
           <h2 className="text-2xl font-bold text-gray-900">Document Processing System Tests</h2>
-          <p className="text-gray-600">Comprehensive validation of AI-powered document processing</p>
+          <p className="text-gray-600">
+            Comprehensive validation of AI-powered document processing
+          </p>
         </div>
-        <Button 
-          onClick={runTests} 
-          disabled={isRunning}
-          className="min-w-32"
-        >
+        <Button onClick={runTests} disabled={isRunning} className="min-w-32">
           {isRunning ? 'Running Tests...' : 'Run All Tests'}
         </Button>
       </div>
 
       {/* Progress & Summary */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
@@ -647,9 +649,10 @@ export function DocumentProcessingTests() {
         <TabsContent value="overview" className="space-y-4">
           <div className="grid gap-4">
             {testCategories.map((category, index) => {
-              const categoryPassed = category.tests.filter(t => t.status === 'passed').length;
+              const categoryPassed = category.tests.filter((t) => t.status === 'passed').length;
               const categoryTotal = category.tests.length;
-              const categoryRate = categoryTotal > 0 ? Math.round((categoryPassed / categoryTotal) * 100) : 0;
+              const categoryRate =
+                categoryTotal > 0 ? Math.round((categoryPassed / categoryTotal) * 100) : 0;
 
               return (
                 <Card key={index}>
@@ -661,9 +664,7 @@ export function DocumentProcessingTests() {
                         {categoryPassed}/{categoryTotal}
                       </Badge>
                     </CardTitle>
-                    <CardDescription>
-                      Success rate: {categoryRate}%
-                    </CardDescription>
+                    <CardDescription>Success rate: {categoryRate}%</CardDescription>
                   </CardHeader>
                   <CardContent>
                     <Progress value={categoryRate} className="h-2" />
@@ -686,14 +687,15 @@ export function DocumentProcessingTests() {
               <CardContent>
                 <div className="space-y-2">
                   {category.tests.map((test, testIndex) => (
-                    <div key={testIndex} className="flex items-center justify-between p-3 border rounded-lg">
+                    <div
+                      key={testIndex}
+                      className="flex items-center justify-between rounded-lg border p-3"
+                    >
                       <div className="flex items-center gap-3">
                         {getStatusIcon(test.status)}
                         <div>
                           <p className="font-medium">{test.name}</p>
-                          {test.message && (
-                            <p className="text-sm text-gray-600">{test.message}</p>
-                          )}
+                          {test.message && <p className="text-sm text-gray-600">{test.message}</p>}
                           {test.duration && (
                             <p className="text-xs text-gray-500">{test.duration}ms</p>
                           )}

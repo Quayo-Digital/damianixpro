@@ -1,10 +1,22 @@
-
-import { FormField, FormItem, FormLabel, FormControl, FormMessage, FormDescription } from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { UseFormReturn } from "react-hook-form";
-import { MaintenanceFormValues } from "../MaintenanceRequestForm";
+import {
+  FormField,
+  FormItem,
+  FormLabel,
+  FormControl,
+  FormMessage,
+  FormDescription,
+} from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { UseFormReturn } from 'react-hook-form';
+import { MaintenanceFormValues } from '../MaintenanceRequestForm';
 
 interface FormFieldsProps {
   form: UseFormReturn<MaintenanceFormValues>;
@@ -26,7 +38,7 @@ export function FormFields({ form }: FormFieldsProps) {
           </FormItem>
         )}
       />
-      
+
       <FormField
         control={form.control}
         name="urgency"
@@ -51,7 +63,7 @@ export function FormFields({ form }: FormFieldsProps) {
           </FormItem>
         )}
       />
-      
+
       <FormField
         control={form.control}
         name="description"
@@ -59,10 +71,10 @@ export function FormFields({ form }: FormFieldsProps) {
           <FormItem>
             <FormLabel className="font-medium">Description</FormLabel>
             <FormControl>
-              <Textarea 
-                placeholder="Please describe the issue in detail..." 
-                className="min-h-[100px]" 
-                {...field} 
+              <Textarea
+                placeholder="Please describe the issue in detail..."
+                className="min-h-[100px]"
+                {...field}
               />
             </FormControl>
             <FormMessage />

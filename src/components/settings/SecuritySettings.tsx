@@ -1,14 +1,20 @@
-
 import { useState } from 'react';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { toast } from '@/hooks/use-toast';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuthActions } from '@/contexts/AuthContext';
 
 export const SecuritySettings = () => {
-  const { resetPassword } = useAuth();
+  const { resetPassword } = useAuthActions();
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [isSaving, setIsSaving] = useState(false);
@@ -16,36 +22,36 @@ export const SecuritySettings = () => {
   const handleSavePassword = async () => {
     if (newPassword !== confirmPassword) {
       toast({
-        title: "Error",
-        description: "New passwords do not match.",
-        variant: "destructive",
+        title: 'Error',
+        description: 'New passwords do not match.',
+        variant: 'destructive',
       });
       return;
     }
-    
+
     if (newPassword.length < 6) {
       toast({
-        title: "Error",
-        description: "New password must be at least 6 characters long.",
-        variant: "destructive",
+        title: 'Error',
+        description: 'New password must be at least 6 characters long.',
+        variant: 'destructive',
       });
       return;
     }
-    
+
     setIsSaving(true);
     try {
       await resetPassword(newPassword);
       toast({
-        title: "Password updated",
-        description: "Your password has been changed successfully.",
+        title: 'Password updated',
+        description: 'Your password has been changed successfully.',
       });
       setNewPassword('');
       setConfirmPassword('');
     } catch (error) {
-       toast({
-        title: "Error",
-        description: "Failed to update password. Please try again.",
-        variant: "destructive",
+      toast({
+        title: 'Error',
+        description: 'Failed to update password. Please try again.',
+        variant: 'destructive',
       });
     } finally {
       setIsSaving(false);
@@ -56,25 +62,23 @@ export const SecuritySettings = () => {
     <Card>
       <CardHeader>
         <CardTitle>Security Settings</CardTitle>
-        <CardDescription>
-          Manage your password and account security.
-        </CardDescription>
+        <CardDescription>Manage your password and account security.</CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="space-y-2">
           <Label htmlFor="new-password">New password</Label>
-          <Input 
-            id="new-password" 
-            type="password" 
+          <Input
+            id="new-password"
+            type="password"
             value={newPassword}
             onChange={(e) => setNewPassword(e.target.value)}
           />
         </div>
         <div className="space-y-2">
           <Label htmlFor="confirm-password">Confirm password</Label>
-          <Input 
-            id="confirm-password" 
-            type="password" 
+          <Input
+            id="confirm-password"
+            type="password"
             value={confirmPassword}
             onChange={(e) => setConfirmPassword(e.target.value)}
           />

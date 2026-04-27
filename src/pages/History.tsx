@@ -1,9 +1,8 @@
-
 import { AlertCircle } from 'lucide-react';
 import { PageLayout } from '@/components/layout/PageLayout';
 import { PageContent } from '@/components/layout/PageContent';
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { useAuth } from '@/contexts/AuthContext';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { useAuthSession } from '@/contexts/AuthContext';
 import { useActivities } from '@/hooks/useActivities';
 import { SearchControls } from '@/components/history/SearchControls';
 import { ErrorState } from '@/components/history/ErrorState';
@@ -12,8 +11,8 @@ import { ActivitiesTable } from '@/components/history/ActivitiesTable';
 import { PaginationControls } from '@/components/history/PaginationControls';
 
 const History = () => {
-  const { session } = useAuth();
-  const { 
+  const { session } = useAuthSession();
+  const {
     filteredActivities,
     isLoading,
     isError,
@@ -31,15 +30,12 @@ const History = () => {
     handleSearch,
     clearSearch,
     handleRefresh,
-    handlePageChange
+    handlePageChange,
   } = useActivities();
 
   return (
     <PageLayout>
-      <PageContent 
-        title="Activity History" 
-        description="View all activities and transactions"
-      >
+      <PageContent title="Activity History" description="View all activities and transactions">
         {/* Search and Filter Controls */}
         <SearchControls
           searchQuery={searchQuery}
@@ -57,14 +53,12 @@ const History = () => {
           <Alert className="mb-6">
             <AlertCircle className="h-4 w-4" />
             <AlertTitle>Authentication Required</AlertTitle>
-            <AlertDescription>
-              Please log in to view your activity history.
-            </AlertDescription>
+            <AlertDescription>Please log in to view your activity history.</AlertDescription>
           </Alert>
         )}
 
         {/* Main Loading Indicator */}
-        {(isLoading && !isError) && <LoadingIndicator isRefetching={isRefetching} />}
+        {isLoading && !isError && <LoadingIndicator isRefetching={isRefetching} />}
 
         {/* Error State */}
         {isError && <ErrorState error={error} refetch={refetch} />}
@@ -81,7 +75,7 @@ const History = () => {
             isAuthenticated={!!session}
           />
         )}
-        
+
         {/* Pagination */}
         {totalPages > 0 && !isError && !isLoading && (
           <PaginationControls

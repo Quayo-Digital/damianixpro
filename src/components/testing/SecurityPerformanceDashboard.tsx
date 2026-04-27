@@ -5,7 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Progress } from '@/components/ui/progress';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { 
+import {
   Shield,
   Activity,
   AlertTriangle,
@@ -22,7 +22,7 @@ import {
   Zap,
   Globe,
   Wifi,
-  Smartphone
+  Smartphone,
 } from 'lucide-react';
 import { SecurityAuditTest } from './SecurityAuditTest';
 import { PerformanceEmergencyResponse } from './PerformanceEmergencyResponse';
@@ -45,8 +45,8 @@ export const SecurityPerformanceDashboard = () => {
       fcp: 78,
       lcp: 82,
       fid: 95,
-      cls: 88
-    }
+      cls: 88,
+    },
   });
 
   // Real-time monitoring simulation
@@ -54,16 +54,19 @@ export const SecurityPerformanceDashboard = () => {
     if (!isMonitoring) return;
 
     const interval = setInterval(() => {
-      setStats(prev => ({
+      setStats((prev) => ({
         ...prev,
-        performanceScore: Math.max(0, Math.min(100, prev.performanceScore + (Math.random() - 0.5) * 5)),
+        performanceScore: Math.max(
+          0,
+          Math.min(100, prev.performanceScore + (Math.random() - 0.5) * 5)
+        ),
         memoryUsage: Math.max(0, Math.min(100, prev.memoryUsage + (Math.random() - 0.5) * 2)),
         coreWebVitals: {
           fcp: Math.max(0, Math.min(100, prev.coreWebVitals.fcp + (Math.random() - 0.5) * 3)),
           lcp: Math.max(0, Math.min(100, prev.coreWebVitals.lcp + (Math.random() - 0.5) * 3)),
           fid: Math.max(0, Math.min(100, prev.coreWebVitals.fid + (Math.random() - 0.5) * 2)),
-          cls: Math.max(0, Math.min(100, prev.coreWebVitals.cls + (Math.random() - 0.5) * 2))
-        }
+          cls: Math.max(0, Math.min(100, prev.coreWebVitals.cls + (Math.random() - 0.5) * 2)),
+        },
       }));
     }, 5000);
 
@@ -71,11 +74,11 @@ export const SecurityPerformanceDashboard = () => {
   }, [isMonitoring]);
 
   const runComprehensiveAudit = () => {
-    setStats(prev => ({
+    setStats((prev) => ({
       ...prev,
       lastAuditTime: new Date(),
       securityScore: Math.floor(Math.random() * 20) + 80,
-      performanceScore: Math.floor(Math.random() * 30) + 70
+      performanceScore: Math.floor(Math.random() * 30) + 70,
     }));
   };
 
@@ -100,12 +103,12 @@ export const SecurityPerformanceDashboard = () => {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold flex items-center gap-2">
+          <h2 className="flex items-center gap-2 text-2xl font-bold">
             <Shield className="h-6 w-6" />
             Security & Performance Dashboard
           </h2>
           <p className="text-gray-600">
-            Real-time monitoring and comprehensive security assessment for Nigeria Homes platform
+            Real-time monitoring and comprehensive security assessment for DamianixPro platform
           </p>
         </div>
         <div className="flex items-center gap-3">
@@ -120,10 +123,10 @@ export const SecurityPerformanceDashboard = () => {
       </div>
 
       {/* Key Metrics Overview */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 gap-6 md:grid-cols-4">
         <Card>
           <CardHeader className="pb-3">
-            <CardTitle className="text-lg flex items-center gap-2">
+            <CardTitle className="flex items-center gap-2 text-lg">
               <Shield className="h-5 w-5" />
               Overall Health
             </CardTitle>
@@ -143,7 +146,7 @@ export const SecurityPerformanceDashboard = () => {
 
         <Card>
           <CardHeader className="pb-3">
-            <CardTitle className="text-lg flex items-center gap-2">
+            <CardTitle className="flex items-center gap-2 text-lg">
               <Lock className="h-5 w-5" />
               Security Score
             </CardTitle>
@@ -152,16 +155,16 @@ export const SecurityPerformanceDashboard = () => {
             <div className={`text-2xl font-bold ${getScoreColor(stats.securityScore)}`}>
               {stats.securityScore}/100
             </div>
-            <div className="text-sm text-gray-600 mt-1">
+            <div className="mt-1 text-sm text-gray-600">
               {stats.totalSecurityEvents} events (24h)
             </div>
-            <Progress value={stats.securityScore} className="w-full mt-2" />
+            <Progress value={stats.securityScore} className="mt-2 w-full" />
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="pb-3">
-            <CardTitle className="text-lg flex items-center gap-2">
+            <CardTitle className="flex items-center gap-2 text-lg">
               <Zap className="h-5 w-5" />
               Performance Score
             </CardTitle>
@@ -170,27 +173,23 @@ export const SecurityPerformanceDashboard = () => {
             <div className={`text-2xl font-bold ${getScoreColor(stats.performanceScore)}`}>
               {stats.performanceScore}/100
             </div>
-            <div className="text-sm text-gray-600 mt-1">
+            <div className="mt-1 text-sm text-gray-600">
               {stats.memoryUsage.toFixed(1)}% memory usage
             </div>
-            <Progress value={stats.performanceScore} className="w-full mt-2" />
+            <Progress value={stats.performanceScore} className="mt-2 w-full" />
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="pb-3">
-            <CardTitle className="text-lg flex items-center gap-2">
+            <CardTitle className="flex items-center gap-2 text-lg">
               <Globe className="h-5 w-5" />
               Network Status
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-lg font-semibold capitalize">
-              {stats.networkEffectiveType}
-            </div>
-            <div className="text-sm text-gray-600 mt-1">
-              {stats.criticalAlerts} critical alerts
-            </div>
+            <div className="text-lg font-semibold capitalize">{stats.networkEffectiveType}</div>
+            <div className="mt-1 text-sm text-gray-600">{stats.criticalAlerts} critical alerts</div>
             <Badge variant={stats.criticalAlerts > 0 ? 'destructive' : 'default'} className="mt-2">
               {stats.criticalAlerts > 0 ? 'Issues Detected' : 'Stable'}
             </Badge>
@@ -210,7 +209,7 @@ export const SecurityPerformanceDashboard = () => {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
             <div className="text-center">
               <div className={`text-xl font-bold ${getScoreColor(stats.coreWebVitals.fcp)}`}>
                 {stats.coreWebVitals.fcp}/100
@@ -244,9 +243,9 @@ export const SecurityPerformanceDashboard = () => {
         <Smartphone className="h-4 w-4" />
         <AlertTitle>Nigerian Market Performance Insights</AlertTitle>
         <AlertDescription>
-          Platform optimized for Nigerian network conditions. Current performance: {stats.performanceScore}/100 
-          with {stats.networkEffectiveType.toUpperCase()} network optimization. 
-          Last audit: {stats.lastAuditTime.toLocaleTimeString()}.
+          Platform optimized for Nigerian network conditions. Current performance:{' '}
+          {stats.performanceScore}/100 with {stats.networkEffectiveType.toUpperCase()} network
+          optimization. Last audit: {stats.lastAuditTime.toLocaleTimeString()}.
         </AlertDescription>
       </Alert>
 
@@ -263,7 +262,7 @@ export const SecurityPerformanceDashboard = () => {
         </TabsList>
 
         <TabsContent value="overview" className="space-y-6">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
             {/* Security Overview */}
             <Card>
               <CardHeader>
@@ -336,7 +335,7 @@ export const SecurityPerformanceDashboard = () => {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                <div className="flex items-center justify-between p-4 border rounded-lg">
+                <div className="flex items-center justify-between rounded-lg border p-4">
                   <div>
                     <h4 className="font-medium">Current Performance Score</h4>
                     <p className="text-sm text-gray-600">Overall platform performance</p>
@@ -345,16 +344,18 @@ export const SecurityPerformanceDashboard = () => {
                     {stats.performanceScore}/100
                   </div>
                 </div>
-                
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="p-4 border rounded-lg">
-                    <h4 className="font-medium mb-2">Memory Usage</h4>
+
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                  <div className="rounded-lg border p-4">
+                    <h4 className="mb-2 font-medium">Memory Usage</h4>
                     <Progress value={stats.memoryUsage} className="w-full" />
-                    <p className="text-sm text-gray-600 mt-1">{stats.memoryUsage.toFixed(1)}% of available memory</p>
+                    <p className="mt-1 text-sm text-gray-600">
+                      {stats.memoryUsage.toFixed(1)}% of available memory
+                    </p>
                   </div>
-                  
-                  <div className="p-4 border rounded-lg">
-                    <h4 className="font-medium mb-2">Network Optimization</h4>
+
+                  <div className="rounded-lg border p-4">
+                    <h4 className="mb-2 font-medium">Network Optimization</h4>
                     <Badge variant="default" className="mb-2">
                       {stats.networkEffectiveType.toUpperCase()} Optimized
                     </Badge>
@@ -362,10 +363,7 @@ export const SecurityPerformanceDashboard = () => {
                   </div>
                 </div>
 
-                <Button 
-                  onClick={runComprehensiveAudit}
-                  className="w-full"
-                >
+                <Button onClick={runComprehensiveAudit} className="w-full">
                   Analyze Current Performance
                 </Button>
               </div>

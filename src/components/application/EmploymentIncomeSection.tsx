@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Control } from 'react-hook-form';
 import { Input } from '@/components/ui/input';
@@ -14,7 +13,7 @@ interface EmploymentIncomeSectionProps {
 const EmploymentIncomeSection = ({ control, employmentStatus }: EmploymentIncomeSectionProps) => {
   return (
     <div>
-      <h3 className="text-lg font-medium mb-4">Employment & Income</h3>
+      <h3 className="mb-4 text-lg font-medium">Employment & Income</h3>
       <div className="space-y-4">
         <FormField
           control={control}
@@ -29,7 +28,7 @@ const EmploymentIncomeSection = ({ control, employmentStatus }: EmploymentIncome
             </FormItem>
           )}
         />
-        
+
         <FormField
           control={control}
           name="monthlyIncome"
@@ -43,7 +42,7 @@ const EmploymentIncomeSection = ({ control, employmentStatus }: EmploymentIncome
             </FormItem>
           )}
         />
-        
+
         <FormField
           control={control}
           name="employmentStatus"
@@ -98,8 +97,8 @@ const EmploymentIncomeSection = ({ control, employmentStatus }: EmploymentIncome
             </FormItem>
           )}
         />
-        
-        {(employmentStatus === "full-time" || employmentStatus === "part-time") && (
+
+        {(employmentStatus === 'full-time' || employmentStatus === 'part-time') && (
           <>
             <FormField
               control={control}
@@ -114,7 +113,7 @@ const EmploymentIncomeSection = ({ control, employmentStatus }: EmploymentIncome
                 </FormItem>
               )}
             />
-            
+
             <FormField
               control={control}
               name="employerContact"

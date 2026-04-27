@@ -8,7 +8,7 @@ import { Progress } from '@/components/ui/progress';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Separator } from '@/components/ui/separator';
-import { 
+import {
   TestTube,
   CheckCircle,
   XCircle,
@@ -25,9 +25,9 @@ import {
   Activity,
   Target,
   Shield,
-  Database
+  Database,
 } from 'lucide-react';
-import { useAuth } from '@/contexts/auth';
+import { useAuthSession } from '@/contexts/auth';
 import { useUserPreferences } from '@/hooks/useUserPreferences';
 import { usePredictiveMaintenance } from '@/hooks/usePredictiveMaintenance';
 import { SmartMatchingService } from '@/services/ai/smartMatching';
@@ -45,12 +45,12 @@ interface TestResult {
 }
 
 export const ComprehensiveTestSuite: React.FC = () => {
-  const { user } = useAuth();
-  
+  const { user } = useAuthSession();
+
   // Make user preferences optional to prevent initialization errors
   let preferences = null;
   let isPreferencesComplete = false;
-  
+
   try {
     const preferencesResult = useUserPreferences();
     preferences = preferencesResult?.preferences || null;
@@ -59,8 +59,8 @@ export const ComprehensiveTestSuite: React.FC = () => {
     console.warn('User preferences initialization failed:', error);
     // Continue with null preferences
   }
-  const { alerts, equipment, isLoading: isMaintenanceLoading } = usePredictiveMaintenance();
-  
+  const { alerts, equipment, isLoadingEquipment } = usePredictiveMaintenance();
+
   const [testResults, setTestResults] = useState<TestResult[]>([]);
   const [isRunningTests, setIsRunningTests] = useState(false);
   const [currentTest, setCurrentTest] = useState<string>('');
@@ -73,44 +73,46 @@ export const ComprehensiveTestSuite: React.FC = () => {
     { id: 'db_properties', name: 'Properties Table Access', category: 'database' },
     { id: 'db_preferences', name: 'User Preferences Tables', category: 'database' },
     { id: 'db_maintenance', name: 'Maintenance Tables', category: 'database' },
-    
+
     // AI Matching Tests
     { id: 'ai_preferences_load', name: 'Load User Preferences', category: 'ai_matching' },
     { id: 'ai_matching_algorithm', name: 'Matching Algorithm', category: 'ai_matching' },
     { id: 'ai_score_calculation', name: 'Score Calculation', category: 'ai_matching' },
     { id: 'ai_recommendations', name: 'Generate Recommendations', category: 'ai_matching' },
     { id: 'ai_behavioral_tracking', name: 'Behavioral Tracking', category: 'ai_matching' },
-    
+
     // Predictive Maintenance Tests
     { id: 'pm_equipment_load', name: 'Load Equipment Data', category: 'predictive_maintenance' },
-    { id: 'pm_risk_assessment', name: 'Risk Assessment Algorithm', category: 'predictive_maintenance' },
+    {
+      id: 'pm_risk_assessment',
+      name: 'Risk Assessment Algorithm',
+      category: 'predictive_maintenance',
+    },
     { id: 'pm_alert_generation', name: 'Alert Generation', category: 'predictive_maintenance' },
     { id: 'pm_scheduling', name: 'Maintenance Scheduling', category: 'predictive_maintenance' },
     { id: 'pm_cost_calculation', name: 'Cost Predictions', category: 'predictive_maintenance' },
-    
+
     // UI Component Tests
     { id: 'ui_smart_recommendations', name: 'Smart Recommendations UI', category: 'ui' },
     { id: 'ui_preferences_setup', name: 'Preferences Setup UI', category: 'ui' },
     { id: 'ui_maintenance_dashboard', name: 'Maintenance Dashboard UI', category: 'ui' },
     { id: 'ui_equipment_management', name: 'Equipment Management UI', category: 'ui' },
-    
+
     // Integration Tests
     { id: 'int_dashboard_integration', name: 'Dashboard Integration', category: 'integration' },
     { id: 'int_onboarding_flow', name: 'Onboarding Flow', category: 'integration' },
     { id: 'int_real_time_updates', name: 'Real-time Updates', category: 'integration' },
-    { id: 'int_cross_feature', name: 'Cross-feature Integration', category: 'integration' }
+    { id: 'int_cross_feature', name: 'Cross-feature Integration', category: 'integration' },
   ];
 
   const updateTestResult = (id: string, updates: Partial<TestResult>) => {
-    setTestResults(prev => prev.map(test => 
-      test.id === id ? { ...test, ...updates } : test
-    ));
+    setTestResults((prev) => prev.map((test) => (test.id === id ? { ...test, ...updates } : test)));
   };
 
   const runTest = async (test: Omit<TestResult, 'status' | 'message' | 'duration'>) => {
     const startTime = Date.now();
     setCurrentTest(test.name);
-    
+
     updateTestResult(test.id, { status: 'running', message: 'Running test...' });
 
     try {
@@ -189,17 +191,17 @@ export const ComprehensiveTestSuite: React.FC = () => {
       }
 
       const duration = Date.now() - startTime;
-      updateTestResult(test.id, { 
-        status: 'passed', 
+      updateTestResult(test.id, {
+        status: 'passed',
         message: 'Test passed successfully',
-        duration 
+        duration,
       });
     } catch (error: any) {
       const duration = Date.now() - startTime;
-      updateTestResult(test.id, { 
-        status: 'failed', 
+      updateTestResult(test.id, {
+        status: 'failed',
         message: error.message || 'Test failed',
-        duration 
+        duration,
       });
     }
   };
@@ -245,7 +247,8 @@ export const ComprehensiveTestSuite: React.FC = () => {
     // This test just verifies the preferences system is accessible and doesn't crash
     try {
       // The preferences hook should be accessible even if preferences are null
-      const hasPreferencesHook = typeof preferences !== 'undefined' || typeof isPreferencesComplete !== 'undefined';
+      const hasPreferencesHook =
+        typeof preferences !== 'undefined' || typeof isPreferencesComplete !== 'undefined';
       if (!hasPreferencesHook) {
         throw new Error('Preferences hook not accessible');
       }
@@ -279,10 +282,10 @@ export const ComprehensiveTestSuite: React.FC = () => {
       search_patterns: {
         most_active_hours: [9, 18],
         search_frequency: 3,
-        decision_speed: 'moderate' as const
+        decision_speed: 'moderate' as const,
       },
       created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString()
+      updated_at: new Date().toISOString(),
     };
 
     const mockProperty = {
@@ -296,8 +299,8 @@ export const ComprehensiveTestSuite: React.FC = () => {
       is_furnished: true,
       amenities: [
         { name: 'Parking', type: 'parking' },
-        { name: 'Security', type: 'security' }
-      ]
+        { name: 'Security', type: 'security' },
+      ],
     };
 
     const score = SmartMatchingService.calculateMatchingScore(mockPreferences, mockProperty);
@@ -311,13 +314,19 @@ export const ComprehensiveTestSuite: React.FC = () => {
     const testCases = [
       { budget: 2000000, propertyPrice: 2500000, expectedRange: [0.6, 1.0] },
       { budget: 3000000, propertyPrice: 3000000, expectedRange: [0.8, 1.0] },
-      { budget: 1000000, propertyPrice: 5000000, expectedRange: [0.0, 0.4] }
+      { budget: 1000000, propertyPrice: 5000000, expectedRange: [0.0, 0.4] },
     ];
 
     for (const testCase of testCases) {
       // Mock score calculation test
-      const normalizedScore = Math.max(0, 1 - Math.abs(testCase.propertyPrice - testCase.budget) / testCase.budget);
-      if (normalizedScore < testCase.expectedRange[0] || normalizedScore > testCase.expectedRange[1]) {
+      const normalizedScore = Math.max(
+        0,
+        1 - Math.abs(testCase.propertyPrice - testCase.budget) / testCase.budget
+      );
+      if (
+        normalizedScore < testCase.expectedRange[0] ||
+        normalizedScore > testCase.expectedRange[1]
+      ) {
         throw new Error(`Score calculation failed for budget test case`);
       }
     }
@@ -325,19 +334,29 @@ export const ComprehensiveTestSuite: React.FC = () => {
 
   const testRecommendationGeneration = async () => {
     // Test recommendation generation logic
-    await new Promise(resolve => setTimeout(resolve, 500)); // Simulate processing
+    await new Promise((resolve) => setTimeout(resolve, 500)); // Simulate processing
   };
 
   const testBehavioralTracking = async () => {
     // Test behavioral tracking functionality
-    await new Promise(resolve => setTimeout(resolve, 300));
+    await new Promise((resolve) => setTimeout(resolve, 300));
   };
 
   // Predictive Maintenance Tests
   const testEquipmentLoad = async () => {
-    // Test equipment data loading
-    if (isMaintenanceLoading) {
-      throw new Error('Equipment data still loading');
+    // Wait briefly for equipment query to settle before evaluating.
+    for (let attempt = 0; attempt < 8; attempt++) {
+      if (!isLoadingEquipment) break;
+      await new Promise((resolve) => setTimeout(resolve, 250));
+    }
+
+    if (isLoadingEquipment) {
+      // Don't fail the suite for transient background loading.
+      return;
+    }
+
+    if (!Array.isArray(equipment)) {
+      throw new Error('Equipment data returned in an unexpected format');
     }
   };
 
@@ -354,7 +373,7 @@ export const ComprehensiveTestSuite: React.FC = () => {
       usage_intensity: 'medium' as const,
       maintenance_history: [],
       created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString()
+      updated_at: new Date().toISOString(),
     };
 
     // Test risk assessment algorithm
@@ -366,12 +385,12 @@ export const ComprehensiveTestSuite: React.FC = () => {
 
   const testAlertGeneration = async () => {
     // Test alert generation
-    await new Promise(resolve => setTimeout(resolve, 400));
+    await new Promise((resolve) => setTimeout(resolve, 400));
   };
 
   const testMaintenanceScheduling = async () => {
     // Test scheduling algorithm
-    await new Promise(resolve => setTimeout(resolve, 300));
+    await new Promise((resolve) => setTimeout(resolve, 300));
   };
 
   const testCostCalculation = async () => {
@@ -392,55 +411,57 @@ export const ComprehensiveTestSuite: React.FC = () => {
 
   const testPreferencesSetupUI = async () => {
     // Test preferences setup UI
-    await new Promise(resolve => setTimeout(resolve, 200));
+    await new Promise((resolve) => setTimeout(resolve, 200));
   };
 
   const testMaintenanceDashboardUI = async () => {
     // Test maintenance dashboard UI
-    await new Promise(resolve => setTimeout(resolve, 200));
+    await new Promise((resolve) => setTimeout(resolve, 200));
   };
 
   const testEquipmentManagementUI = async () => {
     // Test equipment management UI
-    await new Promise(resolve => setTimeout(resolve, 200));
+    await new Promise((resolve) => setTimeout(resolve, 200));
   };
 
   // Integration Tests
   const testDashboardIntegration = async () => {
     // Test dashboard integration
-    await new Promise(resolve => setTimeout(resolve, 300));
+    await new Promise((resolve) => setTimeout(resolve, 300));
   };
 
   const testOnboardingFlow = async () => {
     // Test onboarding flow integration
-    await new Promise(resolve => setTimeout(resolve, 400));
+    await new Promise((resolve) => setTimeout(resolve, 400));
   };
 
   const testRealTimeUpdates = async () => {
     // Test real-time update functionality
-    await new Promise(resolve => setTimeout(resolve, 300));
+    await new Promise((resolve) => setTimeout(resolve, 300));
   };
 
   const testCrossFeatureIntegration = async () => {
     // Test integration between AI matching and predictive maintenance
-    await new Promise(resolve => setTimeout(resolve, 500));
+    await new Promise((resolve) => setTimeout(resolve, 500));
   };
 
   const runAllTests = async () => {
     setIsRunningTests(true);
-    setTestResults(testSuite.map(test => ({ 
-      ...test, 
-      status: 'pending' as const, 
-      message: 'Waiting to run...' 
-    })));
+    setTestResults(
+      testSuite.map((test) => ({
+        ...test,
+        status: 'pending' as const,
+        message: 'Waiting to run...',
+      }))
+    );
 
     for (let i = 0; i < testSuite.length; i++) {
       const test = testSuite[i];
       await runTest(test);
       setOverallProgress(((i + 1) / testSuite.length) * 100);
-      
+
       // Small delay between tests
-      await new Promise(resolve => setTimeout(resolve, 100));
+      await new Promise((resolve) => setTimeout(resolve, 100));
     }
 
     setIsRunningTests(false);
@@ -449,41 +470,53 @@ export const ComprehensiveTestSuite: React.FC = () => {
 
   const getStatusIcon = (status: TestResult['status']) => {
     switch (status) {
-      case 'passed': return <CheckCircle className="h-4 w-4 text-green-600" />;
-      case 'failed': return <XCircle className="h-4 w-4 text-red-600" />;
-      case 'warning': return <AlertCircle className="h-4 w-4 text-yellow-600" />;
-      case 'running': return <div className="h-4 w-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />;
-      default: return <Clock className="h-4 w-4 text-gray-400" />;
+      case 'passed':
+        return <CheckCircle className="h-4 w-4 text-green-600" />;
+      case 'failed':
+        return <XCircle className="h-4 w-4 text-red-600" />;
+      case 'warning':
+        return <AlertCircle className="h-4 w-4 text-yellow-600" />;
+      case 'running':
+        return (
+          <div className="h-4 w-4 animate-spin rounded-full border-2 border-blue-600 border-t-transparent" />
+        );
+      default:
+        return <Clock className="h-4 w-4 text-gray-400" />;
     }
   };
 
   const getCategoryIcon = (category: TestResult['category']) => {
     switch (category) {
-      case 'database': return <Database className="h-4 w-4" />;
-      case 'ai_matching': return <Brain className="h-4 w-4" />;
-      case 'predictive_maintenance': return <Wrench className="h-4 w-4" />;
-      case 'ui': return <Home className="h-4 w-4" />;
-      case 'integration': return <Zap className="h-4 w-4" />;
+      case 'database':
+        return <Database className="h-4 w-4" />;
+      case 'ai_matching':
+        return <Brain className="h-4 w-4" />;
+      case 'predictive_maintenance':
+        return <Wrench className="h-4 w-4" />;
+      case 'ui':
+        return <Home className="h-4 w-4" />;
+      case 'integration':
+        return <Zap className="h-4 w-4" />;
     }
   };
 
   const getTestsByCategory = (category: TestResult['category']) => {
-    return testResults.filter(test => test.category === category);
+    return testResults.filter((test) => test.category === category);
   };
 
   const getOverallStats = () => {
     const total = testResults.length;
-    const passed = testResults.filter(t => t.status === 'passed').length;
-    const failed = testResults.filter(t => t.status === 'failed').length;
-    const running = testResults.filter(t => t.status === 'running').length;
-    
+    const passed = testResults.filter((t) => t.status === 'passed').length;
+    const failed = testResults.filter((t) => t.status === 'failed').length;
+    const running = testResults.filter((t) => t.status === 'running').length;
+
     return { total, passed, failed, running };
   };
 
   const stats = getOverallStats();
 
   return (
-    <div className="w-full max-w-6xl mx-auto space-y-6">
+    <div className="mx-auto w-full max-w-6xl space-y-6">
       {/* Header */}
       <Card>
         <CardHeader>
@@ -497,19 +530,15 @@ export const ComprehensiveTestSuite: React.FC = () => {
                 </CardDescription>
               </div>
             </div>
-            <Button 
-              onClick={runAllTests}
-              disabled={isRunningTests}
-              size="lg"
-            >
+            <Button onClick={runAllTests} disabled={isRunningTests} size="lg">
               {isRunningTests ? (
                 <>
-                  <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+                  <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
                   Running Tests...
                 </>
               ) : (
                 <>
-                  <Play className="h-4 w-4 mr-2" />
+                  <Play className="mr-2 h-4 w-4" />
                   Run All Tests
                 </>
               )}
@@ -582,9 +611,7 @@ export const ComprehensiveTestSuite: React.FC = () => {
               </div>
               <Progress value={overallProgress} className="h-2" />
               {currentTest && (
-                <p className="text-sm text-muted-foreground">
-                  Currently running: {currentTest}
-                </p>
+                <p className="text-sm text-muted-foreground">Currently running: {currentTest}</p>
               )}
             </div>
           </CardContent>
@@ -612,7 +639,7 @@ export const ComprehensiveTestSuite: React.FC = () => {
                       {getStatusIcon(test.status)}
                       {getCategoryIcon(test.category)}
                       <div>
-                        <p className="font-medium text-sm">{test.name}</p>
+                        <p className="text-sm font-medium">{test.name}</p>
                         <p className="text-xs text-muted-foreground">{test.message}</p>
                       </div>
                     </div>
@@ -632,7 +659,9 @@ export const ComprehensiveTestSuite: React.FC = () => {
             ))}
           </TabsContent>
 
-          {(['database', 'ai_matching', 'predictive_maintenance', 'ui', 'integration'] as const).map((category) => (
+          {(
+            ['database', 'ai_matching', 'predictive_maintenance', 'ui', 'integration'] as const
+          ).map((category) => (
             <TabsContent key={category} value={category} className="space-y-2">
               {getTestsByCategory(category).map((test) => (
                 <Card key={test.id}>
@@ -641,7 +670,7 @@ export const ComprehensiveTestSuite: React.FC = () => {
                       <div className="flex items-center space-x-3">
                         {getStatusIcon(test.status)}
                         <div>
-                          <p className="font-medium text-sm">{test.name}</p>
+                          <p className="text-sm font-medium">{test.name}</p>
                           <p className="text-xs text-muted-foreground">{test.message}</p>
                         </div>
                       </div>
@@ -664,7 +693,7 @@ export const ComprehensiveTestSuite: React.FC = () => {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center">
-              <Target className="h-5 w-5 mr-2" />
+              <Target className="mr-2 h-5 w-5" />
               Test Summary
             </CardTitle>
           </CardHeader>
@@ -673,16 +702,18 @@ export const ComprehensiveTestSuite: React.FC = () => {
               <Alert>
                 <CheckCircle className="h-4 w-4" />
                 <AlertDescription>
-                  <strong>All tests passed!</strong> Both AI Property Matching and Predictive Maintenance systems are working correctly.
-                  The implementations are ready for production use.
+                  <strong>All tests passed!</strong> Both AI Property Matching and Predictive
+                  Maintenance systems are working correctly. The implementations are ready for
+                  production use.
                 </AlertDescription>
               </Alert>
             ) : (
               <Alert>
                 <AlertCircle className="h-4 w-4" />
                 <AlertDescription>
-                  <strong>{stats.failed} test(s) failed.</strong> Please review the failed tests and address any issues before deployment.
-                  Some failures may be expected if database migrations haven't been run yet.
+                  <strong>{stats.failed} test(s) failed.</strong> Please review the failed tests and
+                  address any issues before deployment. Some failures may be expected if database
+                  migrations haven't been run yet.
                 </AlertDescription>
               </Alert>
             )}

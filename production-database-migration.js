@@ -349,7 +349,7 @@ async function runProductionMigration() {
   
   console.log('\n🇳🇬 Nigerian Real Estate Platform Database:');
   console.log('• Core Tables: Properties, Tenants, Leases, Payments');
-  console.log('• Payment System: Paystack, Flutterwave, Bank Transfer, USSD');
+  console.log('• Payment System: Flutterwave, Bank Transfer, USSD');
   console.log('• Sales Integration: Property sales, Buyer management');
   console.log('• Vendor System: Onboarding, Job management, Ratings');
   console.log('• Analytics: Market data, Economic indicators, Municipal data');

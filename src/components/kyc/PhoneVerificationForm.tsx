@@ -10,30 +10,35 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Phone, Shield, AlertCircle, Signal } from 'lucide-react';
 import { useNigerianApis } from '@/hooks/useNigerianApis';
 import { PhoneVerificationRequest } from '@/types/nigerianApis';
+import { logger } from '@/utils/logger';
 
 const phoneSchema = z.object({
-  phone_number: z.string()
-    .regex(/^(\+234|0)[789]\d{9}$/, 'Invalid Nigerian phone number format'),
-  country_code: z.string().default('+234')
+  phone_number: z.string().regex(/^(\+234|0)[789]\d{9}$/, 'Invalid Nigerian phone number format'),
+  country_code: z.string().default('+234'),
 });
 
 type PhoneFormData = z.infer<typeof phoneSchema>;
 
 export const PhoneVerificationForm: React.FC = () => {
-  const { verifyPhone, isPhoneVerifying, canPerformVerification } = useNigerianApis();
-  
+  const {
+    verifyPhone,
+    isPhoneVerifying,
+    canPerformVerification,
+    getVerificationUnavailableReason,
+  } = useNigerianApis();
+
   const {
     register,
     handleSubmit,
     formState: { errors },
     reset,
     setValue,
-    watch
+    watch,
   } = useForm<PhoneFormData>({
     resolver: zodResolver(phoneSchema),
     defaultValues: {
-      country_code: '+234'
-    }
+      country_code: '+234',
+    },
   });
 
   const phoneNumber = watch('phone_number');
@@ -51,29 +56,29 @@ export const PhoneVerificationForm: React.FC = () => {
 
       const request: PhoneVerificationRequest = {
         phone_number: formattedPhone,
-        country_code: data.country_code
+        country_code: data.country_code,
       };
 
       await verifyPhone(request);
       reset();
     } catch (error) {
-      console.error('Phone verification failed:', error);
+      logger.error('Phone verification failed', error);
     }
   };
 
   const formatPhoneDisplay = (phone: string) => {
     if (!phone) return '';
-    
+
     // Remove any non-digit characters except +
     const cleaned = phone.replace(/[^\d+]/g, '');
-    
+
     // Format as +234 XXX XXX XXXX
     if (cleaned.startsWith('+234') && cleaned.length === 14) {
       return cleaned.replace(/(\+234)(\d{3})(\d{3})(\d{4})/, '$1 $2 $3 $4');
     } else if (cleaned.startsWith('0') && cleaned.length === 11) {
       return cleaned.replace(/(\d{4})(\d{3})(\d{4})/, '$1 $2 $3');
     }
-    
+
     return phone;
   };
 
@@ -81,9 +86,7 @@ export const PhoneVerificationForm: React.FC = () => {
     return (
       <Alert>
         <AlertCircle className="h-4 w-4" />
-        <AlertDescription>
-          Phone verification service is currently unavailable. Please check your subscription or try again later.
-        </AlertDescription>
+        <AlertDescription>{getVerificationUnavailableReason('phone')}</AlertDescription>
       </Alert>
     );
   }
@@ -100,7 +103,8 @@ export const PhoneVerificationForm: React.FC = () => {
           <Alert>
             <Shield className="h-4 w-4" />
             <AlertDescription>
-              Verify your phone number to confirm your identity and enable SMS notifications for property management activities.
+              Verify your phone number to confirm your identity and enable SMS notifications for
+              property management activities.
             </AlertDescription>
           </Alert>
 
@@ -109,11 +113,7 @@ export const PhoneVerificationForm: React.FC = () => {
               <Label htmlFor="phone_number">Phone Number *</Label>
               <div className="flex space-x-2">
                 <div className="w-20">
-                  <Input
-                    value="+234"
-                    disabled
-                    className="text-center bg-gray-50"
-                  />
+                  <Input value="+234" disabled className="bg-gray-50 text-center" />
                 </div>
                 <div className="flex-1">
                   <Input
@@ -135,7 +135,7 @@ export const PhoneVerificationForm: React.FC = () => {
               <p className="text-xs text-gray-500">
                 Enter your Nigerian mobile number (MTN, Airtel, Glo, or 9mobile)
               </p>
-              
+
               {phoneNumber && (
                 <div className="text-sm text-blue-600">
                   <strong>Formatted:</strong> {formatPhoneDisplay(phoneNumber)}
@@ -143,12 +143,12 @@ export const PhoneVerificationForm: React.FC = () => {
               )}
             </div>
 
-            <div className="bg-green-50 p-3 rounded-lg">
+            <div className="rounded-lg bg-green-50 p-3">
               <div className="flex items-start space-x-2">
-                <Signal className="h-4 w-4 text-green-600 mt-0.5" />
+                <Signal className="mt-0.5 h-4 w-4 text-green-600" />
                 <div className="text-sm text-green-800">
                   <p className="font-medium">Verification Details:</p>
-                  <ul className="mt-1 space-y-1 list-disc list-inside">
+                  <ul className="mt-1 list-inside list-disc space-y-1">
                     <li>Network provider identification</li>
                     <li>Line type (mobile/landline)</li>
                     <li>Number portability status</li>
@@ -159,33 +159,29 @@ export const PhoneVerificationForm: React.FC = () => {
               </div>
             </div>
 
-            <div className="bg-yellow-50 p-3 rounded-lg">
+            <div className="rounded-lg bg-yellow-50 p-3">
               <p className="text-sm text-yellow-800">
-                <strong>Supported Networks:</strong> MTN, Airtel, Glo, 9mobile. 
-                Landline numbers and some virtual numbers may not be supported.
+                <strong>Supported Networks:</strong> MTN, Airtel, Glo, 9mobile. Landline numbers and
+                some virtual numbers may not be supported.
               </p>
             </div>
 
-            <Button 
-              type="submit" 
-              disabled={isPhoneVerifying}
-              className="w-full"
-            >
+            <Button type="submit" disabled={isPhoneVerifying} className="w-full">
               {isPhoneVerifying ? (
                 <div className="flex items-center space-x-2">
-                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                  <div className="h-4 w-4 animate-spin rounded-full border-b-2 border-primary-foreground"></div>
                   <span>Verifying Phone...</span>
                 </div>
               ) : (
                 <>
-                  <Shield className="h-4 w-4 mr-2" />
+                  <Shield className="mr-2 h-4 w-4" />
                   Verify Phone Number
                 </>
               )}
             </Button>
           </form>
 
-          <div className="text-xs text-gray-500 space-y-1">
+          <div className="space-y-1 text-xs text-gray-500">
             <p>• Phone verification typically takes 5-15 seconds</p>
             <p>• No SMS or calls are made during verification</p>
             <p>• Only network and registration data is retrieved</p>

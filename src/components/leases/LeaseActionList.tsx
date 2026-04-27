@@ -1,11 +1,5 @@
 import { useState, useEffect } from 'react';
-import { 
-  Card, 
-  CardHeader, 
-  CardTitle, 
-  CardDescription, 
-  CardContent 
-} from '@/components/ui/card';
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import {
   Table,
   TableBody,
@@ -13,30 +7,39 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
+} from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { getLeaseActions, updateLeaseActionStatus } from '@/services/leases/leaseTerminationService';
+import {
+  getLeaseActions,
+  updateLeaseActionStatus,
+} from '@/services/leases/leaseTerminationService';
 import { format, parseISO } from 'date-fns';
 import { Check, X, Clock, AlertTriangle, RefreshCw } from 'lucide-react';
-import { useAuth } from '@/contexts/auth';
+import { useAuthSession } from '@/contexts/auth';
 import { toast } from '@/components/ui/sonner';
 import { supabase } from '@/integrations/supabase/client';
 
-export function LeaseActionList({ propertyId, onActionUpdated }: { propertyId?: string, onActionUpdated?: () => void }) {
-  const { user, isTenant, isOwner, isAgent } = useAuth();
+export function LeaseActionList({
+  propertyId,
+  onActionUpdated,
+}: {
+  propertyId?: string;
+  onActionUpdated?: () => void;
+}) {
+  const { user, isTenant, isOwner, isAgent } = useAuthSession();
   const [actions, setActions] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  
+
   useEffect(() => {
     loadLeaseActions();
   }, [user?.id, propertyId]);
-  
+
   const loadLeaseActions = async () => {
     setLoading(true);
     try {
-      let queryOptions: any = {};
-      
+      const queryOptions: Record<string, string> = {};
+
       // If property owner/agent and propertyId is provided, filter by property
       if ((isOwner() || isAgent()) && propertyId) {
         queryOptions.propertyId = propertyId;
@@ -49,12 +52,12 @@ export function LeaseActionList({ propertyId, onActionUpdated }: { propertyId?: 
           .select('id')
           .eq('user_id', user.id)
           .single();
-          
+
         if (!tenantError && tenantData) {
           queryOptions.tenantId = tenantData.id;
         }
       }
-      
+
       const leaseActions = await getLeaseActions(queryOptions);
       setActions(leaseActions);
     } catch (error) {
@@ -64,15 +67,15 @@ export function LeaseActionList({ propertyId, onActionUpdated }: { propertyId?: 
       setLoading(false);
     }
   };
-  
+
   const handleUpdateStatus = async (actionId: string, newStatus: 'approved' | 'rejected') => {
     try {
       const result = await updateLeaseActionStatus(actionId, newStatus);
-      
+
       if (result) {
         toast.success(`Action ${newStatus} successfully`);
         loadLeaseActions();
-        
+
         if (onActionUpdated) {
           onActionUpdated();
         }
@@ -82,27 +85,27 @@ export function LeaseActionList({ propertyId, onActionUpdated }: { propertyId?: 
       toast.error('Failed to update lease action');
     }
   };
-  
+
   const getActionTypeDisplay = (actionType: string) => {
     switch (actionType) {
       case 'renew':
         return (
-          <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
-            <RefreshCw className="h-3 w-3 mr-1" />
+          <Badge variant="outline" className="border-green-200 bg-green-50 text-green-700">
+            <RefreshCw className="mr-1 h-3 w-3" />
             Renewal
           </Badge>
         );
       case 'terminate':
         return (
-          <Badge variant="outline" className="bg-amber-50 text-amber-700 border-amber-200">
-            <X className="h-3 w-3 mr-1" />
+          <Badge variant="outline" className="border-amber-200 bg-amber-50 text-amber-700">
+            <X className="mr-1 h-3 w-3" />
             Termination
           </Badge>
         );
       case 'evict':
         return (
-          <Badge variant="outline" className="bg-red-50 text-red-700 border-red-200">
-            <AlertTriangle className="h-3 w-3 mr-1" />
+          <Badge variant="outline" className="border-red-200 bg-red-50 text-red-700">
+            <AlertTriangle className="mr-1 h-3 w-3" />
             Eviction
           </Badge>
         );
@@ -110,34 +113,34 @@ export function LeaseActionList({ propertyId, onActionUpdated }: { propertyId?: 
         return <Badge>{actionType}</Badge>;
     }
   };
-  
+
   const getStatusDisplay = (status: string) => {
     switch (status) {
       case 'pending':
         return (
-          <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
-            <Clock className="h-3 w-3 mr-1" />
+          <Badge variant="outline" className="border-blue-200 bg-blue-50 text-blue-700">
+            <Clock className="mr-1 h-3 w-3" />
             Pending
           </Badge>
         );
       case 'approved':
         return (
-          <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
-            <Check className="h-3 w-3 mr-1" />
+          <Badge variant="outline" className="border-green-200 bg-green-50 text-green-700">
+            <Check className="mr-1 h-3 w-3" />
             Approved
           </Badge>
         );
       case 'rejected':
         return (
-          <Badge variant="outline" className="bg-red-50 text-red-700 border-red-200">
-            <X className="h-3 w-3 mr-1" />
+          <Badge variant="outline" className="border-red-200 bg-red-50 text-red-700">
+            <X className="mr-1 h-3 w-3" />
             Rejected
           </Badge>
         );
       case 'completed':
         return (
-          <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
-            <Check className="h-3 w-3 mr-1" />
+          <Badge variant="outline" className="border-green-200 bg-green-50 text-green-700">
+            <Check className="mr-1 h-3 w-3" />
             Completed
           </Badge>
         );
@@ -145,22 +148,20 @@ export function LeaseActionList({ propertyId, onActionUpdated }: { propertyId?: 
         return <Badge>{status}</Badge>;
     }
   };
-  
+
   return (
     <Card>
       <CardHeader>
         <CardTitle>Lease Actions</CardTitle>
-        <CardDescription>
-          Manage lease renewals, terminations, and evictions
-        </CardDescription>
+        <CardDescription>Manage lease renewals, terminations, and evictions</CardDescription>
       </CardHeader>
       <CardContent>
         {loading ? (
-          <div className="h-48 flex items-center justify-center">
-            <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full"></div>
+          <div className="flex h-48 items-center justify-center">
+            <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent"></div>
           </div>
         ) : actions.length === 0 ? (
-          <div className="text-center py-8 text-muted-foreground border rounded-lg">
+          <div className="rounded-lg border py-8 text-center text-muted-foreground">
             <p>No lease actions found.</p>
           </div>
         ) : (
@@ -171,9 +172,10 @@ export function LeaseActionList({ propertyId, onActionUpdated }: { propertyId?: 
                 <TableHead>{isOwner() || isAgent() ? 'Tenant' : 'Property'}</TableHead>
                 <TableHead>Date</TableHead>
                 <TableHead>Status</TableHead>
-                {(isOwner() || isAgent()) && actions.some(action => action.status === 'pending') && (
-                  <TableHead className="text-right">Actions</TableHead>
-                )}
+                {(isOwner() || isAgent()) &&
+                  actions.some((action) => action.status === 'pending') && (
+                    <TableHead className="text-right">Actions</TableHead>
+                  )}
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -188,23 +190,23 @@ export function LeaseActionList({ propertyId, onActionUpdated }: { propertyId?: 
                   <TableCell>{format(parseISO(action.created_at), 'MMM d, yyyy')}</TableCell>
                   <TableCell>{getStatusDisplay(action.status)}</TableCell>
                   {(isOwner() || isAgent()) && action.status === 'pending' && (
-                    <TableCell className="text-right space-x-2">
-                      <Button 
-                        variant="outline" 
-                        size="sm" 
+                    <TableCell className="space-x-2 text-right">
+                      <Button
+                        variant="outline"
+                        size="sm"
                         className="border-green-200 text-green-700 hover:bg-green-50"
                         onClick={() => handleUpdateStatus(action.id, 'approved')}
                       >
-                        <Check className="h-4 w-4 mr-1" />
+                        <Check className="mr-1 h-4 w-4" />
                         Approve
                       </Button>
-                      <Button 
-                        variant="outline" 
+                      <Button
+                        variant="outline"
                         size="sm"
                         className="border-red-200 text-red-700 hover:bg-red-50"
                         onClick={() => handleUpdateStatus(action.id, 'rejected')}
                       >
-                        <X className="h-4 w-4 mr-1" />
+                        <X className="mr-1 h-4 w-4" />
                         Reject
                       </Button>
                     </TableCell>

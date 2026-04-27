@@ -5,7 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Progress } from '@/components/ui/progress';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { 
+import {
   Brain,
   TrendingUp,
   TrendingDown,
@@ -26,9 +26,14 @@ import {
   Wifi,
   DollarSign,
   Eye,
-  Activity
+  Activity,
 } from 'lucide-react';
-import { useIntelligentOptimizer, PerformanceInsight, OptimizationAction, AnalysisReport } from '@/utils/intelligent-optimizer';
+import {
+  useIntelligentOptimizer,
+  PerformanceInsight,
+  OptimizationAction,
+  AnalysisReport,
+} from '@/utils/intelligent-optimizer';
 
 export const IntelligentAnalyticsDashboard = () => {
   const {
@@ -38,11 +43,13 @@ export const IntelligentAnalyticsDashboard = () => {
     analyzePerformance,
     executeOptimization,
     generatePlan,
-    optimizationHistory
+    optimizationHistory,
   } = useIntelligentOptimizer();
 
   const [activeTab, setActiveTab] = useState('overview');
-  const [selectedTimeframe, setSelectedTimeframe] = useState<'immediate' | 'short' | 'medium' | 'long'>('immediate');
+  const [selectedTimeframe, setSelectedTimeframe] = useState<
+    'immediate' | 'short' | 'medium' | 'long'
+  >('immediate');
   const [optimizationPlan, setOptimizationPlan] = useState<any>(null);
   const [executingActions, setExecutingActions] = useState<Set<string>>(new Set());
 
@@ -68,7 +75,7 @@ export const IntelligentAnalyticsDashboard = () => {
   };
 
   const handleExecuteAction = async (actionId: string) => {
-    setExecutingActions(prev => new Set(prev).add(actionId));
+    setExecutingActions((prev) => new Set(prev).add(actionId));
     try {
       const success = await executeOptimization(actionId);
       if (success) {
@@ -76,7 +83,7 @@ export const IntelligentAnalyticsDashboard = () => {
         setTimeout(() => analyzePerformance(), 2000);
       }
     } finally {
-      setExecutingActions(prev => {
+      setExecutingActions((prev) => {
         const newSet = new Set(prev);
         newSet.delete(actionId);
         return newSet;
@@ -86,19 +93,27 @@ export const IntelligentAnalyticsDashboard = () => {
 
   const getInsightIcon = (category: string) => {
     switch (category) {
-      case 'critical': return <AlertTriangle className="h-4 w-4 text-red-600" />;
-      case 'high': return <TrendingDown className="h-4 w-4 text-orange-600" />;
-      case 'medium': return <Clock className="h-4 w-4 text-yellow-600" />;
-      default: return <CheckCircle2 className="h-4 w-4 text-blue-600" />;
+      case 'critical':
+        return <AlertTriangle className="h-4 w-4 text-red-600" />;
+      case 'high':
+        return <TrendingDown className="h-4 w-4 text-orange-600" />;
+      case 'medium':
+        return <Clock className="h-4 w-4 text-yellow-600" />;
+      default:
+        return <CheckCircle2 className="h-4 w-4 text-blue-600" />;
     }
   };
 
   const getInsightBadge = (category: string) => {
     switch (category) {
-      case 'critical': return { variant: 'destructive' as const, label: 'Critical' };
-      case 'high': return { variant: 'secondary' as const, label: 'High Priority' };
-      case 'medium': return { variant: 'outline' as const, label: 'Medium' };
-      default: return { variant: 'default' as const, label: 'Low Priority' };
+      case 'critical':
+        return { variant: 'destructive' as const, label: 'Critical' };
+      case 'high':
+        return { variant: 'secondary' as const, label: 'High Priority' };
+      case 'medium':
+        return { variant: 'outline' as const, label: 'Medium' };
+      default:
+        return { variant: 'default' as const, label: 'Low Priority' };
     }
   };
 
@@ -112,7 +127,7 @@ export const IntelligentAnalyticsDashboard = () => {
     return new Intl.NumberFormat('en-NG', {
       style: 'currency',
       currency: 'NGN',
-      minimumFractionDigits: 0
+      minimumFractionDigits: 0,
     }).format(amount);
   };
 
@@ -121,9 +136,7 @@ export const IntelligentAnalyticsDashboard = () => {
       <Alert className="border-red-200 bg-red-50">
         <AlertTriangle className="h-4 w-4 text-red-600" />
         <AlertTitle className="text-red-800">Analysis Error</AlertTitle>
-        <AlertDescription className="text-red-700">
-          {error}
-        </AlertDescription>
+        <AlertDescription className="text-red-700">{error}</AlertDescription>
       </Alert>
     );
   }
@@ -163,14 +176,14 @@ export const IntelligentAnalyticsDashboard = () => {
 
       {/* Analysis Overview */}
       {report && (
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
           <Card>
             <CardContent className="p-4">
               <div className="flex items-center gap-2">
                 <Target className="h-4 w-4 text-purple-600" />
                 <span className="text-sm font-medium">Overall Score</span>
               </div>
-              <div className={`text-2xl font-bold mt-1 ${getScoreColor(report.overallScore)}`}>
+              <div className={`mt-1 text-2xl font-bold ${getScoreColor(report.overallScore)}`}>
                 {report.overallScore}/100
               </div>
               <div className="text-xs text-gray-600">
@@ -185,8 +198,8 @@ export const IntelligentAnalyticsDashboard = () => {
                 <AlertTriangle className="h-4 w-4 text-red-600" />
                 <span className="text-sm font-medium">Critical Issues</span>
               </div>
-              <div className="text-2xl font-bold mt-1 text-red-600">
-                {report.insights.filter(i => i.category === 'critical').length}
+              <div className="mt-1 text-2xl font-bold text-red-600">
+                {report.insights.filter((i) => i.category === 'critical').length}
               </div>
               <div className="text-xs text-gray-600">Require immediate attention</div>
             </CardContent>
@@ -198,8 +211,12 @@ export const IntelligentAnalyticsDashboard = () => {
                 <TrendingUp className="h-4 w-4 text-green-600" />
                 <span className="text-sm font-medium">Optimization Potential</span>
               </div>
-              <div className="text-2xl font-bold mt-1 text-green-600">
-                {report.recommendedActions.reduce((sum, action) => sum + action.expectedImprovement, 0)}%
+              <div className="mt-1 text-2xl font-bold text-green-600">
+                {report.recommendedActions.reduce(
+                  (sum, action) => sum + action.expectedImprovement,
+                  0
+                )}
+                %
               </div>
               <div className="text-xs text-gray-600">Estimated improvement</div>
             </CardContent>
@@ -211,9 +228,7 @@ export const IntelligentAnalyticsDashboard = () => {
                 <DollarSign className="h-4 w-4 text-green-600" />
                 <span className="text-sm font-medium">Revenue Impact</span>
               </div>
-              <div className="text-lg font-bold mt-1 text-green-600">
-                ₦2.4M
-              </div>
+              <div className="mt-1 text-lg font-bold text-green-600">₦2.4M</div>
               <div className="text-xs text-gray-600">Potential monthly increase</div>
             </CardContent>
           </Card>
@@ -226,9 +241,12 @@ export const IntelligentAnalyticsDashboard = () => {
           <Globe className="h-4 w-4" />
           <AlertTitle>Nigerian Market Intelligence</AlertTitle>
           <AlertDescription>
-            Serving {report.nigerianMarketAnalysis.topCities.reduce((sum, city) => sum + city.users, 0)} users across Nigeria. 
-            Top performing city: {report.nigerianMarketAnalysis.topCities[0]?.city} ({report.nigerianMarketAnalysis.topCities[0]?.avgPerformance}% score). 
-            Average data usage: {report.nigerianMarketAnalysis.dataUsageAnalysis.avgPerSession}MB per session. 
+            Serving{' '}
+            {report.nigerianMarketAnalysis.topCities.reduce((sum, city) => sum + city.users, 0)}{' '}
+            users across Nigeria. Top performing city:{' '}
+            {report.nigerianMarketAnalysis.topCities[0]?.city} (
+            {report.nigerianMarketAnalysis.topCities[0]?.avgPerformance}% score). Average data
+            usage: {report.nigerianMarketAnalysis.dataUsageAnalysis.avgPerSession}MB per session.
             Conversion rate: {report.businessImpact.conversionRate}%.
           </AlertDescription>
         </Alert>
@@ -246,7 +264,7 @@ export const IntelligentAnalyticsDashboard = () => {
 
         <TabsContent value="overview" className="space-y-6">
           {report && (
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
               {/* Performance Insights Summary */}
               <Card>
                 <CardHeader>
@@ -258,7 +276,10 @@ export const IntelligentAnalyticsDashboard = () => {
                 <CardContent>
                   <div className="space-y-4">
                     {report.insights.slice(0, 3).map((insight) => (
-                      <div key={insight.id} className="flex items-start gap-3 p-3 border rounded-lg">
+                      <div
+                        key={insight.id}
+                        className="flex items-start gap-3 rounded-lg border p-3"
+                      >
                         {getInsightIcon(insight.category)}
                         <div className="flex-1">
                           <div className="flex items-center justify-between">
@@ -267,8 +288,8 @@ export const IntelligentAnalyticsDashboard = () => {
                               {getInsightBadge(insight.category).label}
                             </Badge>
                           </div>
-                          <p className="text-sm text-gray-600 mt-1">{insight.description}</p>
-                          <div className="text-xs text-green-600 mt-2">
+                          <p className="mt-1 text-sm text-gray-600">{insight.description}</p>
+                          <div className="mt-2 text-xs text-green-600">
                             +{insight.estimatedImprovement}% potential improvement
                           </div>
                         </div>
@@ -309,7 +330,7 @@ export const IntelligentAnalyticsDashboard = () => {
                         <div className="text-xs text-gray-600">Average rating</div>
                       </div>
                     </div>
-                    <div className="pt-2 border-t">
+                    <div className="border-t pt-2">
                       <div className="text-sm font-medium text-green-600">
                         {report.businessImpact.revenueImpact}
                       </div>
@@ -345,24 +366,26 @@ export const IntelligentAnalyticsDashboard = () => {
                   <CardContent>
                     <div className="space-y-4">
                       <div>
-                        <h4 className="font-medium mb-2">Description</h4>
+                        <h4 className="mb-2 font-medium">Description</h4>
                         <p className="text-gray-600">{insight.description}</p>
                       </div>
-                      
+
                       <div>
-                        <h4 className="font-medium mb-2">Business Impact</h4>
+                        <h4 className="mb-2 font-medium">Business Impact</h4>
                         <p className="text-gray-600">{insight.impact}</p>
                       </div>
-                      
+
                       <div>
-                        <h4 className="font-medium mb-2">Recommendation</h4>
+                        <h4 className="mb-2 font-medium">Recommendation</h4>
                         <p className="text-gray-600">{insight.recommendation}</p>
                       </div>
-                      
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-4 border-t">
+
+                      <div className="grid grid-cols-1 gap-4 border-t pt-4 md:grid-cols-3">
                         <div>
                           <div className="text-sm font-medium">Expected Improvement</div>
-                          <div className="text-lg font-bold text-green-600">+{insight.estimatedImprovement}%</div>
+                          <div className="text-lg font-bold text-green-600">
+                            +{insight.estimatedImprovement}%
+                          </div>
                         </div>
                         <div>
                           <div className="text-sm font-medium">Timeframe</div>
@@ -373,7 +396,7 @@ export const IntelligentAnalyticsDashboard = () => {
                           <div className="text-sm text-gray-600">#{insight.priority}</div>
                         </div>
                       </div>
-                      
+
                       {(insight.location || insight.networkType) && (
                         <div className="flex items-center gap-4 text-sm text-gray-600">
                           {insight.location && (
@@ -410,7 +433,7 @@ export const IntelligentAnalyticsDashboard = () => {
                   <select
                     value={selectedTimeframe}
                     onChange={(e) => setSelectedTimeframe(e.target.value as any)}
-                    className="px-3 py-2 border rounded-md"
+                    className="rounded-md border px-3 py-2"
                   >
                     <option value="immediate">Immediate (1-3 days)</option>
                     <option value="short">Short-term (1-2 weeks)</option>
@@ -424,19 +447,21 @@ export const IntelligentAnalyticsDashboard = () => {
             <CardContent>
               {optimizationPlan && (
                 <div className="space-y-6">
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div className="text-center p-4 border rounded-lg">
+                  <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+                    <div className="rounded-lg border p-4 text-center">
                       <div className="text-2xl font-bold text-green-600">
                         {optimizationPlan.estimatedImprovement}%
                       </div>
                       <div className="text-sm text-gray-600">Estimated Improvement</div>
                     </div>
-                    <div className="text-center p-4 border rounded-lg">
+                    <div className="rounded-lg border p-4 text-center">
                       <div className="text-lg font-bold">{optimizationPlan.timeline}</div>
                       <div className="text-sm text-gray-600">Implementation Time</div>
                     </div>
-                    <div className="text-center p-4 border rounded-lg">
-                      <div className="text-sm font-bold">{optimizationPlan.riskAssessment.split(' - ')[0]}</div>
+                    <div className="rounded-lg border p-4 text-center">
+                      <div className="text-sm font-bold">
+                        {optimizationPlan.riskAssessment.split(' - ')[0]}
+                      </div>
                       <div className="text-sm text-gray-600">Risk Level</div>
                     </div>
                   </div>
@@ -444,7 +469,10 @@ export const IntelligentAnalyticsDashboard = () => {
                   <div className="space-y-4">
                     <h4 className="font-medium">Recommended Actions</h4>
                     {optimizationPlan.actions.map((action: OptimizationAction) => (
-                      <div key={action.id} className="flex items-center justify-between p-4 border rounded-lg">
+                      <div
+                        key={action.id}
+                        className="flex items-center justify-between rounded-lg border p-4"
+                      >
                         <div className="flex-1">
                           <div className="flex items-center gap-2">
                             <h5 className="font-medium">{action.name}</h5>
@@ -453,8 +481,8 @@ export const IntelligentAnalyticsDashboard = () => {
                               <Badge variant="secondary">🇳🇬 Nigerian</Badge>
                             )}
                           </div>
-                          <p className="text-sm text-gray-600 mt-1">{action.description}</p>
-                          <div className="flex items-center gap-4 mt-2 text-xs text-gray-500">
+                          <p className="mt-1 text-sm text-gray-600">{action.description}</p>
+                          <div className="mt-2 flex items-center gap-4 text-xs text-gray-500">
                             <span>+{action.expectedImprovement}% improvement</span>
                             <span>Risk: {action.riskLevel}</span>
                           </div>
@@ -483,7 +511,7 @@ export const IntelligentAnalyticsDashboard = () => {
 
         <TabsContent value="market" className="space-y-6">
           {report && (
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
               {/* Nigerian Cities Performance */}
               <Card>
                 <CardHeader>
@@ -495,20 +523,20 @@ export const IntelligentAnalyticsDashboard = () => {
                 <CardContent>
                   <div className="space-y-4">
                     {report.nigerianMarketAnalysis.topCities.map((city) => (
-                      <div key={city.city} className="p-4 border rounded-lg">
-                        <div className="flex items-center justify-between mb-2">
+                      <div key={city.city} className="rounded-lg border p-4">
+                        <div className="mb-2 flex items-center justify-between">
                           <h4 className="font-medium">{city.city}</h4>
                           <Badge variant={city.avgPerformance >= 80 ? 'default' : 'secondary'}>
                             {city.avgPerformance}%
                           </Badge>
                         </div>
-                        <div className="text-sm text-gray-600 mb-2">
-                          {city.users} active users
-                        </div>
+                        <div className="mb-2 text-sm text-gray-600">{city.users} active users</div>
                         <div className="space-y-1">
                           <div className="text-xs font-medium">Key Issues:</div>
                           {city.issues.map((issue, index) => (
-                            <div key={index} className="text-xs text-gray-600">• {issue}</div>
+                            <div key={index} className="text-xs text-gray-600">
+                              • {issue}
+                            </div>
                           ))}
                         </div>
                       </div>
@@ -527,23 +555,27 @@ export const IntelligentAnalyticsDashboard = () => {
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
-                    {Object.entries(report.nigerianMarketAnalysis.networkAnalysis).map(([network, data]) => (
-                      <div key={network} className="p-4 border rounded-lg">
-                        <div className="flex items-center justify-between mb-2">
-                          <h4 className="font-medium">{network.toUpperCase()}</h4>
-                          <div className="text-sm text-gray-600">{data.users} users</div>
+                    {Object.entries(report.nigerianMarketAnalysis.networkAnalysis).map(
+                      ([network, data]) => (
+                        <div key={network} className="rounded-lg border p-4">
+                          <div className="mb-2 flex items-center justify-between">
+                            <h4 className="font-medium">{network.toUpperCase()}</h4>
+                            <div className="text-sm text-gray-600">{data.users} users</div>
+                          </div>
+                          <div className="mb-2 text-sm">
+                            Avg Load Time: <span className="font-medium">{data.avgLoadTime}s</span>
+                          </div>
+                          <div className="space-y-1">
+                            <div className="text-xs font-medium">Issues:</div>
+                            {data.issues.map((issue, index) => (
+                              <div key={index} className="text-xs text-gray-600">
+                                • {issue}
+                              </div>
+                            ))}
+                          </div>
                         </div>
-                        <div className="text-sm mb-2">
-                          Avg Load Time: <span className="font-medium">{data.avgLoadTime}s</span>
-                        </div>
-                        <div className="space-y-1">
-                          <div className="text-xs font-medium">Issues:</div>
-                          {data.issues.map((issue, index) => (
-                            <div key={index} className="text-xs text-gray-600">• {issue}</div>
-                          ))}
-                        </div>
-                      </div>
-                    ))}
+                      )
+                    )}
                   </div>
                 </CardContent>
               </Card>
@@ -563,7 +595,10 @@ export const IntelligentAnalyticsDashboard = () => {
               {optimizationHistory.length > 0 ? (
                 <div className="space-y-4">
                   {optimizationHistory.map((entry, index) => (
-                    <div key={index} className="flex items-center justify-between p-4 border rounded-lg">
+                    <div
+                      key={index}
+                      className="flex items-center justify-between rounded-lg border p-4"
+                    >
                       <div>
                         <h4 className="font-medium">{entry.action.name}</h4>
                         <div className="text-sm text-gray-600">
@@ -573,12 +608,12 @@ export const IntelligentAnalyticsDashboard = () => {
                       <div className="flex items-center gap-2">
                         {entry.result ? (
                           <Badge variant="default">
-                            <CheckCircle2 className="h-3 w-3 mr-1" />
+                            <CheckCircle2 className="mr-1 h-3 w-3" />
                             Success (+{entry.improvement}%)
                           </Badge>
                         ) : (
                           <Badge variant="destructive">
-                            <AlertTriangle className="h-3 w-3 mr-1" />
+                            <AlertTriangle className="mr-1 h-3 w-3" />
                             Failed
                           </Badge>
                         )}
@@ -587,8 +622,8 @@ export const IntelligentAnalyticsDashboard = () => {
                   ))}
                 </div>
               ) : (
-                <div className="text-center py-8 text-gray-500">
-                  <Settings className="h-12 w-12 mx-auto mb-4" />
+                <div className="py-8 text-center text-gray-500">
+                  <Settings className="mx-auto mb-4 h-12 w-12" />
                   <p>No optimization history yet</p>
                   <p className="text-sm">Execute optimizations to see history here</p>
                 </div>

@@ -1,7 +1,6 @@
-
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/contexts/auth';
+import { useAuthSession } from '@/contexts/auth';
 import { Property } from '@/services/property/types';
 import { mapSupabaseToProperty } from '@/services/property/utils';
 
@@ -10,7 +9,7 @@ import { mapSupabaseToProperty } from '@/services/property/utils';
  * FIXES CRITICAL SECURITY ISSUE: Agents now only see assigned properties
  */
 export const useProperties = () => {
-  const { user, userRole } = useAuth();
+  const { user, userRole } = useAuthSession();
   const queryClient = useQueryClient();
 
   const queryKey = ['properties-secure', userRole, user?.id];
@@ -22,10 +21,7 @@ export const useProperties = () => {
     }
 
     try {
-      let query = supabase
-        .from('properties')
-        .select('*')
-        .order('created_at', { ascending: false });
+      let query = supabase.from('properties').select('*').order('created_at', { ascending: false });
 
       // 🔒 SECURITY FIX: Apply role-based filtering
       switch (userRole) {
@@ -36,8 +32,8 @@ export const useProperties = () => {
           break;
 
         case 'agent':
-          // ✅ CRITICAL FIX: Agents see only properties they're assigned to
-          query = query.eq('assigned_agent_id', user.id);
+          // Agents see only properties they're assigned to (agent_id in schema)
+          query = query.eq('agent_id', user.id);
           console.log('Fetching properties assigned to agent:', user.id);
           break;
 
@@ -48,9 +44,14 @@ export const useProperties = () => {
           break;
 
         case 'tenant':
-          // Tenants see only available properties or their rented property
-          query = query.or(`status.eq.available,tenant_id.eq.${user.id}`);
-          console.log('Fetching available properties for tenant:', user.id);
+          // Tenants see:
+          // 1. Properties they're linked to via property_tenants
+          // 2. Properties they have active leases for
+          // 3. Available properties for browsing
+          // Note: RLS policies handle the filtering, so we fetch all and let RLS filter
+          // For better performance, we can add explicit filtering here
+          console.log('Fetching properties for tenant:', user.id);
+          // RLS will filter to show only tenant's properties + available properties
           break;
 
         case 'vendor':
@@ -60,9 +61,10 @@ export const useProperties = () => {
           return [];
 
         case 'manager':
-          // Managers see properties they're managing
-          query = query.eq('manager_id', user.id);
-          console.log('Fetching properties managed by:', user.id);
+          // Property managers: use agent_id (managers may be assigned like agents) or owner_id for owned
+          // If no manager_id column, show properties where user is agent
+          query = query.or(`agent_id.eq.${user.id},owner_id.eq.${user.id}`);
+          console.log('Fetching properties for manager:', user.id);
           break;
 
         default:
@@ -72,24 +74,29 @@ export const useProperties = () => {
       }
 
       const { data, error } = await query;
-      
+
       if (error) {
         console.error('Error fetching properties:', error);
         throw error;
       }
-      
+
       const properties: Property[] = data?.map(mapSupabaseToProperty) || [];
-      
-      console.log(`✅ SECURITY: User ${user.id} (${userRole}) has access to ${properties.length} properties`);
+
+      console.log(
+        `✅ SECURITY: User ${user.id} (${userRole}) has access to ${properties.length} properties`
+      );
       return properties;
-      
     } catch (error) {
       console.error('Error in fetchPropertiesSecurely:', error);
       return [];
     }
   };
 
-  const { data: properties = [], isLoading, error } = useQuery<Property[]>({
+  const {
+    data: properties = [],
+    isLoading,
+    error,
+  } = useQuery<Property[]>({
     queryKey,
     queryFn: fetchPropertiesSecurely,
     enabled: !!user && !!userRole,
@@ -99,12 +106,12 @@ export const useProperties = () => {
     queryClient.invalidateQueries({ queryKey });
   };
 
-  return { 
-    properties, 
-    isLoading, 
-    error, 
+  return {
+    properties,
+    isLoading,
+    error,
     refreshProperties,
     userRole,
-    secureCount: properties.length
+    secureCount: properties.length,
   };
 };

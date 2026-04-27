@@ -5,14 +5,20 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { useDeviceDetection, TouchUtils, NigerianMobileUtils } from '@/utils/mobile';
-import { 
-  ChevronLeft, 
-  ChevronRight, 
-  ChevronDown, 
-  Menu, 
-  X, 
+import {
+  ChevronLeft,
+  ChevronRight,
+  ChevronDown,
+  Menu,
+  X,
   Search,
   Phone,
   Mail,
@@ -23,7 +29,7 @@ import {
   Grid,
   List,
   Plus,
-  Minus
+  Minus,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -46,7 +52,7 @@ const MobileButton: React.FC<MobileButtonProps> = ({
   ...props
 }) => {
   const { isMobile } = useDeviceDetection();
-  
+
   const sizeClasses = {
     sm: 'h-10 px-3 text-sm', // 40px height, still touch-friendly
     md: 'h-11 px-4 text-base', // 44px height - perfect touch target
@@ -91,25 +97,27 @@ const MobileInput: React.FC<MobileInputProps> = ({
   ...props
 }) => {
   const { isMobile } = useDeviceDetection();
-  
+
   return (
     <div className="space-y-2">
       {label && (
-        <Label className={cn(
-          'text-base font-medium',
-          isMobile && 'text-lg' // Larger labels on mobile
-        )}>
+        <Label
+          className={cn(
+            'text-base font-medium',
+            isMobile && 'text-lg' // Larger labels on mobile
+          )}
+        >
           {label}
         </Label>
       )}
       <div className="relative">
         {icon && (
-          <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground">
+          <div className="absolute left-3 top-1/2 -translate-y-1/2 transform text-muted-foreground">
             {icon}
           </div>
         )}
         {currency && (
-          <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground font-medium">
+          <div className="absolute left-3 top-1/2 -translate-y-1/2 transform font-medium text-muted-foreground">
             ₦
           </div>
         )}
@@ -123,12 +131,8 @@ const MobileInput: React.FC<MobileInputProps> = ({
           {...props}
         />
       </div>
-      {error && (
-        <p className="text-sm text-red-600">{error}</p>
-      )}
-      {helpText && !error && (
-        <p className="text-sm text-muted-foreground">{helpText}</p>
-      )}
+      {error && <p className="text-sm text-red-600">{error}</p>}
+      {helpText && !error && <p className="text-sm text-muted-foreground">{helpText}</p>}
     </div>
   );
 };
@@ -148,31 +152,22 @@ const MobileTextarea: React.FC<MobileTextareaProps> = ({
   ...props
 }) => {
   const { isMobile } = useDeviceDetection();
-  
+
   return (
     <div className="space-y-2">
       {label && (
-        <Label className={cn(
-          'text-base font-medium',
-          isMobile && 'text-lg'
-        )}>
-          {label}
-        </Label>
+        <Label className={cn('text-base font-medium', isMobile && 'text-lg')}>{label}</Label>
       )}
       <Textarea
         className={cn(
-          'min-h-[100px] text-base resize-none',
+          'min-h-[100px] resize-none text-base',
           isMobile && 'text-16px min-h-[120px]', // Prevent zoom, larger on mobile
           className
         )}
         {...props}
       />
-      {error && (
-        <p className="text-sm text-red-600">{error}</p>
-      )}
-      {helpText && !error && (
-        <p className="text-sm text-muted-foreground">{helpText}</p>
-      )}
+      {error && <p className="text-sm text-red-600">{error}</p>}
+      {helpText && !error && <p className="text-sm text-muted-foreground">{helpText}</p>}
     </div>
   );
 };
@@ -196,28 +191,20 @@ const MobileSelect: React.FC<MobileSelectProps> = ({
   error,
 }) => {
   const { isMobile } = useDeviceDetection();
-  
+
   return (
     <div className="space-y-2">
       {label && (
-        <Label className={cn(
-          'text-base font-medium',
-          isMobile && 'text-lg'
-        )}>
-          {label}
-        </Label>
+        <Label className={cn('text-base font-medium', isMobile && 'text-lg')}>{label}</Label>
       )}
       <Select value={value} onValueChange={onValueChange}>
-        <SelectTrigger className={cn(
-          'h-12 text-base',
-          isMobile && 'text-16px'
-        )}>
+        <SelectTrigger className={cn('h-12 text-base', isMobile && 'text-16px')}>
           <SelectValue placeholder={placeholder} />
         </SelectTrigger>
         <SelectContent>
           {options.map((option) => (
-            <SelectItem 
-              key={option.value} 
+            <SelectItem
+              key={option.value}
               value={option.value}
               className={cn(
                 'h-12 text-base',
@@ -229,9 +216,7 @@ const MobileSelect: React.FC<MobileSelectProps> = ({
           ))}
         </SelectContent>
       </Select>
-      {error && (
-        <p className="text-sm text-red-600">{error}</p>
-      )}
+      {error && <p className="text-sm text-red-600">{error}</p>}
     </div>
   );
 };
@@ -262,11 +247,11 @@ const MobilePropertyCard: React.FC<MobilePropertyCardProps> = ({
   isFavorited = false,
 }) => {
   const { isMobile } = useDeviceDetection();
-  
+
   return (
-    <Card 
+    <Card
       className={cn(
-        'overflow-hidden cursor-pointer transition-all duration-200',
+        'cursor-pointer overflow-hidden transition-all duration-200',
         'hover:shadow-lg active:scale-[0.98]', // Touch feedback
         isMobile && 'shadow-sm'
       )}
@@ -276,26 +261,23 @@ const MobilePropertyCard: React.FC<MobilePropertyCardProps> = ({
         <img
           src={property.image}
           alt={property.title}
-          className={cn(
-            'w-full object-cover',
-            isMobile ? 'h-48' : 'h-40'
-          )}
+          className={cn('w-full object-cover', isMobile ? 'h-48' : 'h-40')}
         />
-        <div className="absolute top-2 left-2">
-          <Badge variant="secondary" className="bg-white/90 text-black">
+        <div className="absolute left-2 top-2">
+          <Badge variant="secondary" className="border border-border bg-card/95 text-foreground">
             {property.type}
           </Badge>
         </div>
-        <div className="absolute top-2 right-2 flex space-x-2">
+        <div className="absolute right-2 top-2 flex space-x-2">
           <button
             onClick={(e) => {
               e.stopPropagation();
               onFavorite?.(property.id);
             }}
             className={cn(
-              'p-2 rounded-full bg-white/90 transition-colors',
-              'min-w-[44px] min-h-[44px] flex items-center justify-center', // Touch target
-              isFavorited ? 'text-red-500' : 'text-gray-600'
+              'rounded-full border border-border bg-card/95 p-2 text-foreground transition-colors',
+              'flex min-h-[44px] min-w-[44px] items-center justify-center', // Touch target
+              isFavorited ? 'text-red-500' : 'text-muted-foreground'
             )}
           >
             <Heart className={cn('h-5 w-5', isFavorited && 'fill-current')} />
@@ -305,29 +287,24 @@ const MobilePropertyCard: React.FC<MobilePropertyCardProps> = ({
               e.stopPropagation();
               onShare?.(property.id);
             }}
-            className="p-2 rounded-full bg-white/90 text-gray-600 transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center"
+            className="flex min-h-[44px] min-w-[44px] items-center justify-center rounded-full border border-border bg-card/95 p-2 text-muted-foreground transition-colors"
           >
             <Share className="h-5 w-5" />
           </button>
         </div>
       </div>
-      
+
       <CardContent className={cn('p-4', isMobile && 'p-3')}>
         <div className="space-y-2">
-          <h3 className={cn(
-            'font-semibold line-clamp-2',
-            isMobile ? 'text-lg' : 'text-base'
-          )}>
+          <h3 className={cn('line-clamp-2 font-semibold', isMobile ? 'text-lg' : 'text-base')}>
             {property.title}
           </h3>
-          
+
           <div className="flex items-center text-muted-foreground">
-            <MapPin className="h-4 w-4 mr-1" />
-            <span className={cn('text-sm', isMobile && 'text-base')}>
-              {property.location}
-            </span>
+            <MapPin className="mr-1 h-4 w-4" />
+            <span className={cn('text-sm', isMobile && 'text-base')}>{property.location}</span>
           </div>
-          
+
           <div className="flex items-center justify-between">
             <div className="text-2xl font-bold text-primary">
               {NigerianMobileUtils.formatCurrencyForMobile(property.price)}
@@ -358,45 +335,42 @@ const MobileBottomSheet: React.FC<MobileBottomSheetProps> = ({
   children,
 }) => {
   const { isMobile } = useDeviceDetection();
-  
+
   if (!isOpen) return null;
-  
+
   return (
     <div className="fixed inset-0 z-50">
       {/* Backdrop */}
-      <div 
-        className="absolute inset-0 bg-black/50"
-        onClick={onClose}
-      />
-      
+      <div className="absolute inset-0 bg-black/50" onClick={onClose} />
+
       {/* Sheet */}
-      <div className={cn(
-        'absolute bottom-0 left-0 right-0 bg-white rounded-t-lg',
-        'max-h-[80vh] overflow-hidden',
-        'animate-in slide-in-from-bottom duration-300'
-      )}>
+      <div
+        className={cn(
+          'absolute bottom-0 left-0 right-0 rounded-t-lg border-t border-border bg-card text-card-foreground',
+          'max-h-[80vh] overflow-hidden',
+          'duration-300 animate-in slide-in-from-bottom'
+        )}
+      >
         {/* Handle */}
         <div className="flex justify-center py-2">
-          <div className="w-12 h-1 bg-gray-300 rounded-full" />
+          <div className="h-1 w-12 rounded-full bg-muted-foreground/30" />
         </div>
-        
+
         {/* Header */}
         {title && (
-          <div className="flex items-center justify-between p-4 border-b">
+          <div className="flex items-center justify-between border-b p-4">
             <h2 className="text-lg font-semibold">{title}</h2>
             <button
               onClick={onClose}
-              className="p-2 rounded-full hover:bg-gray-100 min-w-[44px] min-h-[44px] flex items-center justify-center"
+              className="flex min-h-[44px] min-w-[44px] items-center justify-center rounded-full p-2 hover:bg-gray-100"
             >
               <X className="h-5 w-5" />
             </button>
           </div>
         )}
-        
+
         {/* Content */}
-        <div className="overflow-y-auto max-h-[calc(80vh-80px)]">
-          {children}
-        </div>
+        <div className="max-h-[calc(80vh-80px)] overflow-y-auto">{children}</div>
       </div>
     </div>
   );
@@ -429,54 +403,49 @@ const MobileNavBar: React.FC<MobileNavBarProps> = ({
   const { isMobile } = useDeviceDetection();
   const shouldShowBack = showBack || showBackButton;
   const backHandler = onBackClick || onBack;
-  
+
   const renderActions = () => {
     if (!actions) return null;
-    
+
     // If actions is an array of action objects, render them as buttons
     if (Array.isArray(actions)) {
       return actions.map((action, index) => (
         <button
           key={index}
           onClick={action.onClick}
-          className="p-2 rounded-full hover:bg-gray-100 min-w-[44px] min-h-[44px] flex items-center justify-center"
+          className="flex min-h-[44px] min-w-[44px] items-center justify-center rounded-full p-2 hover:bg-gray-100"
           title={action.label}
         >
           {action.icon}
         </button>
       ));
     }
-    
+
     // Otherwise, render as React node
     return actions;
   };
-  
+
   return (
-    <div className={cn(
-      'flex items-center justify-between p-4 bg-white border-b',
-      'sticky top-0 z-40',
-      isMobile && 'h-16' // Standard mobile nav height
-    )}>
+    <div
+      className={cn(
+        'flex items-center justify-between border-b border-border bg-card p-4 text-card-foreground',
+        'sticky top-0 z-40',
+        isMobile && 'h-16' // Standard mobile nav height
+      )}
+    >
       <div className="flex items-center">
         {shouldShowBack && (
           <button
             onClick={backHandler}
-            className="p-2 rounded-full hover:bg-gray-100 mr-2 min-w-[44px] min-h-[44px] flex items-center justify-center"
+            className="mr-2 flex min-h-[44px] min-w-[44px] items-center justify-center rounded-full p-2 hover:bg-muted"
           >
             <ChevronLeft className="h-6 w-6" />
           </button>
         )}
-        <h1 className={cn(
-          'font-semibold truncate',
-          isMobile ? 'text-lg' : 'text-xl'
-        )}>
-          {title}
-        </h1>
+        <h1 className={cn('truncate font-semibold', isMobile ? 'text-lg' : 'text-xl')}>{title}</h1>
       </div>
-      
-      <div className="flex items-center space-x-2">
-        {renderActions()}
-      </div>
+
+      <div className="flex items-center space-x-2">{renderActions()}</div>
     </div>
   );
 };
@@ -492,7 +461,7 @@ interface MobileSearchBarProps {
 }
 
 const MobileSearchBar: React.FC<MobileSearchBarProps> = ({
-  placeholder = "Search properties...",
+  placeholder = 'Search properties...',
   value,
   onChange,
   onSubmit,
@@ -501,16 +470,16 @@ const MobileSearchBar: React.FC<MobileSearchBarProps> = ({
 }) => {
   const { isMobile } = useDeviceDetection();
   const [searchValue, setSearchValue] = useState(value || '');
-  
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     onSubmit?.(searchValue);
   };
-  
+
   return (
     <form onSubmit={handleSubmit} className="flex items-center space-x-2 p-4">
-      <div className="flex-1 relative">
-        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+      <div className="relative flex-1">
+        <Search className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 transform text-muted-foreground" />
         <Input
           type="search"
           placeholder={placeholder}
@@ -520,17 +489,17 @@ const MobileSearchBar: React.FC<MobileSearchBarProps> = ({
             onChange?.(e.target.value);
           }}
           className={cn(
-            'pl-10 h-12 text-base',
+            'h-12 pl-10 text-base',
             isMobile && 'text-16px' // Prevent zoom on iOS
           )}
         />
       </div>
-      
+
       {showFilter && (
         <button
           type="button"
           onClick={onFilterClick}
-          className="p-3 rounded-lg border bg-white min-w-[44px] min-h-[44px] flex items-center justify-center"
+          className="flex min-h-[44px] min-w-[44px] items-center justify-center rounded-lg border border-border bg-card p-3 text-card-foreground"
         >
           <Filter className="h-5 w-5" />
         </button>
@@ -558,15 +527,15 @@ const MobileFAB: React.FC<MobileFABProps> = ({
     'bottom-left': 'bottom-6 left-6',
     'bottom-center': 'bottom-6 left-1/2 transform -translate-x-1/2',
   };
-  
+
   return (
     <button
       onClick={onClick}
       className={cn(
-        'fixed z-50 bg-primary text-primary-foreground rounded-full shadow-lg',
+        'fixed z-50 rounded-full bg-primary text-primary-foreground shadow-lg',
         'transition-all duration-200 hover:scale-105 active:scale-95',
-        'min-w-[56px] min-h-[56px] flex items-center justify-center',
-        label ? 'px-4 py-3' : 'w-14 h-14',
+        'flex min-h-[56px] min-w-[56px] items-center justify-center',
+        label ? 'px-4 py-3' : 'h-14 w-14',
         positionClasses[position]
       )}
     >
@@ -595,33 +564,31 @@ const MobileQuantitySelector: React.FC<MobileQuantitySelectorProps> = ({
   const handleDecrease = () => {
     if (value > min) onChange(value - 1);
   };
-  
+
   const handleIncrease = () => {
     if (value < max) onChange(value + 1);
   };
-  
+
   return (
     <div className="flex items-center space-x-4">
-      {label && (
-        <Label className="text-base font-medium">{label}</Label>
-      )}
+      {label && <Label className="text-base font-medium">{label}</Label>}
       <div className="flex items-center space-x-2">
         <button
           onClick={handleDecrease}
           disabled={value <= min}
-          className="p-2 rounded-full border bg-white disabled:opacity-50 min-w-[44px] min-h-[44px] flex items-center justify-center"
+          className="flex min-h-[44px] min-w-[44px] items-center justify-center rounded-full border border-border bg-card p-2 text-card-foreground disabled:opacity-50"
         >
           <Minus className="h-4 w-4" />
         </button>
-        
+
         <div className="w-12 text-center">
           <span className="text-lg font-medium">{value}</span>
         </div>
-        
+
         <button
           onClick={handleIncrease}
           disabled={value >= max}
-          className="p-2 rounded-full border bg-white disabled:opacity-50 min-w-[44px] min-h-[44px] flex items-center justify-center"
+          className="flex min-h-[44px] min-w-[44px] items-center justify-center rounded-full border border-border bg-card p-2 text-card-foreground disabled:opacity-50"
         >
           <Plus className="h-4 w-4" />
         </button>

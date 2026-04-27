@@ -1,8 +1,8 @@
-# 🔌 Nigeria Homes API Documentation
+# 🔌 DamianixPro API Documentation
 
 ## Overview
 
-The Nigeria Homes API provides comprehensive endpoints for managing properties, tenants, payments, and all platform functionality. Built on Supabase with Row Level Security (RLS) for data protection.
+The DamianixPro API provides comprehensive endpoints for managing properties, tenants, payments, and all platform functionality. Built on Supabase with Row Level Security (RLS) for data protection.
 
 ## Base URL
 
@@ -30,7 +30,7 @@ import { supabase } from '@/lib/supabase';
 // Sign in user
 const { data, error } = await supabase.auth.signInWithPassword({
   email: 'user@example.com',
-  password: 'password'
+  password: 'password',
 });
 
 // Use data.session.access_token for API calls
@@ -41,11 +41,13 @@ const { data, error } = await supabase.auth.signInWithPassword({
 ### Authentication
 
 #### Sign Up
+
 ```http
 POST /auth/signup
 ```
 
 **Request Body:**
+
 ```json
 {
   "email": "user@example.com",
@@ -55,6 +57,7 @@ POST /auth/signup
 ```
 
 **Response:**
+
 ```json
 {
   "user": {
@@ -70,11 +73,13 @@ POST /auth/signup
 ```
 
 #### Sign In
+
 ```http
 POST /auth/signin
 ```
 
 **Request Body:**
+
 ```json
 {
   "email": "user@example.com",
@@ -83,6 +88,7 @@ POST /auth/signin
 ```
 
 #### Sign Out
+
 ```http
 POST /auth/signout
 ```
@@ -90,11 +96,13 @@ POST /auth/signout
 ### Properties
 
 #### List Properties
+
 ```http
 GET /api/properties
 ```
 
 **Query Parameters:**
+
 - `page` (optional): Page number (default: 1)
 - `limit` (optional): Items per page (default: 20)
 - `location` (optional): Filter by location
@@ -103,6 +111,7 @@ GET /api/properties
 - `max_price` (optional): Maximum price filter
 
 **Response:**
+
 ```json
 {
   "data": [
@@ -131,11 +140,13 @@ GET /api/properties
 ```
 
 #### Get Property Details
+
 ```http
 GET /api/properties/:id
 ```
 
 **Response:**
+
 ```json
 {
   "id": "uuid",
@@ -165,11 +176,13 @@ GET /api/properties/:id
 ```
 
 #### Create Property
+
 ```http
 POST /api/properties
 ```
 
 **Request Body:**
+
 ```json
 {
   "title": "3-Bedroom Apartment in Lekki",
@@ -186,11 +199,13 @@ POST /api/properties
 ```
 
 #### Update Property
+
 ```http
 PUT /api/properties/:id
 ```
 
 #### Delete Property
+
 ```http
 DELETE /api/properties/:id
 ```
@@ -198,11 +213,13 @@ DELETE /api/properties/:id
 ### Payments
 
 #### Initialize Payment
+
 ```http
 POST /api/payments/initialize
 ```
 
 **Request Body:**
+
 ```json
 {
   "amount": 250000000,
@@ -215,6 +232,7 @@ POST /api/payments/initialize
 ```
 
 **Response:**
+
 ```json
 {
   "payment_id": "uuid",
@@ -225,11 +243,13 @@ POST /api/payments/initialize
 ```
 
 #### Verify Payment
+
 ```http
 POST /api/payments/verify
 ```
 
 **Request Body:**
+
 ```json
 {
   "reference": "REF_123456789",
@@ -238,6 +258,7 @@ POST /api/payments/verify
 ```
 
 **Response:**
+
 ```json
 {
   "status": "success|failed",
@@ -249,11 +270,13 @@ POST /api/payments/verify
 ```
 
 #### Payment History
+
 ```http
 GET /api/payments/history
 ```
 
 **Query Parameters:**
+
 - `tenant_id` (optional): Filter by tenant
 - `status` (optional): pending|completed|failed
 - `start_date` (optional): Filter from date
@@ -262,16 +285,19 @@ GET /api/payments/history
 ### Tenants
 
 #### List Tenants
+
 ```http
 GET /api/tenants
 ```
 
 #### Get Tenant Details
+
 ```http
 GET /api/tenants/:id
 ```
 
 **Response:**
+
 ```json
 {
   "id": "uuid",
@@ -305,11 +331,13 @@ GET /api/tenants/:id
 ```
 
 #### Create Tenant
+
 ```http
 POST /api/tenants
 ```
 
 #### Update Tenant
+
 ```http
 PUT /api/tenants/:id
 ```
@@ -317,16 +345,19 @@ PUT /api/tenants/:id
 ### Maintenance Requests
 
 #### List Maintenance Requests
+
 ```http
 GET /api/maintenance
 ```
 
 #### Create Maintenance Request
+
 ```http
 POST /api/maintenance
 ```
 
 **Request Body:**
+
 ```json
 {
   "property_id": "uuid",
@@ -339,6 +370,7 @@ POST /api/maintenance
 ```
 
 #### Update Maintenance Request
+
 ```http
 PUT /api/maintenance/:id
 ```
@@ -346,11 +378,13 @@ PUT /api/maintenance/:id
 ### Documents
 
 #### Upload Document
+
 ```http
 POST /api/documents/upload
 ```
 
 **Request Body (multipart/form-data):**
+
 ```
 file: [binary file data]
 document_type: "lease|id|income_proof|reference"
@@ -358,11 +392,13 @@ tenant_id: "uuid"
 ```
 
 #### Get Document
+
 ```http
 GET /api/documents/:id
 ```
 
 #### List Documents
+
 ```http
 GET /api/documents
 ```
@@ -396,10 +432,12 @@ All API endpoints return errors in the following format:
 ## Rate Limiting
 
 API requests are limited to:
+
 - **Authenticated users**: 1000 requests per hour
 - **Unauthenticated users**: 100 requests per hour
 
 Rate limit headers are included in responses:
+
 ```http
 X-RateLimit-Limit: 1000
 X-RateLimit-Remaining: 999
@@ -410,13 +448,14 @@ X-RateLimit-Reset: 1640995200
 
 ### Payment Webhooks
 
-Nigeria Homes supports webhooks for payment events:
+DamianixPro supports webhooks for payment events:
 
 ```http
 POST /api/webhooks/payments
 ```
 
 **Payload:**
+
 ```json
 {
   "event": "payment.success|payment.failed",
@@ -442,10 +481,7 @@ const signature = req.headers['x-nigeria-homes-signature'];
 const payload = JSON.stringify(req.body);
 const secret = process.env.WEBHOOK_SECRET;
 
-const expectedSignature = crypto
-  .createHmac('sha256', secret)
-  .update(payload)
-  .digest('hex');
+const expectedSignature = crypto.createHmac('sha256', secret).update(payload).digest('hex');
 
 if (signature !== expectedSignature) {
   throw new Error('Invalid webhook signature');
@@ -461,20 +497,20 @@ import { NigeriaHomesAPI } from '@nigeria-homes/sdk';
 
 const api = new NigeriaHomesAPI({
   baseUrl: 'https://api.nigeriahomes.com',
-  apiKey: 'your-api-key'
+  apiKey: 'your-api-key',
 });
 
 // List properties
 const properties = await api.properties.list({
   location: 'Lagos',
-  property_type: 'apartment'
+  property_type: 'apartment',
 });
 
 // Create payment
 const payment = await api.payments.initialize({
   amount: 250000000,
   tenant_id: 'uuid',
-  payment_method: 'paystack'
+  payment_method: 'paystack',
 });
 ```
 
@@ -520,7 +556,7 @@ Import our Postman collection for easy API testing:
 ```json
 {
   "info": {
-    "name": "Nigeria Homes API",
+    "name": "DamianixPro API",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "item": [
@@ -557,6 +593,7 @@ Import our Postman collection for easy API testing:
 ## Support
 
 For API support and questions:
+
 - **Documentation**: https://docs.nigeriahomes.com
 - **Support Email**: api-support@nigeriahomes.com
 - **Developer Portal**: https://developers.nigeriahomes.com

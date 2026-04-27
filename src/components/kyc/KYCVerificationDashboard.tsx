@@ -1,23 +1,24 @@
-import React, { useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { 
-  Shield, 
-  CheckCircle, 
-  XCircle, 
-  AlertTriangle, 
-  Phone, 
-  CreditCard, 
-  Building, 
-  User, 
+import {
+  Shield,
+  CheckCircle,
+  XCircle,
+  AlertTriangle,
+  Phone,
+  CreditCard,
+  Building,
+  User,
   FileText,
   TrendingUp,
   Lock,
-  Zap
+  Zap,
 } from 'lucide-react';
 import { useNigerianApis } from '@/hooks/useNigerianApis';
 import { BVNVerificationForm } from './BVNVerificationForm';
@@ -26,6 +27,8 @@ import { CACVerificationForm } from './CACVerificationForm';
 import { BankVerificationForm } from './BankVerificationForm';
 import { PhoneVerificationForm } from './PhoneVerificationForm';
 import { cn } from '@/lib/utils';
+import { useAuthSession } from '@/contexts/auth';
+import { subscriptionBrowsePath } from '@/lib/subscriptionBrowsePaths';
 
 interface KYCVerificationDashboardProps {
   className?: string;
@@ -34,8 +37,52 @@ interface KYCVerificationDashboardProps {
 
 export const KYCVerificationDashboard: React.FC<KYCVerificationDashboardProps> = ({
   className = '',
-  compact = false
+  compact = false,
 }) => {
+  const navigate = useNavigate();
+  const { userRole } = useAuthSession();
+
+  const goToPlansOrSubscription = useCallback(() => {
+    navigate(subscriptionBrowsePath(userRole));
+  }, [navigate, userRole]);
+
+  const kycPaywallMessaging = useMemo(() => {
+    switch (userRole) {
+      case 'owner':
+        return {
+          badge: 'Landlord plans',
+          description: 'Unlock Nigerian identity and compliance checks with your subscription.',
+          alert:
+            'BVN, NIN, bank, phone, and CAC verification are available on Starter plans and above once your admin has configured provider keys.',
+          cta: 'View subscription plans',
+        };
+      case 'vendor':
+        return {
+          badge: 'Paid feature',
+          description: 'Verify your business and payout details for vendor operations.',
+          alert:
+            'Extended Nigerian verification is included on qualifying plans. Upgrade to run live checks after provider keys are configured.',
+          cta: 'View plans',
+        };
+      case 'tenant':
+        return {
+          badge: 'Add-on',
+          description: 'Optional enhanced identity checks beyond your landlord’s screening flow.',
+          alert:
+            'Full BVN/NIN tooling may require a plan that includes Nigerian API integrations. Contact support if you need help.',
+          cta: 'View plans',
+        };
+      default:
+        return {
+          badge: 'Subscription',
+          description: 'Complete KYC when your plan includes Nigerian verification APIs.',
+          alert:
+            'Identity checks (BVN, NIN, CAC, bank, phone) are available on supported plans after provider configuration.',
+          cta: 'View plans',
+        };
+    }
+  }, [userRole]);
+
   const {
     kycProfile,
     isLoadingKyc,
@@ -44,7 +91,10 @@ export const KYCVerificationDashboard: React.FC<KYCVerificationDashboardProps> =
     getVerificationProgress,
     getRiskLevelColor,
     providerStatus,
-    isLoadingProviders
+    isLoadingProviders,
+    isRefreshingProviders,
+    providerStatusCheckedAt,
+    refetchProviderStatus,
   } = useNigerianApis();
 
   const [activeTab, setActiveTab] = useState('overview');
@@ -52,6 +102,16 @@ export const KYCVerificationDashboard: React.FC<KYCVerificationDashboardProps> =
   const verificationProgress = getVerificationProgress();
   const verificationLevel = getVerificationLevel();
   const riskLevelColor = getRiskLevelColor();
+  const providerSetupIssues = providerStatus
+    ? [
+        !providerStatus.youverify ? 'YouVerify (YOUVERIFY_API_KEY)' : null,
+        !providerStatus.appruve ? 'Appruve (APPRUVE_API_KEY)' : null,
+        !providerStatus.flutterwave ? 'Flutterwave (FLUTTERWAVE_SECRET_KEY)' : null,
+      ].filter(Boolean)
+    : [];
+  const providerStatusCheckedLabel = providerStatusCheckedAt
+    ? new Date(providerStatusCheckedAt).toLocaleTimeString()
+    : null;
 
   const verificationItems = [
     {
@@ -61,7 +121,7 @@ export const KYCVerificationDashboard: React.FC<KYCVerificationDashboardProps> =
       icon: <CreditCard className="h-5 w-5" />,
       verified: kycProfile?.bvn_verified || false,
       required: true,
-      component: BVNVerificationForm
+      component: BVNVerificationForm,
     },
     {
       id: 'nin',
@@ -70,7 +130,7 @@ export const KYCVerificationDashboard: React.FC<KYCVerificationDashboardProps> =
       icon: <User className="h-5 w-5" />,
       verified: kycProfile?.nin_verified || false,
       required: true,
-      component: NINVerificationForm
+      component: NINVerificationForm,
     },
     {
       id: 'phone',
@@ -79,7 +139,7 @@ export const KYCVerificationDashboard: React.FC<KYCVerificationDashboardProps> =
       icon: <Phone className="h-5 w-5" />,
       verified: kycProfile?.phone_verified || false,
       required: false,
-      component: PhoneVerificationForm
+      component: PhoneVerificationForm,
     },
     {
       id: 'bank',
@@ -88,7 +148,7 @@ export const KYCVerificationDashboard: React.FC<KYCVerificationDashboardProps> =
       icon: <Building className="h-5 w-5" />,
       verified: kycProfile?.bank_account_verified || false,
       required: false,
-      component: BankVerificationForm
+      component: BankVerificationForm,
     },
     {
       id: 'business',
@@ -97,50 +157,63 @@ export const KYCVerificationDashboard: React.FC<KYCVerificationDashboardProps> =
       icon: <FileText className="h-5 w-5" />,
       verified: kycProfile?.business_verified || false,
       required: false,
-      component: CACVerificationForm
-    }
+      component: CACVerificationForm,
+    },
   ];
 
   const getStatusIcon = (verified: boolean) => {
     return verified ? (
-      <CheckCircle className="h-4 w-4 text-green-500" />
+      <CheckCircle className="h-4 w-4 shrink-0 text-green-600 dark:text-green-400" />
     ) : (
-      <XCircle className="h-4 w-4 text-gray-400" />
+      <XCircle className="h-4 w-4 shrink-0 text-muted-foreground" />
     );
   };
 
   const getStatusBadge = (verified: boolean, required: boolean) => {
     if (verified) {
-      return <Badge variant="default" className="bg-green-100 text-green-800">Verified</Badge>;
+      return (
+        <Badge
+          variant="default"
+          className="border border-green-600/20 bg-green-100 text-green-900 dark:border-green-500/30 dark:bg-green-950/55 dark:text-green-100"
+        >
+          Verified
+        </Badge>
+      );
     }
     if (required) {
       return <Badge variant="destructive">Required</Badge>;
     }
-    return <Badge variant="outline">Optional</Badge>;
+    return (
+      <Badge variant="outline" className="border-border text-foreground">
+        Optional
+      </Badge>
+    );
   };
 
   if (!canUseNigerianApis) {
+    const msg = kycPaywallMessaging;
     return (
       <Card className={className}>
         <CardHeader>
-          <CardTitle className="flex items-center space-x-2">
+          <CardTitle className="flex flex-wrap items-center gap-2">
             <Shield className="h-5 w-5 text-blue-600" />
             <span>KYC Verification</span>
-            <Badge variant="outline">Premium Feature</Badge>
+            <Badge variant="outline">{msg.badge}</Badge>
           </CardTitle>
-          <CardDescription>
-            Complete your Know Your Customer (KYC) verification for enhanced security
-          </CardDescription>
+          <CardDescription>{msg.description}</CardDescription>
         </CardHeader>
         <CardContent>
           <Alert>
             <Zap className="h-4 w-4" />
-            <AlertDescription>
-              KYC verification requires a premium subscription. Upgrade to access Nigerian government and banking integrations.
-            </AlertDescription>
+            <AlertDescription>{msg.alert}</AlertDescription>
           </Alert>
-          <Button className="mt-4 w-full" variant="outline">
-            Upgrade to Premium
+          <Button
+            type="button"
+            className="mt-4 w-full"
+            variant="outline"
+            onClick={goToPlansOrSubscription}
+          >
+            {msg.cta}
           </Button>
         </CardContent>
       </Card>
@@ -160,35 +233,59 @@ export const KYCVerificationDashboard: React.FC<KYCVerificationDashboardProps> =
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
+          {!isLoadingProviders && providerSetupIssues.length > 0 && (
+            <Alert>
+              <AlertTriangle className="h-4 w-4" />
+              <AlertDescription>
+                Some verification providers are not configured: {providerSetupIssues.join(', ')}.
+                Ask an admin to set these Supabase secrets to enable all verification flows.
+              </AlertDescription>
+            </Alert>
+          )}
+
+          <Button
+            variant="outline"
+            size="sm"
+            className="w-full"
+            onClick={() => void refetchProviderStatus()}
+            disabled={isLoadingProviders || isRefreshingProviders}
+          >
+            {isRefreshingProviders ? 'Refreshing Provider Status...' : 'Refresh Provider Status'}
+          </Button>
+          {providerStatusCheckedLabel && (
+            <p className="text-center text-xs text-muted-foreground">
+              Last checked: {providerStatusCheckedLabel}
+            </p>
+          )}
+
           <div className="space-y-2">
-            <div className="flex items-center justify-between text-sm">
+            <div className="flex items-center justify-between text-sm text-foreground">
               <span>Verification Progress</span>
-              <span className="font-medium">{verificationProgress}%</span>
+              <span className="font-medium tabular-nums">{verificationProgress}%</span>
             </div>
             <Progress value={verificationProgress} className="h-2" />
           </div>
-          
+
           {kycProfile && (
             <div className="flex items-center justify-between">
-              <span className="text-sm text-gray-600">Risk Level</span>
-              <Badge 
-                variant="outline" 
+              <span className="text-sm text-muted-foreground">Risk Level</span>
+              <Badge
+                variant="outline"
                 className={cn(
-                  riskLevelColor === 'green' && 'border-green-200 bg-green-50 text-green-700',
-                  riskLevelColor === 'yellow' && 'border-yellow-200 bg-yellow-50 text-yellow-700',
-                  riskLevelColor === 'red' && 'border-red-200 bg-red-50 text-red-700'
+                  riskLevelColor === 'green' &&
+                    'border-green-200 bg-green-50 text-green-900 dark:border-green-800/60 dark:bg-green-950/45 dark:text-green-200',
+                  riskLevelColor === 'yellow' &&
+                    'border-yellow-200 bg-yellow-50 text-yellow-900 dark:border-yellow-800/60 dark:bg-yellow-950/45 dark:text-yellow-100',
+                  riskLevelColor === 'red' &&
+                    'border-red-200 bg-red-50 text-red-900 dark:border-red-900/50 dark:bg-red-950/45 dark:text-red-100'
                 )}
               >
                 {kycProfile.risk_level.toUpperCase()}
               </Badge>
             </div>
           )}
-          
-          <Button 
-            variant="outline" 
-            className="w-full"
-            onClick={() => setActiveTab('verification')}
-          >
+
+          <Button variant="outline" className="w-full" onClick={() => setActiveTab('verification')}>
             Complete Verification
           </Button>
         </CardContent>
@@ -214,6 +311,16 @@ export const KYCVerificationDashboard: React.FC<KYCVerificationDashboardProps> =
       </CardHeader>
 
       <CardContent>
+        {!isLoadingProviders && providerSetupIssues.length > 0 && (
+          <Alert className="mb-6">
+            <AlertTriangle className="h-4 w-4" />
+            <AlertDescription>
+              Provider setup required: {providerSetupIssues.join(', ')}. Ask an admin to set these
+              Supabase secrets before running the related verification checks.
+            </AlertDescription>
+          </Alert>
+        )}
+
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
           <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="overview">Overview</TabsTrigger>
@@ -223,47 +330,55 @@ export const KYCVerificationDashboard: React.FC<KYCVerificationDashboardProps> =
 
           <TabsContent value="overview" className="space-y-6">
             {/* Progress Overview */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
               <Card>
                 <CardContent className="flex items-center justify-between p-4">
                   <div>
-                    <p className="text-2xl font-bold text-blue-600">{verificationProgress}%</p>
-                    <p className="text-sm text-gray-600">Complete</p>
+                    <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">
+                      {verificationProgress}%
+                    </p>
+                    <p className="text-sm text-muted-foreground">Complete</p>
                   </div>
                   <TrendingUp className="h-8 w-8 text-blue-500" />
                 </CardContent>
               </Card>
-              
+
               <Card>
                 <CardContent className="flex items-center justify-between p-4">
                   <div>
-                    <p className="text-lg font-bold text-green-600">{verificationLevel}</p>
-                    <p className="text-sm text-gray-600">Level</p>
+                    <p className="text-lg font-bold text-green-600 dark:text-green-400">
+                      {verificationLevel}
+                    </p>
+                    <p className="text-sm text-muted-foreground">Level</p>
                   </div>
                   <Shield className="h-8 w-8 text-green-500" />
                 </CardContent>
               </Card>
-              
+
               {kycProfile && (
                 <Card>
                   <CardContent className="flex items-center justify-between p-4">
                     <div>
-                      <p className={cn(
-                        "text-lg font-bold",
-                        riskLevelColor === 'green' && 'text-green-600',
-                        riskLevelColor === 'yellow' && 'text-yellow-600',
-                        riskLevelColor === 'red' && 'text-red-600'
-                      )}>
+                      <p
+                        className={cn(
+                          'text-lg font-bold',
+                          riskLevelColor === 'green' && 'text-green-600',
+                          riskLevelColor === 'yellow' && 'text-yellow-600',
+                          riskLevelColor === 'red' && 'text-red-600'
+                        )}
+                      >
                         {kycProfile.risk_level.toUpperCase()}
                       </p>
-                      <p className="text-sm text-gray-600">Risk Level</p>
+                      <p className="text-sm text-muted-foreground">Risk Level</p>
                     </div>
-                    <Lock className={cn(
-                      "h-8 w-8",
-                      riskLevelColor === 'green' && 'text-green-500',
-                      riskLevelColor === 'yellow' && 'text-yellow-500',
-                      riskLevelColor === 'red' && 'text-red-500'
-                    )} />
+                    <Lock
+                      className={cn(
+                        'h-8 w-8',
+                        riskLevelColor === 'green' && 'text-green-500',
+                        riskLevelColor === 'yellow' && 'text-yellow-500',
+                        riskLevelColor === 'red' && 'text-red-500'
+                      )}
+                    />
                   </CardContent>
                 </Card>
               )}
@@ -271,15 +386,18 @@ export const KYCVerificationDashboard: React.FC<KYCVerificationDashboardProps> =
 
             {/* Verification Items Overview */}
             <div className="space-y-3">
-              <h3 className="text-lg font-semibold">Verification Requirements</h3>
+              <h3 className="text-lg font-semibold text-foreground">Verification Requirements</h3>
               <div className="space-y-2">
                 {verificationItems.map((item) => (
-                  <div key={item.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                    <div className="flex items-center space-x-3">
+                  <div
+                    key={item.id}
+                    className="flex items-center justify-between rounded-lg border border-border bg-muted/50 p-3 dark:bg-muted/30"
+                  >
+                    <div className="flex min-w-0 items-center gap-3">
                       {getStatusIcon(item.verified)}
-                      <div className="flex items-center space-x-2">
+                      <div className="flex min-w-0 items-center gap-2 text-foreground [&_svg]:shrink-0 [&_svg]:text-muted-foreground">
                         {item.icon}
-                        <span className="font-medium">{item.title}</span>
+                        <span className="font-medium text-foreground">{item.title}</span>
                       </div>
                     </div>
                     <div className="flex items-center space-x-2">
@@ -293,8 +411,10 @@ export const KYCVerificationDashboard: React.FC<KYCVerificationDashboardProps> =
             {/* Progress Bar */}
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <span className="text-sm font-medium">Overall Progress</span>
-                <span className="text-sm text-gray-600">{verificationProgress}% Complete</span>
+                <span className="text-sm font-medium text-foreground">Overall Progress</span>
+                <span className="text-sm text-muted-foreground">
+                  {verificationProgress}% Complete
+                </span>
               </div>
               <Progress value={verificationProgress} className="h-3" />
             </div>
@@ -305,13 +425,17 @@ export const KYCVerificationDashboard: React.FC<KYCVerificationDashboardProps> =
               {verificationItems.map((item) => {
                 const Component = item.component;
                 return (
-                  <Card key={item.id} className={cn(
-                    "transition-all duration-200",
-                    item.verified && "border-green-200 bg-green-50"
-                  )}>
+                  <Card
+                    key={item.id}
+                    className={cn(
+                      'transition-all duration-200',
+                      item.verified &&
+                        'border-green-200 bg-green-50 dark:border-green-800/50 dark:bg-green-950/35'
+                    )}
+                  >
                     <CardHeader className="pb-3">
                       <CardTitle className="flex items-center justify-between">
-                        <div className="flex items-center space-x-2">
+                        <div className="flex items-center gap-2 text-foreground [&_svg]:text-muted-foreground">
                           {item.icon}
                           <span>{item.title}</span>
                         </div>
@@ -322,13 +446,13 @@ export const KYCVerificationDashboard: React.FC<KYCVerificationDashboardProps> =
                       </CardTitle>
                       <CardDescription>{item.description}</CardDescription>
                     </CardHeader>
-                    
+
                     {!item.verified && (
                       <CardContent>
                         <Component />
                       </CardContent>
                     )}
-                    
+
                     {item.verified && (
                       <CardContent>
                         <Alert>
@@ -350,27 +474,46 @@ export const KYCVerificationDashboard: React.FC<KYCVerificationDashboardProps> =
             <Card>
               <CardHeader>
                 <CardTitle>API Provider Status</CardTitle>
-                <CardDescription>
-                  Status of integrated verification providers
-                </CardDescription>
+                <CardDescription>Status of integrated verification providers</CardDescription>
               </CardHeader>
               <CardContent>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="mb-4"
+                  onClick={() => void refetchProviderStatus()}
+                  disabled={isLoadingProviders || isRefreshingProviders}
+                >
+                  {isRefreshingProviders
+                    ? 'Refreshing Provider Status...'
+                    : 'Refresh Provider Status'}
+                </Button>
+                {providerStatusCheckedLabel && (
+                  <p className="mb-4 text-xs text-gray-500">
+                    Last checked: {providerStatusCheckedLabel}
+                  </p>
+                )}
+
                 {isLoadingProviders ? (
                   <div className="space-y-2">
-                    <div className="h-4 bg-gray-200 rounded animate-pulse"></div>
-                    <div className="h-4 bg-gray-200 rounded animate-pulse"></div>
-                    <div className="h-4 bg-gray-200 rounded animate-pulse"></div>
+                    <div className="h-4 animate-pulse rounded bg-gray-200"></div>
+                    <div className="h-4 animate-pulse rounded bg-gray-200"></div>
+                    <div className="h-4 animate-pulse rounded bg-gray-200"></div>
                   </div>
                 ) : (
                   <div className="space-y-3">
-                    {providerStatus && Object.entries(providerStatus).map(([provider, status]) => (
-                      <div key={provider} className="flex items-center justify-between p-2 border rounded">
-                        <span className="font-medium capitalize">{provider}</span>
-                        <Badge variant={status ? "default" : "secondary"}>
-                          {status ? "Connected" : "Not Configured"}
-                        </Badge>
-                      </div>
-                    ))}
+                    {providerStatus &&
+                      Object.entries(providerStatus).map(([provider, status]) => (
+                        <div
+                          key={provider}
+                          className="flex items-center justify-between rounded border p-2"
+                        >
+                          <span className="font-medium capitalize">{provider}</span>
+                          <Badge variant={status ? 'default' : 'secondary'}>
+                            {status ? 'Connected' : 'Not Configured'}
+                          </Badge>
+                        </div>
+                      ))}
                   </div>
                 )}
               </CardContent>
@@ -388,20 +531,28 @@ export const KYCVerificationDashboard: React.FC<KYCVerificationDashboardProps> =
                 <CardContent className="space-y-4">
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <label className="text-sm font-medium text-gray-600">Verification Level</label>
+                      <label className="text-sm font-medium text-muted-foreground">
+                        Verification Level
+                      </label>
                       <p className="text-lg font-semibold">{verificationLevel}</p>
                     </div>
                     <div>
-                      <label className="text-sm font-medium text-gray-600">Risk Score</label>
+                      <label className="text-sm font-medium text-muted-foreground">
+                        Risk Score
+                      </label>
                       <p className="text-lg font-semibold">{kycProfile.risk_score}/100</p>
                     </div>
                     <div>
-                      <label className="text-sm font-medium text-gray-600">Risk Level</label>
-                      <Badge 
-                        variant="outline" 
+                      <label className="text-sm font-medium text-muted-foreground">
+                        Risk Level
+                      </label>
+                      <Badge
+                        variant="outline"
                         className={cn(
-                          riskLevelColor === 'green' && 'border-green-200 bg-green-50 text-green-700',
-                          riskLevelColor === 'yellow' && 'border-yellow-200 bg-yellow-50 text-yellow-700',
+                          riskLevelColor === 'green' &&
+                            'border-green-200 bg-green-50 text-green-700',
+                          riskLevelColor === 'yellow' &&
+                            'border-yellow-200 bg-yellow-50 text-yellow-700',
                           riskLevelColor === 'red' && 'border-red-200 bg-red-50 text-red-700'
                         )}
                       >
@@ -409,8 +560,12 @@ export const KYCVerificationDashboard: React.FC<KYCVerificationDashboardProps> =
                       </Badge>
                     </div>
                     <div>
-                      <label className="text-sm font-medium text-gray-600">Last Updated</label>
-                      <p className="text-sm">{new Date(kycProfile.last_updated).toLocaleDateString()}</p>
+                      <label className="text-sm font-medium text-muted-foreground">
+                        Last Updated
+                      </label>
+                      <p className="text-sm">
+                        {new Date(kycProfile.last_updated).toLocaleDateString()}
+                      </p>
                     </div>
                   </div>
                 </CardContent>

@@ -22,15 +22,15 @@ export interface MaintenanceRequest {
 // Helper function to ensure updates are properly typed
 export function parseUpdatesFromJson(updates: any): MaintenanceUpdate[] {
   if (!updates) return [];
-  
+
   if (Array.isArray(updates)) {
-    return updates.map(update => ({
+    return updates.map((update) => ({
       message: update.message || '',
       date: update.date || new Date().toISOString(),
-      created_by: update.created_by
+      created_by: update.created_by,
     }));
   }
-  
+
   return [];
 }
 

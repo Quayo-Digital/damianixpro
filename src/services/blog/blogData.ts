@@ -1,4 +1,3 @@
-
 import { BlogPost } from '@/types/blog';
 
 // Sample blog posts data
@@ -7,7 +6,8 @@ export const blogPosts: BlogPost[] = [
     id: '1',
     slug: 'effective-property-management-tips',
     title: 'Effective Property Management Tips for 2025',
-    excerpt: 'Learn the most effective strategies for managing rental properties in the current market landscape.',
+    excerpt:
+      'Learn the most effective strategies for managing rental properties in the current market landscape.',
     content: `
 # Effective Property Management Tips for 2025
 
@@ -79,32 +79,36 @@ Remember that each property and market is unique, so it's important to adapt the
     coverImage: 'https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d',
     publishedDate: 'May 10, 2025',
     readTime: '6 min read',
-    tags: ['Property Management', 'Real Estate', 'Landlord Tips']
+    tags: ['Property Management', 'Real Estate', 'Landlord Tips'],
   },
   {
     id: '2',
     slug: 'tenant-retention-strategies',
     title: '5 Proven Tenant Retention Strategies That Work',
-    excerpt: 'Discover effective approaches to keep your quality tenants happy and renewing their leases.',
-    content: 'This is a placeholder for the full article content about tenant retention strategies.',
+    excerpt:
+      'Discover effective approaches to keep your quality tenants happy and renewing their leases.',
+    content:
+      'This is a placeholder for the full article content about tenant retention strategies.',
     author: 'Michael Reynolds',
     coverImage: 'https://images.unsplash.com/photo-1649972904349-6e44c42644a7',
     publishedDate: 'May 8, 2025',
     readTime: '4 min read',
-    tags: ['Tenant Relations', 'Property Management', 'Rental Tips']
+    tags: ['Tenant Relations', 'Property Management', 'Rental Tips'],
   },
   {
     id: '3',
     slug: 'smart-home-technology-for-rental-properties',
     title: 'Smart Home Technology for Rental Properties: Worth the Investment?',
-    excerpt: 'Analyze the costs and benefits of implementing smart home features in your rental properties.',
-    content: 'This is a placeholder for the full article content about smart home technology in rental properties.',
+    excerpt:
+      'Analyze the costs and benefits of implementing smart home features in your rental properties.',
+    content:
+      'This is a placeholder for the full article content about smart home technology in rental properties.',
     author: 'Rachel Thompson',
     coverImage: 'https://images.unsplash.com/photo-1488590528505-98d2b5aba04b',
     publishedDate: 'May 5, 2025',
     readTime: '8 min read',
-    tags: ['Smart Home', 'Property Upgrades', 'Technology']
-  }
+    tags: ['Smart Home', 'Property Upgrades', 'Technology'],
+  },
 ];
 
 // Get all blog posts
@@ -114,15 +118,15 @@ export const getAllBlogPosts = () => {
 
 // Get a single blog post by slug
 export const getBlogPostBySlug = (slug: string) => {
-  return blogPosts.find(post => post.slug === slug);
+  return blogPosts.find((post) => post.slug === slug);
 };
 
 // Get a single blog post by id
 export const getBlogPostById = (id: string) => {
-  return blogPosts.find(post => post.id === id);
+  return blogPosts.find((post) => post.id === id);
 };
 
 // Search blog posts by tag
 export const getBlogPostsByTag = (tag: string) => {
-  return blogPosts.filter(post => post.tags.includes(tag));
+  return blogPosts.filter((post) => post.tags.includes(tag));
 };

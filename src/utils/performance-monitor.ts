@@ -1,4 +1,4 @@
-// Performance monitoring utilities for Nigeria Homes platform
+// Performance monitoring utilities for DamianixPro platform
 // Optimized for Nigerian network conditions and devices
 
 export interface PerformanceMetrics {
@@ -8,27 +8,27 @@ export interface PerformanceMetrics {
   fid: number; // First Input Delay
   cls: number; // Cumulative Layout Shift
   ttfb: number; // Time to First Byte
-  
+
   // Custom metrics
   pageLoadTime: number;
   domContentLoaded: number;
   resourceLoadTime: number;
   apiResponseTime: number;
-  
+
   // Network metrics
   connectionType: string;
   effectiveType: string;
   downlink: number;
   rtt: number;
-  
+
   // Device metrics
   deviceMemory: number;
   hardwareConcurrency: number;
-  
+
   // Bundle metrics
   jsHeapSizeUsed: number;
   jsHeapSizeLimit: number;
-  
+
   timestamp: Date;
 }
 
@@ -49,7 +49,7 @@ export const NIGERIAN_PERFORMANCE_THRESHOLDS: PerformanceThresholds = {
   fid: { good: 100, poor: 300 },
   cls: { good: 0.1, poor: 0.25 },
   ttfb: { good: 800, poor: 1800 }, // Account for international server latency
-  pageLoadTime: { good: 4000, poor: 8000 }
+  pageLoadTime: { good: 4000, poor: 8000 },
 };
 
 export class PerformanceMonitor {
@@ -84,9 +84,15 @@ export class PerformanceMonitor {
       });
 
       // Observe different entry types
-      const entryTypes = ['navigation', 'paint', 'largest-contentful-paint', 'first-input', 'layout-shift'];
-      
-      entryTypes.forEach(type => {
+      const entryTypes = [
+        'navigation',
+        'paint',
+        'largest-contentful-paint',
+        'first-input',
+        'layout-shift',
+      ];
+
+      entryTypes.forEach((type) => {
         try {
           observer.observe({ type, buffered: true });
         } catch (error) {
@@ -103,12 +109,12 @@ export class PerformanceMonitor {
   private handlePerformanceEntry(entry: PerformanceEntry): void {
     // Store performance entries for analysis
     const timestamp = new Date();
-    
+
     // Log significant performance events
     if (entry.entryType === 'largest-contentful-paint') {
       console.log(`LCP: ${entry.startTime}ms at ${timestamp.toISOString()}`);
     }
-    
+
     if (entry.entryType === 'first-input') {
       const fidEntry = entry as PerformanceEventTiming;
       console.log(`FID: ${fidEntry.processingStart - fidEntry.startTime}ms`);
@@ -118,13 +124,15 @@ export class PerformanceMonitor {
   // Collect comprehensive performance metrics
   async collectMetrics(): Promise<PerformanceMetrics> {
     const metrics: Partial<PerformanceMetrics> = {
-      timestamp: new Date()
+      timestamp: new Date(),
     };
 
     // Navigation timing
     if ('performance' in window && performance.getEntriesByType) {
-      const navigation = performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming;
-      
+      const navigation = performance.getEntriesByType(
+        'navigation'
+      )[0] as PerformanceNavigationTiming;
+
       if (navigation) {
         metrics.pageLoadTime = navigation.loadEventEnd - navigation.fetchStart;
         metrics.domContentLoaded = navigation.domContentLoadedEventEnd - navigation.fetchStart;
@@ -136,7 +144,7 @@ export class PerformanceMonitor {
     // Paint timing
     if ('performance' in window) {
       const paintEntries = performance.getEntriesByType('paint');
-      const fcpEntry = paintEntries.find(entry => entry.name === 'first-contentful-paint');
+      const fcpEntry = paintEntries.find((entry) => entry.name === 'first-contentful-paint');
       if (fcpEntry) {
         metrics.fcp = fcpEntry.startTime;
       }
@@ -204,7 +212,7 @@ export class PerformanceMonitor {
 
     const completeMetrics = metrics as PerformanceMetrics;
     this.metrics.push(completeMetrics);
-    
+
     // Keep only last 100 metrics
     if (this.metrics.length > 100) {
       this.metrics = this.metrics.slice(-100);
@@ -231,38 +239,38 @@ export class PerformanceMonitor {
         name: 'First Contentful Paint',
         value: metrics.fcp,
         threshold: this.thresholds.fcp,
-        weight: 20
+        weight: 20,
       },
       {
         name: 'Largest Contentful Paint',
         value: metrics.lcp,
         threshold: this.thresholds.lcp,
-        weight: 25
+        weight: 25,
       },
       {
         name: 'First Input Delay',
         value: metrics.fid,
         threshold: this.thresholds.fid,
-        weight: 20
+        weight: 20,
       },
       {
         name: 'Cumulative Layout Shift',
         value: metrics.cls,
         threshold: this.thresholds.cls,
-        weight: 15
+        weight: 15,
       },
       {
         name: 'Time to First Byte',
         value: metrics.ttfb,
         threshold: this.thresholds.ttfb,
-        weight: 10
+        weight: 10,
       },
       {
         name: 'Page Load Time',
         value: metrics.pageLoadTime,
         threshold: this.thresholds.pageLoadTime,
-        weight: 10
-      }
+        weight: 10,
+      },
     ];
 
     for (const test of tests) {
@@ -304,7 +312,7 @@ export class PerformanceMonitor {
       score: finalScore,
       grade,
       issues,
-      recommendations
+      recommendations,
     };
   }
 
@@ -319,16 +327,16 @@ export class PerformanceMonitor {
     endpoint: string
   ): Promise<{ result: T; duration: number }> {
     const startTime = performance.now();
-    
+
     try {
       const result = await apiCall();
       const duration = performance.now() - startTime;
-      
+
       // Log slow API calls
       if (duration > 2000) {
         console.warn(`Slow API call detected: ${endpoint} took ${duration}ms`);
       }
-      
+
       return { result, duration };
     } catch (error) {
       const duration = performance.now() - startTime;
@@ -354,13 +362,13 @@ export class PerformanceMonitor {
       'Use resource hints (preload, prefetch)',
       'Optimize font loading',
       'Implement lazy loading for images',
-      'Use efficient data formats (JSON over XML)'
+      'Use efficient data formats (JSON over XML)',
     ];
   }
 
   // Cleanup observers
   disconnect(): void {
-    this.observers.forEach(observer => observer.disconnect());
+    this.observers.forEach((observer) => observer.disconnect());
     this.observers = [];
   }
 }
@@ -368,18 +376,16 @@ export class PerformanceMonitor {
 // Performance utilities for React components
 export class ReactPerformanceUtils {
   // Measure component render time
-  static measureRender<T extends React.ComponentType<any>>(
-    Component: T,
-    displayName?: string
-  ): T {
+  static measureRender<T extends React.ComponentType<any>>(Component: T, displayName?: string): T {
     const WrappedComponent = (props: any) => {
       const startTime = performance.now();
-      
+
       React.useEffect(() => {
         const endTime = performance.now();
         const renderTime = endTime - startTime;
-        
-        if (renderTime > 16) { // Longer than one frame
+
+        if (renderTime > 16) {
+          // Longer than one frame
           console.warn(`Slow render detected in ${displayName || Component.name}: ${renderTime}ms`);
         }
       });
@@ -397,10 +403,10 @@ export class ReactPerformanceUtils {
     wait: number
   ): (...args: Parameters<T>) => void {
     let timeout: NodeJS.Timeout;
-    
+
     return (...args: Parameters<T>) => {
       clearTimeout(timeout);
-      timeout = setTimeout(() => func.apply(null, args), wait);
+      timeout = setTimeout(() => func(...args), wait);
     };
   }
 
@@ -410,12 +416,12 @@ export class ReactPerformanceUtils {
     limit: number
   ): (...args: Parameters<T>) => void {
     let inThrottle: boolean;
-    
+
     return (...args: Parameters<T>) => {
       if (!inThrottle) {
-        func.apply(null, args);
+        func(...args);
         inThrottle = true;
-        setTimeout(() => inThrottle = false, limit);
+        setTimeout(() => (inThrottle = false), limit);
       }
     };
   }
@@ -429,7 +435,7 @@ if (typeof window !== 'undefined') {
   // Start collecting metrics after page load
   window.addEventListener('load', () => {
     setTimeout(() => {
-      performanceMonitor.collectMetrics().then(metrics => {
+      performanceMonitor.collectMetrics().then((metrics) => {
         console.log('Initial performance metrics collected:', metrics);
       });
     }, 1000);

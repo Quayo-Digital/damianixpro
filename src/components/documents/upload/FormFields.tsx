@@ -1,15 +1,20 @@
-
-import { DocumentCategory, documentCategories } from "@/services/documents";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Textarea } from "@/components/ui/textarea";
+import { DocumentCategory, documentCategories } from '@/services/documents';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Textarea } from '@/components/ui/textarea';
 
 interface FormFieldsProps {
   name: string;
   setName: (name: string) => void;
-  category: DocumentCategory | "";
-  setCategory: (category: DocumentCategory | "") => void;
+  category: DocumentCategory | '';
+  setCategory: (category: DocumentCategory | '') => void;
   description: string;
   setDescription: (description: string) => void;
   property: string;
@@ -36,13 +41,9 @@ export function FormFields({
     <>
       <div className="grid gap-2">
         <Label htmlFor="document-name">Name</Label>
-        <Input
-          id="document-name"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-        />
+        <Input id="document-name" value={name} onChange={(e) => setName(e.target.value)} />
       </div>
-      
+
       <div className="grid gap-2">
         <Label htmlFor="document-category">Category</Label>
         <Select value={category} onValueChange={(value) => setCategory(value as DocumentCategory)}>
@@ -58,7 +59,7 @@ export function FormFields({
           </SelectContent>
         </Select>
       </div>
-      
+
       {properties && properties.length > 0 && (
         <div className="grid gap-2">
           <Label htmlFor="document-property">Property (Optional)</Label>
@@ -77,7 +78,7 @@ export function FormFields({
           </Select>
         </div>
       )}
-      
+
       <div className="grid gap-2">
         <Label htmlFor="document-description">Description (Optional)</Label>
         <Textarea
@@ -87,7 +88,7 @@ export function FormFields({
           rows={3}
         />
       </div>
-      
+
       <div className="grid gap-2">
         <Label htmlFor="document-tags">Tags (Optional)</Label>
         <Input
@@ -96,9 +97,7 @@ export function FormFields({
           onChange={(e) => setTags(e.target.value)}
           placeholder="Comma separated tags"
         />
-        <p className="text-xs text-muted-foreground">
-          E.g. lease, 2023, active
-        </p>
+        <p className="text-xs text-muted-foreground">E.g. lease, 2023, active</p>
       </div>
     </>
   );

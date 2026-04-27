@@ -41,7 +41,7 @@ async function runUserAcceptanceTesting() {
             score: 93
           },
           paymentSystem: {
-            features: ['Paystack integration', 'Flutterwave integration', 'Bank transfer', 'USSD payments'],
+            features: ['Flutterwave integration', 'Bank transfer', 'USSD payments'],
             workflows: ['Payment initiation', 'Payment verification', 'Receipt generation', 'Refund processing'],
             status: 'TESTED',
             score: 92

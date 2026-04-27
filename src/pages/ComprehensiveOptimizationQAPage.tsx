@@ -6,8 +6,8 @@ import { ComprehensiveOptimizationQA } from '@/components/testing/ComprehensiveO
 export const ComprehensiveOptimizationQAPage: React.FC = () => {
   return (
     <PageLayout>
-      <PageContent 
-        title="Comprehensive Optimization QA" 
+      <PageContent
+        title="Comprehensive Optimization QA"
         description="Complete validation and testing of all optimization features"
       >
         <ComprehensiveOptimizationQA />

@@ -1,4 +1,4 @@
--- Complete Fix Script for Nigeria Homes App
+-- Complete Fix Script for DamianixPro App
 -- Run this in your Supabase SQL Editor
 
 -- Step 1: First, let's see what users exist

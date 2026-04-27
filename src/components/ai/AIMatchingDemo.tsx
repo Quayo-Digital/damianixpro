@@ -7,12 +7,12 @@ import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { 
-  Brain, 
-  TestTube, 
-  CheckCircle, 
-  AlertCircle, 
-  Play, 
+import {
+  Brain,
+  TestTube,
+  CheckCircle,
+  AlertCircle,
+  Play,
   Eye,
   Heart,
   Home,
@@ -21,12 +21,12 @@ import {
   Star,
   Users,
   TrendingUp,
-  Zap
+  Zap,
 } from 'lucide-react';
 import { SmartRecommendations } from './SmartRecommendations';
 import { PreferencesSetup } from './PreferencesSetup';
 import { useUserPreferences } from '@/hooks/useUserPreferences';
-import { useAuth } from '@/contexts/auth';
+import { useAuthSession } from '@/contexts/auth';
 import { SmartMatchingService } from '@/services/ai/smartMatching';
 
 interface TestResult {
@@ -37,7 +37,7 @@ interface TestResult {
 }
 
 export const AIMatchingDemo: React.FC = () => {
-  const { user } = useAuth();
+  const { user } = useAuthSession();
   const { preferences, isPreferencesComplete, completionPercentage } = useUserPreferences();
   const [testResults, setTestResults] = useState<TestResult[]>([]);
   const [isRunningTests, setIsRunningTests] = useState(false);
@@ -59,8 +59,8 @@ export const AIMatchingDemo: React.FC = () => {
         { name: 'Swimming Pool', type: 'pool' },
         { name: '24/7 Security', type: 'security' },
         { name: 'Gym', type: 'gym' },
-        { name: 'Generator', type: 'generator' }
-      ]
+        { name: 'Generator', type: 'generator' },
+      ],
     },
     {
       id: '2',
@@ -74,8 +74,8 @@ export const AIMatchingDemo: React.FC = () => {
       amenities: [
         { name: 'Parking', type: 'parking' },
         { name: 'Garden', type: 'garden' },
-        { name: 'Security', type: 'security' }
-      ]
+        { name: 'Security', type: 'security' },
+      ],
     },
     {
       id: '3',
@@ -89,9 +89,9 @@ export const AIMatchingDemo: React.FC = () => {
       amenities: [
         { name: 'Internet', type: 'internet' },
         { name: 'Air Conditioning', type: 'air_conditioning' },
-        { name: 'Laundry', type: 'laundry' }
-      ]
-    }
+        { name: 'Laundry', type: 'laundry' },
+      ],
+    },
   ];
 
   const mockUserPreferences = {
@@ -117,7 +117,7 @@ export const AIMatchingDemo: React.FC = () => {
       garden: 5,
       elevator: 3,
       laundry: 5,
-      pet_friendly: 2
+      pet_friendly: 2,
     },
     noise_tolerance: 'moderate' as const,
     social_preference: 'private' as const,
@@ -130,30 +130,46 @@ export const AIMatchingDemo: React.FC = () => {
     search_patterns: {
       most_active_hours: [9, 10, 11, 18, 19, 20],
       search_frequency: 3,
-      decision_speed: 'moderate' as const
+      decision_speed: 'moderate' as const,
     },
     created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString()
+    updated_at: new Date().toISOString(),
   };
 
   const runAIMatchingTests = async () => {
     setIsRunningTests(true);
     const tests: TestResult[] = [
-      { test: 'User Preferences Validation', status: 'pending', message: 'Checking user preferences setup' },
-      { test: 'Property Compatibility Scoring', status: 'pending', message: 'Testing AI matching algorithm' },
-      { test: 'Recommendation Generation', status: 'pending', message: 'Generating smart recommendations' },
-      { test: 'Interaction Tracking', status: 'pending', message: 'Testing user behavior tracking' },
-      { test: 'Learning System', status: 'pending', message: 'Validating preference learning' }
+      {
+        test: 'User Preferences Validation',
+        status: 'pending',
+        message: 'Checking user preferences setup',
+      },
+      {
+        test: 'Property Compatibility Scoring',
+        status: 'pending',
+        message: 'Testing AI matching algorithm',
+      },
+      {
+        test: 'Recommendation Generation',
+        status: 'pending',
+        message: 'Generating smart recommendations',
+      },
+      {
+        test: 'Interaction Tracking',
+        status: 'pending',
+        message: 'Testing user behavior tracking',
+      },
+      { test: 'Learning System', status: 'pending', message: 'Validating preference learning' },
     ];
 
     setTestResults([...tests]);
 
     // Test 1: User Preferences Validation
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    await new Promise((resolve) => setTimeout(resolve, 1000));
     tests[0].status = 'running';
     setTestResults([...tests]);
-    
-    await new Promise(resolve => setTimeout(resolve, 1500));
+
+    await new Promise((resolve) => setTimeout(resolve, 1500));
     if (preferences || mockUserPreferences) {
       tests[0].status = 'passed';
       tests[0].message = 'User preferences loaded successfully';
@@ -165,19 +181,19 @@ export const AIMatchingDemo: React.FC = () => {
     setTestResults([...tests]);
 
     // Test 2: Property Compatibility Scoring
-    await new Promise(resolve => setTimeout(resolve, 500));
+    await new Promise((resolve) => setTimeout(resolve, 500));
     tests[1].status = 'running';
     setTestResults([...tests]);
-    
-    await new Promise(resolve => setTimeout(resolve, 2000));
+
+    await new Promise((resolve) => setTimeout(resolve, 2000));
     try {
       const testPrefs = preferences || mockUserPreferences;
-      const scores = mockProperties.map(property => 
+      const scores = mockProperties.map((property) =>
         SmartMatchingService.calculateMatchingScore(testPrefs, property)
       );
-      
+
       tests[1].status = 'passed';
-      tests[1].message = `Generated ${scores.length} compatibility scores (avg: ${Math.round(scores.reduce((sum, s) => sum + s.overall_score, 0) / scores.length * 100)}%)`;
+      tests[1].message = `Generated ${scores.length} compatibility scores (avg: ${Math.round((scores.reduce((sum, s) => sum + s.overall_score, 0) / scores.length) * 100)}%)`;
       tests[1].duration = 2000;
     } catch (error) {
       tests[1].status = 'failed';
@@ -186,33 +202,33 @@ export const AIMatchingDemo: React.FC = () => {
     setTestResults([...tests]);
 
     // Test 3: Recommendation Generation
-    await new Promise(resolve => setTimeout(resolve, 500));
+    await new Promise((resolve) => setTimeout(resolve, 500));
     tests[2].status = 'running';
     setTestResults([...tests]);
-    
-    await new Promise(resolve => setTimeout(resolve, 1800));
+
+    await new Promise((resolve) => setTimeout(resolve, 1800));
     tests[2].status = 'passed';
     tests[2].message = 'Smart recommendations generated successfully';
     tests[2].duration = 1800;
     setTestResults([...tests]);
 
     // Test 4: Interaction Tracking
-    await new Promise(resolve => setTimeout(resolve, 500));
+    await new Promise((resolve) => setTimeout(resolve, 500));
     tests[3].status = 'running';
     setTestResults([...tests]);
-    
-    await new Promise(resolve => setTimeout(resolve, 1200));
+
+    await new Promise((resolve) => setTimeout(resolve, 1200));
     tests[3].status = 'passed';
     tests[3].message = 'User interaction tracking system operational';
     tests[3].duration = 1200;
     setTestResults([...tests]);
 
     // Test 5: Learning System
-    await new Promise(resolve => setTimeout(resolve, 500));
+    await new Promise((resolve) => setTimeout(resolve, 500));
     tests[4].status = 'running';
     setTestResults([...tests]);
-    
-    await new Promise(resolve => setTimeout(resolve, 1500));
+
+    await new Promise((resolve) => setTimeout(resolve, 1500));
     tests[4].status = 'passed';
     tests[4].message = 'AI learning system validated';
     tests[4].duration = 1500;
@@ -228,7 +244,9 @@ export const AIMatchingDemo: React.FC = () => {
       case 'failed':
         return <AlertCircle className="h-4 w-4 text-red-600" />;
       case 'running':
-        return <div className="h-4 w-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />;
+        return (
+          <div className="h-4 w-4 animate-spin rounded-full border-2 border-blue-600 border-t-transparent" />
+        );
       default:
         return <div className="h-4 w-4 rounded-full bg-gray-300" />;
     }
@@ -236,23 +254,29 @@ export const AIMatchingDemo: React.FC = () => {
 
   const getStatusColor = (status: TestResult['status']) => {
     switch (status) {
-      case 'passed': return 'text-green-600';
-      case 'failed': return 'text-red-600';
-      case 'running': return 'text-blue-600';
-      default: return 'text-gray-500';
+      case 'passed':
+        return 'text-green-600';
+      case 'failed':
+        return 'text-red-600';
+      case 'running':
+        return 'text-blue-600';
+      default:
+        return 'text-gray-500';
     }
   };
 
-  const mockMatchingScores = mockProperties.map(property => {
-    const testPrefs = preferences || mockUserPreferences;
-    return {
-      property,
-      score: SmartMatchingService.calculateMatchingScore(testPrefs, property)
-    };
-  }).sort((a, b) => b.score.overall_score - a.score.overall_score);
+  const mockMatchingScores = mockProperties
+    .map((property) => {
+      const testPrefs = preferences || mockUserPreferences;
+      return {
+        property,
+        score: SmartMatchingService.calculateMatchingScore(testPrefs, property),
+      };
+    })
+    .sort((a, b) => b.score.overall_score - a.score.overall_score);
 
   return (
-    <div className="w-full max-w-6xl mx-auto space-y-6">
+    <div className="mx-auto w-full max-w-6xl space-y-6">
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between">
@@ -267,7 +291,7 @@ export const AIMatchingDemo: React.FC = () => {
             </div>
             <div className="flex space-x-2">
               <Badge variant="secondary" className="bg-purple-100 text-purple-700">
-                <Zap className="h-3 w-3 mr-1" />
+                <Zap className="mr-1 h-3 w-3" />
                 AI Powered
               </Badge>
               <Badge variant="secondary" className="bg-green-100 text-green-700">
@@ -288,18 +312,16 @@ export const AIMatchingDemo: React.FC = () => {
         </TabsList>
 
         <TabsContent value="overview" className="space-y-4">
-          <div className="grid md:grid-cols-3 gap-4">
+          <div className="grid gap-4 md:grid-cols-3">
             <Card>
               <CardHeader className="pb-3">
-                <CardTitle className="text-sm font-medium flex items-center">
-                  <Users className="h-4 w-4 mr-2 text-blue-600" />
+                <CardTitle className="flex items-center text-sm font-medium">
+                  <Users className="mr-2 h-4 w-4 text-blue-600" />
                   User Preferences
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">
-                  {completionPercentage}%
-                </div>
+                <div className="text-2xl font-bold">{completionPercentage}%</div>
                 <p className="text-xs text-muted-foreground">
                   {isPreferencesComplete ? 'Complete' : 'In Progress'}
                 </p>
@@ -309,18 +331,16 @@ export const AIMatchingDemo: React.FC = () => {
 
             <Card>
               <CardHeader className="pb-3">
-                <CardTitle className="text-sm font-medium flex items-center">
-                  <TrendingUp className="h-4 w-4 mr-2 text-green-600" />
+                <CardTitle className="flex items-center text-sm font-medium">
+                  <TrendingUp className="mr-2 h-4 w-4 text-green-600" />
                   Match Accuracy
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">94%</div>
-                <p className="text-xs text-muted-foreground">
-                  Average compatibility
-                </p>
-                <div className="flex items-center mt-2 text-xs text-green-600">
-                  <TrendingUp className="h-3 w-3 mr-1" />
+                <p className="text-xs text-muted-foreground">Average compatibility</p>
+                <div className="mt-2 flex items-center text-xs text-green-600">
+                  <TrendingUp className="mr-1 h-3 w-3" />
                   +12% this week
                 </div>
               </CardContent>
@@ -328,18 +348,16 @@ export const AIMatchingDemo: React.FC = () => {
 
             <Card>
               <CardHeader className="pb-3">
-                <CardTitle className="text-sm font-medium flex items-center">
-                  <Brain className="h-4 w-4 mr-2 text-purple-600" />
+                <CardTitle className="flex items-center text-sm font-medium">
+                  <Brain className="mr-2 h-4 w-4 text-purple-600" />
                   AI Features
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">5</div>
-                <p className="text-xs text-muted-foreground">
-                  Active AI systems
-                </p>
-                <div className="flex items-center mt-2 text-xs text-purple-600">
-                  <CheckCircle className="h-3 w-3 mr-1" />
+                <p className="text-xs text-muted-foreground">Active AI systems</p>
+                <div className="mt-2 flex items-center text-xs text-purple-600">
+                  <CheckCircle className="mr-1 h-3 w-3" />
                   All operational
                 </div>
               </CardContent>
@@ -349,8 +367,9 @@ export const AIMatchingDemo: React.FC = () => {
           <Alert>
             <Brain className="h-4 w-4" />
             <AlertDescription>
-              <strong>AI Matching System Status:</strong> The AI-powered property matching system is fully implemented and ready for use. 
-              It includes user preference tracking, intelligent compatibility scoring, behavioral learning, and personalized recommendations.
+              <strong>AI Matching System Status:</strong> The AI-powered property matching system is
+              fully implemented and ready for use. It includes user preference tracking, intelligent
+              compatibility scoring, behavioral learning, and personalized recommendations.
             </AlertDescription>
           </Alert>
 
@@ -359,9 +378,9 @@ export const AIMatchingDemo: React.FC = () => {
               <CardTitle className="text-lg">System Architecture</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="grid md:grid-cols-2 gap-4">
+              <div className="grid gap-4 md:grid-cols-2">
                 <div className="space-y-3">
-                  <h4 className="font-semibold text-sm">Core Components</h4>
+                  <h4 className="text-sm font-semibold">Core Components</h4>
                   <div className="space-y-2 text-sm">
                     <div className="flex items-center space-x-2">
                       <CheckCircle className="h-4 w-4 text-green-600" />
@@ -382,7 +401,7 @@ export const AIMatchingDemo: React.FC = () => {
                   </div>
                 </div>
                 <div className="space-y-3">
-                  <h4 className="font-semibold text-sm">Integration Points</h4>
+                  <h4 className="text-sm font-semibold">Integration Points</h4>
                   <div className="space-y-2 text-sm">
                     <div className="flex items-center space-x-2">
                       <CheckCircle className="h-4 w-4 text-green-600" />
@@ -421,66 +440,80 @@ export const AIMatchingDemo: React.FC = () => {
             </CardHeader>
             <CardContent className="space-y-4">
               {mockMatchingScores.map((item, index) => (
-                <div key={item.property.id} className="border rounded-lg p-4">
-                  <div className="flex items-center justify-between mb-3">
+                <div key={item.property.id} className="rounded-lg border p-4">
+                  <div className="mb-3 flex items-center justify-between">
                     <div className="flex items-center space-x-2">
                       <Badge variant="outline">#{index + 1}</Badge>
                       <h4 className="font-semibold">{item.property.name}</h4>
                     </div>
                     <div className="flex items-center space-x-2">
-                      <Star className="h-4 w-4 text-yellow-500 fill-current" />
+                      <Star className="h-4 w-4 fill-current text-yellow-500" />
                       <span className="font-semibold text-green-600">
                         {Math.round(item.score.overall_score * 100)}% match
                       </span>
                     </div>
                   </div>
-                  
-                  <div className="grid md:grid-cols-2 gap-4 mb-3">
+
+                  <div className="mb-3 grid gap-4 md:grid-cols-2">
                     <div className="space-y-2">
                       <div className="flex justify-between text-sm">
                         <span>Budget Match</span>
                         <span>{Math.round(item.score.score_breakdown.budget_score * 100)}%</span>
                       </div>
-                      <Progress value={item.score.score_breakdown.budget_score * 100} className="h-1" />
-                      
+                      <Progress
+                        value={item.score.score_breakdown.budget_score * 100}
+                        className="h-1"
+                      />
+
                       <div className="flex justify-between text-sm">
                         <span>Location Match</span>
                         <span>{Math.round(item.score.score_breakdown.location_score * 100)}%</span>
                       </div>
-                      <Progress value={item.score.score_breakdown.location_score * 100} className="h-1" />
+                      <Progress
+                        value={item.score.score_breakdown.location_score * 100}
+                        className="h-1"
+                      />
                     </div>
-                    
+
                     <div className="space-y-2">
                       <div className="flex justify-between text-sm">
                         <span>Amenity Match</span>
                         <span>{Math.round(item.score.score_breakdown.amenity_score * 100)}%</span>
                       </div>
-                      <Progress value={item.score.score_breakdown.amenity_score * 100} className="h-1" />
-                      
+                      <Progress
+                        value={item.score.score_breakdown.amenity_score * 100}
+                        className="h-1"
+                      />
+
                       <div className="flex justify-between text-sm">
                         <span>Lifestyle Match</span>
                         <span>{Math.round(item.score.score_breakdown.lifestyle_score * 100)}%</span>
                       </div>
-                      <Progress value={item.score.score_breakdown.lifestyle_score * 100} className="h-1" />
+                      <Progress
+                        value={item.score.score_breakdown.lifestyle_score * 100}
+                        className="h-1"
+                      />
                     </div>
                   </div>
-                  
+
                   <div className="flex items-center justify-between text-sm text-muted-foreground">
                     <div className="flex items-center space-x-4">
                       <span className="flex items-center">
-                        <MapPin className="h-3 w-3 mr-1" />
+                        <MapPin className="mr-1 h-3 w-3" />
                         {item.property.location}
                       </span>
                       <span className="flex items-center">
-                        <DollarSign className="h-3 w-3 mr-1" />
-                        ₦{item.property.rent_amount.toLocaleString()}
+                        <DollarSign className="mr-1 h-3 w-3" />₦
+                        {item.property.rent_amount.toLocaleString()}
                       </span>
                     </div>
-                    <Badge variant={item.score.confidence_level === 'high' ? 'default' : 'secondary'}>
+                    <Badge
+                      variant={item.score.confidence_level === 'high' ? 'default' : 'secondary'}
+                    >
                       {item.score.confidence_level} confidence
                     </Badge>
                   </div>
-                  
+
                   <div className="mt-2">
                     <p className="text-xs text-muted-foreground">
                       <strong>Why this matches:</strong> {item.score.reasons.join(', ')}
@@ -502,25 +535,22 @@ export const AIMatchingDemo: React.FC = () => {
               <div className="flex items-center justify-between">
                 <div>
                   <CardTitle className="flex items-center">
-                    <TestTube className="h-5 w-5 mr-2" />
+                    <TestTube className="mr-2 h-5 w-5" />
                     AI System Testing
                   </CardTitle>
                   <CardDescription>
                     Comprehensive testing of all AI matching components
                   </CardDescription>
                 </div>
-                <Button 
-                  onClick={runAIMatchingTests}
-                  disabled={isRunningTests}
-                >
+                <Button onClick={runAIMatchingTests} disabled={isRunningTests}>
                   {isRunningTests ? (
                     <>
-                      <div className="h-4 w-4 mr-2 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                      <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-primary-foreground border-t-transparent" />
                       Running Tests...
                     </>
                   ) : (
                     <>
-                      <Play className="h-4 w-4 mr-2" />
+                      <Play className="mr-2 h-4 w-4" />
                       Run Tests
                     </>
                   )}
@@ -531,11 +561,14 @@ export const AIMatchingDemo: React.FC = () => {
               {testResults.length > 0 ? (
                 <div className="space-y-3">
                   {testResults.map((result, index) => (
-                    <div key={index} className="flex items-center justify-between p-3 border rounded-lg">
+                    <div
+                      key={index}
+                      className="flex items-center justify-between rounded-lg border p-3"
+                    >
                       <div className="flex items-center space-x-3">
                         {getStatusIcon(result.status)}
                         <div>
-                          <p className="font-medium text-sm">{result.test}</p>
+                          <p className="text-sm font-medium">{result.test}</p>
                           <p className={`text-xs ${getStatusColor(result.status)}`}>
                             {result.message}
                           </p>
@@ -548,19 +581,20 @@ export const AIMatchingDemo: React.FC = () => {
                       )}
                     </div>
                   ))}
-                  
-                  {testResults.every(t => t.status === 'passed') && (
+
+                  {testResults.every((t) => t.status === 'passed') && (
                     <Alert>
                       <CheckCircle className="h-4 w-4" />
                       <AlertDescription>
-                        <strong>All tests passed!</strong> The AI matching system is fully operational and ready for production use.
+                        <strong>All tests passed!</strong> The AI matching system is fully
+                        operational and ready for production use.
                       </AlertDescription>
                     </Alert>
                   )}
                 </div>
               ) : (
-                <div className="text-center py-8 text-muted-foreground">
-                  <TestTube className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                <div className="py-8 text-center text-muted-foreground">
+                  <TestTube className="mx-auto mb-2 h-8 w-8 opacity-50" />
                   <p>Click "Run Tests" to validate the AI matching system</p>
                 </div>
               )}

@@ -1,13 +1,25 @@
-
 import React, { useState } from 'react';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Switch } from "@/components/ui/switch";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { AlertCircle, Bell, Calendar } from "lucide-react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Switch } from '@/components/ui/switch';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Label } from '@/components/ui/label';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { AlertCircle, Bell, Calendar } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 export interface ReminderSettings {
@@ -21,7 +33,8 @@ const defaultSettings: ReminderSettings = {
   enabled: true,
   daysBefore: 3,
   reminderMethod: 'email',
-  reminderTemplate: 'Your rent payment of [AMOUNT] is due on [DATE]. Please ensure your payment is made on time to avoid late fees.'
+  reminderTemplate:
+    'Your rent payment of [AMOUNT] is due on [DATE]. Please ensure your payment is made on time to avoid late fees.',
 };
 
 export function RentRemindersSettings() {
@@ -35,8 +48,8 @@ export function RentRemindersSettings() {
     setTimeout(() => {
       setIsSaving(false);
       toast({
-        title: "Settings saved",
-        description: "Rent reminder settings have been updated successfully.",
+        title: 'Settings saved',
+        description: 'Rent reminder settings have been updated successfully.',
       });
     }, 800);
   };
@@ -45,7 +58,7 @@ export function RentRemindersSettings() {
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center">
-          <Bell className="h-5 w-5 mr-2" />
+          <Bell className="mr-2 h-5 w-5" />
           Rent Reminder Settings
         </CardTitle>
         <CardDescription>
@@ -68,12 +81,14 @@ export function RentRemindersSettings() {
 
         {settings.enabled && (
           <>
-            <div className="grid gap-4 grid-cols-1 md:grid-cols-2">
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
               <div className="space-y-2">
                 <Label htmlFor="days-before">Days Before Due Date</Label>
-                <Select 
-                  value={settings.daysBefore.toString()} 
-                  onValueChange={(value) => setSettings({ ...settings, daysBefore: parseInt(value) })}
+                <Select
+                  value={settings.daysBefore.toString()}
+                  onValueChange={(value) =>
+                    setSettings({ ...settings, daysBefore: parseInt(value) })
+                  }
                 >
                   <SelectTrigger id="days-before">
                     <SelectValue placeholder="Select days" />
@@ -91,12 +106,14 @@ export function RentRemindersSettings() {
 
               <div className="space-y-2">
                 <Label htmlFor="reminder-method">Reminder Method</Label>
-                <Select 
-                  value={settings.reminderMethod} 
-                  onValueChange={(value) => setSettings({ 
-                    ...settings, 
-                    reminderMethod: value as 'email' | 'sms' | 'both' 
-                  })}
+                <Select
+                  value={settings.reminderMethod}
+                  onValueChange={(value) =>
+                    setSettings({
+                      ...settings,
+                      reminderMethod: value as 'email' | 'sms' | 'both',
+                    })
+                  }
                 >
                   <SelectTrigger id="reminder-method">
                     <SelectValue placeholder="Select method" />
@@ -120,14 +137,15 @@ export function RentRemindersSettings() {
                   className="min-h-[80px]"
                 />
                 <p className="text-xs text-muted-foreground">
-                  Use [AMOUNT], [DATE], and [TENANT] placeholders that will be replaced with actual values
+                  Use [AMOUNT], [DATE], and [TENANT] placeholders that will be replaced with actual
+                  values
                 </p>
               </div>
             </div>
 
-            <div className="bg-muted rounded-md p-3 text-sm">
+            <div className="rounded-md bg-muted p-3 text-sm">
               <div className="flex">
-                <AlertCircle className="h-5 w-5 mr-2 text-muted-foreground" />
+                <AlertCircle className="mr-2 h-5 w-5 text-muted-foreground" />
                 <div>
                   <p className="font-medium">Preview</p>
                   <p className="mt-1 text-muted-foreground">

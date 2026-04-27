@@ -55,23 +55,29 @@ export const TenantTable = ({
 }: TenantTableProps) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
-  
+
   const { tenants, isLoading, error, deleteTenant, isDeleting } = useTenants();
 
   const filteredTenants = tenants.filter((tenant) => {
-    const matchesSearch = 
-      `${tenant.first_name} ${tenant.last_name}`.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    const matchesSearch =
+      `${tenant.first_name} ${tenant.last_name}`
+        .toLowerCase()
+        .includes(searchQuery.toLowerCase()) ||
       tenant.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
       tenant.phone.includes(searchQuery) ||
       tenant.property?.title?.toLowerCase().includes(searchQuery.toLowerCase());
-    
+
     const matchesStatus = statusFilter === 'all' || tenant.status === statusFilter;
-    
+
     return matchesSearch && matchesStatus;
   });
 
   const handleDeleteTenant = (tenant: Tenant) => {
-    if (window.confirm(`Are you sure you want to delete tenant ${tenant.first_name} ${tenant.last_name}?`)) {
+    if (
+      window.confirm(
+        `Are you sure you want to delete tenant ${tenant.first_name} ${tenant.last_name}?`
+      )
+    ) {
       deleteTenant(tenant.id);
     }
   };
@@ -87,7 +93,7 @@ export const TenantTable = ({
             {Array.from({ length: 5 }).map((_, i) => (
               <div key={i} className="flex items-center space-x-4">
                 <Skeleton className="h-10 w-10 rounded-full" />
-                <div className="space-y-2 flex-1">
+                <div className="flex-1 space-y-2">
                   <Skeleton className="h-4 w-40" />
                   <Skeleton className="h-3 w-60" />
                 </div>
@@ -119,24 +125,24 @@ export const TenantTable = ({
   return (
     <Card>
       <CardHeader>
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+        <div className="flex flex-col items-start justify-between gap-4 md:flex-row md:items-center">
           <CardTitle>Tenants ({filteredTenants.length})</CardTitle>
-          
-          <div className="flex flex-col sm:flex-row gap-2 w-full md:w-auto">
+
+          <div className="flex w-full flex-col gap-2 sm:flex-row md:w-auto">
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 transform text-muted-foreground" />
               <Input
                 placeholder="Search tenants..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10 w-full sm:w-64"
+                className="w-full pl-10 sm:w-64"
               />
             </div>
-            
+
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
-              className="px-3 py-2 border border-input bg-background rounded-md text-sm"
+              className="rounded-md border border-input bg-background px-3 py-2 text-sm"
             >
               <option value="all">All Status</option>
               <option value="active">Active</option>
@@ -147,17 +153,16 @@ export const TenantTable = ({
           </div>
         </div>
       </CardHeader>
-      
+
       <CardContent>
         {filteredTenants.length === 0 ? (
-          <div className="text-center py-8 text-muted-foreground">
-            <Users className="h-12 w-12 mx-auto mb-4 opacity-50" />
+          <div className="py-8 text-center text-muted-foreground">
+            <Users className="mx-auto mb-4 h-12 w-12 opacity-50" />
             <p className="text-lg font-medium">No tenants found</p>
             <p className="text-sm">
-              {searchQuery || statusFilter !== 'all' 
-                ? 'Try adjusting your search or filters' 
-                : 'Add your first tenant to get started'
-              }
+              {searchQuery || statusFilter !== 'all'
+                ? 'Try adjusting your search or filters'
+                : 'Add your first tenant to get started'}
             </p>
           </div>
         ) : (
@@ -181,7 +186,8 @@ export const TenantTable = ({
                         <Avatar className="h-10 w-10">
                           <AvatarImage src={tenant.user?.avatar_url} />
                           <AvatarFallback>
-                            {tenant.first_name[0]}{tenant.last_name[0]}
+                            {tenant.first_name[0]}
+                            {tenant.last_name[0]}
                           </AvatarFallback>
                         </Avatar>
                         <div>
@@ -194,12 +200,12 @@ export const TenantTable = ({
                         </div>
                       </div>
                     </TableCell>
-                    
+
                     <TableCell>
                       <div className="space-y-1">
                         <div className="flex items-center space-x-2 text-sm">
                           <Mail className="h-3 w-3 text-muted-foreground" />
-                          <span className="truncate max-w-40">{tenant.email}</span>
+                          <span className="max-w-40 truncate">{tenant.email}</span>
                         </div>
                         <div className="flex items-center space-x-2 text-sm">
                           <Phone className="h-3 w-3 text-muted-foreground" />
@@ -207,14 +213,14 @@ export const TenantTable = ({
                         </div>
                       </div>
                     </TableCell>
-                    
+
                     <TableCell>
                       {tenant.property ? (
                         <div className="space-y-1">
-                          <div className="font-medium text-sm">{tenant.property.title}</div>
+                          <div className="text-sm font-medium">{tenant.property.title}</div>
                           <div className="flex items-center space-x-2 text-xs text-muted-foreground">
                             <MapPin className="h-3 w-3" />
-                            <span className="truncate max-w-32">{tenant.property.address}</span>
+                            <span className="max-w-32 truncate">{tenant.property.address}</span>
                           </div>
                           <Badge variant="outline" className="text-xs">
                             {tenant.property.type}
@@ -224,20 +230,20 @@ export const TenantTable = ({
                         <span className="text-sm text-muted-foreground">No property assigned</span>
                       )}
                     </TableCell>
-                    
+
                     <TableCell>
                       {tenant.lease ? (
                         <div className="space-y-1">
                           <div className="flex items-center space-x-2 text-sm">
                             <DollarSign className="h-3 w-3 text-muted-foreground" />
                             <span className="font-medium">
-                              {formatCurrency(tenant.lease.monthly_rent)}/month
+                              {formatCurrency(tenant.lease.monthly_rent)}/year
                             </span>
                           </div>
                           <div className="flex items-center space-x-2 text-xs text-muted-foreground">
                             <Calendar className="h-3 w-3" />
                             <span>
-                              {new Date(tenant.lease.start_date).toLocaleDateString()} - 
+                              {new Date(tenant.lease.start_date).toLocaleDateString()} -
                               {new Date(tenant.lease.end_date).toLocaleDateString()}
                             </span>
                           </div>
@@ -249,11 +255,11 @@ export const TenantTable = ({
                         <span className="text-sm text-muted-foreground">No active lease</span>
                       )}
                     </TableCell>
-                    
+
                     <TableCell>
                       <TenantStatusBadge status={tenant.status} />
                     </TableCell>
-                    
+
                     <TableCell className="text-right">
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
@@ -264,25 +270,25 @@ export const TenantTable = ({
                         <DropdownMenuContent align="end" className="w-48">
                           <DropdownMenuLabel>Actions</DropdownMenuLabel>
                           <DropdownMenuSeparator />
-                          
+
                           <DropdownMenuItem onClick={() => onViewTenant?.(tenant)}>
                             <Eye className="mr-2 h-4 w-4" />
                             View Details
                           </DropdownMenuItem>
-                          
+
                           <DropdownMenuItem onClick={() => onContactTenant?.(tenant)}>
                             <MessageSquare className="mr-2 h-4 w-4" />
                             Send Message
                           </DropdownMenuItem>
-                          
+
                           <DropdownMenuItem onClick={() => onEditTenant?.(tenant)}>
                             <Edit className="mr-2 h-4 w-4" />
                             Edit Tenant
                           </DropdownMenuItem>
-                          
+
                           <DropdownMenuSeparator />
-                          
-                          <DropdownMenuItem 
+
+                          <DropdownMenuItem
                             onClick={() => handleDeleteTenant(tenant)}
                             className="text-destructive focus:text-destructive"
                             disabled={isDeleting}

@@ -1,7 +1,13 @@
-
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import { FileText } from 'lucide-react';
 import { OwnerPayment } from './types';
 
@@ -12,17 +18,22 @@ interface PaymentsTableProps {
   statusVariant: 'success' | 'warning';
 }
 
-export const PaymentsTable = ({ payments, loading, emptyMessage, statusVariant }: PaymentsTableProps) => {
+export const PaymentsTable = ({
+  payments,
+  loading,
+  emptyMessage,
+  statusVariant,
+}: PaymentsTableProps) => {
   const getBadgeClass = (variant: string) => {
     if (variant === 'success') {
-      return "bg-green-50 text-green-700 border-green-200";
+      return 'bg-green-50 text-green-700 border-green-200';
     }
     if (variant === 'warning') {
-      return "bg-yellow-50 text-yellow-700 border-yellow-200";
+      return 'bg-yellow-50 text-yellow-700 border-yellow-200';
     }
-    return "";
-  }
-  
+    return '';
+  };
+
   return (
     <Table>
       <TableHeader>
@@ -39,7 +50,7 @@ export const PaymentsTable = ({ payments, loading, emptyMessage, statusVariant }
       <TableBody>
         {loading ? (
           <TableRow>
-            <TableCell colSpan={7} className="text-center py-8">
+            <TableCell colSpan={7} className="py-8 text-center">
               Loading payments...
             </TableCell>
           </TableRow>
@@ -50,7 +61,9 @@ export const PaymentsTable = ({ payments, loading, emptyMessage, statusVariant }
               <TableCell>{payment.property_name}</TableCell>
               <TableCell>{payment.tenant_name}</TableCell>
               <TableCell className="text-right">₦{payment.total_amount.toLocaleString()}</TableCell>
-              <TableCell className="text-right font-medium">₦{payment.owner_amount.toLocaleString()}</TableCell>
+              <TableCell className="text-right font-medium">
+                ₦{payment.owner_amount.toLocaleString()}
+              </TableCell>
               <TableCell>
                 <Badge variant="outline" className={getBadgeClass(statusVariant)}>
                   {payment.status}
@@ -66,7 +79,7 @@ export const PaymentsTable = ({ payments, loading, emptyMessage, statusVariant }
           ))
         ) : (
           <TableRow>
-            <TableCell colSpan={7} className="text-center py-8">
+            <TableCell colSpan={7} className="py-8 text-center">
               {emptyMessage}
             </TableCell>
           </TableRow>

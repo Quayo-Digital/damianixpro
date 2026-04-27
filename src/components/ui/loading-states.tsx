@@ -4,17 +4,12 @@ import { Loader2, AlertCircle, CheckCircle2, Info } from 'lucide-react';
 
 // Skeleton Components for Loading States
 export const Skeleton = ({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) => {
-  return (
-    <div
-      className={cn("animate-pulse rounded-md bg-muted", className)}
-      {...props}
-    />
-  );
+  return <div className={cn('animate-pulse rounded-md bg-muted', className)} {...props} />;
 };
 
 // Card Skeleton for Property Cards, Dashboard Cards, etc.
 export const CardSkeleton = () => (
-  <div className="rounded-lg border bg-card p-6 space-y-4">
+  <div className="space-y-4 rounded-lg border bg-card p-6">
     <div className="flex items-center space-x-4">
       <Skeleton className="h-12 w-12 rounded-full" />
       <div className="space-y-2">
@@ -45,7 +40,11 @@ export const TableSkeleton = ({ rows = 5, columns = 4 }: { rows?: number; column
     </div>
     {/* Table Rows */}
     {Array.from({ length: rows }).map((_, rowIndex) => (
-      <div key={rowIndex} className="grid gap-4" style={{ gridTemplateColumns: `repeat(${columns}, 1fr)` }}>
+      <div
+        key={rowIndex}
+        className="grid gap-4"
+        style={{ gridTemplateColumns: `repeat(${columns}, 1fr)` }}
+      >
         {Array.from({ length: columns }).map((_, colIndex) => (
           <Skeleton key={colIndex} className="h-8 w-full" />
         ))}
@@ -60,7 +59,7 @@ export const ListSkeleton = ({ items = 5 }: { items?: number }) => (
     {Array.from({ length: items }).map((_, i) => (
       <div key={i} className="flex items-center space-x-4">
         <Skeleton className="h-10 w-10 rounded-full" />
-        <div className="space-y-2 flex-1">
+        <div className="flex-1 space-y-2">
           <Skeleton className="h-4 w-[60%]" />
           <Skeleton className="h-3 w-[40%]" />
         </div>
@@ -110,7 +109,7 @@ export const DashboardSkeleton = () => (
       <Skeleton className="h-8 w-[300px]" />
       <Skeleton className="h-4 w-[500px]" />
     </div>
-    
+
     {/* Stats Cards */}
     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
       {Array.from({ length: 4 }).map((_, i) => (
@@ -121,7 +120,7 @@ export const DashboardSkeleton = () => (
           </div>
           <div className="mt-2">
             <Skeleton className="h-8 w-[80px]" />
-            <Skeleton className="h-3 w-[120px] mt-1" />
+            <Skeleton className="mt-1 h-3 w-[120px]" />
           </div>
         </div>
       ))}
@@ -151,12 +150,10 @@ export const LoadingSpinner = ({ size = 'md', className }: LoadingSpinnerProps) 
   const sizeClasses = {
     sm: 'h-4 w-4',
     md: 'h-6 w-6',
-    lg: 'h-8 w-8'
+    lg: 'h-8 w-8',
   };
 
-  return (
-    <Loader2 className={cn('animate-spin', sizeClasses[size], className)} />
-  );
+  return <Loader2 className={cn('animate-spin', sizeClasses[size], className)} />;
 };
 
 // Loading Button Component
@@ -166,13 +163,13 @@ interface LoadingButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElemen
   loadingText?: string;
 }
 
-export const LoadingButton = ({ 
-  loading = false, 
-  children, 
-  loadingText = 'Loading...', 
+export const LoadingButton = ({
+  loading = false,
+  children,
+  loadingText = 'Loading...',
   disabled,
   className,
-  ...props 
+  ...props
 }: LoadingButtonProps) => {
   return (
     <button
@@ -199,12 +196,16 @@ interface LoadingOverlayProps {
   message?: string;
 }
 
-export const LoadingOverlay = ({ loading, children, message = 'Loading...' }: LoadingOverlayProps) => {
+export const LoadingOverlay = ({
+  loading,
+  children,
+  message = 'Loading...',
+}: LoadingOverlayProps) => {
   return (
     <div className="relative">
       {children}
       {loading && (
-        <div className="absolute inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center z-50">
+        <div className="absolute inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm">
           <div className="flex flex-col items-center space-y-2">
             <LoadingSpinner size="lg" />
             <p className="text-sm text-muted-foreground">{message}</p>
@@ -249,31 +250,30 @@ export const ProgressIndicator = ({ steps, currentStep, className }: ProgressInd
     <div className={cn('flex items-center space-x-4', className)}>
       {steps.map((step, index) => (
         <div key={index} className="flex items-center">
-          <div className={cn(
-            'flex items-center justify-center w-8 h-8 rounded-full text-sm font-medium',
-            index < currentStep 
-              ? 'bg-primary text-primary-foreground' 
-              : index === currentStep
-              ? 'bg-primary text-primary-foreground animate-pulse'
-              : 'bg-muted text-muted-foreground'
-          )}>
-            {index < currentStep ? (
-              <CheckCircle2 className="h-4 w-4" />
-            ) : (
-              index + 1
+          <div
+            className={cn(
+              'flex h-8 w-8 items-center justify-center rounded-full text-sm font-medium',
+              index < currentStep
+                ? 'bg-primary text-primary-foreground'
+                : index === currentStep
+                  ? 'animate-pulse bg-primary text-primary-foreground'
+                  : 'bg-muted text-muted-foreground'
             )}
+          >
+            {index < currentStep ? <CheckCircle2 className="h-4 w-4" /> : index + 1}
           </div>
-          <span className={cn(
-            'ml-2 text-sm',
-            index <= currentStep ? 'text-foreground' : 'text-muted-foreground'
-          )}>
+          <span
+            className={cn(
+              'ml-2 text-sm',
+              index <= currentStep ? 'text-foreground' : 'text-muted-foreground'
+            )}
+          >
             {step}
           </span>
           {index < steps.length - 1 && (
-            <div className={cn(
-              'w-12 h-0.5 mx-4',
-              index < currentStep ? 'bg-primary' : 'bg-muted'
-            )} />
+            <div
+              className={cn('mx-4 h-0.5 w-12', index < currentStep ? 'bg-primary' : 'bg-muted')}
+            />
           )}
         </div>
       ))}
@@ -293,36 +293,30 @@ export const StatusMessage = ({ type, title, message, className }: StatusMessage
   const config = {
     info: {
       icon: Info,
-      className: 'bg-blue-50 text-blue-900 border-blue-200'
+      className: 'bg-blue-50 text-blue-900 border-blue-200',
     },
     success: {
       icon: CheckCircle2,
-      className: 'bg-green-50 text-green-900 border-green-200'
+      className: 'bg-green-50 text-green-900 border-green-200',
     },
     warning: {
       icon: AlertCircle,
-      className: 'bg-yellow-50 text-yellow-900 border-yellow-200'
+      className: 'bg-yellow-50 text-yellow-900 border-yellow-200',
     },
     error: {
       icon: AlertCircle,
-      className: 'bg-red-50 text-red-900 border-red-200'
-    }
+      className: 'bg-red-50 text-red-900 border-red-200',
+    },
   };
 
   const { icon: Icon, className: typeClassName } = config[type];
 
   return (
-    <div className={cn(
-      'rounded-lg border p-4',
-      typeClassName,
-      className
-    )}>
+    <div className={cn('rounded-lg border p-4', typeClassName, className)}>
       <div className="flex">
         <Icon className="h-5 w-5 flex-shrink-0" />
         <div className="ml-3">
-          {title && (
-            <h3 className="text-sm font-medium">{title}</h3>
-          )}
+          {title && <h3 className="text-sm font-medium">{title}</h3>}
           <p className={cn('text-sm', title ? 'mt-1' : '')}>{message}</p>
         </div>
       </div>
@@ -339,27 +333,21 @@ interface EmptyStateProps {
   className?: string;
 }
 
-export const EmptyState = ({ 
-  icon: Icon = Info, 
-  title, 
-  description, 
-  action, 
-  className 
+export const EmptyState = ({
+  icon: Icon = Info,
+  title,
+  description,
+  action,
+  className,
 }: EmptyStateProps) => {
   return (
-    <div className={cn('text-center py-12', className)}>
+    <div className={cn('py-12 text-center', className)}>
       <Icon className="mx-auto h-12 w-12 text-muted-foreground" />
       <h3 className="mt-4 text-lg font-semibold">{title}</h3>
       {description && (
-        <p className="mt-2 text-sm text-muted-foreground max-w-sm mx-auto">
-          {description}
-        </p>
+        <p className="mx-auto mt-2 max-w-sm text-sm text-muted-foreground">{description}</p>
       )}
-      {action && (
-        <div className="mt-6">
-          {action}
-        </div>
-      )}
+      {action && <div className="mt-6">{action}</div>}
     </div>
   );
 };

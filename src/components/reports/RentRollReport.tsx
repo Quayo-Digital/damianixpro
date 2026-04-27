@@ -1,6 +1,12 @@
-
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { RentRollEntry } from './types';
 
@@ -10,31 +16,37 @@ interface RentRollReportProps {
 }
 
 export const RentRollReport = ({ data, dateRange }: RentRollReportProps) => {
-    const formatCurrency = (amount: number | null) => {
-        if (amount === null) return 'N/A';
-        return new Intl.NumberFormat('en-NG', {
-            style: 'currency',
-            currency: 'NGN',
-        }).format(amount);
-    };
+  const formatCurrency = (amount: number | null) => {
+    if (amount === null) return 'N/A';
+    return new Intl.NumberFormat('en-NG', {
+      style: 'currency',
+      currency: 'NGN',
+    }).format(amount);
+  };
 
-    const formatDate = (date: Date) => {
-        return date.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+  const formatDate = (date: Date) => {
+    return date.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+  };
+
+  const getStatusVariant = (
+    status: RentRollEntry['status']
+  ): 'default' | 'destructive' | 'secondary' | 'outline' | 'success' => {
+    switch (status) {
+      case 'Paid':
+        return 'success';
+      case 'Overdue':
+        return 'destructive';
+      case 'Due':
+        return 'secondary';
+      default:
+        return 'outline';
     }
-    
-    const getStatusVariant = (status: RentRollEntry['status']): 'default' | 'destructive' | 'secondary' | 'outline' | 'success' => {
-        switch(status) {
-            case 'Paid': return 'success';
-            case 'Overdue': return 'destructive';
-            case 'Due': return 'secondary';
-            default: return 'outline';
-        }
-    }
+  };
 
   return (
-    <Card>
+    <Card className="premium-data-card">
       <CardHeader>
-        <CardTitle>Rent Roll Report</CardTitle>
+        <CardTitle className="premium-title">Rent Roll Report</CardTitle>
         <CardDescription>
           For the period from {formatDate(dateRange.from)} to {formatDate(dateRange.to)}
         </CardDescription>
@@ -54,7 +66,9 @@ export const RentRollReport = ({ data, dateRange }: RentRollReportProps) => {
           <TableBody>
             {data.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={6} className="text-center">No rent roll data available for the selected period.</TableCell>
+                <TableCell colSpan={6} className="text-center">
+                  No rent roll data available for the selected period.
+                </TableCell>
               </TableRow>
             ) : (
               data.map((entry, index) => (
@@ -64,18 +78,26 @@ export const RentRollReport = ({ data, dateRange }: RentRollReportProps) => {
                     <div className="text-sm text-muted-foreground">{entry.unit}</div>
                   </TableCell>
                   <TableCell>{entry.tenantName}</TableCell>
-                  <TableCell>{entry.leaseStartDate} - {entry.leaseEndDate}</TableCell>
+                  <TableCell>
+                    {entry.leaseStartDate} - {entry.leaseEndDate}
+                  </TableCell>
                   <TableCell className="text-right">{formatCurrency(entry.monthlyRent)}</TableCell>
                   <TableCell>
                     {entry.lastPaymentDate ? (
                       <>
                         <div>{entry.lastPaymentDate}</div>
-                        <div className="text-sm text-muted-foreground">{formatCurrency(entry.lastPaymentAmount)}</div>
+                        <div className="text-sm text-muted-foreground">
+                          {formatCurrency(entry.lastPaymentAmount)}
+                        </div>
                       </>
-                    ) : 'No payments yet'}
+                    ) : (
+                      'No payments yet'
+                    )}
                   </TableCell>
                   <TableCell className="text-center">
-                    <Badge variant={getStatusVariant(entry.status)}>{entry.status}</Badge>
+                    <Badge variant={getStatusVariant(entry.status)} className="rounded-full">
+                      {entry.status}
+                    </Badge>
                   </TableCell>
                 </TableRow>
               ))
@@ -86,4 +108,3 @@ export const RentRollReport = ({ data, dateRange }: RentRollReportProps) => {
     </Card>
   );
 };
-

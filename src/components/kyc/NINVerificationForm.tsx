@@ -10,29 +10,32 @@ import { Card, CardContent } from '@/components/ui/card';
 import { User, Shield, AlertCircle } from 'lucide-react';
 import { useNigerianApis } from '@/hooks/useNigerianApis';
 import { NINVerificationRequest } from '@/types/nigerianApis';
+import { logger } from '@/utils/logger';
 
 const ninSchema = z.object({
-  nin: z.string()
+  nin: z
+    .string()
     .min(11, 'NIN must be 11 digits')
     .max(11, 'NIN must be 11 digits')
     .regex(/^\d{11}$/, 'NIN must contain only numbers'),
   first_name: z.string().min(2, 'First name is required').optional(),
   last_name: z.string().min(2, 'Last name is required').optional(),
-  date_of_birth: z.string().optional()
+  date_of_birth: z.string().optional(),
 });
 
 type NINFormData = z.infer<typeof ninSchema>;
 
 export const NINVerificationForm: React.FC = () => {
-  const { verifyNIN, isNinVerifying, canPerformVerification } = useNigerianApis();
-  
+  const { verifyNIN, isNinVerifying, canPerformVerification, getVerificationUnavailableReason } =
+    useNigerianApis();
+
   const {
     register,
     handleSubmit,
     formState: { errors },
-    reset
+    reset,
   } = useForm<NINFormData>({
-    resolver: zodResolver(ninSchema)
+    resolver: zodResolver(ninSchema),
   });
 
   const canVerify = canPerformVerification('nin');
@@ -43,13 +46,13 @@ export const NINVerificationForm: React.FC = () => {
         nin: data.nin,
         first_name: data.first_name,
         last_name: data.last_name,
-        date_of_birth: data.date_of_birth
+        date_of_birth: data.date_of_birth,
       };
 
       await verifyNIN(request);
       reset();
     } catch (error) {
-      console.error('NIN verification failed:', error);
+      logger.error('NIN verification failed', error);
     }
   };
 
@@ -57,9 +60,7 @@ export const NINVerificationForm: React.FC = () => {
     return (
       <Alert>
         <AlertCircle className="h-4 w-4" />
-        <AlertDescription>
-          NIN verification service is currently unavailable. Please check your subscription or try again later.
-        </AlertDescription>
+        <AlertDescription>{getVerificationUnavailableReason('nin')}</AlertDescription>
       </Alert>
     );
   }
@@ -76,7 +77,8 @@ export const NINVerificationForm: React.FC = () => {
           <Alert>
             <Shield className="h-4 w-4" />
             <AlertDescription>
-              Your NIN is used to verify your identity with the National Identity Management Commission (NIMC). All information is processed securely.
+              Your NIN is used to verify your identity with the National Identity Management
+              Commission (NIMC). All information is processed securely.
             </AlertDescription>
           </Alert>
 
@@ -91,15 +93,14 @@ export const NINVerificationForm: React.FC = () => {
                 {...register('nin')}
                 className={errors.nin ? 'border-red-500' : ''}
               />
-              {errors.nin && (
-                <p className="text-sm text-red-600">{errors.nin.message}</p>
-              )}
+              {errors.nin && <p className="text-sm text-red-600">{errors.nin.message}</p>}
               <p className="text-xs text-gray-500">
-                Your NIN can be found on your National ID card or by visiting a NIMC enrollment center
+                Your NIN can be found on your National ID card or by visiting a NIMC enrollment
+                center
               </p>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
               <div className="space-y-2">
                 <Label htmlFor="first_name">First Name (Optional)</Label>
                 <Input
@@ -145,32 +146,30 @@ export const NINVerificationForm: React.FC = () => {
               </p>
             </div>
 
-            <div className="bg-blue-50 p-3 rounded-lg">
+            <div className="rounded-lg bg-blue-50 p-3">
               <p className="text-sm text-blue-800">
-                <strong>About NIN Verification:</strong> The NIN is Nigeria's unique identifier for all citizens and legal residents. It contains biometric and demographic data linked to your identity.
+                <strong>About NIN Verification:</strong> The NIN is Nigeria's unique identifier for
+                all citizens and legal residents. It contains biometric and demographic data linked
+                to your identity.
               </p>
             </div>
 
-            <Button 
-              type="submit" 
-              disabled={isNinVerifying}
-              className="w-full"
-            >
+            <Button type="submit" disabled={isNinVerifying} className="w-full">
               {isNinVerifying ? (
                 <div className="flex items-center space-x-2">
-                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                  <div className="h-4 w-4 animate-spin rounded-full border-b-2 border-primary-foreground"></div>
                   <span>Verifying NIN...</span>
                 </div>
               ) : (
                 <>
-                  <Shield className="h-4 w-4 mr-2" />
+                  <Shield className="mr-2 h-4 w-4" />
                   Verify NIN
                 </>
               )}
             </Button>
           </form>
 
-          <div className="text-xs text-gray-500 space-y-1">
+          <div className="space-y-1 text-xs text-gray-500">
             <p>• NIN verification typically takes 15-45 seconds</p>
             <p>• Your NIN information is processed securely through NIMC</p>
             <p>• Verification results are cached for 30 days</p>

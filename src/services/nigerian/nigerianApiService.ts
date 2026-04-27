@@ -27,8 +27,10 @@ import {
   KYCProfile,
   APIError,
   VerificationType,
-  APIProvider
+  APIProvider,
 } from '@/types/nigerianApis';
+import { supabase } from '@/integrations/supabase/client';
+import { logger } from '@/utils/logger';
 
 class NigerianAPIService {
   private static instance: NigerianAPIService;
@@ -55,46 +57,46 @@ class NigerianAPIService {
     return {
       bvn_verification: {
         provider: 'youverify',
-        api_key: import.meta.env.VITE_YOUVERIFY_API_KEY || '',
+        api_key: '',
         base_url: import.meta.env.VITE_YOUVERIFY_BASE_URL || 'https://api.youverify.co/v2',
         sandbox_mode: import.meta.env.MODE !== 'production',
         rate_limit: {
           requests_per_minute: 60,
           requests_per_hour: 1000,
-          requests_per_day: 10000
-        }
+          requests_per_day: 10000,
+        },
       },
       nin_verification: {
         provider: 'youverify',
-        api_key: import.meta.env.VITE_YOUVERIFY_API_KEY || '',
+        api_key: '',
         base_url: import.meta.env.VITE_YOUVERIFY_BASE_URL || 'https://api.youverify.co/v2',
-        sandbox_mode: import.meta.env.MODE !== 'production'
+        sandbox_mode: import.meta.env.MODE !== 'production',
       },
       cac_verification: {
         provider: 'appruve',
-        api_key: import.meta.env.VITE_APPRUVE_API_KEY || '',
+        api_key: '',
         base_url: import.meta.env.VITE_APPRUVE_BASE_URL || 'https://api.appruve.co/v1',
-        sandbox_mode: import.meta.env.MODE !== 'production'
+        sandbox_mode: import.meta.env.MODE !== 'production',
       },
       bank_verification: {
-        provider: 'paystack',
-        api_key: import.meta.env.VITE_PAYSTACK_SECRET_KEY || '',
-        base_url: import.meta.env.VITE_PAYSTACK_BASE_URL || 'https://api.paystack.co',
-        sandbox_mode: import.meta.env.MODE !== 'production'
+        provider: 'flutterwave',
+        api_key: '',
+        base_url: import.meta.env.VITE_FLUTTERWAVE_BASE_URL || 'https://api.flutterwave.com/v3',
+        sandbox_mode: import.meta.env.MODE !== 'production',
       },
       phone_verification: {
         provider: 'youverify',
-        api_key: import.meta.env.VITE_YOUVERIFY_API_KEY || '',
+        api_key: '',
         base_url: import.meta.env.VITE_YOUVERIFY_BASE_URL || 'https://api.youverify.co/v2',
-        sandbox_mode: import.meta.env.MODE !== 'production'
+        sandbox_mode: import.meta.env.MODE !== 'production',
       },
       payment_transfer: {
-        provider: 'paystack',
-        api_key: import.meta.env.VITE_PAYSTACK_SECRET_KEY || '',
-        secret_key: import.meta.env.VITE_PAYSTACK_SECRET_KEY || '',
-        base_url: import.meta.env.VITE_PAYSTACK_BASE_URL || 'https://api.paystack.co',
-        sandbox_mode: import.meta.env.MODE !== 'production'
-      }
+        provider: 'flutterwave',
+        api_key: '',
+        secret_key: '',
+        base_url: import.meta.env.VITE_FLUTTERWAVE_BASE_URL || 'https://api.flutterwave.com/v3',
+        sandbox_mode: import.meta.env.MODE !== 'production',
+      },
     };
   }
 
@@ -109,7 +111,9 @@ class NigerianAPIService {
   private async initializeBanksList(): Promise<void> {
     try {
       // Load Nigerian banks data from GitHub API or local cache
-      const response = await fetch('https://api.github.com/repos/ichtrojan/nigerian-banks/contents/banks.json');
+      const response = await fetch(
+        'https://api.github.com/repos/ichtrojan/nigerian-banks/contents/banks.json'
+      );
       if (response.ok) {
         const data = await response.json();
         const banksData = JSON.parse(atob(data.content));
@@ -119,7 +123,7 @@ class NigerianAPIService {
         this.nigerianBanks = this.getFallbackBanksList();
       }
     } catch (error) {
-      console.warn('Failed to load banks list from API, using fallback:', error);
+      logger.warn('Failed to load banks list from API, using fallback', { error: String(error) });
       this.nigerianBanks = this.getFallbackBanksList();
     }
   }
@@ -128,74 +132,74 @@ class NigerianAPIService {
     return [
       {
         id: 1,
-        name: "Access Bank",
-        slug: "access-bank",
-        code: "044",
-        longcode: "044150149",
-        gateway: "emandate",
+        name: 'Access Bank',
+        slug: 'access-bank',
+        code: '044',
+        longcode: '044150149',
+        gateway: 'emandate',
         pay_with_bank: true,
         active: true,
-        country: "Nigeria",
-        currency: "NGN",
-        type: "nuban",
-        is_deleted: false
+        country: 'Nigeria',
+        currency: 'NGN',
+        type: 'nuban',
+        is_deleted: false,
       },
       {
         id: 2,
-        name: "Guaranty Trust Bank",
-        slug: "guaranty-trust-bank",
-        code: "058",
-        longcode: "058152036",
-        gateway: "emandate",
+        name: 'Guaranty Trust Bank',
+        slug: 'guaranty-trust-bank',
+        code: '058',
+        longcode: '058152036',
+        gateway: 'emandate',
         pay_with_bank: true,
         active: true,
-        country: "Nigeria",
-        currency: "NGN",
-        type: "nuban",
-        is_deleted: false
+        country: 'Nigeria',
+        currency: 'NGN',
+        type: 'nuban',
+        is_deleted: false,
       },
       {
         id: 3,
-        name: "First Bank of Nigeria",
-        slug: "first-bank-of-nigeria",
-        code: "011",
-        longcode: "011151003",
-        gateway: "emandate",
+        name: 'First Bank of Nigeria',
+        slug: 'first-bank-of-nigeria',
+        code: '011',
+        longcode: '011151003',
+        gateway: 'emandate',
         pay_with_bank: true,
         active: true,
-        country: "Nigeria",
-        currency: "NGN",
-        type: "nuban",
-        is_deleted: false
+        country: 'Nigeria',
+        currency: 'NGN',
+        type: 'nuban',
+        is_deleted: false,
       },
       {
         id: 4,
-        name: "United Bank for Africa",
-        slug: "united-bank-for-africa",
-        code: "033",
-        longcode: "033153513",
-        gateway: "emandate",
+        name: 'United Bank for Africa',
+        slug: 'united-bank-for-africa',
+        code: '033',
+        longcode: '033153513',
+        gateway: 'emandate',
         pay_with_bank: true,
         active: true,
-        country: "Nigeria",
-        currency: "NGN",
-        type: "nuban",
-        is_deleted: false
+        country: 'Nigeria',
+        currency: 'NGN',
+        type: 'nuban',
+        is_deleted: false,
       },
       {
         id: 5,
-        name: "Zenith Bank",
-        slug: "zenith-bank",
-        code: "057",
-        longcode: "057150013",
-        gateway: "emandate",
+        name: 'Zenith Bank',
+        slug: 'zenith-bank',
+        code: '057',
+        longcode: '057150013',
+        gateway: 'emandate',
         pay_with_bank: true,
         active: true,
-        country: "Nigeria",
-        currency: "NGN",
-        type: "nuban",
-        is_deleted: false
-      }
+        country: 'Nigeria',
+        currency: 'NGN',
+        type: 'nuban',
+        is_deleted: false,
+      },
     ];
   }
 
@@ -204,13 +208,11 @@ class NigerianAPIService {
   }
 
   public getBankByCode(code: string): NigerianBank | undefined {
-    return this.nigerianBanks.find(bank => bank.code === code);
+    return this.nigerianBanks.find((bank) => bank.code === code);
   }
 
   public getBankByName(name: string): NigerianBank | undefined {
-    return this.nigerianBanks.find(bank => 
-      bank.name.toLowerCase().includes(name.toLowerCase())
-    );
+    return this.nigerianBanks.find((bank) => bank.name.toLowerCase().includes(name.toLowerCase()));
   }
 
   // ============================================================================
@@ -224,43 +226,55 @@ class NigerianAPIService {
     data?: any,
     headers?: Record<string, string>
   ): Promise<T> {
-    const url = `${config.base_url}${endpoint}`;
-    
-    const defaultHeaders = {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${config.api_key}`,
-      ...headers
-    };
-
     try {
-      const response = await fetch(url, {
-        method,
-        headers: defaultHeaders,
-        body: data ? JSON.stringify(data) : undefined
+      const { data: responseData, error } = await supabase.functions.invoke<{
+        success: boolean;
+        status?: number;
+        data?: T;
+        error?: string;
+        details?: unknown;
+      }>('nigerian-verifications', {
+        body: {
+          provider: config.provider,
+          endpoint,
+          method,
+          base_url: config.base_url,
+          data,
+          headers,
+        },
       });
 
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
+      if (error) {
         throw new APIError({
-          code: `HTTP_${response.status}`,
-          message: errorData.message || `HTTP ${response.status}: ${response.statusText}`,
-          details: errorData,
+          code: 'EDGE_FUNCTION_ERROR',
+          message: error.message || 'Verification proxy request failed',
+          details: error,
           provider: config.provider,
-          timestamp: new Date().toISOString()
+          timestamp: new Date().toISOString(),
         });
       }
 
-      return await response.json();
+      if (!responseData?.success) {
+        throw new APIError({
+          code: `HTTP_${responseData?.status || 500}`,
+          message: responseData?.error || 'Verification proxy request failed',
+          details: responseData?.details,
+          provider: config.provider,
+          timestamp: new Date().toISOString(),
+        });
+      }
+
+      return responseData.data as T;
     } catch (error) {
       if (error instanceof APIError) {
         throw error;
       }
-      
+
       throw new APIError({
         code: 'NETWORK_ERROR',
         message: error instanceof Error ? error.message : 'Network request failed',
         provider: config.provider,
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       });
     }
   }
@@ -276,57 +290,54 @@ class NigerianAPIService {
     }
 
     try {
-      const response = await this.makeRequest<any>(
-        config,
-        '/identities/ng/bvn',
-        'POST',
-        {
-          id: request.bvn,
-          isSubjectConsent: true,
-          validations: {
-            data: {
-              firstName: request.first_name,
-              lastName: request.last_name,
-              dateOfBirth: request.date_of_birth,
-              phoneNumber: request.phone_number
-            }
-          }
-        }
-      );
+      const response = await this.makeRequest<any>(config, '/identities/ng/bvn', 'POST', {
+        id: request.bvn,
+        isSubjectConsent: true,
+        validations: {
+          data: {
+            firstName: request.first_name,
+            lastName: request.last_name,
+            dateOfBirth: request.date_of_birth,
+            phoneNumber: request.phone_number,
+          },
+        },
+      });
 
       return {
         status: response.success ? 'success' : 'failed',
         message: response.message || 'BVN verification completed',
-        data: response.data ? {
-          bvn: response.data.bvn,
-          first_name: response.data.firstName,
-          middle_name: response.data.middleName || '',
-          last_name: response.data.lastName,
-          date_of_birth: response.data.dateOfBirth,
-          phone_number: response.data.phoneNumber,
-          gender: response.data.gender,
-          email: response.data.email,
-          enrollment_bank: response.data.enrollmentBank,
-          enrollment_branch: response.data.enrollmentBranch,
-          watch_listed: response.data.watchListed || false,
-          nationality: response.data.nationality || 'Nigerian',
-          marital_status: response.data.maritalStatus,
-          state_of_origin: response.data.stateOfOrigin,
-          lga_of_origin: response.data.lgaOfOrigin,
-          state_of_residence: response.data.stateOfResidence,
-          lga_of_residence: response.data.lgaOfResidence,
-          residential_address: response.data.residentialAddress,
-          image_base64: response.data.image
-        } : undefined,
+        data: response.data
+          ? {
+              bvn: response.data.bvn,
+              first_name: response.data.firstName,
+              middle_name: response.data.middleName || '',
+              last_name: response.data.lastName,
+              date_of_birth: response.data.dateOfBirth,
+              phone_number: response.data.phoneNumber,
+              gender: response.data.gender,
+              email: response.data.email,
+              enrollment_bank: response.data.enrollmentBank,
+              enrollment_branch: response.data.enrollmentBranch,
+              watch_listed: response.data.watchListed || false,
+              nationality: response.data.nationality || 'Nigerian',
+              marital_status: response.data.maritalStatus,
+              state_of_origin: response.data.stateOfOrigin,
+              lga_of_origin: response.data.lgaOfOrigin,
+              state_of_residence: response.data.stateOfResidence,
+              lga_of_residence: response.data.lgaOfResidence,
+              residential_address: response.data.residentialAddress,
+              image_base64: response.data.image,
+            }
+          : undefined,
         confidence_score: response.confidence || 0,
-        verification_id: response.id || this.generateVerificationId()
+        verification_id: response.id || this.generateVerificationId(),
       };
     } catch (error) {
-      console.error('BVN verification failed:', error);
+      logger.error('BVN verification failed', error);
       return {
         status: 'failed',
         message: error instanceof Error ? error.message : 'BVN verification failed',
-        verification_id: this.generateVerificationId()
+        verification_id: this.generateVerificationId(),
       };
     }
   }
@@ -342,57 +353,54 @@ class NigerianAPIService {
     }
 
     try {
-      const response = await this.makeRequest<any>(
-        config,
-        '/identities/ng/nin',
-        'POST',
-        {
-          id: request.nin,
-          isSubjectConsent: true,
-          validations: {
-            data: {
-              firstName: request.first_name,
-              lastName: request.last_name,
-              dateOfBirth: request.date_of_birth
-            }
-          }
-        }
-      );
+      const response = await this.makeRequest<any>(config, '/identities/ng/nin', 'POST', {
+        id: request.nin,
+        isSubjectConsent: true,
+        validations: {
+          data: {
+            firstName: request.first_name,
+            lastName: request.last_name,
+            dateOfBirth: request.date_of_birth,
+          },
+        },
+      });
 
       return {
         status: response.success ? 'success' : 'failed',
         message: response.message || 'NIN verification completed',
-        data: response.data ? {
-          nin: response.data.nin,
-          first_name: response.data.firstName,
-          middle_name: response.data.middleName || '',
-          last_name: response.data.lastName,
-          date_of_birth: response.data.dateOfBirth,
-          phone_number: response.data.phoneNumber,
-          gender: response.data.gender,
-          email: response.data.email,
-          nationality: response.data.nationality || 'Nigerian',
-          state_of_origin: response.data.stateOfOrigin,
-          lga_of_origin: response.data.lgaOfOrigin,
-          state_of_residence: response.data.stateOfResidence,
-          lga_of_residence: response.data.lgaOfResidence,
-          residential_address: response.data.residentialAddress,
-          profession: response.data.profession,
-          religion: response.data.religion,
-          marital_status: response.data.maritalStatus,
-          educational_level: response.data.educationalLevel,
-          employment_status: response.data.employmentStatus,
-          image_base64: response.data.image
-        } : undefined,
+        data: response.data
+          ? {
+              nin: response.data.nin,
+              first_name: response.data.firstName,
+              middle_name: response.data.middleName || '',
+              last_name: response.data.lastName,
+              date_of_birth: response.data.dateOfBirth,
+              phone_number: response.data.phoneNumber,
+              gender: response.data.gender,
+              email: response.data.email,
+              nationality: response.data.nationality || 'Nigerian',
+              state_of_origin: response.data.stateOfOrigin,
+              lga_of_origin: response.data.lgaOfOrigin,
+              state_of_residence: response.data.stateOfResidence,
+              lga_of_residence: response.data.lgaOfResidence,
+              residential_address: response.data.residentialAddress,
+              profession: response.data.profession,
+              religion: response.data.religion,
+              marital_status: response.data.maritalStatus,
+              educational_level: response.data.educationalLevel,
+              employment_status: response.data.employmentStatus,
+              image_base64: response.data.image,
+            }
+          : undefined,
         confidence_score: response.confidence || 0,
-        verification_id: response.id || this.generateVerificationId()
+        verification_id: response.id || this.generateVerificationId(),
       };
     } catch (error) {
-      console.error('NIN verification failed:', error);
+      logger.error('NIN verification failed', error);
       return {
         status: 'failed',
         message: error instanceof Error ? error.message : 'NIN verification failed',
-        verification_id: this.generateVerificationId()
+        verification_id: this.generateVerificationId(),
       };
     }
   }
@@ -413,35 +421,37 @@ class NigerianAPIService {
         '/verifications/ng/business_info',
         'POST',
         {
-          search_term: request.search_term
+          search_term: request.search_term,
         }
       );
 
       return {
         status: response.company_name ? 'success' : 'failed',
         message: response.company_name ? 'CAC verification completed' : 'Company not found',
-        data: response.company_name ? {
-          company_id: response.company_id,
-          company_name: response.company_name,
-          company_status: response.company_status,
-          company_registration: response.company_registration,
-          company_commencement_date: response.company_commencement_date,
-          company_type_info: response.company_type_info,
-          company_email: response.company_email,
-          company_address: response.company_address,
-          directors: response.directors || [],
-          shareholders: response.shareholders || [],
-          annual_returns_status: response.annual_returns_status,
-          last_annual_return_date: response.last_annual_return_date
-        } : undefined,
-        verification_id: this.generateVerificationId()
+        data: response.company_name
+          ? {
+              company_id: response.company_id,
+              company_name: response.company_name,
+              company_status: response.company_status,
+              company_registration: response.company_registration,
+              company_commencement_date: response.company_commencement_date,
+              company_type_info: response.company_type_info,
+              company_email: response.company_email,
+              company_address: response.company_address,
+              directors: response.directors || [],
+              shareholders: response.shareholders || [],
+              annual_returns_status: response.annual_returns_status,
+              last_annual_return_date: response.last_annual_return_date,
+            }
+          : undefined,
+        verification_id: this.generateVerificationId(),
       };
     } catch (error) {
-      console.error('CAC verification failed:', error);
+      logger.error('CAC verification failed', error);
       return {
         status: 'failed',
         message: error instanceof Error ? error.message : 'CAC verification failed',
-        verification_id: this.generateVerificationId()
+        verification_id: this.generateVerificationId(),
       };
     }
   }
@@ -450,63 +460,48 @@ class NigerianAPIService {
   // BANK ACCOUNT VERIFICATION
   // ============================================================================
 
-  public async verifyBankAccount(request: BankAccountVerificationRequest): Promise<BankAccountVerificationResponse> {
+  public async verifyBankAccount(
+    request: BankAccountVerificationRequest
+  ): Promise<BankAccountVerificationResponse> {
     const config = this.config.bank_verification;
     if (!config) {
       throw new Error('Bank verification not configured');
     }
 
     try {
-      const response = await this.makeRequest<any>(
-        config,
-        '/bank/resolve',
-        'GET',
-        undefined,
-        {
-          'Authorization': `Bearer ${config.api_key}`
-        }
-      );
+      const { flutterwaveResolveAccount } = await import('@/services/payments/edgeFunctionApi');
+      const result = await flutterwaveResolveAccount(request.account_number, request.bank_code);
 
-      // For Paystack, we need to make a GET request with query parameters
-      const url = `${config.base_url}/bank/resolve?account_number=${request.account_number}&bank_code=${request.bank_code}`;
-      const bankResponse = await fetch(url, {
-        headers: {
-          'Authorization': `Bearer ${config.api_key}`
-        }
-      });
-
-      const bankData = await bankResponse.json();
-
-      if (bankData.status) {
+      if (result.status && result.data) {
         const bank = this.getBankByCode(request.bank_code);
-        
+
         return {
           status: 'success',
           message: 'Bank account verification completed',
           data: {
-            account_number: request.account_number,
-            account_name: bankData.data.account_name,
+            account_number: result.data.account_number || request.account_number,
+            account_name: result.data.account_name,
             bank_name: bank?.name || 'Unknown Bank',
             bank_code: request.bank_code,
-            account_type: 'SAVINGS', // Default, as Paystack doesn't provide this
-            account_status: 'ACTIVE', // Default, as Paystack doesn't provide this
-            currency: 'NGN'
+            account_type: 'SAVINGS',
+            account_status: 'ACTIVE',
+            currency: 'NGN',
           },
-          verification_id: this.generateVerificationId()
+          verification_id: this.generateVerificationId(),
         };
       } else {
         return {
           status: 'failed',
-          message: bankData.message || 'Bank account verification failed',
-          verification_id: this.generateVerificationId()
+          message: result.message || 'Bank account verification failed',
+          verification_id: this.generateVerificationId(),
         };
       }
     } catch (error) {
-      console.error('Bank account verification failed:', error);
+      logger.error('Bank account verification failed', error);
       return {
         status: 'failed',
         message: error instanceof Error ? error.message : 'Bank account verification failed',
-        verification_id: this.generateVerificationId()
+        verification_id: this.generateVerificationId(),
       };
     }
   }
@@ -522,37 +517,34 @@ class NigerianAPIService {
     }
 
     try {
-      const response = await this.makeRequest<any>(
-        config,
-        '/identities/ng/phone',
-        'POST',
-        {
-          id: request.phone_number,
-          isSubjectConsent: true
-        }
-      );
+      const response = await this.makeRequest<any>(config, '/identities/ng/phone', 'POST', {
+        id: request.phone_number,
+        isSubjectConsent: true,
+      });
 
       return {
         status: response.success ? 'success' : 'failed',
         message: response.message || 'Phone verification completed',
-        data: response.data ? {
-          phone_number: response.data.phoneNumber,
-          network_provider: response.data.networkProvider,
-          line_type: response.data.lineType || 'MOBILE',
-          status: response.data.status || 'ACTIVE',
-          ported: response.data.ported || false,
-          dnd_status: response.data.dndStatus || false,
-          state_of_registration: response.data.stateOfRegistration,
-          lga_of_registration: response.data.lgaOfRegistration
-        } : undefined,
-        verification_id: response.id || this.generateVerificationId()
+        data: response.data
+          ? {
+              phone_number: response.data.phoneNumber,
+              network_provider: response.data.networkProvider,
+              line_type: response.data.lineType || 'MOBILE',
+              status: response.data.status || 'ACTIVE',
+              ported: response.data.ported || false,
+              dnd_status: response.data.dndStatus || false,
+              state_of_registration: response.data.stateOfRegistration,
+              lga_of_registration: response.data.lgaOfRegistration,
+            }
+          : undefined,
+        verification_id: response.id || this.generateVerificationId(),
       };
     } catch (error) {
-      console.error('Phone verification failed:', error);
+      logger.error('Phone verification failed', error);
       return {
         status: 'failed',
         message: error instanceof Error ? error.message : 'Phone verification failed',
-        verification_id: this.generateVerificationId()
+        verification_id: this.generateVerificationId(),
       };
     }
   }
@@ -561,28 +553,16 @@ class NigerianAPIService {
   // PAYMENT TRANSFERS
   // ============================================================================
 
-  public async initiatePaystackTransfer(request: PaystackTransferRequest): Promise<PaystackTransferResponse> {
-    const config = this.config.payment_transfer;
-    if (!config || config.provider !== 'paystack') {
-      throw new Error('Paystack transfer not configured');
-    }
-
-    try {
-      const response = await this.makeRequest<PaystackTransferResponse>(
-        config,
-        '/transfer',
-        'POST',
-        request
-      );
-
-      return response;
-    } catch (error) {
-      console.error('Paystack transfer failed:', error);
-      throw error;
-    }
+  /** @deprecated Use initiateFlutterwaveTransfer instead */
+  public async initiatePaystackTransfer(
+    _request: PaystackTransferRequest
+  ): Promise<PaystackTransferResponse> {
+    throw new Error('This transfer route is deprecated. Use initiateFlutterwaveTransfer instead.');
   }
 
-  public async initiateFlutterwaveTransfer(request: FlutterwaveTransferRequest): Promise<FlutterwaveTransferResponse> {
+  public async initiateFlutterwaveTransfer(
+    request: FlutterwaveTransferRequest
+  ): Promise<FlutterwaveTransferResponse> {
     const config = this.config.payment_transfer;
     if (!config) {
       throw new Error('Flutterwave transfer not configured');
@@ -594,7 +574,7 @@ class NigerianAPIService {
         {
           ...config,
           provider: 'flutterwave',
-          base_url: import.meta.env.VITE_FLUTTERWAVE_BASE_URL || 'https://api.flutterwave.com/v3'
+          base_url: import.meta.env.VITE_FLUTTERWAVE_BASE_URL || 'https://api.flutterwave.com/v3',
         },
         '/transfers',
         'POST',
@@ -603,7 +583,7 @@ class NigerianAPIService {
 
       return response;
     } catch (error) {
-      console.error('Flutterwave transfer failed:', error);
+      logger.error('Flutterwave transfer failed', error);
       throw error;
     }
   }
@@ -626,7 +606,7 @@ class NigerianAPIService {
       risk_score: 50,
       risk_level: 'medium',
       last_updated: new Date().toISOString(),
-      verification_records: []
+      verification_records: [],
     };
   }
 
@@ -640,7 +620,7 @@ class NigerianAPIService {
     const updatedProfile = {
       ...currentProfile,
       ...updates,
-      last_updated: new Date().toISOString()
+      last_updated: new Date().toISOString(),
     };
 
     // Calculate verification level based on completed verifications
@@ -659,7 +639,9 @@ class NigerianAPIService {
     return `ver_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
   }
 
-  private calculateVerificationLevel(profile: KYCProfile): 'basic' | 'intermediate' | 'advanced' | 'premium' {
+  private calculateVerificationLevel(
+    profile: KYCProfile
+  ): 'basic' | 'intermediate' | 'advanced' | 'premium' {
     let score = 0;
     if (profile.bvn_verified) score += 25;
     if (profile.nin_verified) score += 25;
@@ -675,7 +657,7 @@ class NigerianAPIService {
 
   private calculateRiskScore(profile: KYCProfile): number {
     let risk = 100; // Start with high risk
-    
+
     if (profile.bvn_verified) risk -= 30;
     if (profile.nin_verified) risk -= 25;
     if (profile.phone_verified) risk -= 15;
@@ -700,11 +682,15 @@ class NigerianAPIService {
       const config = this.getConfigForProvider(provider);
       if (!config) return false;
 
-      // Make a simple test request
-      await this.makeRequest(config, '/test', 'GET');
-      return true;
+      // Use edge proxy status endpoint to validate server-side provider configuration.
+      const result = await this.makeRequest<{ provider: APIProvider; configured: boolean }>(
+        config,
+        '/test',
+        'GET'
+      );
+      return !!result?.configured;
     } catch (error) {
-      console.error(`Test connection failed for ${provider}:`, error);
+      logger.error(`Test connection failed for ${provider}`, error);
       return false;
     }
   }
@@ -716,6 +702,8 @@ class NigerianAPIService {
       case 'appruve':
         return this.config.cac_verification;
       case 'paystack':
+        return undefined; // Deprecated - use flutterwave
+      case 'flutterwave':
         return this.config.payment_transfer;
       default:
         return undefined;
@@ -726,14 +714,34 @@ class NigerianAPIService {
     return ['bvn', 'nin', 'cac', 'bank_account', 'phone'];
   }
 
-  public getProviderStatus(): Record<APIProvider, boolean> {
+  public async getProviderStatus(): Promise<Record<APIProvider, boolean>> {
+    const hasSupabaseEdge =
+      !!import.meta.env.VITE_SUPABASE_URL && !!import.meta.env.VITE_SUPABASE_ANON_KEY;
+
+    if (!hasSupabaseEdge) {
+      return {
+        youverify: false,
+        appruve: false,
+        paystack: false,
+        flutterwave: false,
+        nibss: false,
+        custom: false,
+      };
+    }
+
+    const [youverifyReady, appruveReady, flutterwaveReady] = await Promise.all([
+      this.testConnection('youverify'),
+      this.testConnection('appruve'),
+      this.testConnection('flutterwave'),
+    ]);
+
     return {
-      youverify: !!this.config.bvn_verification?.api_key,
-      appruve: !!this.config.cac_verification?.api_key,
-      paystack: !!this.config.payment_transfer?.api_key,
-      flutterwave: !!import.meta.env.VITE_FLUTTERWAVE_SECRET_KEY,
+      youverify: youverifyReady,
+      appruve: appruveReady,
+      paystack: false, // Deprecated - use flutterwave
+      flutterwave: flutterwaveReady,
       nibss: false, // Not implemented yet
-      custom: false
+      custom: false,
     };
   }
 }

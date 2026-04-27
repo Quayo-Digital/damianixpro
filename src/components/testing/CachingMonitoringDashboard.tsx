@@ -5,7 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Progress } from '@/components/ui/progress';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { 
+import {
   Database,
   Zap,
   Wifi,
@@ -25,7 +25,7 @@ import {
   Signal,
   AlertTriangle,
   CheckCircle2,
-  BarChart3
+  BarChart3,
 } from 'lucide-react';
 import { nigerianCache, CacheMetrics } from '@/utils/advanced-caching-system';
 
@@ -41,11 +41,11 @@ export const CachingMonitoringDashboard = () => {
     const updateMetrics = () => {
       const currentMetrics = nigerianCache.getCacheMetrics();
       setMetrics(currentMetrics);
-      
+
       // Get cache entries for debugging
       const entries = Object.entries(nigerianCache.exportCache()).map(([key, entry]) => ({
         key,
-        ...entry
+        ...entry,
       }));
       setCacheEntries(entries);
     };
@@ -56,7 +56,7 @@ export const CachingMonitoringDashboard = () => {
     // Monitor network status
     const handleOnline = () => setIsOnline(true);
     const handleOffline = () => setIsOnline(false);
-    
+
     window.addEventListener('online', handleOnline);
     window.addEventListener('offline', handleOffline);
 
@@ -64,13 +64,13 @@ export const CachingMonitoringDashboard = () => {
     if ('connection' in navigator) {
       const connection = (navigator as any).connection;
       setNetworkType(connection.effectiveType || 'unknown');
-      
+
       const handleConnectionChange = () => {
         setNetworkType(connection.effectiveType || 'unknown');
       };
-      
+
       connection.addEventListener('change', handleConnectionChange);
-      
+
       return () => {
         clearInterval(interval);
         window.removeEventListener('online', handleOnline);
@@ -96,22 +96,30 @@ export const CachingMonitoringDashboard = () => {
 
   const getNetworkIcon = () => {
     if (!isOnline) return <WifiOff className="h-4 w-4 text-red-600" />;
-    
+
     switch (networkType) {
-      case '2g': return <Signal className="h-4 w-4 text-red-600" />;
-      case '3g': return <Signal className="h-4 w-4 text-yellow-600" />;
-      case '4g': return <Signal className="h-4 w-4 text-green-600" />;
-      default: return <Wifi className="h-4 w-4 text-blue-600" />;
+      case '2g':
+        return <Signal className="h-4 w-4 text-red-600" />;
+      case '3g':
+        return <Signal className="h-4 w-4 text-yellow-600" />;
+      case '4g':
+        return <Signal className="h-4 w-4 text-green-600" />;
+      default:
+        return <Wifi className="h-4 w-4 text-blue-600" />;
     }
   };
 
   const getNetworkBadgeVariant = () => {
     if (!isOnline) return 'destructive';
     switch (networkType) {
-      case '2g': return 'destructive';
-      case '3g': return 'secondary';
-      case '4g': return 'default';
-      default: return 'outline';
+      case '2g':
+        return 'destructive';
+      case '3g':
+        return 'secondary';
+      case '4g':
+        return 'default';
+      default:
+        return 'outline';
     }
   };
 
@@ -129,9 +137,9 @@ export const CachingMonitoringDashboard = () => {
 
   const getCacheHealthStatus = () => {
     if (!metrics) return { status: 'unknown', color: 'gray' };
-    
-    const hitRate = metrics.hitRate / (metrics.hitRate + metrics.missRate) * 100;
-    
+
+    const hitRate = (metrics.hitRate / (metrics.hitRate + metrics.missRate)) * 100;
+
     if (hitRate >= 80) return { status: 'excellent', color: 'green' };
     if (hitRate >= 60) return { status: 'good', color: 'blue' };
     if (hitRate >= 40) return { status: 'fair', color: 'yellow' };
@@ -147,7 +155,7 @@ export const CachingMonitoringDashboard = () => {
     );
   }
 
-  const hitRate = metrics.hitRate / (metrics.hitRate + metrics.missRate) * 100 || 0;
+  const hitRate = (metrics.hitRate / (metrics.hitRate + metrics.missRate)) * 100 || 0;
   const cacheHealth = getCacheHealthStatus();
 
   return (
@@ -179,14 +187,14 @@ export const CachingMonitoringDashboard = () => {
       </Card>
 
       {/* Quick Stats */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center gap-2">
               <TrendingUp className="h-4 w-4 text-green-600" />
               <span className="text-sm font-medium">Hit Rate</span>
             </div>
-            <div className="text-2xl font-bold text-green-600 mt-1">
+            <div className="mt-1 text-2xl font-bold text-green-600">
               {formatPercentage(hitRate)}
             </div>
             <div className="text-xs text-gray-600">Cache efficiency</div>
@@ -199,7 +207,7 @@ export const CachingMonitoringDashboard = () => {
               <HardDrive className="h-4 w-4 text-blue-600" />
               <span className="text-sm font-medium">Cache Size</span>
             </div>
-            <div className="text-2xl font-bold mt-1">
+            <div className="mt-1 text-2xl font-bold">
               {formatBytes(metrics.totalSize * 1024 * 1024)}
             </div>
             <div className="text-xs text-gray-600">{metrics.entryCount} entries</div>
@@ -212,7 +220,7 @@ export const CachingMonitoringDashboard = () => {
               <Download className="h-4 w-4 text-purple-600" />
               <span className="text-sm font-medium">Data Savings</span>
             </div>
-            <div className="text-2xl font-bold text-purple-600 mt-1">
+            <div className="mt-1 text-2xl font-bold text-purple-600">
               {formatPercentage(metrics.dataSavings)}
             </div>
             <div className="text-xs text-gray-600">Compression ratio</div>
@@ -225,9 +233,7 @@ export const CachingMonitoringDashboard = () => {
               <WifiOff className="h-4 w-4 text-orange-600" />
               <span className="text-sm font-medium">Offline Hits</span>
             </div>
-            <div className="text-2xl font-bold text-orange-600 mt-1">
-              {metrics.offlineHits}
-            </div>
+            <div className="mt-1 text-2xl font-bold text-orange-600">{metrics.offlineHits}</div>
             <div className="text-xs text-gray-600">Offline requests served</div>
           </CardContent>
         </Card>
@@ -239,7 +245,8 @@ export const CachingMonitoringDashboard = () => {
           <WifiOff className="h-4 w-4 text-orange-600" />
           <AlertTitle className="text-orange-800">Offline Mode Active</AlertTitle>
           <AlertDescription className="text-orange-700">
-            You're currently offline. The app is serving cached content and queuing changes for sync when connection is restored.
+            You're currently offline. The app is serving cached content and queuing changes for sync
+            when connection is restored.
           </AlertDescription>
         </Alert>
       )}
@@ -250,8 +257,8 @@ export const CachingMonitoringDashboard = () => {
           <Smartphone className="h-4 w-4 text-blue-600" />
           <AlertTitle className="text-blue-800">2G Network Detected</AlertTitle>
           <AlertDescription className="text-blue-700">
-            Nigerian network optimization active: Extended cache TTL (30 min), maximum compression enabled, 
-            and data-conscious loading strategies applied.
+            Nigerian network optimization active: Extended cache TTL (30 min), maximum compression
+            enabled, and data-conscious loading strategies applied.
           </AlertDescription>
         </Alert>
       )}
@@ -266,7 +273,7 @@ export const CachingMonitoringDashboard = () => {
         </TabsList>
 
         <TabsContent value="overview" className="space-y-6">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
             {/* Cache Performance */}
             <Card>
               <CardHeader>
@@ -283,15 +290,17 @@ export const CachingMonitoringDashboard = () => {
                   </div>
                   <Progress value={hitRate} className="h-2" />
                 </div>
-                
+
                 <div className="space-y-2">
                   <div className="flex justify-between text-sm">
                     <span>Cache Utilization</span>
-                    <span className="font-medium">{formatPercentage((metrics.totalSize / 100) * 100)}</span>
+                    <span className="font-medium">
+                      {formatPercentage((metrics.totalSize / 100) * 100)}
+                    </span>
                   </div>
                   <Progress value={(metrics.totalSize / 100) * 100} className="h-2" />
                 </div>
-                
+
                 <div className="space-y-2">
                   <div className="flex justify-between text-sm">
                     <span>Compression Efficiency</span>
@@ -313,25 +322,23 @@ export const CachingMonitoringDashboard = () => {
               <CardContent className="space-y-4">
                 <div className="flex items-center justify-between">
                   <span className="text-sm">Current Network</span>
-                  <Badge variant={getNetworkBadgeVariant()}>
-                    {networkType.toUpperCase()}
-                  </Badge>
+                  <Badge variant={getNetworkBadgeVariant()}>{networkType.toUpperCase()}</Badge>
                 </div>
-                
+
                 <div className="flex items-center justify-between">
                   <span className="text-sm">Connection Status</span>
                   <Badge variant={isOnline ? 'default' : 'destructive'}>
                     {isOnline ? 'Online' : 'Offline'}
                   </Badge>
                 </div>
-                
+
                 <div className="flex items-center justify-between">
                   <span className="text-sm">Data Savings</span>
                   <span className="font-medium text-green-600">
-                    {formatBytes(metrics.dataSavings * metrics.totalSize * 1024 * 1024 / 100)}
+                    {formatBytes((metrics.dataSavings * metrics.totalSize * 1024 * 1024) / 100)}
                   </span>
                 </div>
-                
+
                 <div className="flex items-center justify-between">
                   <span className="text-sm">Offline Requests Served</span>
                   <span className="font-medium">{metrics.offlineHits}</span>
@@ -350,27 +357,23 @@ export const CachingMonitoringDashboard = () => {
             </CardHeader>
             <CardContent>
               <div className="flex flex-wrap gap-3">
-                <Button 
-                  onClick={handleClearCache} 
-                  variant="outline" 
+                <Button
+                  onClick={handleClearCache}
+                  variant="outline"
                   className="flex items-center gap-2"
                 >
                   <Trash2 className="h-4 w-4" />
                   Clear All Cache
                 </Button>
-                <Button 
-                  onClick={() => window.location.reload()} 
+                <Button
+                  onClick={() => window.location.reload()}
                   variant="outline"
                   className="flex items-center gap-2"
                 >
                   <RefreshCw className="h-4 w-4" />
                   Refresh Metrics
                 </Button>
-                <Button 
-                  variant="outline"
-                  className="flex items-center gap-2"
-                  disabled={!isOnline}
-                >
+                <Button variant="outline" className="flex items-center gap-2" disabled={!isOnline}>
                   <Upload className="h-4 w-4" />
                   Sync Offline Queue
                 </Button>
@@ -382,38 +385,45 @@ export const CachingMonitoringDashboard = () => {
         <TabsContent value="entries" className="space-y-6">
           <Card>
             <CardHeader>
-              <div className="flex justify-between items-center">
+              <div className="flex items-center justify-between">
                 <div>
                   <CardTitle className="flex items-center gap-2">
                     <Database className="h-5 w-5" />
                     Cache Entries
                   </CardTitle>
-                  <CardDescription>
-                    View and manage individual cache entries
-                  </CardDescription>
+                  <CardDescription>View and manage individual cache entries</CardDescription>
                 </div>
-                <Badge variant="outline">
-                  {cacheEntries.length} entries
-                </Badge>
+                <Badge variant="outline">{cacheEntries.length} entries</Badge>
               </div>
             </CardHeader>
             <CardContent>
               {cacheEntries.length > 0 ? (
-                <div className="space-y-3 max-h-96 overflow-y-auto">
+                <div className="max-h-96 space-y-3 overflow-y-auto">
                   {cacheEntries.slice(0, 20).map((entry, index) => (
-                    <div key={index} className="flex items-center justify-between p-3 border rounded-lg">
+                    <div
+                      key={index}
+                      className="flex items-center justify-between rounded-lg border p-3"
+                    >
                       <div className="flex-1">
                         <div className="font-mono text-sm">{entry.key}</div>
-                        <div className="flex items-center gap-4 text-xs text-gray-600 mt-1">
+                        <div className="mt-1 flex items-center gap-4 text-xs text-gray-600">
                           <span>Size: {formatBytes(entry.size * 1024 * 1024)}</span>
                           <span>Hits: {entry.accessCount}</span>
                           <span>Age: {Math.round((Date.now() - entry.timestamp) / 1000)}s</span>
-                          {entry.compressed && <Badge variant="outline" className="text-xs">Compressed</Badge>}
-                          {entry.priority === 'critical' && <Badge variant="default" className="text-xs">Critical</Badge>}
+                          {entry.compressed && (
+                            <Badge variant="outline" className="text-xs">
+                              Compressed
+                            </Badge>
+                          )}
+                          {entry.priority === 'critical' && (
+                            <Badge variant="default" className="text-xs">
+                              Critical
+                            </Badge>
+                          )}
                         </div>
                       </div>
-                      <Button 
-                        size="sm" 
+                      <Button
+                        size="sm"
                         variant="ghost"
                         onClick={() => handleInvalidateEntry(entry.key)}
                       >
@@ -422,14 +432,14 @@ export const CachingMonitoringDashboard = () => {
                     </div>
                   ))}
                   {cacheEntries.length > 20 && (
-                    <div className="text-center text-sm text-gray-600 py-2">
+                    <div className="py-2 text-center text-sm text-gray-600">
                       ... and {cacheEntries.length - 20} more entries
                     </div>
                   )}
                 </div>
               ) : (
-                <div className="text-center py-8 text-gray-500">
-                  <Database className="h-12 w-12 mx-auto mb-4" />
+                <div className="py-8 text-center text-gray-500">
+                  <Database className="mx-auto mb-4 h-12 w-12" />
                   <p>No cache entries found</p>
                 </div>
               )}
@@ -446,7 +456,7 @@ export const CachingMonitoringDashboard = () => {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                 <div className="space-y-4">
                   <h4 className="font-medium">Cache Statistics</h4>
                   <div className="space-y-2">
@@ -468,7 +478,7 @@ export const CachingMonitoringDashboard = () => {
                     </div>
                   </div>
                 </div>
-                
+
                 <div className="space-y-4">
                   <h4 className="font-medium">Nigerian Optimizations</h4>
                   <div className="space-y-2">
@@ -479,7 +489,7 @@ export const CachingMonitoringDashboard = () => {
                     <div className="flex justify-between">
                       <span className="text-sm">Data Saved</span>
                       <span className="font-medium text-green-600">
-                        {formatBytes(metrics.dataSavings * metrics.totalSize * 1024 * 1024 / 100)}
+                        {formatBytes((metrics.dataSavings * metrics.totalSize * 1024 * 1024) / 100)}
                       </span>
                     </div>
                     <div className="flex justify-between">
@@ -525,27 +535,31 @@ export const CachingMonitoringDashboard = () => {
                     </ul>
                   </AlertDescription>
                 </Alert>
-                
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                   <div className="space-y-2">
                     <label className="text-sm font-medium">Max Cache Size</label>
-                    <div className="p-2 bg-gray-100 rounded text-sm">100 MB</div>
+                    <div className="rounded bg-gray-100 p-2 text-sm">100 MB</div>
                   </div>
                   <div className="space-y-2">
                     <label className="text-sm font-medium">Default TTL</label>
-                    <div className="p-2 bg-gray-100 rounded text-sm">
-                      {networkType === '2g' ? '30 minutes' : 
-                       networkType === '3g' ? '15 minutes' : 
-                       networkType === '4g' ? '5 minutes' : '10 minutes'}
+                    <div className="rounded bg-gray-100 p-2 text-sm">
+                      {networkType === '2g'
+                        ? '30 minutes'
+                        : networkType === '3g'
+                          ? '15 minutes'
+                          : networkType === '4g'
+                            ? '5 minutes'
+                            : '10 minutes'}
                     </div>
                   </div>
                   <div className="space-y-2">
                     <label className="text-sm font-medium">Compression</label>
-                    <div className="p-2 bg-gray-100 rounded text-sm">Enabled</div>
+                    <div className="rounded bg-gray-100 p-2 text-sm">Enabled</div>
                   </div>
                   <div className="space-y-2">
                     <label className="text-sm font-medium">Offline Mode</label>
-                    <div className="p-2 bg-gray-100 rounded text-sm">Enabled</div>
+                    <div className="rounded bg-gray-100 p-2 text-sm">Enabled</div>
                   </div>
                 </div>
               </div>

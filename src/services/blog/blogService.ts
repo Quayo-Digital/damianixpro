@@ -1,4 +1,3 @@
-
 import { BlogPost } from '@/types/blog';
 import { blogPosts } from './blogData';
 
@@ -13,7 +12,7 @@ export const createBlogPost = async (post: BlogPost): Promise<BlogPost> => {
 // Update an existing blog post
 export const updateBlogPost = async (post: BlogPost): Promise<BlogPost> => {
   // In a real application, this would be an API call to update the post in a database
-  const index = blogPosts.findIndex(p => p.id === post.id);
+  const index = blogPosts.findIndex((p) => p.id === post.id);
   if (index !== -1) {
     blogPosts[index] = post;
   }
@@ -23,7 +22,7 @@ export const updateBlogPost = async (post: BlogPost): Promise<BlogPost> => {
 // Delete a blog post
 export const deleteBlogPost = async (id: string): Promise<boolean> => {
   // In a real application, this would be an API call to delete the post from a database
-  const index = blogPosts.findIndex(p => p.id === id);
+  const index = blogPosts.findIndex((p) => p.id === id);
   if (index !== -1) {
     blogPosts.splice(index, 1);
     return true;

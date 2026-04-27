@@ -1,6 +1,7 @@
-# Step-by-Step Fix for Nigeria Homes App
+# Step-by-Step Fix for DamianixPro App
 
 ## 🚨 Current Issue
+
 The SQL script is failing because you need to replace the placeholder UUIDs with actual user IDs.
 
 ## ✅ Complete Solution
@@ -12,11 +13,13 @@ The SQL script is failing because you need to replace the placeholder UUIDs with
 3. **Click "Add User"** and create these two users:
 
 **User 1 - Agent:**
+
 - Email: `agent@nigeriahomes.com`
 - Password: `password123`
 - Confirm email: ✅ Yes
 
 **User 2 - Owner:**
+
 - Email: `owner@nigeriahomes.com`
 - Password: `password123`
 - Confirm email: ✅ Yes
@@ -27,8 +30,8 @@ The SQL script is failing because you need to replace the placeholder UUIDs with
 2. **Run this query** to get the user IDs:
 
 ```sql
-SELECT id, email 
-FROM auth.users 
+SELECT id, email
+FROM auth.users
 WHERE email IN ('agent@nigeriahomes.com', 'owner@nigeriahomes.com');
 ```
 
@@ -45,8 +48,9 @@ WHERE email IN ('agent@nigeriahomes.com', 'owner@nigeriahomes.com');
 ### Step 4: Verify the Fix
 
 After running the script, you should see:
+
 - ✅ Agent users: 1
-- ✅ Owner users: 1  
+- ✅ Owner users: 1
 - ✅ Properties: 1
 
 ### Step 5: Test the Application
@@ -76,7 +80,7 @@ SELECT id, email FROM auth.users WHERE email IN ('agent@nigeriahomes.com', 'owne
 
 -- Create profiles
 INSERT INTO public.profiles (id, email, phone, created_at, updated_at)
-VALUES 
+VALUES
   ('REPLACE_WITH_AGENT_UUID', 'agent@nigeriahomes.com', '+234-800-000-0000', NOW(), NOW()),
   ('REPLACE_WITH_OWNER_UUID', 'owner@nigeriahomes.com', '+234-800-000-0001', NOW(), NOW())
 ON CONFLICT (id) DO UPDATE SET
@@ -86,14 +90,14 @@ ON CONFLICT (id) DO UPDATE SET
 
 -- Assign roles
 INSERT INTO public.user_roles (user_id, role)
-VALUES 
+VALUES
   ('REPLACE_WITH_AGENT_UUID', 'agent'::public.user_role),
   ('REPLACE_WITH_OWNER_UUID', 'owner'::public.user_role)
 ON CONFLICT (user_id) DO UPDATE SET
   role = EXCLUDED.role;
 
 -- Ensure properties table has required columns
-ALTER TABLE public.properties 
+ALTER TABLE public.properties
 ADD COLUMN IF NOT EXISTS name TEXT,
 ADD COLUMN IF NOT EXISTS address TEXT,
 ADD COLUMN IF NOT EXISTS type TEXT,
@@ -143,6 +147,7 @@ SELECT 'Properties:' as info, COUNT(*) as count FROM public.properties;
 ## 🎯 Expected Results
 
 After completing these steps:
+
 - ✅ No more "No users with agent role found" errors
 - ✅ Property creation will work
 - ✅ Agent assignment dropdown will populate

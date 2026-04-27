@@ -3,18 +3,18 @@
  * Integrates with Nigerian Real Estate Data Service for real-time market intelligence
  */
 
-import NigerianRealEstateDataService, { 
-  PropertyListingData, 
-  EconomicIndicator, 
-  MunicipalData, 
-  MarketData 
+import NigerianRealEstateDataService, {
+  PropertyListingData,
+  EconomicIndicator,
+  MunicipalData,
+  MarketData,
 } from '../data/NigerianRealEstateDataService';
 
 import RealEstateAnalyticsEngine, {
   MarketTrend,
   InvestmentAnalysis,
   NeighborhoodInsights,
-  PredictiveInsights
+  PredictiveInsights,
 } from './RealEstateAnalyticsEngine';
 
 export interface LiveMarketInsights {
@@ -67,7 +67,7 @@ export class LiveDataAnalyticsEngine extends RealEstateAnalyticsEngine {
   private alertThresholds = {
     priceChangePercent: 0.05, // 5% price change triggers alert
     newListingsThreshold: 20, // 20+ new listings triggers alert
-    economicChangePercent: 0.02 // 2% economic indicator change triggers alert
+    economicChangePercent: 0.02, // 2% economic indicator change triggers alert
   };
 
   constructor() {
@@ -82,21 +82,26 @@ export class LiveDataAnalyticsEngine extends RealEstateAnalyticsEngine {
   async getLiveMarketInsights(location: string, propertyType: string): Promise<LiveMarketInsights> {
     try {
       // Fetch all data in parallel
-      const [marketTrend, liveListings, economicContext, municipalContext, marketData] = await Promise.all([
-        this.analyzeMarketTrends(location, propertyType as any),
-        this.dataService.fetchPropertyListings({ location, propertyType, limit: 100 }),
-        this.dataService.fetchEconomicIndicators(),
-        this.dataService.fetchMunicipalData(location),
-        this.dataService.calculateMarketData(location, propertyType)
-      ]);
+      const [marketTrend, liveListings, economicContext, municipalContext, marketData] =
+        await Promise.all([
+          this.analyzeMarketTrends(location, propertyType as any),
+          this.dataService.fetchPropertyListings({ location, propertyType, limit: 100 }),
+          this.dataService.fetchEconomicIndicators(),
+          this.dataService.fetchMunicipalData(location),
+          this.dataService.calculateMarketData(location, propertyType),
+        ]);
 
       // Calculate data quality score
-      const dataQuality = this.calculateDataQuality(liveListings, economicContext, municipalContext);
+      const dataQuality = this.calculateDataQuality(
+        liveListings,
+        economicContext,
+        municipalContext
+      );
 
       // Update market trend with live data
       const enhancedMarketTrend = await this.enhanceMarketTrendWithLiveData(
-        marketTrend, 
-        marketData, 
+        marketTrend,
+        marketData,
         economicContext
       );
 
@@ -107,9 +112,8 @@ export class LiveDataAnalyticsEngine extends RealEstateAnalyticsEngine {
         municipalContext,
         marketData,
         lastUpdated: new Date().toISOString(),
-        dataQuality
+        dataQuality,
       };
-
     } catch (error) {
       console.error('Error getting live market insights:', error);
       // Fallback to base analytics engine
@@ -125,8 +129,8 @@ export class LiveDataAnalyticsEngine extends RealEstateAnalyticsEngine {
           listingsCount: 0,
           economicIndicatorsCount: 0,
           municipalDataAvailable: false,
-          confidenceScore: 30 // Low confidence for fallback data
-        }
+          confidenceScore: 30, // Low confidence for fallback data
+        },
       };
     }
   }
@@ -135,14 +139,19 @@ export class LiveDataAnalyticsEngine extends RealEstateAnalyticsEngine {
    * Enhanced investment analysis with live market data
    */
   async getLiveInvestmentAnalysis(
-    propertyId: string, 
-    purchasePrice: number, 
-    location: string, 
+    propertyId: string,
+    purchasePrice: number,
+    location: string,
     propertyType: string
   ): Promise<LiveInvestmentAnalysis> {
     try {
       // Get base investment analysis
-      const baseAnalysis = await this.analyzeInvestment(propertyId, purchasePrice, location, propertyType);
+      const baseAnalysis = await this.analyzeInvestment(
+        propertyId,
+        purchasePrice,
+        location,
+        propertyType
+      );
 
       // Get live market data for comparison
       const [similarProperties, economicIndicators, marketData] = await Promise.all([
@@ -151,15 +160,19 @@ export class LiveDataAnalyticsEngine extends RealEstateAnalyticsEngine {
           propertyType: propertyType as any,
           minPrice: purchasePrice * 0.8,
           maxPrice: purchasePrice * 1.2,
-          limit: 50
+          limit: 50,
         }),
         this.dataService.fetchEconomicIndicators(),
-        this.dataService.calculateMarketData(location, propertyType)
+        this.dataService.calculateMarketData(location, propertyType),
       ]);
 
       // Analyze market position
-      const marketPosition = this.analyzeMarketPosition(purchasePrice, similarProperties, marketData);
-      
+      const marketPosition = this.analyzeMarketPosition(
+        purchasePrice,
+        similarProperties,
+        marketData
+      );
+
       // Calculate economic impact
       const economicImpact = this.calculateEconomicImpact(baseAnalysis, economicIndicators);
 
@@ -169,27 +182,31 @@ export class LiveDataAnalyticsEngine extends RealEstateAnalyticsEngine {
           similarProperties,
           marketPosition: marketPosition.position,
           competitiveAdvantage: marketPosition.advantages,
-          marketRisks: marketPosition.risks
+          marketRisks: marketPosition.risks,
         },
-        economicImpact
+        economicImpact,
       };
-
     } catch (error) {
       console.error('Error getting live investment analysis:', error);
-      const fallbackAnalysis = await this.analyzeInvestment(propertyId, purchasePrice, location, propertyType);
+      const fallbackAnalysis = await this.analyzeInvestment(
+        propertyId,
+        purchasePrice,
+        location,
+        propertyType
+      );
       return {
         ...fallbackAnalysis,
         liveMarketComparison: {
           similarProperties: [],
           marketPosition: 'AT_MARKET' as const,
           competitiveAdvantage: [],
-          marketRisks: ['Limited live data available']
+          marketRisks: ['Limited live data available'],
         },
         economicImpact: {
           inflationAdjustedROI: fallbackAnalysis.expectedROI,
           currencyRisk: 50, // Medium risk
-          interestRateImpact: 0
-        }
+          interestRateImpact: 0,
+        },
       };
     }
   }
@@ -213,14 +230,13 @@ export class LiveDataAnalyticsEngine extends RealEstateAnalyticsEngine {
           averageIncome: municipalData.gdpPerCapita * 12, // Convert to annual
           employmentRate: 100 - municipalData.unemploymentRate,
           infrastructureScore: municipalData.infrastructureScore,
-          developmentProjects: municipalData.developmentProjects.map(p => p.name),
+          developmentProjects: municipalData.developmentProjects.map((p) => p.name),
           futureOutlook: this.assessFutureOutlookWithLiveData(municipalData),
-          investmentGrade: this.calculateInvestmentGradeWithLiveData(municipalData)
+          investmentGrade: this.calculateInvestmentGradeWithLiveData(municipalData),
         };
       }
 
       return baseInsights;
-
     } catch (error) {
       console.error('Error getting live neighborhood insights:', error);
       return this.analyzeNeighborhood(location);
@@ -232,18 +248,24 @@ export class LiveDataAnalyticsEngine extends RealEstateAnalyticsEngine {
    */
   async startRealTimeMonitoring(locations: string[], propertyTypes: string[]): Promise<void> {
     // Monitor market changes every 5 minutes
-    setInterval(async () => {
-      for (const location of locations) {
-        for (const propertyType of propertyTypes) {
-          await this.checkForMarketChanges(location, propertyType);
+    setInterval(
+      async () => {
+        for (const location of locations) {
+          for (const propertyType of propertyTypes) {
+            await this.checkForMarketChanges(location, propertyType);
+          }
         }
-      }
-    }, 5 * 60 * 1000); // 5 minutes
+      },
+      5 * 60 * 1000
+    ); // 5 minutes
 
     // Monitor economic indicators every 30 minutes
-    setInterval(async () => {
-      await this.checkForEconomicChanges();
-    }, 30 * 60 * 1000); // 30 minutes
+    setInterval(
+      async () => {
+        await this.checkForEconomicChanges();
+      },
+      30 * 60 * 1000
+    ); // 30 minutes
   }
 
   /**
@@ -268,8 +290,9 @@ export class LiveDataAnalyticsEngine extends RealEstateAnalyticsEngine {
     economicIndicators: EconomicIndicator[]
   ): Promise<MarketTrend> {
     // Use live market data to enhance trend analysis
-    const inflationRate = economicIndicators.find(i => i.indicator === 'Inflation Rate')?.value || 18.5;
-    const realPriceChange = marketData.priceChange1Year - (inflationRate / 100);
+    const inflationRate =
+      economicIndicators.find((i) => i.indicator === 'Inflation Rate')?.value || 18.5;
+    const realPriceChange = marketData.priceChange1Year - inflationRate / 100;
 
     return {
       ...baseTrend,
@@ -283,7 +306,7 @@ export class LiveDataAnalyticsEngine extends RealEstateAnalyticsEngine {
       supplyScore: this.calculateLiveSupplyScore(marketData),
       liquidityScore: this.calculateLiveLiquidityScore(marketData),
       // Update recommendations based on real price changes
-      recommendedAction: this.generateLiveRecommendation(realPriceChange, marketData)
+      recommendedAction: this.generateLiveRecommendation(realPriceChange, marketData),
     };
   }
 
@@ -312,7 +335,7 @@ export class LiveDataAnalyticsEngine extends RealEstateAnalyticsEngine {
       listingsCount: listings.length,
       economicIndicatorsCount: economicIndicators.length,
       municipalDataAvailable: !!municipalData,
-      confidenceScore: Math.min(100, confidenceScore)
+      confidenceScore: Math.min(100, confidenceScore),
     };
   }
 
@@ -337,34 +360,21 @@ export class LiveDataAnalyticsEngine extends RealEstateAnalyticsEngine {
       advantages = [
         'Below market average - potential for appreciation',
         'Good entry point for investment',
-        'Lower financial risk'
+        'Lower financial risk',
       ];
-      risks = [
-        'May indicate property issues',
-        'Location might be less desirable'
-      ];
+      risks = ['May indicate property issues', 'Location might be less desirable'];
     } else if (priceRatio > 1.1) {
       position = 'ABOVE_MARKET';
-      advantages = [
-        'Premium property with unique features',
-        'Potential for strong rental yields'
-      ];
-      risks = [
-        'Higher financial exposure',
-        'May be overpriced',
-        'Longer time to sell if needed'
-      ];
+      advantages = ['Premium property with unique features', 'Potential for strong rental yields'];
+      risks = ['Higher financial exposure', 'May be overpriced', 'Longer time to sell if needed'];
     } else {
       position = 'AT_MARKET';
       advantages = [
         'Fair market pricing',
         'Balanced risk-reward profile',
-        'Good liquidity potential'
+        'Good liquidity potential',
       ];
-      risks = [
-        'Limited upside potential',
-        'Market-dependent performance'
-      ];
+      risks = ['Limited upside potential', 'Market-dependent performance'];
     }
 
     return { position, advantages, risks };
@@ -374,9 +384,12 @@ export class LiveDataAnalyticsEngine extends RealEstateAnalyticsEngine {
     baseAnalysis: InvestmentAnalysis,
     economicIndicators: EconomicIndicator[]
   ): LiveInvestmentAnalysis['economicImpact'] {
-    const inflationRate = economicIndicators.find(i => i.indicator === 'Inflation Rate')?.value || 18.5;
-    const interestRate = economicIndicators.find(i => i.indicator === 'Monetary Policy Rate')?.value || 16.5;
-    const exchangeRate = economicIndicators.find(i => i.indicator.includes('Exchange Rate'))?.value || 750;
+    const inflationRate =
+      economicIndicators.find((i) => i.indicator === 'Inflation Rate')?.value || 18.5;
+    const interestRate =
+      economicIndicators.find((i) => i.indicator === 'Monetary Policy Rate')?.value || 16.5;
+    const exchangeRate =
+      economicIndicators.find((i) => i.indicator.includes('Exchange Rate'))?.value || 750;
 
     // Calculate inflation-adjusted ROI
     const inflationAdjustedROI = baseAnalysis.expectedROI - inflationRate;
@@ -390,7 +403,7 @@ export class LiveDataAnalyticsEngine extends RealEstateAnalyticsEngine {
     return {
       inflationAdjustedROI,
       currencyRisk,
-      interestRateImpact
+      interestRateImpact,
     };
   }
 
@@ -413,7 +426,9 @@ export class LiveDataAnalyticsEngine extends RealEstateAnalyticsEngine {
     return Math.max(0, adjustedRate);
   }
 
-  private assessFutureOutlookWithLiveData(municipalData: MunicipalData): 'POSITIVE' | 'NEUTRAL' | 'NEGATIVE' {
+  private assessFutureOutlookWithLiveData(
+    municipalData: MunicipalData
+  ): 'POSITIVE' | 'NEUTRAL' | 'NEGATIVE' {
     let score = 0;
 
     // Infrastructure score impact
@@ -427,7 +442,9 @@ export class LiveDataAnalyticsEngine extends RealEstateAnalyticsEngine {
     else score -= 1;
 
     // Development projects impact
-    const ongoingProjects = municipalData.developmentProjects.filter(p => p.status === 'ONGOING').length;
+    const ongoingProjects = municipalData.developmentProjects.filter(
+      (p) => p.status === 'ONGOING'
+    ).length;
     if (ongoingProjects > 2) score += 2;
     else if (ongoingProjects > 0) score += 1;
 
@@ -436,7 +453,9 @@ export class LiveDataAnalyticsEngine extends RealEstateAnalyticsEngine {
     return 'NEGATIVE';
   }
 
-  private calculateInvestmentGradeWithLiveData(municipalData: MunicipalData): 'A+' | 'A' | 'B+' | 'B' | 'C+' | 'C' | 'D' {
+  private calculateInvestmentGradeWithLiveData(
+    municipalData: MunicipalData
+  ): 'A+' | 'A' | 'B+' | 'B' | 'C+' | 'C' | 'D' {
     let score = 0;
 
     // Infrastructure (40% weight)
@@ -466,27 +485,30 @@ export class LiveDataAnalyticsEngine extends RealEstateAnalyticsEngine {
   // Live market calculation methods
   private calculateVolumeChange(marketData: MarketData): number {
     // Calculate volume change based on new vs total listings
-    return (marketData.newListings / marketData.totalListings) - 0.15; // 15% is baseline
+    return marketData.newListings / marketData.totalListings - 0.15; // 15% is baseline
   }
 
   private calculateLiveDemandScore(marketData: MarketData): number {
     // Higher demand = more sold listings, fewer days on market
     const soldRatio = marketData.soldListings / marketData.totalListings;
     const timeScore = Math.max(0, 100 - marketData.averageDaysOnMarket);
-    return Math.min(100, (soldRatio * 500) + (timeScore * 0.5));
+    return Math.min(100, soldRatio * 500 + timeScore * 0.5);
   }
 
   private calculateLiveSupplyScore(marketData: MarketData): number {
     // Higher supply = more total listings, more new listings
     const newListingRatio = marketData.newListings / marketData.totalListings;
     const totalListingsScore = Math.min(100, marketData.totalListings / 10);
-    return Math.min(100, (newListingRatio * 300) + (totalListingsScore * 0.3));
+    return Math.min(100, newListingRatio * 300 + totalListingsScore * 0.3);
   }
 
   private calculateLiveLiquidityScore(marketData: MarketData): number {
     // Higher liquidity = faster sales, more transactions
     const daysOnMarketScore = Math.max(0, 100 - marketData.averageDaysOnMarket);
-    const transactionScore = Math.min(100, (marketData.soldListings / marketData.totalListings) * 1000);
+    const transactionScore = Math.min(
+      100,
+      (marketData.soldListings / marketData.totalListings) * 1000
+    );
     return (daysOnMarketScore + transactionScore) / 2;
   }
 
@@ -500,13 +522,13 @@ export class LiveDataAnalyticsEngine extends RealEstateAnalyticsEngine {
 
     // Strong positive indicators
     if (realPriceChange > 0.1 && demandScore > 70 && liquidityScore > 60) return 'BUY';
-    
+
     // Strong negative indicators
     if (realPriceChange < -0.05 && supplyScore > 80 && demandScore < 40) return 'SELL';
-    
+
     // High uncertainty
     if (liquidityScore < 40 || Math.abs(realPriceChange) > 0.2) return 'WATCH';
-    
+
     // Default to hold
     return 'HOLD';
   }
@@ -540,7 +562,10 @@ export class LiveDataAnalyticsEngine extends RealEstateAnalyticsEngine {
             data: { currentMarketData, previousData },
             timestamp: new Date().toISOString(),
             actionRequired: priceChangePercent > 0.1,
-            recommendations: this.generatePriceChangeRecommendations(priceChangePercent, currentMarketData)
+            recommendations: this.generatePriceChangeRecommendations(
+              priceChangePercent,
+              currentMarketData
+            ),
           };
 
           this.broadcastAlert(alert);
@@ -559,7 +584,7 @@ export class LiveDataAnalyticsEngine extends RealEstateAnalyticsEngine {
             data: currentMarketData,
             timestamp: new Date().toISOString(),
             actionRequired: false,
-            recommendations: ['Monitor for market saturation', 'Consider competitive pricing']
+            recommendations: ['Monitor for market saturation', 'Consider competitive pricing'],
           };
 
           this.broadcastAlert(alert);
@@ -567,7 +592,6 @@ export class LiveDataAnalyticsEngine extends RealEstateAnalyticsEngine {
       }
 
       this.lastMarketData.set(key, currentMarketData);
-
     } catch (error) {
       console.error(`Error checking market changes for ${location} ${propertyType}:`, error);
     }
@@ -576,11 +600,14 @@ export class LiveDataAnalyticsEngine extends RealEstateAnalyticsEngine {
   private async checkForEconomicChanges(): Promise<void> {
     try {
       const currentIndicators = await this.dataService.fetchEconomicIndicators();
-      
+
       for (const indicator of currentIndicators) {
         // This would compare with previously stored values
         // For now, we'll trigger alerts based on trend direction
-        if (indicator.trend === 'UP' && ['Inflation Rate', 'Interest Rate'].includes(indicator.indicator)) {
+        if (
+          indicator.trend === 'UP' &&
+          ['Inflation Rate', 'Interest Rate'].includes(indicator.indicator)
+        ) {
           const alert: RealTimeMarketAlert = {
             id: `economic_${Date.now()}`,
             type: 'ECONOMIC_UPDATE',
@@ -591,20 +618,19 @@ export class LiveDataAnalyticsEngine extends RealEstateAnalyticsEngine {
             data: indicator,
             timestamp: new Date().toISOString(),
             actionRequired: true,
-            recommendations: this.generateEconomicRecommendations(indicator)
+            recommendations: this.generateEconomicRecommendations(indicator),
           };
 
           this.broadcastAlert(alert);
         }
       }
-
     } catch (error) {
       console.error('Error checking economic changes:', error);
     }
   }
 
   private broadcastAlert(alert: RealTimeMarketAlert): void {
-    this.alertSubscribers.forEach(callback => {
+    this.alertSubscribers.forEach((callback) => {
       try {
         callback(alert);
       } catch (error) {
@@ -613,7 +639,10 @@ export class LiveDataAnalyticsEngine extends RealEstateAnalyticsEngine {
     });
   }
 
-  private generatePriceChangeRecommendations(changePercent: number, marketData: MarketData): string[] {
+  private generatePriceChangeRecommendations(
+    changePercent: number,
+    marketData: MarketData
+  ): string[] {
     const recommendations: string[] = [];
 
     if (changePercent > 0.1) {

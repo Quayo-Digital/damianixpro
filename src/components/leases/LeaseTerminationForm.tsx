@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
@@ -8,42 +7,50 @@ import { CalendarIcon, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
-import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import {
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/components/ui/form';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Textarea } from '@/components/ui/textarea';
 import { initiateLeaseAction } from '@/services/leases/leaseTerminationService';
 
 const formSchema = z.object({
   moveOutDate: z.date({
-    required_error: "Move out date is required.",
+    required_error: 'Move out date is required.',
   }),
   reason: z.string().min(10, {
-    message: "Reason must be at least 10 characters.",
+    message: 'Reason must be at least 10 characters.',
   }),
 });
 
 type LeaseTerminationFormValues = z.infer<typeof formSchema>;
 
-export function LeaseTerminationForm({ 
-  leaseId, 
-  tenantId, 
+export function LeaseTerminationForm({
+  leaseId,
+  tenantId,
   propertyId,
   currentEndDate,
   onSuccess,
-  onCancel
-}: { 
-  leaseId: string, 
-  tenantId: string, 
-  propertyId: string,
-  currentEndDate: string,
-  onSuccess: () => void,
-  onCancel: () => void
+  onCancel,
+}: {
+  leaseId: string;
+  tenantId: string;
+  propertyId: string;
+  currentEndDate: string;
+  onSuccess: () => void;
+  onCancel: () => void;
 }) {
   const [isSubmitting, setIsSubmitting] = useState(false);
-  
+
   // Use the current end date as the default move out date
   const defaultMoveOutDate = new Date(currentEndDate);
-  
+
   const form = useForm<LeaseTerminationFormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -54,10 +61,10 @@ export function LeaseTerminationForm({
 
   async function onSubmit(values: LeaseTerminationFormValues) {
     setIsSubmitting(true);
-    
+
     try {
       const effectiveDate = format(values.moveOutDate, 'yyyy-MM-dd');
-      
+
       const result = await initiateLeaseAction(
         leaseId,
         tenantId,
@@ -67,7 +74,7 @@ export function LeaseTerminationForm({
         'tenant',
         effectiveDate
       );
-      
+
       if (result.success) {
         onSuccess();
       }
@@ -89,17 +96,13 @@ export function LeaseTerminationForm({
                 <PopoverTrigger asChild>
                   <FormControl>
                     <Button
-                      variant={"outline"}
+                      variant={'outline'}
                       className={cn(
-                        "w-full pl-3 text-left font-normal",
-                        !field.value && "text-muted-foreground"
+                        'w-full pl-3 text-left font-normal',
+                        !field.value && 'text-muted-foreground'
                       )}
                     >
-                      {field.value ? (
-                        format(field.value, "PPP")
-                      ) : (
-                        <span>Pick a date</span>
-                      )}
+                      {field.value ? format(field.value, 'PPP') : <span>Pick a date</span>}
                       <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
                     </Button>
                   </FormControl>
@@ -114,14 +117,12 @@ export function LeaseTerminationForm({
                   />
                 </PopoverContent>
               </Popover>
-              <FormDescription>
-                The date you plan to move out of the property.
-              </FormDescription>
+              <FormDescription>The date you plan to move out of the property.</FormDescription>
               <FormMessage />
             </FormItem>
           )}
         />
-        
+
         <FormField
           control={form.control}
           name="reason"
@@ -135,14 +136,12 @@ export function LeaseTerminationForm({
                   {...field}
                 />
               </FormControl>
-              <FormDescription>
-                This information helps us improve our services.
-              </FormDescription>
+              <FormDescription>This information helps us improve our services.</FormDescription>
               <FormMessage />
             </FormItem>
           )}
         />
-        
+
         <div className="flex justify-between">
           <Button type="button" variant="outline" onClick={onCancel}>
             Cancel

@@ -1,4 +1,3 @@
-
 import { PageLayout } from '@/components/layout/PageLayout';
 import { PageContent } from '@/components/layout/PageContent';
 import { useAdminUsers } from '@/hooks/useAdminUsers';
@@ -10,8 +9,11 @@ export default function AdminUsersPage() {
 
   return (
     <PageLayout>
-      <PageContent title="User Management" description="Review new user registrations and manage existing users.">
-        <div className="bg-background p-6 rounded-lg shadow-sm border">
+      <PageContent
+        title="User Management"
+        description="Review new user registrations and manage existing users."
+      >
+        <div className="rounded-lg border bg-background p-6 shadow-sm">
           {isLoading && (
             <div className="space-y-4">
               <Skeleton className="h-12 w-full" />

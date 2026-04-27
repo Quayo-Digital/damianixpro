@@ -1,4 +1,3 @@
-
 import {
   Table,
   TableBody,
@@ -7,17 +6,18 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
-import { Button } from "@/components/ui/button";
-import { AlertTriangle, FileText } from "lucide-react";
+} from '@/components/ui/table';
+import { Button } from '@/components/ui/button';
+import { AlertTriangle, ClipboardList } from 'lucide-react';
 import { LeaseAgreement } from '@/services/applications/types';
 import { LeaseStatusBadge } from './LeaseStatusBadge';
-import { Badge } from "@/components/ui/badge";
-import { differenceInDays, parseISO } from "date-fns";
+import { Badge } from '@/components/ui/badge';
+import { differenceInDays, parseISO } from 'date-fns';
 
 interface LeaseListProps {
   leases: LeaseAgreement[];
   isLoading: boolean;
+  onOpenOnboarding?: (lease: LeaseAgreement) => void;
 }
 
 const getExpiryBadge = (endDate: string | null) => {
@@ -30,14 +30,17 @@ const getExpiryBadge = (endDate: string | null) => {
 
   if (daysRemaining <= 30) {
     return (
-      <Badge variant="outline" className="bg-red-50 text-red-700 border-red-200 gap-1 ml-2 text-xs">
+      <Badge variant="outline" className="ml-2 gap-1 border-red-200 bg-red-50 text-xs text-red-700">
         <AlertTriangle className="h-3 w-3" />
         <span>Expires in {daysRemaining} days</span>
       </Badge>
     );
   } else if (daysRemaining <= 90) {
     return (
-      <Badge variant="outline" className="bg-amber-50 text-amber-700 border-amber-200 gap-1 ml-2 text-xs">
+      <Badge
+        variant="outline"
+        className="ml-2 gap-1 border-amber-200 bg-amber-50 text-xs text-amber-700"
+      >
         <AlertTriangle className="h-3 w-3" />
         <span>Expires in {daysRemaining} days</span>
       </Badge>
@@ -46,7 +49,7 @@ const getExpiryBadge = (endDate: string | null) => {
   return null;
 };
 
-export const LeaseList = ({ leases, isLoading }: LeaseListProps) => {
+export const LeaseList = ({ leases, isLoading, onOpenOnboarding }: LeaseListProps) => {
   return (
     <Table>
       <TableCaption>A list of your current leases.</TableCaption>
@@ -72,8 +75,12 @@ export const LeaseList = ({ leases, isLoading }: LeaseListProps) => {
             <TableRow key={lease.id}>
               <TableCell className="font-medium">{lease.property_name}</TableCell>
               <TableCell>{lease.tenant_name}</TableCell>
-              <TableCell>{lease.start_date ? new Date(lease.start_date).toLocaleDateString() : '-'}</TableCell>
-              <TableCell>{lease.end_date ? new Date(lease.end_date).toLocaleDateString() : '-'}</TableCell>
+              <TableCell>
+                {lease.start_date ? new Date(lease.start_date).toLocaleDateString() : '-'}
+              </TableCell>
+              <TableCell>
+                {lease.end_date ? new Date(lease.end_date).toLocaleDateString() : '-'}
+              </TableCell>
               <TableCell>
                 <div className="flex items-center">
                   <LeaseStatusBadge status={lease.status} />
@@ -81,10 +88,14 @@ export const LeaseList = ({ leases, isLoading }: LeaseListProps) => {
                 </div>
               </TableCell>
               <TableCell className="text-right">
-                <Button variant="outline" size="sm">
-                  <FileText className="mr-2 h-4 w-4" />
-                  View
-                </Button>
+                {onOpenOnboarding ? (
+                  <Button variant="outline" size="sm" onClick={() => onOpenOnboarding(lease)}>
+                    <ClipboardList className="mr-2 h-4 w-4" />
+                    Onboarding
+                  </Button>
+                ) : (
+                  <span className="text-xs text-muted-foreground">—</span>
+                )}
               </TableCell>
             </TableRow>
           ))

@@ -28,7 +28,7 @@ export async function cleanupDuplicateTenants(): Promise<CleanupResult> {
     duplicatesFound: 0,
     duplicatesRemoved: 0,
     errors: [],
-    message: ''
+    message: '',
   };
 
   try {
@@ -56,10 +56,10 @@ export async function cleanupDuplicateTenants(): Promise<CleanupResult> {
 
     // Step 2: Identify duplicates by user_id
     const userIdGroups = new Map<string, TenantRecord[]>();
-    
-    allTenants.forEach(tenant => {
+
+    allTenants.forEach((tenant) => {
       if (!tenant.user_id) return;
-      
+
       if (!userIdGroups.has(tenant.user_id)) {
         userIdGroups.set(tenant.user_id, []);
       }
@@ -67,11 +67,12 @@ export async function cleanupDuplicateTenants(): Promise<CleanupResult> {
     });
 
     // Step 3: Find user_ids with multiple records
-    const duplicateGroups = Array.from(userIdGroups.entries())
-      .filter(([_, records]) => records.length > 1);
+    const duplicateGroups = Array.from(userIdGroups.entries()).filter(
+      ([_, records]) => records.length > 1
+    );
 
     result.duplicatesFound = duplicateGroups.length;
-    
+
     if (duplicateGroups.length === 0) {
       result.message = 'No duplicate tenant records found';
       result.success = true;
@@ -85,7 +86,7 @@ export async function cleanupDuplicateTenants(): Promise<CleanupResult> {
 
     duplicateGroups.forEach(([userId, records]) => {
       console.log(`👥 User ${userId} has ${records.length} tenant records`);
-      
+
       // Sort by created_at descending, then by id descending to get the most recent
       records.sort((a, b) => {
         const dateCompare = new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
@@ -96,8 +97,8 @@ export async function cleanupDuplicateTenants(): Promise<CleanupResult> {
       // Keep the first (most recent) record, mark others for deletion
       const [keepRecord, ...deleteRecords] = records;
       console.log(`✅ Keeping record ${keepRecord.id} (${keepRecord.created_at})`);
-      
-      deleteRecords.forEach(record => {
+
+      deleteRecords.forEach((record) => {
         console.log(`❌ Marking for deletion: ${record.id} (${record.created_at})`);
         recordsToDelete.push(record.id);
       });
@@ -106,18 +107,15 @@ export async function cleanupDuplicateTenants(): Promise<CleanupResult> {
     // Step 5: Delete duplicate records in batches
     if (recordsToDelete.length > 0) {
       console.log(`🗑️ Deleting ${recordsToDelete.length} duplicate records...`);
-      
+
       // Delete in batches of 10 to avoid overwhelming the database
       const batchSize = 10;
       let deletedCount = 0;
-      
+
       for (let i = 0; i < recordsToDelete.length; i += batchSize) {
         const batch = recordsToDelete.slice(i, i + batchSize);
-        
-        const { error: deleteError } = await supabase
-          .from('tenants')
-          .delete()
-          .in('id', batch);
+
+        const { error: deleteError } = await supabase.from('tenants').delete().in('id', batch);
 
         if (deleteError) {
           result.errors.push(`Failed to delete batch ${i / batchSize + 1}: ${deleteError.message}`);
@@ -127,7 +125,7 @@ export async function cleanupDuplicateTenants(): Promise<CleanupResult> {
           console.log(`✅ Deleted batch ${i / batchSize + 1} (${batch.length} records)`);
         }
       }
-      
+
       result.duplicatesRemoved = deletedCount;
     }
 
@@ -140,9 +138,9 @@ export async function cleanupDuplicateTenants(): Promise<CleanupResult> {
     if (verifyError) {
       result.errors.push(`Failed to verify cleanup: ${verifyError.message}`);
     } else {
-      const remainingUserIds = new Set(remainingTenants?.map(t => t.user_id) || []);
+      const remainingUserIds = new Set(remainingTenants?.map((t) => t.user_id) || []);
       const remainingDuplicates = remainingTenants?.length - remainingUserIds.size;
-      
+
       if (remainingDuplicates > 0) {
         result.errors.push(`Still have ${remainingDuplicates} duplicate records after cleanup`);
       } else {
@@ -159,12 +157,15 @@ export async function cleanupDuplicateTenants(): Promise<CleanupResult> {
     }
 
     console.log('🎉 Duplicate tenant cleanup completed!');
-    console.log(`📊 Summary: ${result.duplicatesFound} duplicates found, ${result.duplicatesRemoved} removed`);
-    
-    return result;
+    console.log(
+      `📊 Summary: ${result.duplicatesFound} duplicates found, ${result.duplicatesRemoved} removed`
+    );
 
+    return result;
   } catch (error) {
-    result.errors.push(`Unexpected error during cleanup: ${error instanceof Error ? error.message : String(error)}`);
+    result.errors.push(
+      `Unexpected error during cleanup: ${error instanceof Error ? error.message : String(error)}`
+    );
     result.message = 'Cleanup failed due to unexpected error';
     console.error('❌ Cleanup failed:', error);
     return result;
@@ -189,18 +190,17 @@ export async function checkForDuplicateTenants(): Promise<{
     }
 
     const userIdCounts = new Map<string, number>();
-    tenants?.forEach(tenant => {
+    tenants?.forEach((tenant) => {
       const count = userIdCounts.get(tenant.user_id) || 0;
       userIdCounts.set(tenant.user_id, count + 1);
     });
 
-    const duplicateUserIds = Array.from(userIdCounts.entries())
-      .filter(([_, count]) => count > 1);
+    const duplicateUserIds = Array.from(userIdCounts.entries()).filter(([_, count]) => count > 1);
 
     return {
       hasDuplicates: duplicateUserIds.length > 0,
       duplicateCount: duplicateUserIds.length,
-      totalTenants: tenants?.length || 0
+      totalTenants: tenants?.length || 0,
     };
   } catch (error) {
     console.error('Error checking for duplicates:', error);

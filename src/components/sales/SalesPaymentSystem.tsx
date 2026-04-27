@@ -5,18 +5,18 @@ import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { 
-  CreditCard, 
-  DollarSign, 
-  CheckCircle, 
-  AlertCircle, 
-  Clock, 
-  Plus, 
-  Download, 
-  Receipt, 
+import {
+  CreditCard,
+  DollarSign,
+  CheckCircle,
+  AlertCircle,
+  Clock,
+  Plus,
+  Download,
+  Receipt,
   TrendingUp,
   PieChart,
-  Calculator
+  Calculator,
 } from 'lucide-react';
 import { SalesTransaction, SalesPayment } from '@/services/property/types';
 
@@ -49,77 +49,17 @@ export const SalesPaymentSystem: React.FC<SalesPaymentSystemProps> = ({ userRole
   const loadPaymentData = async () => {
     setLoading(true);
     try {
-      // Mock data - replace with actual API calls
-      const metrics: PaymentMetrics = {
-        totalRevenue: 2450000000,
-        pendingPayments: 45000000,
-        overduePayments: 8500000,
-        completedTransactions: 156,
-        commissionEarned: 61250000,
-        platformFees: 24500000,
-        monthlyRevenue: 380000000
-      };
-      setPaymentMetrics(metrics);
-
-      const transactions: SalesTransaction[] = [
-        {
-          id: '1',
-          property_id: 'prop1',
-          buyer_id: 'buyer1',
-          seller_id: 'seller1',
-          agent_id: 'agent1',
-          transaction_type: 'SALE',
-          sale_price: 25000000,
-          down_payment: 7500000,
-          payment_method: 'INSTALLMENT',
-          agent_commission_amount: 625000,
-          platform_fee_amount: 250000,
-          status: 'PAYMENT_PARTIAL',
-          created_at: '2025-08-01T10:00:00Z',
-          property: {
-            id: 'prop1',
-            name: '4BR Duplex - Lekki',
-            address: 'Lekki Phase 1, Lagos',
-            transaction_type: 'SALE',
-            property_category: 'RESIDENTIAL',
-            price: '25000000',
-            location: 'Lagos'
-          },
-          buyer: {
-            id: 'buyer1',
-            first_name: 'Michael',
-            last_name: 'Adebayo',
-            email: 'michael@example.com',
-            status: 'QUALIFIED'
-          }
-        }
-      ];
-      setSalesTransactions(transactions);
-
-      const payments: SalesPayment[] = [
-        {
-          id: '1',
-          sales_transaction_id: '1',
-          payment_number: 1,
-          amount: 7500000,
-          due_date: '2025-08-01',
-          payment_date: '2025-08-01',
-          payment_method: 'BANK_TRANSFER',
-          reference_number: 'TXN001234567',
-          status: 'PAID',
-          created_at: '2025-08-01T10:00:00Z'
-        },
-        {
-          id: '2',
-          sales_transaction_id: '1',
-          payment_number: 2,
-          amount: 4375000,
-          due_date: '2025-10-01',
-          status: 'PENDING',
-          created_at: '2025-08-01T10:00:00Z'
-        }
-      ];
-      setSalesPayments(payments);
+      setPaymentMetrics({
+        totalRevenue: 0,
+        pendingPayments: 0,
+        overduePayments: 0,
+        completedTransactions: 0,
+        commissionEarned: 0,
+        platformFees: 0,
+        monthlyRevenue: 0,
+      });
+      setSalesTransactions([]);
+      setSalesPayments([]);
     } catch (error) {
       console.error('Error loading payment data:', error);
     } finally {
@@ -132,17 +72,17 @@ export const SalesPaymentSystem: React.FC<SalesPaymentSystemProps> = ({ userRole
       style: 'currency',
       currency: 'NGN',
       minimumFractionDigits: 0,
-      maximumFractionDigits: 0
+      maximumFractionDigits: 0,
     }).format(amount);
   };
 
   const getPaymentStatusBadge = (status: SalesPayment['status']) => {
     const statusConfig = {
-      'PENDING': { variant: 'secondary' as const, icon: <Clock className="h-3 w-3" /> },
-      'PAID': { variant: 'default' as const, icon: <CheckCircle className="h-3 w-3" /> },
-      'OVERDUE': { variant: 'destructive' as const, icon: <AlertCircle className="h-3 w-3" /> },
-      'PARTIAL': { variant: 'destructive' as const, icon: <AlertCircle className="h-3 w-3" /> },
-      'CANCELLED': { variant: 'destructive' as const, icon: <AlertCircle className="h-3 w-3" /> }
+      PENDING: { variant: 'secondary' as const, icon: <Clock className="h-3 w-3" /> },
+      PAID: { variant: 'default' as const, icon: <CheckCircle className="h-3 w-3" /> },
+      OVERDUE: { variant: 'destructive' as const, icon: <AlertCircle className="h-3 w-3" /> },
+      PARTIAL: { variant: 'destructive' as const, icon: <AlertCircle className="h-3 w-3" /> },
+      CANCELLED: { variant: 'destructive' as const, icon: <AlertCircle className="h-3 w-3" /> },
     };
 
     const config = statusConfig[status];
@@ -155,16 +95,16 @@ export const SalesPaymentSystem: React.FC<SalesPaymentSystemProps> = ({ userRole
   };
 
   const getTransactionProgress = (transaction: SalesTransaction) => {
-    const payments = salesPayments.filter(p => p.sales_transaction_id === transaction.id);
+    const payments = salesPayments.filter((p) => p.sales_transaction_id === transaction.id);
     const totalPaid = payments.reduce((sum, p) => sum + (p.status === 'PAID' ? p.amount : 0), 0);
     return (totalPaid / transaction.sale_price) * 100;
   };
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-64">
+      <div className="flex h-64 items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+          <div className="mx-auto mb-4 h-8 w-8 animate-spin rounded-full border-b-2 border-primary"></div>
           <p>Loading payment system...</p>
         </div>
       </div>
@@ -180,11 +120,11 @@ export const SalesPaymentSystem: React.FC<SalesPaymentSystemProps> = ({ userRole
         </div>
         <div className="flex gap-2">
           <Button variant="outline" size="sm">
-            <Download className="h-4 w-4 mr-2" />
+            <Download className="mr-2 h-4 w-4" />
             Export
           </Button>
           <Button size="sm">
-            <Plus className="h-4 w-4 mr-2" />
+            <Plus className="mr-2 h-4 w-4" />
             Record Payment
           </Button>
         </div>
@@ -192,14 +132,16 @@ export const SalesPaymentSystem: React.FC<SalesPaymentSystemProps> = ({ userRole
 
       {/* Payment Metrics */}
       {paymentMetrics && (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Total Revenue</CardTitle>
               <TrendingUp className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{formatCurrency(paymentMetrics.totalRevenue)}</div>
+              <div className="text-2xl font-bold">
+                {formatCurrency(paymentMetrics.totalRevenue)}
+              </div>
               <p className="text-xs text-muted-foreground">
                 +{formatCurrency(paymentMetrics.monthlyRevenue)} this month
               </p>
@@ -212,7 +154,9 @@ export const SalesPaymentSystem: React.FC<SalesPaymentSystemProps> = ({ userRole
               <Clock className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{formatCurrency(paymentMetrics.pendingPayments)}</div>
+              <div className="text-2xl font-bold">
+                {formatCurrency(paymentMetrics.pendingPayments)}
+              </div>
               <p className="text-xs text-muted-foreground">
                 {formatCurrency(paymentMetrics.overduePayments)} overdue
               </p>
@@ -225,7 +169,9 @@ export const SalesPaymentSystem: React.FC<SalesPaymentSystemProps> = ({ userRole
               <DollarSign className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{formatCurrency(paymentMetrics.commissionEarned)}</div>
+              <div className="text-2xl font-bold">
+                {formatCurrency(paymentMetrics.commissionEarned)}
+              </div>
               <p className="text-xs text-muted-foreground">Agent commissions</p>
             </CardContent>
           </Card>
@@ -236,7 +182,9 @@ export const SalesPaymentSystem: React.FC<SalesPaymentSystemProps> = ({ userRole
               <PieChart className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{formatCurrency(paymentMetrics.platformFees)}</div>
+              <div className="text-2xl font-bold">
+                {formatCurrency(paymentMetrics.platformFees)}
+              </div>
               <p className="text-xs text-muted-foreground">
                 {paymentMetrics.completedTransactions} transactions
               </p>
@@ -254,7 +202,7 @@ export const SalesPaymentSystem: React.FC<SalesPaymentSystemProps> = ({ userRole
         </TabsList>
 
         <TabsContent value="overview" className="space-y-4">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
             <Card>
               <CardHeader>
                 <CardTitle>Recent Transactions</CardTitle>
@@ -265,15 +213,21 @@ export const SalesPaymentSystem: React.FC<SalesPaymentSystemProps> = ({ userRole
                   {salesTransactions.slice(0, 5).map((transaction) => {
                     const progress = getTransactionProgress(transaction);
                     return (
-                      <div key={transaction.id} className="border rounded-lg p-4">
-                        <div className="flex items-center justify-between mb-3">
+                      <div key={transaction.id} className="rounded-lg border p-4">
+                        <div className="mb-3 flex items-center justify-between">
                           <div>
                             <h4 className="font-medium">{transaction.property?.name}</h4>
-                            <p className="text-sm text-gray-600">{transaction.buyer?.first_name} {transaction.buyer?.last_name}</p>
+                            <p className="text-sm text-gray-600">
+                              {transaction.buyer?.first_name} {transaction.buyer?.last_name}
+                            </p>
                           </div>
                           <div className="text-right">
                             <p className="font-medium">{formatCurrency(transaction.sale_price)}</p>
-                            <Badge variant={transaction.status === 'PAYMENT_COMPLETE' ? 'default' : 'secondary'}>
+                            <Badge
+                              variant={
+                                transaction.status === 'PAYMENT_COMPLETE' ? 'default' : 'secondary'
+                              }
+                            >
                               {transaction.status.replace('_', ' ')}
                             </Badge>
                           </div>
@@ -300,18 +254,27 @@ export const SalesPaymentSystem: React.FC<SalesPaymentSystemProps> = ({ userRole
               <CardContent>
                 <div className="space-y-4">
                   {salesPayments
-                    .filter(p => p.status === 'PENDING' || p.status === 'OVERDUE')
+                    .filter((p) => p.status === 'PENDING' || p.status === 'OVERDUE')
                     .slice(0, 5)
                     .map((payment) => {
-                      const transaction = salesTransactions.find(t => t.id === payment.sales_transaction_id);
+                      const transaction = salesTransactions.find(
+                        (t) => t.id === payment.sales_transaction_id
+                      );
                       const isOverdue = new Date(payment.due_date) < new Date();
-                      
+
                       return (
-                        <div key={payment.id} className="flex items-center justify-between p-3 border rounded-lg">
+                        <div
+                          key={payment.id}
+                          className="flex items-center justify-between rounded-lg border p-3"
+                        >
                           <div>
                             <p className="font-medium">{transaction?.property?.name}</p>
-                            <p className="text-sm text-gray-600">Payment #{payment.payment_number}</p>
-                            <p className="text-sm text-gray-600">Due: {new Date(payment.due_date).toLocaleDateString()}</p>
+                            <p className="text-sm text-gray-600">
+                              Payment #{payment.payment_number}
+                            </p>
+                            <p className="text-sm text-gray-600">
+                              Due: {new Date(payment.due_date).toLocaleDateString()}
+                            </p>
                           </div>
                           <div className="text-right">
                             <p className="font-medium">{formatCurrency(payment.amount)}</p>
@@ -337,25 +300,31 @@ export const SalesPaymentSystem: React.FC<SalesPaymentSystemProps> = ({ userRole
                 {salesTransactions.map((transaction) => {
                   const progress = getTransactionProgress(transaction);
                   const totalPaid = salesPayments
-                    .filter(p => p.sales_transaction_id === transaction.id && p.status === 'PAID')
+                    .filter((p) => p.sales_transaction_id === transaction.id && p.status === 'PAID')
                     .reduce((sum, p) => sum + p.amount, 0);
-                  
+
                   return (
-                    <div key={transaction.id} className="border rounded-lg p-4">
-                      <div className="flex items-center justify-between mb-4">
+                    <div key={transaction.id} className="rounded-lg border p-4">
+                      <div className="mb-4 flex items-center justify-between">
                         <div>
                           <h4 className="font-medium">{transaction.property?.name}</h4>
                           <p className="text-sm text-gray-600">{transaction.property?.address}</p>
                         </div>
-                        <Badge variant={transaction.status === 'PAYMENT_COMPLETE' ? 'default' : 'secondary'}>
+                        <Badge
+                          variant={
+                            transaction.status === 'PAYMENT_COMPLETE' ? 'default' : 'secondary'
+                          }
+                        >
                           {transaction.status.replace('_', ' ')}
                         </Badge>
                       </div>
-                      
-                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4 text-sm">
+
+                      <div className="mb-4 grid grid-cols-2 gap-4 text-sm md:grid-cols-4">
                         <div>
                           <p className="text-gray-600">Buyer</p>
-                          <p className="font-medium">{transaction.buyer?.first_name} {transaction.buyer?.last_name}</p>
+                          <p className="font-medium">
+                            {transaction.buyer?.first_name} {transaction.buyer?.last_name}
+                          </p>
                         </div>
                         <div>
                           <p className="text-gray-600">Sale Price</p>
@@ -374,23 +343,26 @@ export const SalesPaymentSystem: React.FC<SalesPaymentSystemProps> = ({ userRole
                       <div className="space-y-2">
                         <div className="flex justify-between text-sm">
                           <span>Payment Progress</span>
-                          <span>{progress.toFixed(1)}% ({formatCurrency(totalPaid)} / {formatCurrency(transaction.sale_price)})</span>
+                          <span>
+                            {progress.toFixed(1)}% ({formatCurrency(totalPaid)} /{' '}
+                            {formatCurrency(transaction.sale_price)})
+                          </span>
                         </div>
                         <Progress value={progress} className="h-2" />
                       </div>
 
-                      <div className="flex justify-between items-center mt-4 pt-4 border-t">
+                      <div className="mt-4 flex items-center justify-between border-t pt-4">
                         <div className="text-sm text-gray-600">
-                          Commission: {formatCurrency(transaction.agent_commission_amount || 0)} | 
+                          Commission: {formatCurrency(transaction.agent_commission_amount || 0)} |
                           Platform Fee: {formatCurrency(transaction.platform_fee_amount || 0)}
                         </div>
                         <div className="flex gap-2">
                           <Button size="sm" variant="outline">
-                            <Receipt className="h-3 w-3 mr-1" />
+                            <Receipt className="mr-1 h-3 w-3" />
                             Receipt
                           </Button>
                           <Button size="sm">
-                            <Plus className="h-3 w-3 mr-1" />
+                            <Plus className="mr-1 h-3 w-3" />
                             Record Payment
                           </Button>
                         </div>
@@ -413,37 +385,44 @@ export const SalesPaymentSystem: React.FC<SalesPaymentSystemProps> = ({ userRole
               <Alert className="mb-4">
                 <Calculator className="h-4 w-4" />
                 <AlertDescription>
-                  Track all payments including installments, down payments, and commission distributions.
+                  Track all payments including installments, down payments, and commission
+                  distributions.
                 </AlertDescription>
               </Alert>
-              
+
               <div className="space-y-4">
                 {salesPayments.map((payment) => {
-                  const transaction = salesTransactions.find(t => t.id === payment.sales_transaction_id);
-                  
+                  const transaction = salesTransactions.find(
+                    (t) => t.id === payment.sales_transaction_id
+                  );
+
                   return (
-                    <div key={payment.id} className="border rounded-lg p-4">
-                      <div className="flex items-center justify-between mb-3">
+                    <div key={payment.id} className="rounded-lg border p-4">
+                      <div className="mb-3 flex items-center justify-between">
                         <div>
                           <h4 className="font-medium">{transaction?.property?.name}</h4>
                           <p className="text-sm text-gray-600">Payment #{payment.payment_number}</p>
                         </div>
                         {getPaymentStatusBadge(payment.status)}
                       </div>
-                      
-                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+
+                      <div className="grid grid-cols-2 gap-4 text-sm md:grid-cols-4">
                         <div>
                           <p className="text-gray-600">Amount</p>
                           <p className="font-medium">{formatCurrency(payment.amount)}</p>
                         </div>
                         <div>
                           <p className="text-gray-600">Due Date</p>
-                          <p className="font-medium">{new Date(payment.due_date).toLocaleDateString()}</p>
+                          <p className="font-medium">
+                            {new Date(payment.due_date).toLocaleDateString()}
+                          </p>
                         </div>
                         <div>
                           <p className="text-gray-600">Payment Date</p>
                           <p className="font-medium">
-                            {payment.payment_date ? new Date(payment.payment_date).toLocaleDateString() : 'N/A'}
+                            {payment.payment_date
+                              ? new Date(payment.payment_date).toLocaleDateString()
+                              : 'N/A'}
                           </p>
                         </div>
                         <div>
@@ -453,9 +432,10 @@ export const SalesPaymentSystem: React.FC<SalesPaymentSystemProps> = ({ userRole
                       </div>
 
                       {payment.reference_number && (
-                        <div className="mt-3 p-3 bg-gray-50 rounded">
+                        <div className="mt-3 rounded bg-gray-50 p-3">
                           <p className="text-sm">
-                            <span className="font-medium">Reference:</span> {payment.reference_number}
+                            <span className="font-medium">Reference:</span>{' '}
+                            {payment.reference_number}
                             {payment.bank_name && (
                               <span className="ml-4">
                                 <span className="font-medium">Bank:</span> {payment.bank_name}
@@ -481,18 +461,18 @@ export const SalesPaymentSystem: React.FC<SalesPaymentSystemProps> = ({ userRole
             <CardContent>
               <div className="space-y-4">
                 {salesTransactions.map((transaction) => (
-                  <div key={transaction.id} className="border rounded-lg p-4">
-                    <div className="flex items-center justify-between mb-3">
+                  <div key={transaction.id} className="rounded-lg border p-4">
+                    <div className="mb-3 flex items-center justify-between">
                       <div>
                         <h4 className="font-medium">{transaction.property?.name}</h4>
-                        <p className="text-sm text-gray-600">Sale Price: {formatCurrency(transaction.sale_price)}</p>
+                        <p className="text-sm text-gray-600">
+                          Sale Price: {formatCurrency(transaction.sale_price)}
+                        </p>
                       </div>
-                      <Badge variant="outline">
-                        {transaction.status.replace('_', ' ')}
-                      </Badge>
+                      <Badge variant="outline">{transaction.status.replace('_', ' ')}</Badge>
                     </div>
-                    
-                    <div className="grid grid-cols-2 md:grid-cols-3 gap-4 text-sm">
+
+                    <div className="grid grid-cols-2 gap-4 text-sm md:grid-cols-3">
                       <div>
                         <p className="text-gray-600">Agent Commission</p>
                         <p className="font-medium text-green-600">
@@ -515,9 +495,9 @@ export const SalesPaymentSystem: React.FC<SalesPaymentSystemProps> = ({ userRole
                         <p className="text-gray-600">Net to Seller</p>
                         <p className="font-medium">
                           {formatCurrency(
-                            transaction.sale_price - 
-                            (transaction.agent_commission_amount || 0) - 
-                            (transaction.platform_fee_amount || 0)
+                            transaction.sale_price -
+                              (transaction.agent_commission_amount || 0) -
+                              (transaction.platform_fee_amount || 0)
                           )}
                         </p>
                       </div>

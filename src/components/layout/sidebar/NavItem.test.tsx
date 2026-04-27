@@ -1,4 +1,3 @@
-
 import { render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { describe, it, expect } from 'vitest';
@@ -38,9 +37,7 @@ describe('NavItem component', () => {
   it('does not render children when collapsed', () => {
     const itemWithChildren: NavItemType = {
       ...mockItem,
-      children: [
-        { title: 'Sub Item', href: '/dashboard/sub', icon: <div />, isVisible: true },
-      ],
+      children: [{ title: 'Sub Item', href: '/dashboard/sub', icon: <div />, isVisible: true }],
     };
 
     render(
@@ -56,9 +53,7 @@ describe('NavItem component', () => {
     const itemWithChildren: NavItemType = {
       ...mockItem,
       href: '/dashboard',
-      children: [
-        { title: 'Sub Item', href: '/dashboard/sub', icon: <div />, isVisible: true },
-      ],
+      children: [{ title: 'Sub Item', href: '/dashboard/sub', icon: <div />, isVisible: true }],
     };
 
     render(

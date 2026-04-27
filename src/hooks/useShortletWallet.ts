@@ -4,20 +4,20 @@
  */
 
 import { useState, useCallback, useEffect } from 'react';
-import { useAuth } from '@/contexts/auth';
+import { useAuthSession } from '@/contexts/auth';
 import { useToast } from '@/hooks/use-toast';
 import {
   getOrCreateWallet,
   getWalletSummary,
   getWalletTransactions,
-  releasePendingFunds
+  releasePendingFunds,
 } from '@/services/shortlet/api/wallets';
 import {
   requestPayout,
   getPayoutHistory,
   verifyPayoutStatus,
   cancelPayout,
-  createOrGetRecipient
+  createOrGetRecipient,
 } from '@/services/shortlet/api/payouts';
 import { Wallet, Transaction } from '@/services/shortlet/types';
 
@@ -27,11 +27,15 @@ export interface UseShortletWalletReturn {
   transactions: Transaction[];
   isLoading: boolean;
   refreshWallet: () => Promise<void>;
-  requestPayout: (amount: number, bankAccount: {
-    account_number: string;
-    bank_code: string;
-    account_name: string;
-  }, reason?: string) => Promise<{
+  requestPayout: (
+    amount: number,
+    bankAccount: {
+      account_number: string;
+      bank_code: string;
+      account_name: string;
+    },
+    reason?: string
+  ) => Promise<{
     success: boolean;
     payout_id?: string;
     error?: string;
@@ -43,7 +47,7 @@ export interface UseShortletWalletReturn {
 }
 
 export function useShortletWallet(): UseShortletWalletReturn {
-  const { user } = useAuth();
+  const { user } = useAuthSession();
   const { toast } = useToast();
   const [wallet, setWallet] = useState<Wallet | null>(null);
   const [walletSummary, setWalletSummary] = useState<any | null>(null);
@@ -72,62 +76,65 @@ export function useShortletWallet(): UseShortletWalletReturn {
     }
   }, [user, toast]);
 
-  const handleRequestPayout = useCallback(async (
-    amount: number,
-    bankAccount: {
-      account_number: string;
-      bank_code: string;
-      account_name: string;
-    },
-    reason?: string
-  ) => {
-    if (!user?.id) {
-      return {
-        success: false,
-        error: 'User not authenticated'
-      };
-    }
-
-    setIsLoading(true);
-    try {
-      const result = await requestPayout({
-        user_id: user.id,
-        amount,
-        bank_account: bankAccount,
-        reason
-      });
-
-      if (result.success) {
-        toast({
-          title: 'Payout Requested',
-          description: 'Your payout request has been submitted successfully.',
-        });
-        await refreshWallet();
-        await getPayoutHistory();
-      } else {
-        toast({
-          title: 'Payout Failed',
-          description: result.error || 'Failed to request payout',
-          variant: 'destructive',
-        });
+  const handleRequestPayout = useCallback(
+    async (
+      amount: number,
+      bankAccount: {
+        account_number: string;
+        bank_code: string;
+        account_name: string;
+      },
+      reason?: string
+    ) => {
+      if (!user?.id) {
+        return {
+          success: false,
+          error: 'User not authenticated',
+        };
       }
 
-      return result;
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Payout request failed';
-      toast({
-        title: 'Error',
-        description: errorMessage,
-        variant: 'destructive',
-      });
-      return {
-        success: false,
-        error: errorMessage
-      };
-    } finally {
-      setIsLoading(false);
-    }
-  }, [user, toast, refreshWallet]);
+      setIsLoading(true);
+      try {
+        const result = await requestPayout({
+          user_id: user.id,
+          amount,
+          bank_account: bankAccount,
+          reason,
+        });
+
+        if (result.success) {
+          toast({
+            title: 'Payout Requested',
+            description: 'Your payout request has been submitted successfully.',
+          });
+          await refreshWallet();
+          await getPayoutHistory();
+        } else {
+          toast({
+            title: 'Payout Failed',
+            description: result.error || 'Failed to request payout',
+            variant: 'destructive',
+          });
+        }
+
+        return result;
+      } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : 'Payout request failed';
+        toast({
+          title: 'Error',
+          description: errorMessage,
+          variant: 'destructive',
+        });
+        return {
+          success: false,
+          error: errorMessage,
+        };
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [user, toast, refreshWallet]
+  );
 
   const handleGetPayoutHistory = useCallback(async () => {
     if (!user?.id) return;
@@ -148,70 +155,76 @@ export function useShortletWallet(): UseShortletWalletReturn {
     }
   }, [user, toast]);
 
-  const handleVerifyPayout = useCallback(async (transferCode: string) => {
-    setIsLoading(true);
-    try {
-      const result = await verifyPayoutStatus(transferCode);
-      if (result.success) {
+  const handleVerifyPayout = useCallback(
+    async (transferCode: string) => {
+      setIsLoading(true);
+      try {
+        const result = await verifyPayoutStatus(transferCode);
+        if (result.success) {
+          toast({
+            title: 'Payout Status Updated',
+            description: `Payout status: ${result.status}`,
+          });
+          await refreshWallet();
+          await handleGetPayoutHistory();
+        } else {
+          toast({
+            title: 'Verification Failed',
+            description: result.error || 'Could not verify payout status',
+            variant: 'destructive',
+          });
+        }
+      } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : 'Payout verification failed';
         toast({
-          title: 'Payout Status Updated',
-          description: `Payout status: ${result.status}`,
-        });
-        await refreshWallet();
-        await handleGetPayoutHistory();
-      } else {
-        toast({
-          title: 'Verification Failed',
-          description: result.error || 'Could not verify payout status',
+          title: 'Error',
+          description: errorMessage,
           variant: 'destructive',
         });
+      } finally {
+        setIsLoading(false);
       }
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Payout verification failed';
-      toast({
-        title: 'Error',
-        description: errorMessage,
-        variant: 'destructive',
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  }, [toast, refreshWallet, handleGetPayoutHistory]);
+    },
+    [toast, refreshWallet, handleGetPayoutHistory]
+  );
 
-  const handleCancelPayout = useCallback(async (payoutId: string) => {
-    setIsLoading(true);
-    try {
-      const result = await cancelPayout(payoutId);
-      if (result.success) {
+  const handleCancelPayout = useCallback(
+    async (payoutId: string) => {
+      setIsLoading(true);
+      try {
+        const result = await cancelPayout(payoutId);
+        if (result.success) {
+          toast({
+            title: 'Payout Cancelled',
+            description: 'Payout has been cancelled and funds returned to your wallet.',
+          });
+          await refreshWallet();
+          await handleGetPayoutHistory();
+        } else {
+          toast({
+            title: 'Cancellation Failed',
+            description: result.error || 'Could not cancel payout',
+            variant: 'destructive',
+          });
+        }
+        return result;
+      } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : 'Payout cancellation failed';
         toast({
-          title: 'Payout Cancelled',
-          description: 'Payout has been cancelled and funds returned to your wallet.',
-        });
-        await refreshWallet();
-        await handleGetPayoutHistory();
-      } else {
-        toast({
-          title: 'Cancellation Failed',
-          description: result.error || 'Could not cancel payout',
+          title: 'Error',
+          description: errorMessage,
           variant: 'destructive',
         });
+        return {
+          success: false,
+          error: errorMessage,
+        };
+      } finally {
+        setIsLoading(false);
       }
-      return result;
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Payout cancellation failed';
-      toast({
-        title: 'Error',
-        description: errorMessage,
-        variant: 'destructive',
-      });
-      return {
-        success: false,
-        error: errorMessage
-      };
-    } finally {
-      setIsLoading(false);
-    }
-  }, [toast, refreshWallet, handleGetPayoutHistory]);
+    },
+    [toast, refreshWallet, handleGetPayoutHistory]
+  );
 
   // Load wallet on mount
   useEffect(() => {
@@ -231,7 +244,6 @@ export function useShortletWallet(): UseShortletWalletReturn {
     getPayoutHistory: handleGetPayoutHistory,
     payoutHistory,
     verifyPayout: handleVerifyPayout,
-    cancelPayout: handleCancelPayout
+    cancelPayout: handleCancelPayout,
   };
 }
-

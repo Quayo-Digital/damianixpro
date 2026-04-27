@@ -5,7 +5,11 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { RefreshCw, TrendingUp, MapPin, Building, DollarSign } from 'lucide-react';
 import { PageLayout } from '@/components/layout/PageLayout';
-import NigerianRealEstateDataService, { PropertyListingData, EconomicIndicator, MarketData } from '@/services/data/NigerianRealEstateDataService';
+import NigerianRealEstateDataService, {
+  PropertyListingData,
+  EconomicIndicator,
+  MarketData,
+} from '@/services/data/NigerianRealEstateDataService';
 import LiveDataAnalyticsEngine from '@/services/analytics/LiveDataAnalyticsEngine';
 
 const LiveDataDemoPage: React.FC = () => {
@@ -24,7 +28,7 @@ const LiveDataDemoPage: React.FC = () => {
       // Fetch live property listings
       const listings = await dataService.fetchPropertyListings({
         location: 'Lagos',
-        limit: 10
+        limit: 10,
       });
       setPropertyListings(listings);
 
@@ -61,27 +65,25 @@ const LiveDataDemoPage: React.FC = () => {
     return trend === 'UP' ? (
       <TrendingUp className="h-4 w-4 text-green-500" />
     ) : (
-      <TrendingUp className="h-4 w-4 text-red-500 rotate-180" />
+      <TrendingUp className="h-4 w-4 rotate-180 text-red-500" />
     );
   };
 
   return (
     <PageLayout>
-      <div className="container mx-auto p-6 space-y-6">
+      <div className="container mx-auto space-y-6 p-6">
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-bold">Live Nigerian Real Estate Data</h1>
-            <p className="text-muted-foreground mt-2">
+            <p className="mt-2 text-muted-foreground">
               Real-time property listings, market trends, and economic indicators
             </p>
             {lastUpdated && (
-              <p className="text-sm text-muted-foreground mt-1">
-                Last updated: {lastUpdated}
-              </p>
+              <p className="mt-1 text-sm text-muted-foreground">Last updated: {lastUpdated}</p>
             )}
           </div>
-          <Button 
-            onClick={refreshLiveData} 
+          <Button
+            onClick={refreshLiveData}
             disabled={isLoading}
             className="flex items-center gap-2"
           >
@@ -111,13 +113,13 @@ const LiveDataDemoPage: React.FC = () => {
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
                       <div>
                         <div className="flex items-center gap-2 text-sm text-muted-foreground">
                           <MapPin className="h-4 w-4" />
                           {listing.location.city}, {listing.location.state}
                         </div>
-                        <div className="flex items-center gap-2 text-sm text-muted-foreground mt-1">
+                        <div className="mt-1 flex items-center gap-2 text-sm text-muted-foreground">
                           <DollarSign className="h-4 w-4" />
                           {formatCurrency(listing.price)}
                         </div>
@@ -126,16 +128,20 @@ const LiveDataDemoPage: React.FC = () => {
                         <p className="text-sm">Type: {listing.propertyType}</p>
                         <p className="text-sm">Size: {listing.size} sqm</p>
                         {listing.bedrooms && (
-                          <p className="text-sm">{listing.bedrooms} bed, {listing.bathrooms} bath</p>
+                          <p className="text-sm">
+                            {listing.bedrooms} bed, {listing.bathrooms} bath
+                          </p>
                         )}
                       </div>
                       <div>
                         <p className="text-sm">Agent: {listing.agent.name}</p>
                         <p className="text-sm">Source: {listing.source}</p>
-                        <p className="text-sm">Posted: {new Date(listing.datePosted).toLocaleDateString()}</p>
+                        <p className="text-sm">
+                          Posted: {new Date(listing.datePosted).toLocaleDateString()}
+                        </p>
                       </div>
                     </div>
-                    <p className="text-sm text-muted-foreground mt-3 line-clamp-2">
+                    <p className="mt-3 line-clamp-2 text-sm text-muted-foreground">
                       {listing.description}
                     </p>
                   </CardContent>
@@ -155,28 +161,29 @@ const LiveDataDemoPage: React.FC = () => {
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                      <div className="text-center p-4 bg-blue-50 rounded-lg">
+                    <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
+                      <div className="rounded-lg bg-blue-50 p-4 text-center">
                         <div className="text-2xl font-bold text-blue-600">
                           {formatCurrency(market.averagePrice)}
                         </div>
                         <div className="text-sm text-muted-foreground">Average Price</div>
                       </div>
-                      <div className="text-center p-4 bg-green-50 rounded-lg">
+                      <div className="rounded-lg bg-green-50 p-4 text-center">
                         <div className="text-2xl font-bold text-green-600">
                           {market.totalListings}
                         </div>
                         <div className="text-sm text-muted-foreground">Total Listings</div>
                       </div>
-                      <div className="text-center p-4 bg-purple-50 rounded-lg">
+                      <div className="rounded-lg bg-purple-50 p-4 text-center">
                         <div className="text-2xl font-bold text-purple-600">
                           {market.averageDaysOnMarket}
                         </div>
                         <div className="text-sm text-muted-foreground">Avg Days on Market</div>
                       </div>
-                      <div className="text-center p-4 bg-orange-50 rounded-lg">
+                      <div className="rounded-lg bg-orange-50 p-4 text-center">
                         <div className="text-2xl font-bold text-orange-600">
-                          {market.priceChange30Days > 0 ? '+' : ''}{market.priceChange30Days.toFixed(1)}%
+                          {market.priceChange30Days > 0 ? '+' : ''}
+                          {market.priceChange30Days.toFixed(1)}%
                         </div>
                         <div className="text-sm text-muted-foreground">30-Day Change</div>
                       </div>
@@ -196,17 +203,19 @@ const LiveDataDemoPage: React.FC = () => {
                       <div>
                         <h3 className="font-semibold">{indicator.indicator}</h3>
                         <p className="text-sm text-muted-foreground">
-                          Source: {indicator.source} | Date: {new Date(indicator.date).toLocaleDateString()}
+                          Source: {indicator.source} | Date:{' '}
+                          {new Date(indicator.date).toLocaleDateString()}
                         </p>
                       </div>
                       <div className="text-right">
                         <div className="flex items-center gap-2">
                           <span className="text-2xl font-bold">
-                            {indicator.value}{indicator.unit}
+                            {indicator.value}
+                            {indicator.unit}
                           </span>
                           {getTrendIcon(indicator.trend)}
                         </div>
-                        <Badge 
+                        <Badge
                           variant={indicator.trend === 'UP' ? 'default' : 'destructive'}
                           className="mt-1"
                         >

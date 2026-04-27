@@ -4,13 +4,20 @@
  */
 
 import React from 'react';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { 
-  Calendar, 
-  Users, 
-  DollarSign, 
+import {
+  Calendar,
+  Users,
+  DollarSign,
   MapPin,
   CheckCircle2,
   XCircle,
@@ -18,7 +25,7 @@ import {
   AlertCircle,
   Eye,
   Phone,
-  Mail
+  Mail,
 } from 'lucide-react';
 import { format, differenceInDays } from 'date-fns';
 import type { Booking, BookingStatus } from '@/services/shortlet/types';
@@ -41,14 +48,9 @@ interface BookingCardProps {
   onStatusChange?: (bookingId: string, status: BookingStatus) => void;
 }
 
-export function BookingCard({ 
-  booking, 
-  mode = 'owner',
-  onView,
-  onStatusChange 
-}: BookingCardProps) {
+export function BookingCard({ booking, mode = 'owner', onView, onStatusChange }: BookingCardProps) {
   const nights = differenceInDays(new Date(booking.checkout_date), new Date(booking.checkin_date));
-  
+
   const getStatusBadge = (status: BookingStatus) => {
     const variants = {
       pending: { variant: 'secondary' as const, icon: Clock, label: 'Pending' },
@@ -57,10 +59,10 @@ export function BookingCard({
       completed: { variant: 'default' as const, icon: CheckCircle2, label: 'Completed' },
       refunded: { variant: 'secondary' as const, icon: AlertCircle, label: 'Refunded' },
     };
-    
+
     const config = variants[status] || variants.pending;
     const Icon = config.icon;
-    
+
     return (
       <Badge variant={config.variant} className="flex items-center gap-1">
         <Icon className="h-3 w-3" />
@@ -70,18 +72,19 @@ export function BookingCard({
   };
 
   const canApprove = mode === 'owner' && booking.status === 'pending';
-  const canCancel = (mode === 'owner' || mode === 'guest') && 
-                    (booking.status === 'pending' || booking.status === 'confirmed');
+  const canCancel =
+    (mode === 'owner' || mode === 'guest') &&
+    (booking.status === 'pending' || booking.status === 'confirmed');
 
   return (
-    <Card className="hover:shadow-lg transition-shadow">
+    <Card className="transition-shadow hover:shadow-lg">
       <CardHeader>
         <div className="flex items-start justify-between">
           <div className="flex-1">
-            <CardTitle className="text-lg mb-1">
+            <CardTitle className="mb-1 text-lg">
               {booking.listing?.title || 'Unknown Listing'}
             </CardTitle>
-            <CardDescription className="flex items-center gap-1 mt-1">
+            <CardDescription className="mt-1 flex items-center gap-1">
               <MapPin className="h-4 w-4" />
               {booking.listing?.property?.address || 'Location not specified'}
             </CardDescription>
@@ -94,18 +97,22 @@ export function BookingCard({
         <div className="grid grid-cols-2 gap-4">
           <div>
             <p className="text-sm font-medium text-muted-foreground">Check-in</p>
-            <p className="text-base font-semibold">{format(new Date(booking.checkin_date), 'MMM dd, yyyy')}</p>
+            <p className="text-base font-semibold">
+              {format(new Date(booking.checkin_date), 'MMM dd, yyyy')}
+            </p>
           </div>
           <div>
             <p className="text-sm font-medium text-muted-foreground">Check-out</p>
-            <p className="text-base font-semibold">{format(new Date(booking.checkout_date), 'MMM dd, yyyy')}</p>
+            <p className="text-base font-semibold">
+              {format(new Date(booking.checkout_date), 'MMM dd, yyyy')}
+            </p>
           </div>
         </div>
 
-          {/* Guest/Owner Info */}
+        {/* Guest/Owner Info */}
         {mode === 'owner' && booking.guest && (
-          <div className="p-3 bg-muted rounded-md">
-            <p className="text-sm font-medium mb-2">Guest Information</p>
+          <div className="rounded-md bg-muted p-3">
+            <p className="mb-2 text-sm font-medium">Guest Information</p>
             <div className="space-y-1 text-sm">
               <p className="flex items-center gap-2">
                 <Users className="h-4 w-4" />
@@ -122,7 +129,7 @@ export function BookingCard({
         )}
 
         {/* Booking Details */}
-        <div className="grid grid-cols-2 gap-4 pt-2 border-t">
+        <div className="grid grid-cols-2 gap-4 border-t pt-2">
           <div>
             <p className="text-sm text-muted-foreground">Nights</p>
             <p className="text-base font-semibold">{nights}</p>
@@ -134,7 +141,7 @@ export function BookingCard({
         </div>
 
         {/* Price */}
-        <div className="pt-2 border-t">
+        <div className="border-t pt-2">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-muted-foreground">Total Amount</p>
@@ -153,7 +160,7 @@ export function BookingCard({
 
         {/* Payment Status */}
         {booking.payment_reference && (
-          <div className="p-2 bg-muted rounded text-xs">
+          <div className="rounded bg-muted p-2 text-xs">
             <p className="text-muted-foreground">Payment Reference: {booking.payment_reference}</p>
           </div>
         )}
@@ -161,16 +168,16 @@ export function BookingCard({
       <CardFooter className="flex gap-2">
         {onView && (
           <Button variant="outline" onClick={() => onView(String(booking.id))} className="flex-1">
-            <Eye className="h-4 w-4 mr-2" />
+            <Eye className="mr-2 h-4 w-4" />
             View Details
           </Button>
         )}
-        
+
         {canApprove && onStatusChange && (
           <AlertDialog>
             <AlertDialogTrigger asChild>
               <Button className="flex-1">
-                <CheckCircle2 className="h-4 w-4 mr-2" />
+                <CheckCircle2 className="mr-2 h-4 w-4" />
                 Approve
               </Button>
             </AlertDialogTrigger>
@@ -178,7 +185,8 @@ export function BookingCard({
               <AlertDialogHeader>
                 <AlertDialogTitle>Approve Booking</AlertDialogTitle>
                 <AlertDialogDescription>
-                  Are you sure you want to approve this booking? The guest will be notified and payment will be processed.
+                  Are you sure you want to approve this booking? The guest will be notified and
+                  payment will be processed.
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>
@@ -195,7 +203,7 @@ export function BookingCard({
           <AlertDialog>
             <AlertDialogTrigger asChild>
               <Button variant="destructive" className="flex-1">
-                <XCircle className="h-4 w-4 mr-2" />
+                <XCircle className="mr-2 h-4 w-4" />
                 Cancel
               </Button>
             </AlertDialogTrigger>
@@ -203,12 +211,14 @@ export function BookingCard({
               <AlertDialogHeader>
                 <AlertDialogTitle>Cancel Booking</AlertDialogTitle>
                 <AlertDialogDescription>
-                  Are you sure you want to cancel this booking? {booking.status === 'confirmed' && 'A refund may be processed according to the cancellation policy.'}
+                  Are you sure you want to cancel this booking?{' '}
+                  {booking.status === 'confirmed' &&
+                    'A refund may be processed according to the cancellation policy.'}
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>
                 <AlertDialogCancel>Keep Booking</AlertDialogCancel>
-                <AlertDialogAction 
+                <AlertDialogAction
                   onClick={() => onStatusChange(String(booking.id), 'cancelled')}
                   className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
                 >
@@ -222,4 +232,3 @@ export function BookingCard({
     </Card>
   );
 }
-

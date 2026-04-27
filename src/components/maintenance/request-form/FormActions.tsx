@@ -1,4 +1,3 @@
-
 import { Button } from '@/components/ui/button';
 import { DialogFooter } from '@/components/ui/dialog';
 import { Loader2 } from 'lucide-react';
@@ -13,21 +12,21 @@ interface FormActionsProps {
   onSubmit: (data: MaintenanceFormValues) => void;
 }
 
-export function FormActions({ 
-  onClose, 
-  isSubmitting, 
+export function FormActions({
+  onClose,
+  isSubmitting,
   isLoadingProperties,
   form,
-  onSubmit
+  onSubmit,
 }: FormActionsProps) {
   return (
     <DialogFooter className="mt-6">
       <Button type="button" variant="outline" onClick={onClose} disabled={isSubmitting}>
         Cancel
       </Button>
-      <Button 
-        type="submit" 
-        onClick={form.handleSubmit(onSubmit)} 
+      <Button
+        type="submit"
+        form="maintenance-request-form"
         disabled={isSubmitting || isLoadingProperties}
       >
         {isSubmitting ? (
@@ -36,7 +35,7 @@ export function FormActions({
             Submitting...
           </>
         ) : (
-          "Submit Request"
+          'Submit Request'
         )}
       </Button>
     </DialogFooter>

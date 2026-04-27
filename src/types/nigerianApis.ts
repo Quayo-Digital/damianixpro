@@ -379,7 +379,14 @@ export interface APIProviderConfig {
 export interface VerificationRecord {
   id: string;
   user_id: string;
-  verification_type: 'bvn' | 'nin' | 'cac' | 'bank_account' | 'phone' | 'credit_report' | 'land_registry';
+  verification_type:
+    | 'bvn'
+    | 'nin'
+    | 'cac'
+    | 'bank_account'
+    | 'phone'
+    | 'credit_report'
+    | 'land_registry';
   request_data: any;
   response_data: any;
   status: 'pending' | 'success' | 'failed' | 'expired';
@@ -489,7 +496,14 @@ export interface VerificationWebhook extends WebhookPayload {
 // UTILITY TYPES
 // ============================================================================
 
-export type VerificationType = 'bvn' | 'nin' | 'cac' | 'bank_account' | 'phone' | 'credit_report' | 'land_registry';
+export type VerificationType =
+  | 'bvn'
+  | 'nin'
+  | 'cac'
+  | 'bank_account'
+  | 'phone'
+  | 'credit_report'
+  | 'land_registry';
 
 export type APIProvider = 'youverify' | 'appruve' | 'paystack' | 'flutterwave' | 'nibss' | 'custom';
 

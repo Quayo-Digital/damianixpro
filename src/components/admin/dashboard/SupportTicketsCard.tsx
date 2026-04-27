@@ -1,10 +1,13 @@
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Link } from 'react-router-dom';
+import { DashboardActionItem } from './DashboardActionItem';
 
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Link } from "react-router-dom";
-import { DashboardActionItem } from "./DashboardActionItem";
-
-export function SupportTicketsCard({ openTicketsByCategory }: { openTicketsByCategory?: { [key: string]: number } }) {
+export function SupportTicketsCard({
+  openTicketsByCategory,
+}: {
+  openTicketsByCategory?: { [key: string]: number };
+}) {
   const technicalTickets = openTicketsByCategory?.['maintenance'] || 0;
   const billingTickets = openTicketsByCategory?.['billing'] || 0;
   const featureRequests = openTicketsByCategory?.['feature_request'] || 0;
@@ -36,11 +39,7 @@ export function SupportTicketsCard({ openTicketsByCategory }: { openTicketsByCat
             linkTo="/admin/features"
           />
         </div>
-        <Button
-          variant="outline"
-          className="w-full mt-4"
-          asChild
-        >
+        <Button variant="outline" className="mt-4 w-full" asChild>
           <Link to="/admin/support">View All Tickets</Link>
         </Button>
       </CardContent>

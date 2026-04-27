@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/components/ui/sonner';
 
@@ -12,15 +11,13 @@ export const processOwnerPayout = async (
 ): Promise<boolean> => {
   try {
     // 1. Record the payout in owner_payouts table
-    const { error: payoutError } = await supabase
-      .from('owner_payouts')
-      .insert({
-        owner_id: ownerId,
-        amount,
-        payment_ids: paymentIds,
-        status: 'processed',
-        payout_date: new Date().toISOString()
-      });
+    const { error: payoutError } = await supabase.from('owner_payouts').insert({
+      owner_id: ownerId,
+      amount,
+      payment_ids: paymentIds,
+      status: 'processed',
+      payout_date: new Date().toISOString(),
+    });
 
     if (payoutError) throw payoutError;
 
@@ -32,7 +29,7 @@ export const processOwnerPayout = async (
       .select();
 
     if (updateError) throw updateError;
-    
+
     toast.success(`Owner payout of ₦${amount.toLocaleString()} processed`);
     return true;
   } catch (error) {

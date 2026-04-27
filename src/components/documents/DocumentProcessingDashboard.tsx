@@ -2,20 +2,9 @@
 
 import React, { useState, useCallback } from 'react';
 import { useDocumentProcessing } from '@/hooks/useDocumentProcessing';
-import { useAuth } from '@/contexts/AuthContext';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from '@/components/ui/tabs';
+import { useAuthSession } from '@/contexts/AuthContext';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
@@ -41,7 +30,7 @@ import {
   Shield,
   TrendingUp,
   AlertCircle,
-  Filter
+  Filter,
 } from 'lucide-react';
 import { DocumentType, DocumentStatus, DocumentMetadata } from '@/types/documentProcessing';
 
@@ -50,7 +39,7 @@ interface DocumentProcessingDashboardProps {
 }
 
 export function DocumentProcessingDashboard({ propertyId }: DocumentProcessingDashboardProps) {
-  const { user } = useAuth();
+  const { user } = useAuthSession();
   const [selectedFiles, setSelectedFiles] = useState<FileList | null>(null);
   const [documentTypeFilter, setDocumentTypeFilter] = useState<DocumentType | 'all'>('all');
   const [statusFilter, setStatusFilter] = useState<DocumentStatus | 'all'>('all');
@@ -70,49 +59,53 @@ export function DocumentProcessingDashboard({ propertyId }: DocumentProcessingDa
     reprocessDocument,
     getDocumentDetails,
     getPendingDocuments,
-    getHighRiskDocuments
+    getHighRiskDocuments,
   } = useDocumentProcessing({
     userId: user?.id,
     propertyId,
     filters: {
       document_types: documentTypeFilter !== 'all' ? [documentTypeFilter] : undefined,
-      statuses: statusFilter !== 'all' ? [statusFilter] : undefined
-    }
+      statuses: statusFilter !== 'all' ? [statusFilter] : undefined,
+    },
   });
 
-  const handleFileUpload = useCallback(async (files: FileList) => {
-    if (!user?.id || !files.length) return;
+  const handleFileUpload = useCallback(
+    async (files: FileList) => {
+      if (!user?.id || !files.length) return;
 
-    Array.from(files).forEach(file => {
-      uploadDocument({
-        file,
-        userId: user.id,
-        propertyId
+      Array.from(files).forEach((file) => {
+        uploadDocument({
+          file,
+          userId: user.id,
+          propertyId,
+        });
       });
-    });
 
-    setSelectedFiles(null);
-  }, [user?.id, propertyId, uploadDocument]);
+      setSelectedFiles(null);
+    },
+    [user?.id, propertyId, uploadDocument]
+  );
 
-  const handleDocumentAction = useCallback(async (
-    action: 'view' | 'delete' | 'reprocess',
-    documentId: string
-  ) => {
-    switch (action) {
-      case 'view':
-        const details = await getDocumentDetails(documentId);
-        setSelectedDocument(details);
-        break;
-      case 'delete':
-        if (confirm('Are you sure you want to delete this document?')) {
-          deleteDocument(documentId);
+  const handleDocumentAction = useCallback(
+    async (action: 'view' | 'delete' | 'reprocess', documentId: string) => {
+      switch (action) {
+        case 'view': {
+          const details = await getDocumentDetails(documentId);
+          setSelectedDocument(details);
+          break;
         }
-        break;
-      case 'reprocess':
-        reprocessDocument(documentId);
-        break;
-    }
-  }, [getDocumentDetails, deleteDocument, reprocessDocument]);
+        case 'delete':
+          if (confirm('Are you sure you want to delete this document?')) {
+            deleteDocument(documentId);
+          }
+          break;
+        case 'reprocess':
+          reprocessDocument(documentId);
+          break;
+      }
+    },
+    [getDocumentDetails, deleteDocument, reprocessDocument]
+  );
 
   const getStatusIcon = (status: DocumentStatus) => {
     switch (status) {
@@ -120,7 +113,7 @@ export function DocumentProcessingDashboard({ propertyId }: DocumentProcessingDa
       case 'verified':
         return <CheckCircle className="h-4 w-4 text-green-500" />;
       case 'processing':
-        return <Clock className="h-4 w-4 text-blue-500 animate-spin" />;
+        return <Clock className="h-4 w-4 animate-spin text-blue-500" />;
       case 'rejected':
         return <AlertTriangle className="h-4 w-4 text-red-500" />;
       default:
@@ -134,7 +127,7 @@ export function DocumentProcessingDashboard({ propertyId }: DocumentProcessingDa
       verified: 'default',
       processing: 'secondary',
       rejected: 'destructive',
-      uploaded: 'outline'
+      uploaded: 'outline',
     } as const;
 
     return (
@@ -145,8 +138,10 @@ export function DocumentProcessingDashboard({ propertyId }: DocumentProcessingDa
   };
 
   const getConfidenceBadge = (confidence: number) => {
-    if (confidence >= 0.8) return <Badge className="bg-green-100 text-green-800">High Confidence</Badge>;
-    if (confidence >= 0.6) return <Badge className="bg-yellow-100 text-yellow-800">Medium Confidence</Badge>;
+    if (confidence >= 0.8)
+      return <Badge className="bg-green-100 text-green-800">High Confidence</Badge>;
+    if (confidence >= 0.6)
+      return <Badge className="bg-yellow-100 text-yellow-800">Medium Confidence</Badge>;
     return <Badge className="bg-red-100 text-red-800">Low Confidence</Badge>;
   };
 
@@ -155,8 +150,8 @@ export function DocumentProcessingDashboard({ propertyId }: DocumentProcessingDa
 
   if (documentsLoading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+      <div className="flex h-64 items-center justify-center">
+        <div className="h-8 w-8 animate-spin rounded-full border-b-2 border-blue-600"></div>
       </div>
     );
   }
@@ -164,7 +159,7 @@ export function DocumentProcessingDashboard({ propertyId }: DocumentProcessingDa
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex justify-between items-center">
+      <div className="flex items-center justify-between">
         <div>
           <h2 className="text-2xl font-bold text-gray-900">Document Processing</h2>
           <p className="text-gray-600">AI-powered document analysis and management</p>
@@ -174,7 +169,7 @@ export function DocumentProcessingDashboard({ propertyId }: DocumentProcessingDa
             onClick={() => document.getElementById('file-upload')?.click()}
             disabled={isUploading}
           >
-            <Upload className="h-4 w-4 mr-2" />
+            <Upload className="mr-2 h-4 w-4" />
             Upload Documents
           </Button>
           <input
@@ -190,7 +185,7 @@ export function DocumentProcessingDashboard({ propertyId }: DocumentProcessingDa
 
       {/* Analytics Overview */}
       {analytics && (
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
           <Card>
             <CardContent className="p-4">
               <div className="flex items-center justify-between">
@@ -278,7 +273,7 @@ export function DocumentProcessingDashboard({ propertyId }: DocumentProcessingDa
           {/* Filters */}
           <Card>
             <CardContent className="p-4">
-              <div className="flex gap-4 items-center">
+              <div className="flex items-center gap-4">
                 <div className="flex items-center gap-2">
                   <Filter className="h-4 w-4" />
                   <Label>Filters:</Label>
@@ -343,7 +338,7 @@ export function DocumentProcessingDashboard({ propertyId }: DocumentProcessingDa
                     <div className="flex items-center gap-3">
                       {getStatusBadge(document.status)}
                       {getConfidenceBadge(document.confidence_score)}
-                      
+
                       <div className="flex gap-1">
                         <Button
                           size="sm"
@@ -371,7 +366,7 @@ export function DocumentProcessingDashboard({ propertyId }: DocumentProcessingDa
                   </div>
 
                   {document.confidence_score < 0.5 && (
-                    <div className="mt-3 p-3 bg-red-50 border border-red-200 rounded-md">
+                    <div className="mt-3 rounded-md border border-red-200 bg-red-50 p-3">
                       <div className="flex items-center gap-2">
                         <AlertCircle className="h-4 w-4 text-red-500" />
                         <span className="text-sm text-red-700">
@@ -387,13 +382,13 @@ export function DocumentProcessingDashboard({ propertyId }: DocumentProcessingDa
             {documents.length === 0 && (
               <Card>
                 <CardContent className="p-8 text-center">
-                  <FileText className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                  <h3 className="text-lg font-medium text-gray-900 mb-2">No documents found</h3>
-                  <p className="text-gray-600 mb-4">
+                  <FileText className="mx-auto mb-4 h-12 w-12 text-gray-400" />
+                  <h3 className="mb-2 text-lg font-medium text-gray-900">No documents found</h3>
+                  <p className="mb-4 text-gray-600">
                     Upload your first document to get started with AI-powered processing
                   </p>
                   <Button onClick={() => document.getElementById('file-upload')?.click()}>
-                    <Upload className="h-4 w-4 mr-2" />
+                    <Upload className="mr-2 h-4 w-4" />
                     Upload Document
                   </Button>
                 </CardContent>
@@ -411,7 +406,7 @@ export function DocumentProcessingDashboard({ propertyId }: DocumentProcessingDa
                   <CardTitle>Processing Performance</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
                     <div className="text-center">
                       <p className="text-2xl font-bold text-green-600">
                         {Math.round(analytics.processing_metrics.success_rate * 100)}%
@@ -446,7 +441,7 @@ export function DocumentProcessingDashboard({ propertyId }: DocumentProcessingDa
                   <CardTitle>Efficiency Gains</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
                     <div className="text-center">
                       <p className="text-2xl font-bold text-green-600">
                         {Math.round(analytics.efficiency_metrics.automation_rate * 100)}%
@@ -489,10 +484,12 @@ export function DocumentProcessingDashboard({ propertyId }: DocumentProcessingDa
             <CardContent>
               {analytics && (
                 <div className="space-y-4">
-                  <div className="flex items-center justify-between p-4 bg-green-50 rounded-lg">
+                  <div className="flex items-center justify-between rounded-lg bg-green-50 p-4">
                     <div>
                       <h3 className="font-medium">Overall Compliance Rate</h3>
-                      <p className="text-sm text-gray-600">Documents meeting regulatory requirements</p>
+                      <p className="text-sm text-gray-600">
+                        Documents meeting regulatory requirements
+                      </p>
                     </div>
                     <div className="text-2xl font-bold text-green-600">
                       {Math.round(analytics.compliance_metrics.compliance_rate * 100)}%
@@ -502,7 +499,7 @@ export function DocumentProcessingDashboard({ propertyId }: DocumentProcessingDa
                   <div className="space-y-2">
                     <h4 className="font-medium">Common Violations</h4>
                     {analytics.compliance_metrics.common_violations.map((violation, index) => (
-                      <div key={index} className="flex items-center gap-2 p-2 bg-yellow-50 rounded">
+                      <div key={index} className="flex items-center gap-2 rounded bg-yellow-50 p-2">
                         <AlertTriangle className="h-4 w-4 text-yellow-500" />
                         <span className="text-sm">{violation}</span>
                       </div>

@@ -6,22 +6,22 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Separator } from '@/components/ui/separator';
-import { 
-  Brain, 
-  Heart, 
-  MapPin, 
-  DollarSign, 
-  Home, 
+import {
+  Brain,
+  Heart,
+  MapPin,
+  DollarSign,
+  Home,
   Star,
   TrendingUp,
   Clock,
   Eye,
   Bookmark,
-  X
+  X,
 } from 'lucide-react';
 import { SmartRecommendation, MatchingScore } from '@/types/preferences';
 import { SmartMatchingService } from '@/services/ai/smartMatching';
-import { useAuth } from '@/contexts/auth';
+import { useAuthSession } from '@/contexts/auth';
 import { toast } from 'sonner';
 
 interface SmartRecommendationsProps {
@@ -33,9 +33,9 @@ interface SmartRecommendationsProps {
 export const SmartRecommendations: React.FC<SmartRecommendationsProps> = ({
   limit = 5,
   showHeader = true,
-  className = ""
+  className = '',
 }) => {
-  const { user } = useAuth();
+  const { user } = useAuthSession();
   const [recommendations, setRecommendations] = useState<SmartRecommendation[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -50,13 +50,15 @@ export const SmartRecommendations: React.FC<SmartRecommendationsProps> = ({
     try {
       setLoading(true);
       setError(null);
-      
+
       const recs = await SmartMatchingService.getSmartRecommendations(user!.id, limit);
       setRecommendations(recs);
-      
+
       // If no recommendations but no error, show helpful message
       if (recs.length === 0) {
-        setError('No recommendations available. Complete your preferences to get personalized suggestions.');
+        setError(
+          'No recommendations available. Complete your preferences to get personalized suggestions.'
+        );
       }
     } catch (err) {
       setError('Failed to load smart recommendations');
@@ -67,16 +69,16 @@ export const SmartRecommendations: React.FC<SmartRecommendationsProps> = ({
   };
 
   const handleInteraction = async (
-    propertyId: string, 
+    propertyId: string,
     interactionType: 'view' | 'save' | 'apply' | 'reject'
   ) => {
     try {
       await SmartMatchingService.trackInteraction(user!.id, propertyId, interactionType);
-      
+
       // Update recommendation status
-      setRecommendations(prev => 
-        prev.map(rec => 
-          rec.property_id === propertyId 
+      setRecommendations((prev) =>
+        prev.map((rec) =>
+          rec.property_id === propertyId
             ? { ...rec, status: interactionType === 'reject' ? 'dismissed' : 'viewed' }
             : rec
         )
@@ -84,12 +86,12 @@ export const SmartRecommendations: React.FC<SmartRecommendationsProps> = ({
 
       // Show feedback
       const messages = {
-        view: 'Property viewed - we\'ll improve your recommendations',
+        view: "Property viewed - we'll improve your recommendations",
         save: 'Property saved to your favorites',
         apply: 'Application submitted successfully',
-        reject: 'Thanks for the feedback - we\'ll improve your recommendations'
+        reject: "Thanks for the feedback - we'll improve your recommendations",
       };
-      
+
       toast.success(messages[interactionType]);
     } catch (error) {
       toast.error('Failed to track interaction');
@@ -104,10 +106,14 @@ export const SmartRecommendations: React.FC<SmartRecommendationsProps> = ({
 
   const getConfidenceBadgeVariant = (confidence: string) => {
     switch (confidence) {
-      case 'high': return 'default';
-      case 'medium': return 'secondary';
-      case 'low': return 'outline';
-      default: return 'outline';
+      case 'high':
+        return 'default';
+      case 'medium':
+        return 'secondary';
+      case 'low':
+        return 'outline';
+      default:
+        return 'outline';
     }
   };
 
@@ -124,8 +130,8 @@ export const SmartRecommendations: React.FC<SmartRecommendationsProps> = ({
           <div className="space-y-4">
             {[...Array(3)].map((_, i) => (
               <div key={i} className="animate-pulse">
-                <div className="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
-                <div className="h-3 bg-gray-200 rounded w-1/2"></div>
+                <div className="mb-2 h-4 w-3/4 rounded bg-gray-200"></div>
+                <div className="h-3 w-1/2 rounded bg-gray-200"></div>
               </div>
             ))}
           </div>
@@ -139,14 +145,9 @@ export const SmartRecommendations: React.FC<SmartRecommendationsProps> = ({
       <Card className={className}>
         <CardContent className="pt-6">
           <div className="text-center text-red-600">
-            <Brain className="h-8 w-8 mx-auto mb-2 opacity-50" />
+            <Brain className="mx-auto mb-2 h-8 w-8 opacity-50" />
             <p>{error}</p>
-            <Button 
-              variant="outline" 
-              size="sm" 
-              onClick={loadRecommendations}
-              className="mt-2"
-            >
+            <Button variant="outline" size="sm" onClick={loadRecommendations} className="mt-2">
               Try Again
             </Button>
           </div>
@@ -166,7 +167,7 @@ export const SmartRecommendations: React.FC<SmartRecommendationsProps> = ({
         </CardHeader>
         <CardContent>
           <div className="text-center text-muted-foreground">
-            <Brain className="h-8 w-8 mx-auto mb-2 opacity-50" />
+            <Brain className="mx-auto mb-2 h-8 w-8 opacity-50" />
             <p>No recommendations available yet.</p>
             <p className="text-sm">Complete your profile to get personalized suggestions!</p>
           </div>
@@ -190,13 +191,13 @@ export const SmartRecommendations: React.FC<SmartRecommendationsProps> = ({
               </div>
             </div>
             <Badge variant="secondary" className="bg-purple-100 text-purple-700">
-              <TrendingUp className="h-3 w-3 mr-1" />
+              <TrendingUp className="mr-1 h-3 w-3" />
               Smart
             </Badge>
           </div>
         </CardHeader>
       )}
-      
+
       <CardContent className="space-y-4">
         {recommendations.map((recommendation, index) => (
           <RecommendationCard
@@ -206,14 +207,10 @@ export const SmartRecommendations: React.FC<SmartRecommendationsProps> = ({
             onInteraction={handleInteraction}
           />
         ))}
-        
+
         <div className="flex justify-center pt-4">
-          <Button 
-            variant="outline" 
-            onClick={loadRecommendations}
-            className="text-sm"
-          >
-            <Brain className="h-4 w-4 mr-2" />
+          <Button variant="outline" onClick={loadRecommendations} className="text-sm">
+            <Brain className="mr-2 h-4 w-4" />
             Refresh Recommendations
           </Button>
         </div>
@@ -231,7 +228,7 @@ interface RecommendationCardProps {
 const RecommendationCard: React.FC<RecommendationCardProps> = ({
   recommendation,
   rank,
-  onInteraction
+  onInteraction,
 }) => {
   const { matching_score } = recommendation;
   const [property, setProperty] = useState<any>(null);
@@ -249,7 +246,7 @@ const RecommendationCard: React.FC<RecommendationCardProps> = ({
         bedrooms: 3,
         bathrooms: 2,
         property_type: 'apartment',
-        images: [`/api/placeholder/300/200?text=Property${rank}`]
+        images: [`/api/placeholder/300/200?text=Property${rank}`],
       });
       setLoading(false);
     }, 500);
@@ -257,9 +254,9 @@ const RecommendationCard: React.FC<RecommendationCardProps> = ({
 
   if (loading || !property) {
     return (
-      <div className="animate-pulse border rounded-lg p-4">
-        <div className="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
-        <div className="h-3 bg-gray-200 rounded w-1/2"></div>
+      <div className="animate-pulse rounded-lg border p-4">
+        <div className="mb-2 h-4 w-3/4 rounded bg-gray-200"></div>
+        <div className="h-3 w-1/2 rounded bg-gray-200"></div>
       </div>
     );
   }
@@ -271,17 +268,20 @@ const RecommendationCard: React.FC<RecommendationCardProps> = ({
   };
 
   return (
-    <div className="border rounded-lg p-4 hover:shadow-md transition-shadow">
+    <div className="rounded-lg border p-4 transition-shadow hover:shadow-md">
       {/* Header with rank and confidence */}
-      <div className="flex items-center justify-between mb-3">
+      <div className="mb-3 flex items-center justify-between">
         <div className="flex items-center space-x-2">
           <Badge variant="outline" className="text-xs">
             #{rank}
           </Badge>
-          <Badge 
+          <Badge
             variant={
-              matching_score.confidence_level === 'high' ? 'default' :
-              matching_score.confidence_level === 'medium' ? 'secondary' : 'outline'
+              matching_score.confidence_level === 'high'
+                ? 'default'
+                : matching_score.confidence_level === 'medium'
+                  ? 'secondary'
+                  : 'outline'
             }
             className="text-xs"
           >
@@ -289,7 +289,7 @@ const RecommendationCard: React.FC<RecommendationCardProps> = ({
           </Badge>
         </div>
         <div className="flex items-center space-x-1">
-          <Star className="h-4 w-4 text-yellow-500 fill-current" />
+          <Star className="h-4 w-4 fill-current text-yellow-500" />
           <span className={`text-sm font-semibold ${getScoreColor(matching_score.overall_score)}`}>
             {Math.round(matching_score.overall_score * 100)}% match
           </span>
@@ -297,26 +297,25 @@ const RecommendationCard: React.FC<RecommendationCardProps> = ({
       </div>
 
       {/* Property info */}
-      <div className="flex space-x-4 mb-3">
-        <div className="w-20 h-16 bg-gray-200 rounded-md flex items-center justify-center">
+      <div className="mb-3 flex space-x-4">
+        <div className="flex h-16 w-20 items-center justify-center rounded-md bg-gray-200">
           <Home className="h-6 w-6 text-gray-400" />
         </div>
         <div className="flex-1">
-          <h4 className="font-semibold text-sm">{property.name}</h4>
-          <div className="flex items-center text-xs text-muted-foreground mt-1">
-            <MapPin className="h-3 w-3 mr-1" />
+          <h4 className="text-sm font-semibold">{property.name}</h4>
+          <div className="mt-1 flex items-center text-xs text-muted-foreground">
+            <MapPin className="mr-1 h-3 w-3" />
             {property.location}
           </div>
-          <div className="flex items-center text-xs text-muted-foreground mt-1">
-            <DollarSign className="h-3 w-3 mr-1" />
-            ₦{property.rent_amount.toLocaleString()}/year
+          <div className="mt-1 flex items-center text-xs text-muted-foreground">
+            <DollarSign className="mr-1 h-3 w-3" />₦{property.rent_amount.toLocaleString()}/year
           </div>
         </div>
       </div>
 
       {/* Match reasons */}
       <div className="mb-3">
-        <p className="text-xs font-medium text-muted-foreground mb-1">Why this matches:</p>
+        <p className="mb-1 text-xs font-medium text-muted-foreground">Why this matches:</p>
         <div className="flex flex-wrap gap-1">
           {matching_score.reasons.slice(0, 2).map((reason, idx) => (
             <Badge key={idx} variant="outline" className="text-xs">
@@ -327,34 +326,28 @@ const RecommendationCard: React.FC<RecommendationCardProps> = ({
       </div>
 
       {/* Score breakdown */}
-      <div className="space-y-2 mb-4">
-        <div className="flex justify-between items-center text-xs">
+      <div className="mb-4 space-y-2">
+        <div className="flex items-center justify-between text-xs">
           <span>Budget Match</span>
           <span className={getScoreColor(matching_score.score_breakdown.budget_score)}>
             {Math.round(matching_score.score_breakdown.budget_score * 100)}%
           </span>
         </div>
-        <Progress 
-          value={matching_score.score_breakdown.budget_score * 100} 
-          className="h-1"
-        />
-        
-        <div className="flex justify-between items-center text-xs">
+        <Progress value={matching_score.score_breakdown.budget_score * 100} className="h-1" />
+
+        <div className="flex items-center justify-between text-xs">
           <span>Location Match</span>
           <span className={getScoreColor(matching_score.score_breakdown.location_score)}>
             {Math.round(matching_score.score_breakdown.location_score * 100)}%
           </span>
         </div>
-        <Progress 
-          value={matching_score.score_breakdown.location_score * 100} 
-          className="h-1"
-        />
+        <Progress value={matching_score.score_breakdown.location_score * 100} className="h-1" />
       </div>
 
       <Separator className="my-3" />
 
       {/* Action buttons */}
-      <div className="flex justify-between items-center">
+      <div className="flex items-center justify-between">
         <div className="flex space-x-2">
           <Button
             size="sm"
@@ -362,7 +355,7 @@ const RecommendationCard: React.FC<RecommendationCardProps> = ({
             onClick={() => onInteraction(property.id, 'view')}
             className="text-xs"
           >
-            <Eye className="h-3 w-3 mr-1" />
+            <Eye className="mr-1 h-3 w-3" />
             View
           </Button>
           <Button
@@ -371,17 +364,13 @@ const RecommendationCard: React.FC<RecommendationCardProps> = ({
             onClick={() => onInteraction(property.id, 'save')}
             className="text-xs"
           >
-            <Bookmark className="h-3 w-3 mr-1" />
+            <Bookmark className="mr-1 h-3 w-3" />
             Save
           </Button>
         </div>
-        
+
         <div className="flex space-x-2">
-          <Button
-            size="sm"
-            onClick={() => onInteraction(property.id, 'apply')}
-            className="text-xs"
-          >
+          <Button size="sm" onClick={() => onInteraction(property.id, 'apply')} className="text-xs">
             Apply Now
           </Button>
           <Button

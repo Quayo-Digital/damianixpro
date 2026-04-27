@@ -21,7 +21,16 @@ export interface PaymentFormData {
   recurringType?: RecurringPaymentType;
 }
 
-export type PaymentCategory = 'rent' | 'deposit' | 'maintenance' | 'utilities' | 'fees' | 'repairs' | 'insurance' | 'taxes' | 'other';
+export type PaymentCategory =
+  | 'rent'
+  | 'deposit'
+  | 'maintenance'
+  | 'utilities'
+  | 'fees'
+  | 'repairs'
+  | 'insurance'
+  | 'taxes'
+  | 'other';
 
 export type RecurringPaymentType = 'monthly' | 'quarterly' | 'annually';
 
@@ -34,11 +43,11 @@ export const PAYMENT_CATEGORIES: { value: PaymentCategory; label: string }[] = [
   { value: 'repairs', label: 'Repair Costs' },
   { value: 'insurance', label: 'Insurance Premium' },
   { value: 'taxes', label: 'Property Tax' },
-  { value: 'other', label: 'Other Payment' }
+  { value: 'other', label: 'Other Payment' },
 ];
 
 export const RECURRING_PAYMENT_OPTIONS: { value: RecurringPaymentType; label: string }[] = [
   { value: 'monthly', label: 'Monthly' },
   { value: 'quarterly', label: 'Quarterly' },
-  { value: 'annually', label: 'Annually' }
+  { value: 'annually', label: 'Annually' },
 ];

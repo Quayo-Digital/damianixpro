@@ -1,13 +1,13 @@
-# 🏠 Tenant User Guide - Nigeria Homes
+# 🏠 Tenant User Guide - DamianixPro
 
-Welcome to Nigeria Homes! This guide will help you navigate the platform and make the most of your tenant experience.
+Welcome to DamianixPro! This guide will help you navigate the platform and make the most of your tenant experience.
 
 ## 🚀 Getting Started
 
 ### Creating Your Account
 
 1. **Visit the Registration Page**
-   - Go to the Nigeria Homes website
+   - Go to the DamianixPro website
    - Click "Sign Up" in the top right corner
    - Select "Tenant" as your role
 
@@ -47,6 +47,7 @@ Welcome to Nigeria Homes! This guide will help you navigate the platform and mak
 ### Property Details
 
 Each property listing includes:
+
 - **Photos & Virtual Tours**: High-quality images and 360° views
 - **Detailed Description**: Property features and highlights
 - **Amenities**: Available facilities and services
@@ -79,6 +80,7 @@ Each property listing includes:
 ### Application Status
 
 Track your applications in your dashboard:
+
 - **Pending**: Under review by owner/agent
 - **Approved**: Congratulations! Proceed to lease signing
 - **Rejected**: Unfortunately not selected
@@ -144,6 +146,7 @@ Track your applications in your dashboard:
 ### Tracking Requests
 
 Monitor your maintenance requests:
+
 - **Submitted**: Request received and logged
 - **Assigned**: Technician/vendor assigned
 - **In Progress**: Work has begun
@@ -153,6 +156,7 @@ Monitor your maintenance requests:
 ### Emergency Requests
 
 For urgent issues (water leaks, electrical problems, security):
+
 - Mark priority as "Urgent"
 - Call emergency contact number
 - Submit online request for documentation
@@ -162,6 +166,7 @@ For urgent issues (water leaks, electrical problems, security):
 ### Document Types
 
 Keep these documents updated in your profile:
+
 - **Identity Documents**: National ID, Passport, Driver's License
 - **Income Proof**: Salary slips, bank statements, employment letter
 - **Lease Agreement**: Signed rental agreement
@@ -189,6 +194,7 @@ Keep these documents updated in your profile:
 ### Understanding Your Lease
 
 Your lease agreement includes:
+
 - **Property Details**: Address, description, condition
 - **Lease Term**: Start date, end date, renewal options
 - **Rent Amount**: Monthly rent, payment due date
@@ -199,6 +205,7 @@ Your lease agreement includes:
 ### Lease Renewal
 
 2 months before lease expiry:
+
 - Receive renewal notification
 - Review new terms and rent amount
 - Accept or decline renewal
@@ -207,6 +214,7 @@ Your lease agreement includes:
 ### Moving Out
 
 When ready to move out:
+
 1. **Give Notice**: Provide required notice period (usually 30-60 days)
 2. **Schedule Inspection**: Property condition assessment
 3. **Final Payments**: Clear any outstanding amounts
@@ -218,6 +226,7 @@ When ready to move out:
 ### Notification Types
 
 Stay informed with automatic notifications:
+
 - **Payment Reminders**: Upcoming rent and bill due dates
 - **Maintenance Updates**: Status changes on your requests
 - **Lease Alerts**: Renewal reminders and important updates
@@ -227,6 +236,7 @@ Stay informed with automatic notifications:
 ### Notification Settings
 
 Customize your preferences:
+
 - Email notifications (recommended)
 - SMS alerts for urgent matters
 - Push notifications (mobile app)
@@ -236,7 +246,7 @@ Customize your preferences:
 
 ### Download the App
 
-- **iOS**: Search "Nigeria Homes" in App Store
+- **iOS**: Search "DamianixPro" in App Store
 - **Android**: Download from Google Play Store
 - **Features**: All web platform features optimized for mobile
 
@@ -253,18 +263,22 @@ Customize your preferences:
 ### Support Channels
 
 **Live Chat**: Available 9 AM - 6 PM (WAT)
+
 - Click chat icon in bottom right
 - Get instant help from support team
 
 **Email Support**: support@nigeriahomes.com
+
 - Response within 24 hours
 - Include your tenant ID and property address
 
 **Phone Support**: +234-XXX-XXXX-XXX
+
 - Available during business hours
 - For urgent issues and emergencies
 
 **Help Center**: Online knowledge base
+
 - Frequently asked questions
 - Step-by-step guides
 - Video tutorials
@@ -272,27 +286,31 @@ Customize your preferences:
 ### Common Issues & Solutions
 
 **Can't Log In?**
+
 - Check email and password
 - Use "Forgot Password" link
 - Clear browser cache
 - Try different browser
 
 **Payment Failed?**
+
 - Check bank account balance
 - Verify card details
 - Try different payment method
 - Contact your bank
 
 **Document Upload Issues?**
+
 - Check file size (max 10MB)
 - Use supported formats (PDF, JPG, PNG)
 - Ensure stable internet connection
 - Try different browser
 
 **Maintenance Request Not Responded?**
+
 - Check request status in dashboard
 - Contact property manager directly
-- Escalate to Nigeria Homes support
+- Escalate to DamianixPro support
 - For emergencies, call emergency number
 
 ## 💡 Tips for Success
@@ -324,7 +342,7 @@ Customize your preferences:
    - Be considerate of neighbors
    - Communicate professionally with landlord/agent
 
-### Making the Most of Nigeria Homes
+### Making the Most of DamianixPro
 
 - **Use AI Recommendations**: Get personalized property suggestions
 - **Join Community**: Connect with other tenants
@@ -335,22 +353,25 @@ Customize your preferences:
 ## 📞 Emergency Contacts
 
 ### Property Emergencies
+
 - **Fire**: 199 (Nigeria Fire Service)
 - **Police**: 199 (Nigeria Police)
 - **Medical**: 199 (Emergency Medical Services)
 
 ### Platform Support
+
 - **Technical Issues**: tech-support@nigeriahomes.com
 - **Payment Problems**: payments@nigeriahomes.com
 - **General Support**: support@nigeriahomes.com
 
 ### Property Management
+
 - Check your lease agreement for specific emergency contacts
 - Property manager contact in your dashboard
 - Building security/caretaker numbers
 
 ---
 
-**Welcome to your new home with Nigeria Homes! 🏠**
+**Welcome to your new home with DamianixPro! 🏠**
 
-*For more help, visit our Help Center or contact our support team.*
+_For more help, visit our Help Center or contact our support team._

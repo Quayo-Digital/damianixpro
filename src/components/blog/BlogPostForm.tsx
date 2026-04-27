@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Form } from '@/components/ui/form';
 import { BlogPost } from '@/types/blog';
@@ -23,12 +22,12 @@ export function BlogPostForm({ post, isEditing = false }: BlogPostFormProps) {
           {editing ? 'Edit Blog Post' : 'Create New Blog Post'}
         </h2>
         <p className="text-muted-foreground">
-          {editing 
-            ? 'Update your blog post with the form below.' 
+          {editing
+            ? 'Update your blog post with the form below.'
             : 'Fill out the form below to create a new blog post.'}
         </p>
       </div>
-      
+
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
           <ContentFields form={form} />

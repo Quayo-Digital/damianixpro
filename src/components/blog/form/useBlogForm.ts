@@ -1,4 +1,3 @@
-
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useNavigate } from 'react-router-dom';
@@ -14,25 +13,27 @@ interface UseBlogFormProps {
 
 export const useBlogForm = ({ post, isEditing = false }: UseBlogFormProps) => {
   const navigate = useNavigate();
-  
+
   // Format the default values correctly, handling the tags array
-  const defaultValues: BlogFormValues = post ? {
-    title: post.title,
-    excerpt: post.excerpt,
-    content: post.content,
-    author: post.author,
-    coverImage: post.coverImage,
-    tags: post.tags.join(', '),
-    readTime: post.readTime,
-  } : {
-    title: '',
-    excerpt: '',
-    content: '',
-    author: '',
-    coverImage: '',
-    tags: '',
-    readTime: '3 min read',
-  };
+  const defaultValues: BlogFormValues = post
+    ? {
+        title: post.title,
+        excerpt: post.excerpt,
+        content: post.content,
+        author: post.author,
+        coverImage: post.coverImage,
+        tags: post.tags.join(', '),
+        readTime: post.readTime,
+      }
+    : {
+        title: '',
+        excerpt: '',
+        content: '',
+        author: '',
+        coverImage: '',
+        tags: '',
+        readTime: '3 min read',
+      };
 
   const form = useForm<BlogFormValues>({
     resolver: zodResolver(blogFormSchema),
@@ -48,10 +49,11 @@ export const useBlogForm = ({ post, isEditing = false }: UseBlogFormProps) => {
 
   const onSubmit = async (values: BlogFormValues) => {
     try {
-      const tagsArray = typeof values.tags === 'string' 
-        ? values.tags.split(',').map(tag => tag.trim()) 
-        : values.tags;
-        
+      const tagsArray =
+        typeof values.tags === 'string'
+          ? values.tags.split(',').map((tag) => tag.trim())
+          : values.tags;
+
       if (isEditing && post) {
         await updateBlogPost({
           id: post.id,
@@ -63,11 +65,13 @@ export const useBlogForm = ({ post, isEditing = false }: UseBlogFormProps) => {
           coverImage: values.coverImage,
           tags: tagsArray,
           readTime: values.readTime,
-          publishedDate: post.publishedDate || new Date().toLocaleDateString('en-US', { 
-            year: 'numeric', 
-            month: 'long', 
-            day: 'numeric' 
-          }),
+          publishedDate:
+            post.publishedDate ||
+            new Date().toLocaleDateString('en-US', {
+              year: 'numeric',
+              month: 'long',
+              day: 'numeric',
+            }),
         });
         toast.success('Blog post updated successfully!');
       } else {
@@ -81,10 +85,10 @@ export const useBlogForm = ({ post, isEditing = false }: UseBlogFormProps) => {
           coverImage: values.coverImage,
           tags: tagsArray,
           readTime: values.readTime,
-          publishedDate: new Date().toLocaleDateString('en-US', { 
-            year: 'numeric', 
-            month: 'long', 
-            day: 'numeric' 
+          publishedDate: new Date().toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
           }),
         });
         toast.success('Blog post created successfully!');
@@ -99,6 +103,6 @@ export const useBlogForm = ({ post, isEditing = false }: UseBlogFormProps) => {
   return {
     form,
     onSubmit,
-    isEditing
+    isEditing,
   };
 };

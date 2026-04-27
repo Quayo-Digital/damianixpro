@@ -1,8 +1,7 @@
-
-import { UseFormReturn } from "react-hook-form";
-import { TenantFormValues } from "./tenantFormSchema";
-import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
+import { UseFormReturn } from 'react-hook-form';
+import { TenantFormValues } from './tenantFormSchema';
+import { FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
 
 interface TenantInfoFieldsProps {
   form: UseFormReturn<TenantFormValues>;
@@ -11,7 +10,7 @@ interface TenantInfoFieldsProps {
 export function TenantInfoFields({ form }: TenantInfoFieldsProps) {
   return (
     <>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
         <FormField
           control={form.control}
           name="firstName"
@@ -39,7 +38,7 @@ export function TenantInfoFields({ form }: TenantInfoFieldsProps) {
           )}
         />
       </div>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
         <FormField
           control={form.control}
           name="email"

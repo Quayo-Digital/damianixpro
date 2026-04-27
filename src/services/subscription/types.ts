@@ -1,4 +1,3 @@
-
 export interface Subscription {
   id: string;
   user_id: string;

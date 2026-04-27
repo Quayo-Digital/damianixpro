@@ -1,8 +1,10 @@
-
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { MaintenanceRequest, parseUpdatesFromJson } from '@/components/communication/maintenance/maintenance-data';
+import {
+  MaintenanceRequest,
+  parseUpdatesFromJson,
+} from '@/components/communication/maintenance/maintenance-data';
 
 export const useMaintenanceRequests = () => {
   const [maintenanceRequests, setMaintenanceRequests] = useState<MaintenanceRequest[]>([]);
@@ -16,11 +18,11 @@ export const useMaintenanceRequests = () => {
         .from('maintenance_requests')
         .select('*')
         .order('created_at', { ascending: false });
-      
+
       if (error) throw error;
-      
+
       if (data) {
-        const typedRequests: MaintenanceRequest[] = data.map(item => ({
+        const typedRequests: MaintenanceRequest[] = data.map((item) => ({
           id: item.id,
           title: item.title,
           description: item.description,
@@ -39,9 +41,9 @@ export const useMaintenanceRequests = () => {
     } catch (error) {
       console.error('Error fetching maintenance requests:', error);
       toast({
-        title: "Error",
-        description: "Failed to load maintenance requests",
-        variant: "destructive"
+        title: 'Error',
+        description: 'Failed to load maintenance requests',
+        variant: 'destructive',
       });
     } finally {
       setIsLoading(false);

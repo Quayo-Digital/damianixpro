@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { SearchBar } from './search/SearchBar';
 import { AdvancedFilters } from './search/AdvancedFilters';
@@ -43,37 +42,40 @@ export function PropertySearchHero({
   selectedFeatures,
   setSelectedFeatures,
   availableFeatures,
-  clearFilters
+  clearFilters,
 }: PropertySearchHeroProps) {
   // Toggle feature helper function to pass down to components
   const toggleFeature = (feature: string) => {
     setSelectedFeatures(
       selectedFeatures.includes(feature)
-        ? selectedFeatures.filter(f => f !== feature)
+        ? selectedFeatures.filter((f) => f !== feature)
         : [...selectedFeatures, feature]
     );
   };
-  
+
   // Count active filters
-  const activeFilterCount = (
+  const activeFilterCount =
     (propertyType !== 'all' ? 1 : 0) +
     (location !== 'all' ? 1 : 0) +
     (priceRange[0] !== minPrice || priceRange[1] !== maxPrice ? 1 : 0) +
     (bedroomsFilter !== 'any' ? 1 : 0) +
-    (selectedFeatures.length)
-  );
+    selectedFeatures.length;
 
   return (
-    <div className="bg-gradient-to-b from-primary/10 to-background pt-12 md:pt-16 pb-10 px-4">
-      <div className="max-w-6xl mx-auto text-center">
-        <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-foreground mb-3">
-          Find Your Perfect Property
+    <div className="bg-gradient-to-b from-primary/10 via-primary/5 to-transparent px-4 pb-10 pt-12 md:pt-16">
+      <div className="mx-auto max-w-6xl text-center">
+        <h1 className="premium-title mb-3 text-3xl text-foreground sm:text-4xl lg:text-5xl">
+          Find your next place
         </h1>
-        <p className="text-base sm:text-lg text-muted-foreground max-w-3xl mx-auto mb-8">
-          Browse through our selection of premium properties available for rent across Nigeria
+        <p className="mx-auto mb-2 max-w-3xl text-base text-muted-foreground sm:text-lg">
+          Search and filter when you need to — start with location and keywords.
         </p>
-        
-        <div className="space-y-4">
+        <p className="mx-auto mb-8 max-w-2xl text-sm text-muted-foreground/90">
+          Use <span className="font-medium text-foreground/80">More filters</span> only when you
+          want to narrow price, bedrooms, or features.
+        </p>
+
+        <div className="glass-panel space-y-4 rounded-2xl p-4 md:p-5">
           {/* Basic search bar */}
           <SearchBar
             searchQuery={searchQuery}
@@ -84,7 +86,7 @@ export function PropertySearchHero({
             setLocation={setLocation}
             locations={locations}
           />
-          
+
           {/* Advanced filters */}
           <AdvancedFilters
             priceRange={priceRange}
@@ -100,7 +102,7 @@ export function PropertySearchHero({
             clearFilters={clearFilters}
             activeFilterCount={activeFilterCount}
           />
-          
+
           {/* Active filter badges */}
           <FilterBadges
             propertyType={propertyType}

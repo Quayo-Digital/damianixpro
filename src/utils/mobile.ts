@@ -1,14 +1,14 @@
-// Mobile responsiveness utilities for Nigeria Homes
+// Mobile responsiveness utilities for DamianixPro
 import { useEffect, useState } from 'react';
 
 // Device breakpoints optimized for Nigerian market
 export const BREAKPOINTS = {
   // Mobile-first approach
-  mobile: 320,    // Small phones
-  mobileLg: 375,  // Large phones (iPhone, Samsung)
-  tablet: 768,    // Tablets and small laptops
-  desktop: 1024,  // Desktop and large tablets
-  wide: 1440,     // Wide screens
+  mobile: 320, // Small phones
+  mobileLg: 375, // Large phones (iPhone, Samsung)
+  tablet: 768, // Tablets and small laptops
+  desktop: 1024, // Desktop and large tablets
+  wide: 1440, // Wide screens
 } as const;
 
 // Common Nigerian device resolutions
@@ -17,15 +17,15 @@ export const NIGERIAN_DEVICES = {
   tecnoSpark: { width: 360, height: 640, name: 'Tecno Spark Series' },
   infinixHot: { width: 360, height: 640, name: 'Infinix Hot Series' },
   samsungA: { width: 360, height: 740, name: 'Samsung Galaxy A Series' },
-  
+
   // Mid-range devices
   xiaomiRedmi: { width: 393, height: 851, name: 'Xiaomi Redmi Series' },
   oppoA: { width: 360, height: 780, name: 'Oppo A Series' },
-  
+
   // Premium devices
   iphone12: { width: 390, height: 844, name: 'iPhone 12/13/14' },
   samsungS: { width: 384, height: 854, name: 'Samsung Galaxy S Series' },
-  
+
   // Tablets
   ipadMini: { width: 768, height: 1024, name: 'iPad Mini' },
   androidTablet: { width: 800, height: 1280, name: 'Android Tablet' },
@@ -79,7 +79,7 @@ export const DeviceDetection = {
   // Get safe area insets for devices with notches
   getSafeAreaInsets: () => {
     if (typeof window === 'undefined') return { top: 0, bottom: 0, left: 0, right: 0 };
-    
+
     const style = getComputedStyle(document.documentElement);
     return {
       top: parseInt(style.getPropertyValue('--safe-area-inset-top') || '0'),
@@ -163,7 +163,7 @@ export const ViewportUtils = {
   isElementInViewport: (element: Element): boolean => {
     const rect = element.getBoundingClientRect();
     const viewport = ViewportUtils.getViewportSize();
-    
+
     return (
       rect.top >= 0 &&
       rect.left >= 0 &&
@@ -200,8 +200,11 @@ export const TouchUtils = {
   // Add touch-friendly padding to elements
   makeTouchFriendly: (element: HTMLElement) => {
     const rect = element.getBoundingClientRect();
-    const paddingNeeded = Math.max(0, TouchUtils.MIN_TOUCH_TARGET - Math.min(rect.width, rect.height));
-    
+    const paddingNeeded = Math.max(
+      0,
+      TouchUtils.MIN_TOUCH_TARGET - Math.min(rect.width, rect.height)
+    );
+
     if (paddingNeeded > 0) {
       const padding = paddingNeeded / 2;
       element.style.padding = `${padding}px`;
@@ -222,7 +225,7 @@ export const TouchUtils = {
 export const ResponsiveImageUtils = {
   // Generate responsive image srcset for Nigerian devices
   generateSrcSet: (baseUrl: string, sizes: number[] = [320, 640, 768, 1024, 1440]): string => {
-    return sizes.map(size => `${baseUrl}?w=${size} ${size}w`).join(', ');
+    return sizes.map((size) => `${baseUrl}?w=${size} ${size}w`).join(', ');
   },
 
   // Generate sizes attribute for responsive images
@@ -231,7 +234,7 @@ export const ResponsiveImageUtils = {
       `(max-width: ${BREAKPOINTS.mobile}px) 100vw`,
       `(max-width: ${BREAKPOINTS.tablet}px) 50vw`,
       `(max-width: ${BREAKPOINTS.desktop}px) 33vw`,
-      '25vw'
+      '25vw',
     ].join(', ');
   },
 
@@ -239,10 +242,10 @@ export const ResponsiveImageUtils = {
   getOptimalImageSize: (): number => {
     const viewport = ViewportUtils.getViewportSize();
     const pixelRatio = DeviceDetection.getPixelRatio();
-    
+
     // Account for high-DPI displays
     const effectiveWidth = viewport.width * pixelRatio;
-    
+
     if (effectiveWidth <= BREAKPOINTS.mobile) return 640;
     if (effectiveWidth <= BREAKPOINTS.tablet) return 768;
     if (effectiveWidth <= BREAKPOINTS.desktop) return 1024;
@@ -262,7 +265,9 @@ export const MobilePerformanceUtils = {
   isSlowConnection: (): boolean => {
     if (typeof navigator === 'undefined' || !('connection' in navigator)) return false;
     const connection = (navigator as any).connection;
-    return connection && (connection.effectiveType === 'slow-2g' || connection.effectiveType === '2g');
+    return (
+      connection && (connection.effectiveType === 'slow-2g' || connection.effectiveType === '2g')
+    );
   },
 
   // Get connection information
@@ -270,7 +275,7 @@ export const MobilePerformanceUtils = {
     if (typeof navigator === 'undefined' || !('connection' in navigator)) {
       return { effectiveType: '4g', downlink: 10, rtt: 50, saveData: false };
     }
-    
+
     const connection = (navigator as any).connection;
     return {
       effectiveType: connection.effectiveType || '4g',
@@ -301,20 +306,20 @@ export const NigerianMobileUtils = {
   getOptimalSettings: () => {
     const connection = MobilePerformanceUtils.getConnectionInfo();
     const isSlowConnection = MobilePerformanceUtils.isSlowConnection();
-    
+
     return {
       // Reduce image quality on slow connections
       imageQuality: isSlowConnection ? 60 : 80,
-      
+
       // Lazy load more aggressively on slow connections
       lazyLoadThreshold: isSlowConnection ? '50px' : '100px',
-      
+
       // Reduce animations on slow connections
       enableAnimations: !isSlowConnection && !MobilePerformanceUtils.prefersReducedMotion(),
-      
+
       // Preload fewer resources on slow connections
       preloadResources: !isSlowConnection,
-      
+
       // Use smaller font sizes on very small screens
       baseFontSize: DeviceDetection.isMobile() ? 14 : 16,
     };
@@ -328,16 +333,16 @@ export const NigerianMobileUtils = {
       minimumFractionDigits: 0,
       maximumFractionDigits: 0,
     });
-    
+
     const formatted = formatter.format(amount);
-    
+
     // Shorten large numbers for mobile display
     if (amount >= 1000000) {
       return `₦${(amount / 1000000).toFixed(1)}M`;
     } else if (amount >= 1000) {
       return `₦${(amount / 1000).toFixed(0)}K`;
     }
-    
+
     return formatted;
   },
 };

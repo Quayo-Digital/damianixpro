@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { formatDistanceToNow } from 'date-fns';
@@ -41,9 +40,9 @@ export function MaintenanceRequestList() {
       } catch (error) {
         console.error('Error fetching maintenance requests:', error);
         toast({
-          title: "Error",
-          description: "Failed to load maintenance requests",
-          variant: "destructive"
+          title: 'Error',
+          description: 'Failed to load maintenance requests',
+          variant: 'destructive',
         });
       } finally {
         setIsLoading(false);
@@ -55,7 +54,7 @@ export function MaintenanceRequestList() {
 
   if (isLoading) {
     return (
-      <div className="flex justify-center items-center h-40">
+      <div className="flex h-40 items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
       </div>
     );
@@ -65,17 +64,15 @@ export function MaintenanceRequestList() {
     <div className="space-y-4">
       {maintenanceRequests.length === 0 ? (
         <Card>
-          <CardContent className="flex items-center justify-center h-[200px]">
-            <p className="text-muted-foreground text-center">
-              No maintenance requests found.
-            </p>
+          <CardContent className="flex h-[200px] items-center justify-center">
+            <p className="text-center text-muted-foreground">No maintenance requests found.</p>
           </CardContent>
         </Card>
       ) : (
         maintenanceRequests.map((request) => (
-          <Card key={request.id} className="hover:bg-accent/50 transition-colors cursor-pointer">
+          <Card key={request.id} className="cursor-pointer transition-colors hover:bg-accent/50">
             <CardHeader className="pb-2">
-              <div className="flex justify-between items-start">
+              <div className="flex items-start justify-between">
                 <CardTitle className="text-lg">{request.title}</CardTitle>
                 <div className="flex space-x-2">
                   {getPriorityBadge(request.priority)}
@@ -87,7 +84,7 @@ export function MaintenanceRequestList() {
               </div>
             </CardHeader>
             <CardContent className="pb-4">
-              <p className="text-sm line-clamp-2 mb-2">{request.description}</p>
+              <p className="mb-2 line-clamp-2 text-sm">{request.description}</p>
               <div className="text-xs text-muted-foreground">
                 Submitted {formatDistanceToNow(new Date(request.created_at), { addSuffix: true })}
               </div>

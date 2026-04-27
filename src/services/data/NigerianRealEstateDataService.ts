@@ -78,7 +78,8 @@ export interface MarketData {
 }
 
 export class NigerianRealEstateDataService {
-  private readonly API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'https://api.nigeriahomes.com';
+  /** Set `VITE_API_BASE_URL` when a dedicated market-data API is deployed; otherwise empty (no accidental prod default). */
+  private readonly API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || '').trim();
   private readonly CBN_API_URL = 'https://api.cbn.gov.ng/v1';
   private readonly PROPERTY_APIS = {
     // Major Nigerian property listing platforms
@@ -89,7 +90,7 @@ export class NigerianRealEstateDataService {
     // Government data sources
     LAGOS_STATE: 'https://api.lagosstate.gov.ng/property/v1',
     FCT_ABUJA: 'https://api.fct.gov.ng/property/v1',
-    RIVERS_STATE: 'https://api.riversstate.gov.ng/property/v1'
+    RIVERS_STATE: 'https://api.riversstate.gov.ng/property/v1',
   };
 
   private cache = new Map<string, { data: any; timestamp: number; ttl: number }>();
@@ -101,14 +102,16 @@ export class NigerianRealEstateDataService {
   /**
    * Fetch live property listings from multiple Nigerian sources
    */
-  async fetchPropertyListings(filters: {
-    location?: string;
-    propertyType?: string;
-    category?: 'SALE' | 'RENT';
-    minPrice?: number;
-    maxPrice?: number;
-    limit?: number;
-  } = {}): Promise<PropertyListingData[]> {
+  async fetchPropertyListings(
+    filters: {
+      location?: string;
+      propertyType?: string;
+      category?: 'SALE' | 'RENT';
+      minPrice?: number;
+      maxPrice?: number;
+      limit?: number;
+    } = {}
+  ): Promise<PropertyListingData[]> {
     const cacheKey = `listings_${JSON.stringify(filters)}`;
     const cached = this.getFromCache(cacheKey);
     if (cached) return cached;
@@ -120,7 +123,7 @@ export class NigerianRealEstateDataService {
         this.fetchFromPropertyPro(filters),
         this.fetchFromToLet(filters),
         this.fetchFromJumiaHouse(filters),
-        this.fetchFromGovernmentSources(filters)
+        this.fetchFromGovernmentSources(filters),
       ]);
 
       const allListings: PropertyListingData[] = [];
@@ -139,7 +142,6 @@ export class NigerianRealEstateDataService {
       // Cache for 15 minutes
       this.setCache(cacheKey, normalizedListings, 15 * 60 * 1000);
       return normalizedListings;
-
     } catch (error) {
       console.error('Error fetching property listings:', error);
       // Return mock data for development
@@ -161,7 +163,7 @@ export class NigerianRealEstateDataService {
         this.fetchCBNInterestRate(),
         this.fetchCBNGDPGrowth(),
         this.fetchCBNExchangeRate(),
-        this.fetchCBNMoneySupply()
+        this.fetchCBNMoneySupply(),
       ]);
 
       const economicData: EconomicIndicator[] = [];
@@ -174,7 +176,6 @@ export class NigerianRealEstateDataService {
       // Cache for 1 hour
       this.setCache(cacheKey, economicData, 60 * 60 * 1000);
       return economicData;
-
     } catch (error) {
       console.error('Error fetching economic indicators:', error);
       return this.getMockEconomicIndicators();
@@ -212,7 +213,6 @@ export class NigerianRealEstateDataService {
       }
 
       return municipalData;
-
     } catch (error) {
       console.error(`Error fetching municipal data for ${city}:`, error);
       return this.getMockMunicipalData(city);
@@ -231,15 +231,14 @@ export class NigerianRealEstateDataService {
       const listings = await this.fetchPropertyListings({
         location,
         propertyType: propertyType as any,
-        limit: 1000
+        limit: 1000,
       });
 
       const marketData = this.analyzeMarketData(listings, location, propertyType);
-      
+
       // Cache for 30 minutes
       this.setCache(cacheKey, marketData, 30 * 60 * 1000);
       return marketData;
-
     } catch (error) {
       console.error('Error calculating market data:', error);
       return this.getMockMarketData(location, propertyType);
@@ -251,21 +250,30 @@ export class NigerianRealEstateDataService {
    */
   private initializeDataRefreshSchedule(): void {
     // Refresh economic indicators every hour
-    setInterval(() => {
-      this.fetchEconomicIndicators();
-    }, 60 * 60 * 1000);
+    setInterval(
+      () => {
+        this.fetchEconomicIndicators();
+      },
+      60 * 60 * 1000
+    );
 
     // Refresh property listings every 15 minutes
-    setInterval(() => {
-      this.cache.clear(); // Clear property listing cache
-    }, 15 * 60 * 1000);
+    setInterval(
+      () => {
+        this.cache.clear(); // Clear property listing cache
+      },
+      15 * 60 * 1000
+    );
 
     // Refresh municipal data daily
-    setInterval(() => {
-      ['lagos', 'abuja', 'port-harcourt'].forEach(city => {
-        this.fetchMunicipalData(city);
-      });
-    }, 24 * 60 * 60 * 1000);
+    setInterval(
+      () => {
+        ['lagos', 'abuja', 'port-harcourt'].forEach((city) => {
+          this.fetchMunicipalData(city);
+        });
+      },
+      24 * 60 * 60 * 1000
+    );
   }
 
   // Private methods for specific data sources
@@ -303,7 +311,7 @@ export class NigerianRealEstateDataService {
       unit: '%',
       date: new Date().toISOString(),
       source: 'Central Bank of Nigeria',
-      trend: 'UP'
+      trend: 'UP',
     };
   }
 
@@ -314,7 +322,7 @@ export class NigerianRealEstateDataService {
       unit: '%',
       date: new Date().toISOString(),
       source: 'Central Bank of Nigeria',
-      trend: 'STABLE'
+      trend: 'STABLE',
     };
   }
 
@@ -325,7 +333,7 @@ export class NigerianRealEstateDataService {
       unit: '%',
       date: new Date().toISOString(),
       source: 'Central Bank of Nigeria',
-      trend: 'UP'
+      trend: 'UP',
     };
   }
 
@@ -336,7 +344,7 @@ export class NigerianRealEstateDataService {
       unit: 'NGN',
       date: new Date().toISOString(),
       source: 'Central Bank of Nigeria',
-      trend: 'DOWN'
+      trend: 'DOWN',
     };
   }
 
@@ -347,7 +355,7 @@ export class NigerianRealEstateDataService {
       unit: 'Trillion NGN',
       date: new Date().toISOString(),
       source: 'Central Bank of Nigeria',
-      trend: 'UP'
+      trend: 'UP',
     };
   }
 
@@ -365,7 +373,7 @@ export class NigerianRealEstateDataService {
           type: 'Infrastructure',
           status: 'ONGOING',
           budget: 2500000000000, // 2.5 trillion naira
-          completionDate: '2027-12-31'
+          completionDate: '2027-12-31',
         },
         {
           name: 'Lagos-Calabar Coastal Railway',
@@ -378,10 +386,10 @@ export class NigerianRealEstateDataService {
           type: 'Infrastructure',
           status: 'ONGOING',
           budget: 1500000000000, // 1.5 trillion naira
-          completionDate: '2025-06-30'
-        }
+          completionDate: '2025-06-30',
+        },
       ],
-      lastUpdated: new Date().toISOString()
+      lastUpdated: new Date().toISOString(),
     };
   }
 
@@ -399,16 +407,16 @@ export class NigerianRealEstateDataService {
           type: 'Transportation',
           status: 'ONGOING',
           budget: 500000000000, // 500 billion naira
-          completionDate: '2026-03-31'
+          completionDate: '2026-03-31',
         },
         {
           name: 'New Airport Terminal',
           type: 'Infrastructure',
           status: 'PLANNED',
           budget: 800000000000, // 800 billion naira
-        }
+        },
       ],
-      lastUpdated: new Date().toISOString()
+      lastUpdated: new Date().toISOString(),
     };
   }
 
@@ -426,10 +434,10 @@ export class NigerianRealEstateDataService {
           type: 'Infrastructure',
           status: 'ONGOING',
           budget: 1200000000000, // 1.2 trillion naira
-          completionDate: '2026-09-30'
-        }
+          completionDate: '2026-09-30',
+        },
       ],
-      lastUpdated: new Date().toISOString()
+      lastUpdated: new Date().toISOString(),
     };
   }
 
@@ -443,14 +451,14 @@ export class NigerianRealEstateDataService {
       unemploymentRate: 35.0,
       infrastructureScore: 45,
       developmentProjects: [],
-      lastUpdated: new Date().toISOString()
+      lastUpdated: new Date().toISOString(),
     };
   }
 
   // Utility methods
   private deduplicateListings(listings: PropertyListingData[]): PropertyListingData[] {
     const seen = new Set<string>();
-    return listings.filter(listing => {
+    return listings.filter((listing) => {
       const key = `${listing.title}_${listing.location.city}_${listing.price}`;
       if (seen.has(key)) return false;
       seen.add(key);
@@ -459,15 +467,15 @@ export class NigerianRealEstateDataService {
   }
 
   private normalizeListingData(listings: PropertyListingData[]): PropertyListingData[] {
-    return listings.map(listing => ({
+    return listings.map((listing) => ({
       ...listing,
       price: Math.round(listing.price),
       size: Math.round(listing.size),
       location: {
         ...listing.location,
         city: this.normalizeCityName(listing.location.city),
-        state: this.normalizeStateName(listing.location.state)
-      }
+        state: this.normalizeStateName(listing.location.state),
+      },
     }));
   }
 
@@ -475,14 +483,14 @@ export class NigerianRealEstateDataService {
     const cityMap: { [key: string]: string } = {
       'lagos island': 'Lagos',
       'victoria island': 'Lagos',
-      'ikoyi': 'Lagos',
-      'lekki': 'Lagos',
-      'ikeja': 'Lagos',
-      'surulere': 'Lagos',
-      'abuja': 'Abuja',
-      'fct': 'Abuja',
+      ikoyi: 'Lagos',
+      lekki: 'Lagos',
+      ikeja: 'Lagos',
+      surulere: 'Lagos',
+      abuja: 'Abuja',
+      fct: 'Abuja',
       'port harcourt': 'Port Harcourt',
-      'ph': 'Port Harcourt'
+      ph: 'Port Harcourt',
     };
     return cityMap[city.toLowerCase()] || city;
   }
@@ -490,26 +498,30 @@ export class NigerianRealEstateDataService {
   private normalizeStateName(state: string): string {
     const stateMap: { [key: string]: string } = {
       'lagos state': 'Lagos',
-      'fct': 'FCT',
+      fct: 'FCT',
       'federal capital territory': 'FCT',
-      'rivers state': 'Rivers'
+      'rivers state': 'Rivers',
     };
     return stateMap[state.toLowerCase()] || state;
   }
 
-  private analyzeMarketData(listings: PropertyListingData[], location: string, propertyType: string): MarketData {
-    const relevantListings = listings.filter(l => 
-      l.location.city.toLowerCase() === location.toLowerCase() &&
-      l.propertyType === propertyType
+  private analyzeMarketData(
+    listings: PropertyListingData[],
+    location: string,
+    propertyType: string
+  ): MarketData {
+    const relevantListings = listings.filter(
+      (l) =>
+        l.location.city.toLowerCase() === location.toLowerCase() && l.propertyType === propertyType
     );
 
     if (relevantListings.length === 0) {
       return this.getMockMarketData(location, propertyType);
     }
 
-    const prices = relevantListings.map(l => l.price).sort((a, b) => a - b);
-    const sizes = relevantListings.map(l => l.size);
-    
+    const prices = relevantListings.map((l) => l.price).sort((a, b) => a - b);
+    const sizes = relevantListings.map((l) => l.size);
+
     const averagePrice = prices.reduce((sum, price) => sum + price, 0) / prices.length;
     const medianPrice = prices[Math.floor(prices.length / 2)];
     const averageSize = sizes.reduce((sum, size) => sum + size, 0) / sizes.length;
@@ -528,7 +540,7 @@ export class NigerianRealEstateDataService {
       priceChange30Days: (Math.random() - 0.5) * 0.1, // ±5%
       priceChange90Days: (Math.random() - 0.5) * 0.2, // ±10%
       priceChange1Year: (Math.random() - 0.3) * 0.3 + 0.1, // Generally positive
-      dateCalculated: new Date().toISOString()
+      dateCalculated: new Date().toISOString(),
     };
   }
 
@@ -546,7 +558,7 @@ export class NigerianRealEstateDataService {
     this.cache.set(key, {
       data,
       timestamp: Date.now(),
-      ttl
+      ttl,
     });
   }
 
@@ -562,7 +574,7 @@ export class NigerianRealEstateDataService {
           state: 'Lagos',
           city: 'Lagos',
           area: 'Lekki',
-          coordinates: { lat: 6.4474, lng: 3.4106 }
+          coordinates: { lat: 6.4474, lng: 3.4106 },
         },
         propertyType: 'RESIDENTIAL',
         category: 'SALE',
@@ -575,11 +587,11 @@ export class NigerianRealEstateDataService {
           name: 'John Adebayo',
           phone: '+234 803 123 4567',
           email: 'john@realestate.ng',
-          company: 'Lagos Properties Ltd'
+          company: 'Lagos Properties Ltd',
         },
         datePosted: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
         lastUpdated: new Date().toISOString(),
-        source
+        source,
       },
       {
         id: `mock_${Date.now()}_2`,
@@ -590,7 +602,7 @@ export class NigerianRealEstateDataService {
           state: 'Lagos',
           city: 'Lagos',
           area: 'Victoria Island',
-          coordinates: { lat: 6.4281, lng: 3.4219 }
+          coordinates: { lat: 6.4281, lng: 3.4219 },
         },
         propertyType: 'COMMERCIAL',
         category: 'SALE',
@@ -601,32 +613,37 @@ export class NigerianRealEstateDataService {
           name: 'Sarah Okafor',
           phone: '+234 701 987 6543',
           email: 'sarah@commercialproperties.ng',
-          company: 'VI Commercial'
+          company: 'VI Commercial',
         },
         datePosted: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
         lastUpdated: new Date().toISOString(),
-        source
-      }
+        source,
+      },
     ];
 
-    return mockListings.filter(listing => {
-      if (filters.location && !listing.location.city.toLowerCase().includes(filters.location.toLowerCase())) {
-        return false;
-      }
-      if (filters.propertyType && listing.propertyType !== filters.propertyType) {
-        return false;
-      }
-      if (filters.category && listing.category !== filters.category) {
-        return false;
-      }
-      if (filters.minPrice && listing.price < filters.minPrice) {
-        return false;
-      }
-      if (filters.maxPrice && listing.price > filters.maxPrice) {
-        return false;
-      }
-      return true;
-    }).slice(0, filters.limit || 50);
+    return mockListings
+      .filter((listing) => {
+        if (
+          filters.location &&
+          !listing.location.city.toLowerCase().includes(filters.location.toLowerCase())
+        ) {
+          return false;
+        }
+        if (filters.propertyType && listing.propertyType !== filters.propertyType) {
+          return false;
+        }
+        if (filters.category && listing.category !== filters.category) {
+          return false;
+        }
+        if (filters.minPrice && listing.price < filters.minPrice) {
+          return false;
+        }
+        if (filters.maxPrice && listing.price > filters.maxPrice) {
+          return false;
+        }
+        return true;
+      })
+      .slice(0, filters.limit || 50);
   }
 
   private getMockEconomicIndicators(): EconomicIndicator[] {
@@ -637,7 +654,7 @@ export class NigerianRealEstateDataService {
         unit: '%',
         date: new Date().toISOString(),
         source: 'Central Bank of Nigeria',
-        trend: 'UP'
+        trend: 'UP',
       },
       {
         indicator: 'Monetary Policy Rate',
@@ -645,7 +662,7 @@ export class NigerianRealEstateDataService {
         unit: '%',
         date: new Date().toISOString(),
         source: 'Central Bank of Nigeria',
-        trend: 'STABLE'
+        trend: 'STABLE',
       },
       {
         indicator: 'GDP Growth Rate',
@@ -653,8 +670,8 @@ export class NigerianRealEstateDataService {
         unit: '%',
         date: new Date().toISOString(),
         source: 'Central Bank of Nigeria',
-        trend: 'UP'
-      }
+        trend: 'UP',
+      },
     ];
   }
 
@@ -664,24 +681,24 @@ export class NigerianRealEstateDataService {
         population: 15000000,
         gdpPerCapita: 4500,
         unemploymentRate: 22.0,
-        infrastructureScore: 75
+        infrastructureScore: 75,
       },
       abuja: {
         population: 3500000,
         gdpPerCapita: 5200,
         unemploymentRate: 18.0,
-        infrastructureScore: 82
+        infrastructureScore: 82,
       },
       'port-harcourt': {
         population: 2500000,
         gdpPerCapita: 3800,
         unemploymentRate: 28.0,
-        infrastructureScore: 65
-      }
+        infrastructureScore: 65,
+      },
     };
 
     const data = cityData[city.toLowerCase()] || {};
-    
+
     return {
       city,
       state: 'Unknown',
@@ -690,7 +707,7 @@ export class NigerianRealEstateDataService {
       unemploymentRate: data.unemploymentRate || 35.0,
       infrastructureScore: data.infrastructureScore || 45,
       developmentProjects: [],
-      lastUpdated: new Date().toISOString()
+      lastUpdated: new Date().toISOString(),
     };
   }
 
@@ -700,24 +717,24 @@ export class NigerianRealEstateDataService {
         RESIDENTIAL: 25000000,
         COMMERCIAL: 45000000,
         LAND: 8000000,
-        INDUSTRIAL: 35000000
+        INDUSTRIAL: 35000000,
       },
       abuja: {
         RESIDENTIAL: 22000000,
         COMMERCIAL: 38000000,
         LAND: 12000000,
-        INDUSTRIAL: 28000000
+        INDUSTRIAL: 28000000,
       },
       'port-harcourt': {
         RESIDENTIAL: 18000000,
         COMMERCIAL: 32000000,
         LAND: 6000000,
-        INDUSTRIAL: 42000000
-      }
+        INDUSTRIAL: 42000000,
+      },
     };
 
     const basePrice = basePrices[location.toLowerCase()]?.[propertyType] || 15000000;
-    
+
     return {
       location,
       propertyType,
@@ -731,7 +748,7 @@ export class NigerianRealEstateDataService {
       priceChange30Days: (Math.random() - 0.5) * 0.1,
       priceChange90Days: (Math.random() - 0.5) * 0.2,
       priceChange1Year: (Math.random() - 0.3) * 0.3 + 0.1,
-      dateCalculated: new Date().toISOString()
+      dateCalculated: new Date().toISOString(),
     };
   }
 }

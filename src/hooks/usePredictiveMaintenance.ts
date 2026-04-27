@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/contexts/auth';
+import { useAuthSession } from '@/contexts/auth';
 import { toast } from 'sonner';
 import {
   PredictiveAlert,
@@ -15,7 +15,7 @@ import {
   PropertyMaintenanceProfile,
   PredictiveMaintenanceSettings,
   MaintenanceFilters,
-  MaintenanceSortOptions
+  MaintenanceSortOptions,
 } from '@/types/predictiveMaintenance';
 import { PredictiveMaintenanceService } from '@/services/ai/predictiveMaintenance';
 
@@ -26,14 +26,14 @@ interface UsePredictiveMaintenanceOptions {
 }
 
 export const usePredictiveMaintenance = (options: UsePredictiveMaintenanceOptions = {}) => {
-  const { user } = useAuth();
+  const { user } = useAuthSession();
   const queryClient = useQueryClient();
   const { propertyId, autoRefresh = true, refreshInterval = 300000 } = options; // 5 minutes default
 
   const [filters, setFilters] = useState<MaintenanceFilters>({});
   const [sortOptions, setSortOptions] = useState<MaintenanceSortOptions>({
     field: 'predicted_failure_date',
-    direction: 'asc'
+    direction: 'asc',
   });
 
   // Fetch predictive alerts
@@ -41,15 +41,13 @@ export const usePredictiveMaintenance = (options: UsePredictiveMaintenanceOption
     data: alerts = [],
     isLoading: isLoadingAlerts,
     error: alertsError,
-    refetch: refetchAlerts
+    refetch: refetchAlerts,
   } = useQuery({
     queryKey: ['predictive-alerts', propertyId, user?.id, filters, sortOptions],
     queryFn: async () => {
       if (!user?.id) return [];
-      
-      let query = supabase
-        .from('predictive_alerts')
-        .select('*');
+
+      let query = supabase.from('predictive_alerts').select('*');
 
       if (propertyId) {
         query = query.eq('property_id', propertyId);
@@ -59,9 +57,9 @@ export const usePredictiveMaintenance = (options: UsePredictiveMaintenanceOption
           .from('properties')
           .select('id')
           .eq('owner_id', user.id);
-        
+
         if (properties && properties.length > 0) {
-          const propertyIds = properties.map(p => p.id);
+          const propertyIds = properties.map((p) => p.id);
           query = query.in('property_id', propertyIds);
         }
       }
@@ -90,28 +88,25 @@ export const usePredictiveMaintenance = (options: UsePredictiveMaintenanceOption
 
       const { data, error } = await query;
       if (error) throw error;
-      
+
       return data as PredictiveAlert[];
     },
     enabled: !!user?.id,
     refetchInterval: autoRefresh ? refreshInterval : false,
-    staleTime: 60000 // 1 minute
+    staleTime: 60000, // 1 minute
   });
 
   // Fetch maintenance schedule
   const {
     data: schedule = [],
     isLoading: isLoadingSchedule,
-    refetch: refetchSchedule
+    refetch: refetchSchedule,
   } = useQuery({
     queryKey: ['maintenance-schedule', propertyId, user?.id],
     queryFn: async () => {
       if (!user?.id) return [];
-      
-      let query = supabase
-        .from('maintenance_schedules')
-        .select('*')
-        .eq('is_active', true);
+
+      let query = supabase.from('maintenance_schedules').select('*').eq('is_active', true);
 
       if (propertyId) {
         query = query.eq('property_id', propertyId);
@@ -120,34 +115,29 @@ export const usePredictiveMaintenance = (options: UsePredictiveMaintenanceOption
           .from('properties')
           .select('id')
           .eq('owner_id', user.id);
-        
+
         if (properties && properties.length > 0) {
-          const propertyIds = properties.map(p => p.id);
+          const propertyIds = properties.map((p) => p.id);
           query = query.in('property_id', propertyIds);
         }
       }
 
       const { data, error } = await query.order('next_due', { ascending: true });
       if (error) throw error;
-      
+
       return data as MaintenanceSchedule[];
     },
     enabled: !!user?.id,
-    refetchInterval: autoRefresh ? refreshInterval : false
+    refetchInterval: autoRefresh ? refreshInterval : false,
   });
 
   // Fetch equipment data
-  const {
-    data: equipment = [],
-    isLoading: isLoadingEquipment
-  } = useQuery({
+  const { data: equipment = [], isLoading: isLoadingEquipment } = useQuery({
     queryKey: ['equipment-data', propertyId, user?.id],
     queryFn: async () => {
       if (!user?.id) return [];
-      
-      let query = supabase
-        .from('equipment_data')
-        .select(`
+
+      let query = supabase.from('equipment_data').select(`
           *,
           maintenance_history:maintenance_records(*),
           sensor_data:sensor_readings(*)
@@ -160,33 +150,28 @@ export const usePredictiveMaintenance = (options: UsePredictiveMaintenanceOption
           .from('properties')
           .select('id')
           .eq('owner_id', user.id);
-        
+
         if (properties && properties.length > 0) {
-          const propertyIds = properties.map(p => p.id);
+          const propertyIds = properties.map((p) => p.id);
           query = query.in('property_id', propertyIds);
         }
       }
 
       const { data, error } = await query;
       if (error) throw error;
-      
+
       return data as EquipmentData[];
     },
-    enabled: !!user?.id
+    enabled: !!user?.id,
   });
 
   // Fetch maintenance insights
-  const {
-    data: insights = [],
-    isLoading: isLoadingInsights
-  } = useQuery({
+  const { data: insights = [], isLoading: isLoadingInsights } = useQuery({
     queryKey: ['maintenance-insights', propertyId, user?.id],
     queryFn: async () => {
       if (!user?.id) return [];
-      
-      let query = supabase
-        .from('maintenance_insights')
-        .select('*');
+
+      let query = supabase.from('maintenance_insights').select('*');
 
       if (propertyId) {
         query = query.eq('property_id', propertyId);
@@ -195,44 +180,37 @@ export const usePredictiveMaintenance = (options: UsePredictiveMaintenanceOption
           .from('properties')
           .select('id')
           .eq('owner_id', user.id);
-        
+
         if (properties && properties.length > 0) {
-          const propertyIds = properties.map(p => p.id);
+          const propertyIds = properties.map((p) => p.id);
           query = query.in('property_id', propertyIds);
         }
       }
 
       const { data, error } = await query.order('impact_score', { ascending: false });
       if (error) throw error;
-      
+
       return data as MaintenanceInsight[];
     },
     enabled: !!user?.id,
-    refetchInterval: autoRefresh ? refreshInterval * 2 : false // Less frequent updates
+    refetchInterval: autoRefresh ? refreshInterval * 2 : false, // Less frequent updates
   });
 
   // Fetch analytics
-  const {
-    data: analytics,
-    isLoading: isLoadingAnalytics
-  } = useQuery({
+  const { data: analytics, isLoading: isLoadingAnalytics } = useQuery({
     queryKey: ['maintenance-analytics', propertyId, user?.id],
     queryFn: async () => {
       if (!alerts.length || !equipment.length) return null;
-      
+
       // Get maintenance history
       const { data: history } = await supabase
         .from('maintenance_records')
         .select('*')
-        .in('property_id', propertyId ? [propertyId] : alerts.map(a => a.property_id));
+        .in('property_id', propertyId ? [propertyId] : alerts.map((a) => a.property_id));
 
-      return PredictiveMaintenanceService.calculateAnalytics(
-        alerts,
-        history || [],
-        equipment
-      );
+      return PredictiveMaintenanceService.calculateAnalytics(alerts, history || [], equipment);
     },
-    enabled: !!user?.id && alerts.length > 0 && equipment.length > 0
+    enabled: !!user?.id && alerts.length > 0 && equipment.length > 0,
   });
 
   // Generate new predictions
@@ -243,11 +221,13 @@ export const usePredictiveMaintenance = (options: UsePredictiveMaintenanceOption
       // Get property data
       const { data: propertyEquipment } = await supabase
         .from('equipment_data')
-        .select(`
+        .select(
+          `
           *,
           maintenance_history:maintenance_records(*),
           sensor_data:sensor_readings(*)
-        `)
+        `
+        )
         .eq('property_id', targetPropertyId);
 
       const { data: maintenanceHistory } = await supabase
@@ -290,19 +270,23 @@ export const usePredictiveMaintenance = (options: UsePredictiveMaintenanceOption
     },
     onError: (error: any) => {
       toast.error(`Failed to generate predictions: ${error.message}`);
-    }
+    },
   });
 
   // Update alert status
   const updateAlertMutation = useMutation({
-    mutationFn: async ({ alertId, status, notes }: { 
-      alertId: string; 
+    mutationFn: async ({
+      alertId,
+      status,
+      notes,
+    }: {
+      alertId: string;
       status: 'scheduled' | 'in_progress' | 'completed' | 'overdue';
       notes?: string;
     }) => {
       const updateData: any = {
         status,
-        updated_at: new Date().toISOString()
+        updated_at: new Date().toISOString(),
       };
 
       if (status === 'completed') {
@@ -326,19 +310,17 @@ export const usePredictiveMaintenance = (options: UsePredictiveMaintenanceOption
     },
     onError: (error: any) => {
       toast.error(`Failed to update alert: ${error.message}`);
-    }
+    },
   });
 
   // Schedule maintenance
   const scheduleMaintenanceMutation = useMutation({
     mutationFn: async (scheduleData: Partial<MaintenanceSchedule>) => {
-      const { error } = await supabase
-        .from('maintenance_schedules')
-        .insert({
-          ...scheduleData,
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
-        });
+      const { error } = await supabase.from('maintenance_schedules').insert({
+        ...scheduleData,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      });
 
       if (error) throw error;
     },
@@ -348,17 +330,17 @@ export const usePredictiveMaintenance = (options: UsePredictiveMaintenanceOption
     },
     onError: (error: any) => {
       toast.error(`Failed to schedule maintenance: ${error.message}`);
-    }
+    },
   });
 
   // Update equipment condition
   const updateEquipmentMutation = useMutation({
-    mutationFn: async ({ 
-      equipmentId, 
-      condition, 
-      notes 
-    }: { 
-      equipmentId: string; 
+    mutationFn: async ({
+      equipmentId,
+      condition,
+      notes,
+    }: {
+      equipmentId: string;
       condition: 'excellent' | 'good' | 'fair' | 'poor' | 'critical';
       notes?: string;
     }) => {
@@ -367,7 +349,7 @@ export const usePredictiveMaintenance = (options: UsePredictiveMaintenanceOption
         .update({
           current_condition: condition,
           updated_at: new Date().toISOString(),
-          ...(notes && { notes })
+          ...(notes && { notes }),
         })
         .eq('id', equipmentId);
 
@@ -380,34 +362,43 @@ export const usePredictiveMaintenance = (options: UsePredictiveMaintenanceOption
     },
     onError: (error: any) => {
       toast.error(`Failed to update equipment: ${error.message}`);
-    }
+    },
   });
 
   // Utility functions
-  const getAlertsByPriority = useCallback((priority: 'critical' | 'high' | 'medium' | 'low') => {
-    return alerts.filter(alert => alert.priority === priority);
-  }, [alerts]);
+  const getAlertsByPriority = useCallback(
+    (priority: 'critical' | 'high' | 'medium' | 'low') => {
+      return alerts.filter((alert) => alert.priority === priority);
+    },
+    [alerts]
+  );
 
-  const getAlertsByCategory = useCallback((category: string) => {
-    return alerts.filter(alert => alert.category === category);
-  }, [alerts]);
+  const getAlertsByCategory = useCallback(
+    (category: string) => {
+      return alerts.filter((alert) => alert.category === category);
+    },
+    [alerts]
+  );
 
-  const getUpcomingMaintenance = useCallback((days: number = 30) => {
-    const futureDate = new Date();
-    futureDate.setDate(futureDate.getDate() + days);
-    
-    return schedule.filter(item => {
-      const dueDate = new Date(item.next_due);
-      return dueDate <= futureDate;
-    });
-  }, [schedule]);
+  const getUpcomingMaintenance = useCallback(
+    (days: number = 30) => {
+      const futureDate = new Date();
+      futureDate.setDate(futureDate.getDate() + days);
+
+      return schedule.filter((item) => {
+        const dueDate = new Date(item.next_due);
+        return dueDate <= futureDate;
+      });
+    },
+    [schedule]
+  );
 
   const getTotalPredictedSavings = useCallback(() => {
     return alerts.reduce((total, alert) => total + alert.potential_savings, 0);
   }, [alerts]);
 
   const getCriticalAlertsCount = useCallback(() => {
-    return alerts.filter(alert => alert.priority === 'critical').length;
+    return alerts.filter((alert) => alert.priority === 'critical').length;
   }, [alerts]);
 
   const refreshAllData = useCallback(async () => {
@@ -416,7 +407,7 @@ export const usePredictiveMaintenance = (options: UsePredictiveMaintenanceOption
       refetchSchedule(),
       queryClient.invalidateQueries({ queryKey: ['equipment-data'] }),
       queryClient.invalidateQueries({ queryKey: ['maintenance-insights'] }),
-      queryClient.invalidateQueries({ queryKey: ['maintenance-analytics'] })
+      queryClient.invalidateQueries({ queryKey: ['maintenance-analytics'] }),
     ]);
   }, [refetchAlerts, refetchSchedule, queryClient]);
 
@@ -427,7 +418,7 @@ export const usePredictiveMaintenance = (options: UsePredictiveMaintenanceOption
     equipment,
     insights,
     analytics,
-    
+
     // Loading states
     isLoading: isLoadingAlerts || isLoadingSchedule || isLoadingEquipment || isLoadingInsights,
     isLoadingAlerts,
@@ -435,10 +426,10 @@ export const usePredictiveMaintenance = (options: UsePredictiveMaintenanceOption
     isLoadingEquipment,
     isLoadingInsights,
     isLoadingAnalytics,
-    
+
     // Error states
     error: alertsError,
-    
+
     // Mutations
     generatePredictions: generatePredictionsMutation.mutate,
     isGeneratingPredictions: generatePredictionsMutation.isPending,
@@ -448,20 +439,20 @@ export const usePredictiveMaintenance = (options: UsePredictiveMaintenanceOption
     isSchedulingMaintenance: scheduleMaintenanceMutation.isPending,
     updateEquipment: updateEquipmentMutation.mutate,
     isUpdatingEquipment: updateEquipmentMutation.isPending,
-    
+
     // Filters and sorting
     filters,
     setFilters,
     sortOptions,
     setSortOptions,
-    
+
     // Utility functions
     getAlertsByPriority,
     getAlertsByCategory,
     getUpcomingMaintenance,
     getTotalPredictedSavings,
     getCriticalAlertsCount,
-    refreshAllData
+    refreshAllData,
   };
 };
 
@@ -471,24 +462,27 @@ export const usePropertyMaintenance = (propertyId: string) => {
 };
 
 export const useMaintenanceAlerts = (options: UsePredictiveMaintenanceOptions = {}) => {
-  const { alerts, isLoadingAlerts, getAlertsByPriority, getCriticalAlertsCount } = usePredictiveMaintenance(options);
-  
+  const { alerts, isLoadingAlerts, getAlertsByPriority, getCriticalAlertsCount } =
+    usePredictiveMaintenance(options);
+
   return {
     alerts,
     isLoading: isLoadingAlerts,
     criticalAlerts: getAlertsByPriority('critical'),
     highPriorityAlerts: getAlertsByPriority('high'),
-    criticalCount: getCriticalAlertsCount()
+    criticalCount: getCriticalAlertsCount(),
   };
 };
 
 export const useMaintenanceSchedule = (propertyId?: string) => {
-  const { schedule, isLoadingSchedule, getUpcomingMaintenance } = usePredictiveMaintenance({ propertyId });
-  
+  const { schedule, isLoadingSchedule, getUpcomingMaintenance } = usePredictiveMaintenance({
+    propertyId,
+  });
+
   return {
     schedule,
     isLoading: isLoadingSchedule,
     upcomingMaintenance: getUpcomingMaintenance(),
-    overdueMaintenance: schedule.filter(item => new Date(item.next_due) < new Date())
+    overdueMaintenance: schedule.filter((item) => new Date(item.next_due) < new Date()),
   };
 };

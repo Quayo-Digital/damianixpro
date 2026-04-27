@@ -1,4 +1,3 @@
-
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 const activities = [
@@ -8,7 +7,7 @@ const activities = [
     user: 'Chioma Okeke',
     property: 'Sunlight Residences, Unit 4B',
     time: '10 minutes ago',
-    icon: '💰'
+    icon: '💰',
   },
   {
     id: 2,
@@ -16,7 +15,7 @@ const activities = [
     user: 'Tunde Bello',
     property: 'Palm View Apartments, Unit 7',
     time: '2 hours ago',
-    icon: '🔧'
+    icon: '🔧',
   },
   {
     id: 3,
@@ -24,7 +23,7 @@ const activities = [
     user: 'Fatima Suleiman',
     property: 'Green Acres, Unit 2',
     time: '5 hours ago',
-    icon: '👁️'
+    icon: '👁️',
   },
   {
     id: 4,
@@ -32,7 +31,7 @@ const activities = [
     user: 'Emeka Nwosu',
     property: 'Victoria Garden Estate, Unit 12',
     time: 'Yesterday',
-    icon: '📝'
+    icon: '📝',
   },
   {
     id: 5,
@@ -40,7 +39,7 @@ const activities = [
     user: 'Adewale Balogun',
     property: 'Green Acres, Unit 1',
     time: 'Yesterday',
-    icon: '✅'
+    icon: '✅',
   },
 ];
 
@@ -55,15 +54,17 @@ export function RecentActivity() {
           {activities.map((activity) => (
             <div
               key={activity.id}
-              className="flex items-start space-x-4 px-6 py-2 hover:bg-muted/50 transition-colors"
+              className="flex items-start space-x-4 px-6 py-2 transition-colors hover:bg-muted/50"
             >
-              <div className="h-8 w-8 rounded-full bg-brand-light flex items-center justify-center text-lg">
+              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-brand-light text-lg">
                 {activity.icon}
               </div>
               <div>
                 <p className="font-medium">{activity.activity}</p>
-                <p className="text-sm text-muted-foreground">{activity.user} • {activity.property}</p>
-                <p className="text-xs text-muted-foreground mt-1">{activity.time}</p>
+                <p className="text-sm text-muted-foreground">
+                  {activity.user} • {activity.property}
+                </p>
+                <p className="mt-1 text-xs text-muted-foreground">{activity.time}</p>
               </div>
             </div>
           ))}

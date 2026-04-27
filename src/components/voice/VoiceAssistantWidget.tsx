@@ -5,24 +5,26 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Progress } from '@/components/ui/progress';
-import { 
-  Mic, 
-  MicOff, 
-  Volume2, 
-  VolumeX, 
-  Settings, 
+import {
+  Mic,
+  MicOff,
+  Volume2,
+  VolumeX,
+  Settings,
   HelpCircle,
   Zap,
   MessageSquare,
   Activity,
   AlertTriangle,
   CheckCircle,
-  Loader2
+  Loader2,
 } from 'lucide-react';
 import { useVoiceAssistant } from '@/hooks/useVoiceAssistant';
 import { VoiceSettings } from './VoiceSettings';
 import { VoiceCommandHistory } from './VoiceCommandHistory';
 import { cn } from '@/lib/utils';
+import { useAuthSession } from '@/contexts/auth';
+import { subscriptionBrowsePath } from '@/lib/subscriptionBrowsePaths';
 
 interface VoiceAssistantWidgetProps {
   className?: string;
@@ -33,8 +35,9 @@ interface VoiceAssistantWidgetProps {
 export const VoiceAssistantWidget: React.FC<VoiceAssistantWidgetProps> = ({
   className = '',
   compact = false,
-  showHistory = true
+  showHistory = true,
 }) => {
+  const { userRole } = useAuthSession();
   const {
     isListening,
     isProcessing,
@@ -51,7 +54,7 @@ export const VoiceAssistantWidget: React.FC<VoiceAssistantWidgetProps> = ({
     getAvailableCommands,
     getStatistics,
     browserSupport,
-    canUseVoiceAssistant
+    canUseVoiceAssistant,
   } = useVoiceAssistant();
 
   const [showSettings, setShowSettings] = useState(false);
@@ -92,7 +95,9 @@ export const VoiceAssistantWidget: React.FC<VoiceAssistantWidgetProps> = ({
   // Handle quick test
   const handleQuickTest = async () => {
     try {
-      await speak('Voice assistant is working perfectly. You can now use voice commands to manage your properties.');
+      await speak(
+        'Voice assistant is working perfectly. You can now use voice commands to manage your properties.'
+      );
     } catch (err) {
       console.error('Test failed:', err);
     }
@@ -100,7 +105,10 @@ export const VoiceAssistantWidget: React.FC<VoiceAssistantWidgetProps> = ({
 
   // Handle help command
   const handleShowHelp = async () => {
-    const helpText = `I can help you with property management. Try saying: ${availableCommands.slice(0, 3).map(cmd => cmd.command).join(', ')}, or ask for help.`;
+    const helpText = `I can help you with property management. Try saying: ${availableCommands
+      .slice(0, 3)
+      .map((cmd) => cmd.command)
+      .join(', ')}, or ask for help.`;
     await speak(helpText);
   };
 
@@ -114,13 +122,13 @@ export const VoiceAssistantWidget: React.FC<VoiceAssistantWidgetProps> = ({
           disabled={!canUseVoiceAssistant || !isEnabled}
           className={cn(
             'transition-all duration-200',
-            isListening && 'bg-red-500 hover:bg-red-600 animate-pulse'
+            isListening && 'animate-pulse bg-red-500 hover:bg-red-600'
           )}
         >
           {getStatusIcon()}
           <span className="ml-2 hidden sm:inline">{getStatusText()}</span>
         </Button>
-        
+
         {error && (
           <Badge variant="destructive" className="text-xs">
             Error
@@ -139,18 +147,21 @@ export const VoiceAssistantWidget: React.FC<VoiceAssistantWidgetProps> = ({
             <span>Voice Assistant</span>
             <Badge variant="outline">Premium Feature</Badge>
           </CardTitle>
-          <CardDescription>
-            Hands-free property management with voice commands
-          </CardDescription>
+          <CardDescription>Hands-free property management with voice commands</CardDescription>
         </CardHeader>
         <CardContent>
           <Alert>
             <AlertTriangle className="h-4 w-4" />
             <AlertDescription>
-              Voice assistant requires a premium subscription. Upgrade to unlock hands-free property management.
+              Voice assistant requires a premium subscription. Upgrade to unlock hands-free property
+              management.
             </AlertDescription>
           </Alert>
-          <Button className="mt-4 w-full" variant="outline">
+          <Button
+            className="mt-4 w-full"
+            variant="outline"
+            onClick={() => window.location.assign(subscriptionBrowsePath(userRole))}
+          >
             Upgrade to Premium
           </Button>
         </CardContent>
@@ -172,7 +183,8 @@ export const VoiceAssistantWidget: React.FC<VoiceAssistantWidgetProps> = ({
           <Alert>
             <AlertTriangle className="h-4 w-4" />
             <AlertDescription>
-              Voice assistant is not supported in this browser. Please use Chrome, Edge, or Safari for the best experience.
+              Voice assistant is not supported in this browser. Please use Chrome, Edge, or Safari
+              for the best experience.
             </AlertDescription>
           </Alert>
         </CardContent>
@@ -192,26 +204,17 @@ export const VoiceAssistantWidget: React.FC<VoiceAssistantWidgetProps> = ({
               <span className="ml-1">{getStatusText()}</span>
             </Badge>
           </div>
-          
+
           <div className="flex items-center space-x-2">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleShowHelp}
-              disabled={!isEnabled}
-            >
+            <Button variant="ghost" size="sm" onClick={handleShowHelp} disabled={!isEnabled}>
               <HelpCircle className="h-4 w-4" />
             </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setShowSettings(!showSettings)}
-            >
+            <Button variant="ghost" size="sm" onClick={() => setShowSettings(!showSettings)}>
               <Settings className="h-4 w-4" />
             </Button>
           </div>
         </div>
-        
+
         <CardDescription>
           Say commands like "show my properties" or "check payments" for hands-free management
         </CardDescription>
@@ -224,9 +227,9 @@ export const VoiceAssistantWidget: React.FC<VoiceAssistantWidgetProps> = ({
             <AlertDescription>
               {error.message}
               {error.recoverable && (
-                <Button 
-                  variant="outline" 
-                  size="sm" 
+                <Button
+                  variant="outline"
+                  size="sm"
                   className="ml-2"
                   onClick={() => window.location.reload()}
                 >
@@ -238,42 +241,38 @@ export const VoiceAssistantWidget: React.FC<VoiceAssistantWidgetProps> = ({
         )}
 
         {/* Main Controls */}
-        <div className="flex flex-col sm:flex-row gap-3">
+        <div className="flex flex-col gap-3 sm:flex-row">
           <Button
             onClick={toggleVoiceAssistant}
             disabled={!isEnabled}
             className={cn(
               'flex-1 transition-all duration-200',
-              isListening && 'bg-red-500 hover:bg-red-600 animate-pulse'
+              isListening && 'animate-pulse bg-red-500 hover:bg-red-600'
             )}
             variant={isListening ? 'default' : 'outline'}
           >
             {isListening ? (
               <>
-                <MicOff className="h-4 w-4 mr-2" />
+                <MicOff className="mr-2 h-4 w-4" />
                 Stop Listening
               </>
             ) : (
               <>
-                <Mic className="h-4 w-4 mr-2" />
+                <Mic className="mr-2 h-4 w-4" />
                 Start Listening
               </>
             )}
           </Button>
-          
-          <Button
-            variant="outline"
-            onClick={handleQuickTest}
-            disabled={!isEnabled || isSpeaking}
-          >
+
+          <Button variant="outline" onClick={handleQuickTest} disabled={!isEnabled || isSpeaking}>
             {isSpeaking ? (
               <>
-                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 Speaking...
               </>
             ) : (
               <>
-                <Volume2 className="h-4 w-4 mr-2" />
+                <Volume2 className="mr-2 h-4 w-4" />
                 Test Voice
               </>
             )}
@@ -291,14 +290,9 @@ export const VoiceAssistantWidget: React.FC<VoiceAssistantWidgetProps> = ({
                 <span className="text-blue-600">{Math.round(confidence * 100)}% confident</span>
               )}
             </div>
-            <Progress 
-              value={isListening ? 100 : (isProcessing ? 50 : 0)} 
-              className="h-2"
-            />
+            <Progress value={isListening ? 100 : isProcessing ? 50 : 0} className="h-2" />
             {transcript && (
-              <div className="text-sm text-gray-700 bg-gray-50 p-2 rounded">
-                "{transcript}"
-              </div>
+              <div className="rounded bg-gray-50 p-2 text-sm text-gray-700">"{transcript}"</div>
             )}
           </div>
         )}
@@ -309,9 +303,9 @@ export const VoiceAssistantWidget: React.FC<VoiceAssistantWidgetProps> = ({
             <h4 className="text-sm font-medium text-gray-700">Try saying:</h4>
             <div className="flex flex-wrap gap-2">
               {suggestions.slice(0, 3).map((suggestion, index) => (
-                <Badge 
-                  key={index} 
-                  variant="outline" 
+                <Badge
+                  key={index}
+                  variant="outline"
                   className="cursor-pointer hover:bg-blue-50"
                   onClick={() => speak(suggestion)}
                 >
@@ -336,7 +330,10 @@ export const VoiceAssistantWidget: React.FC<VoiceAssistantWidgetProps> = ({
                 <h4 className="text-sm font-medium">Available Commands:</h4>
                 <div className="space-y-2">
                   {availableCommands.slice(0, 5).map((cmd, index) => (
-                    <div key={index} className="flex items-center justify-between p-2 bg-gray-50 rounded">
+                    <div
+                      key={index}
+                      className="flex items-center justify-between rounded bg-gray-50 p-2"
+                    >
                       <div>
                         <p className="text-sm font-medium">"{cmd.command}"</p>
                         <p className="text-xs text-gray-600">{cmd.description}</p>
@@ -355,8 +352,8 @@ export const VoiceAssistantWidget: React.FC<VoiceAssistantWidgetProps> = ({
             </TabsContent>
 
             <TabsContent value="history" className="space-y-4">
-              <VoiceCommandHistory 
-                commands={commandHistory.slice(-10)} 
+              <VoiceCommandHistory
+                commands={commandHistory.slice(-10)}
                 onReplayCommand={(command) => speak(command)}
               />
             </TabsContent>
@@ -364,9 +361,7 @@ export const VoiceAssistantWidget: React.FC<VoiceAssistantWidgetProps> = ({
             <TabsContent value="stats" className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div className="text-center">
-                  <div className="text-2xl font-bold text-blue-600">
-                    {statistics.totalCommands}
-                  </div>
+                  <div className="text-2xl font-bold text-blue-600">{statistics.totalCommands}</div>
                   <p className="text-sm text-gray-600">Total Commands</p>
                 </div>
                 <div className="text-center">
@@ -394,10 +389,7 @@ export const VoiceAssistantWidget: React.FC<VoiceAssistantWidgetProps> = ({
 
         {/* Settings Panel */}
         {showSettings && (
-          <VoiceSettings 
-            settings={settings}
-            onClose={() => setShowSettings(false)}
-          />
+          <VoiceSettings settings={settings} onClose={() => setShowSettings(false)} />
         )}
       </CardContent>
     </Card>

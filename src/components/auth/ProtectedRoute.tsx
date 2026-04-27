@@ -1,36 +1,66 @@
-
-import { ReactNode, useEffect } from 'react';
+import { ReactNode, useEffect, useRef } from 'react';
 import { Navigate, Outlet, useLocation, useNavigate } from 'react-router-dom';
-import { useAuth } from '@/contexts/auth';
+import { useAuthSession } from '@/contexts/auth';
 import { UserRole } from '@/contexts/auth/types';
 import { toast } from 'sonner';
+import { logger } from '@/utils/logger';
 
 export interface ProtectedRouteProps {
   children?: ReactNode;
   requiredRole?: UserRole | string;
+  allowedRoles?: UserRole[];
 }
 
-export function ProtectedRoute({ children, requiredRole }: ProtectedRouteProps) {
-  const { user, userRole, isLoading } = useAuth();
+export function ProtectedRoute({ children, requiredRole, allowedRoles }: ProtectedRouteProps) {
+  const { user, userRole, isLoading } = useAuthSession();
   const location = useLocation();
   const navigate = useNavigate();
+  const hasShownToast = useRef(false);
+
+  const needsTenantOnboarding =
+    !!user && userRole === 'tenant' && user.user_metadata?.onboarded !== true;
 
   useEffect(() => {
-    // If authenticated but not onboarded, redirect to onboarding
-    if (user && !isLoading && user.user_metadata?.onboarded === false) {
-      // Don't redirect if already on onboarding page
-      if (location.pathname !== '/onboarding') {
-        console.log('User not onboarded, redirecting to onboarding');
-        navigate('/onboarding', { replace: true });
-      }
+    // If tenant is authenticated but not explicitly onboarded, redirect to onboarding
+    if (!isLoading && needsTenantOnboarding && location.pathname !== '/onboarding') {
+      logger.debug('Tenant not onboarded, redirecting to onboarding');
+      navigate('/onboarding', { replace: true });
     }
-  }, [user, isLoading, navigate, location.pathname]);
+  }, [needsTenantOnboarding, isLoading, navigate, location.pathname]);
+
+  // Handle unauthorized access with toast notifications
+  useEffect(() => {
+    if (isLoading || !user || !userRole || hasShownToast.current) {
+      return;
+    }
+
+    // Check requiredRole
+    if (requiredRole && userRole !== requiredRole && userRole !== 'super_admin') {
+      hasShownToast.current = true;
+      toast.error(`You need ${requiredRole} permissions to access this page`);
+      return;
+    }
+
+    // Check allowedRoles
+    if (allowedRoles && userRole !== 'super_admin' && !allowedRoles.includes(userRole)) {
+      hasShownToast.current = true;
+      toast.error(
+        `You don't have permission to access this page. Required roles: ${allowedRoles.join(', ')}`
+      );
+      return;
+    }
+  }, [isLoading, user, userRole, requiredRole, allowedRoles]);
+
+  // Reset toast flag when route changes
+  useEffect(() => {
+    hasShownToast.current = false;
+  }, [location.pathname]);
 
   // Show loading while checking auth or waiting for user role
-  if (isLoading || (requiredRole && !userRole)) {
+  if (isLoading || (requiredRole && !userRole) || (allowedRoles && !userRole)) {
     return (
       <div className="flex min-h-screen flex-col items-center justify-center p-4">
-        <div className="w-16 h-16 border-4 border-primary border-solid rounded-full border-t-transparent animate-spin"></div>
+        <div className="h-16 w-16 animate-spin rounded-full border-4 border-solid border-primary border-t-transparent"></div>
         <h2 className="mt-4 text-xl font-semibold">Verifying authentication...</h2>
       </div>
     );
@@ -42,16 +72,23 @@ export function ProtectedRoute({ children, requiredRole }: ProtectedRouteProps) 
     return <Navigate to="/auth" state={{ from: location }} replace />;
   }
 
-  // If onboarding is required but not completed, redirect to onboarding
-  if (user.user_metadata?.onboarded === false && location.pathname !== '/onboarding') {
+  // If tenant onboarding is required but not completed, redirect to onboarding
+  if (needsTenantOnboarding && location.pathname !== '/onboarding') {
     return <Navigate to="/onboarding" replace />;
   }
 
   // If a specific role is required and user doesn't have it
   // super_admin should have access to all protected routes
   if (requiredRole && userRole !== requiredRole && userRole !== 'super_admin') {
-    toast.error(`You need ${requiredRole} permissions to access this page`);
     return <Navigate to="/unauthorized" replace />;
+  }
+
+  // If allowedRoles is specified, check if user's role is in the allowed list
+  // super_admin should have access to all protected routes
+  if (allowedRoles && userRole && userRole !== 'super_admin') {
+    if (!allowedRoles.includes(userRole)) {
+      return <Navigate to="/unauthorized" replace />;
+    }
   }
 
   // If we have children, render them, otherwise render the Outlet

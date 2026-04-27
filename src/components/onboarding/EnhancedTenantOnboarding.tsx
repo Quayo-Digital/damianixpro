@@ -7,13 +7,13 @@ import { useForm } from 'react-hook-form';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Progress } from '@/components/ui/progress';
-import { 
-  Form, 
-  FormControl, 
-  FormField, 
-  FormItem, 
-  FormLabel, 
-  FormMessage 
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
 } from '@/components/ui/form';
 import {
   Card,
@@ -25,27 +25,27 @@ import {
 } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import { 
-  Loader2, 
-  CheckCircle, 
-  User, 
-  Brain, 
-  Home, 
-  ArrowRight, 
+import {
+  Loader2,
+  CheckCircle,
+  User,
+  Brain,
+  Home,
+  ArrowRight,
   ArrowLeft,
-  Sparkles 
+  Sparkles,
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '@/contexts/auth';
+import { useAuthSession, useAuthActions } from '@/contexts/auth';
 import { PreferencesSetup } from '@/components/ai/PreferencesSetup';
 
 const basicInfoSchema = z.object({
   fullName: z.string().min(2, { message: 'Full name is required' }),
   phone: z.string().min(5, { message: 'Phone number is required' }),
   emergencyContact: z.string().optional(),
-  occupation: z.string().optional()
+  occupation: z.string().optional(),
 });
 
 type BasicInfoValues = z.infer<typeof basicInfoSchema>;
@@ -56,7 +56,8 @@ export function EnhancedTenantOnboarding() {
   const [currentStep, setCurrentStep] = useState<OnboardingStep>('welcome');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [basicInfoCompleted, setBasicInfoCompleted] = useState(false);
-  const { user, refreshUserRole } = useAuth();
+  const { user } = useAuthSession();
+  const { refreshUserRole } = useAuthActions();
   const navigate = useNavigate();
 
   const form = useForm<BasicInfoValues>({
@@ -65,47 +66,116 @@ export function EnhancedTenantOnboarding() {
       fullName: user?.user_metadata?.full_name || '',
       phone: user?.user_metadata?.phone || '',
       emergencyContact: '',
-      occupation: ''
-    }
+      occupation: '',
+    },
   });
 
   const steps = [
-    { id: 'welcome', title: 'Welcome', description: 'Get started with Nigeria Homes' },
+    { id: 'welcome', title: 'Welcome', description: 'Get started with DamianixPro' },
     { id: 'basic-info', title: 'Basic Info', description: 'Tell us about yourself' },
     { id: 'ai-preferences', title: 'AI Preferences', description: 'Personalize your experience' },
-    { id: 'complete', title: 'Complete', description: 'You\'re all set!' }
+    { id: 'complete', title: 'Complete', description: "You're all set!" },
   ];
 
-  const getCurrentStepIndex = () => steps.findIndex(step => step.id === currentStep);
+  const getCurrentStepIndex = () => steps.findIndex((step) => step.id === currentStep);
   const getProgressPercentage = () => ((getCurrentStepIndex() + 1) / steps.length) * 100;
 
   const handleBasicInfoSubmit = async (values: BasicInfoValues) => {
     setIsSubmitting(true);
-    
-    try {
-      // Create tenant record
-      const { data: tenantData, error: tenantError } = await supabase
-        .from('tenants')
-        .insert({
-          user_id: user?.id,
-          first_name: values.fullName.split(' ')[0],
-          last_name: values.fullName.split(' ').slice(1).join(' ') || '',
-          email: user?.email,
-          phone: values.phone,
-          status: 'active'
-        })
-        .select()
-        .single();
 
-      if (tenantError) throw tenantError;
+    try {
+      if (!user?.id) {
+        throw new Error('User not authenticated');
+      }
+
+      // Check if tenant record already exists
+      const { data: existingTenant, error: checkError } = await supabase
+        .from('tenants')
+        .select('id')
+        .eq('user_id', user.id)
+        .maybeSingle();
+
+      if (checkError && checkError.code !== 'PGRST116') {
+        throw checkError;
+      }
+
+      const firstName = values.fullName.split(' ')[0];
+      const lastName = values.fullName.split(' ').slice(1).join(' ') || '';
+
+      let tenantData;
+      let tenantError;
+
+      if (existingTenant) {
+        // Update existing tenant record
+        const { data, error } = await supabase
+          .from('tenants')
+          .update({
+            first_name: firstName,
+            last_name: lastName,
+            email: user?.email,
+            phone: values.phone,
+            status: 'active',
+            updated_at: new Date().toISOString(),
+          })
+          .eq('user_id', user.id)
+          .select()
+          .single();
+
+        tenantData = data;
+        tenantError = error;
+      } else {
+        // Create new tenant record
+        const { data, error } = await supabase
+          .from('tenants')
+          .insert({
+            user_id: user.id,
+            first_name: firstName,
+            last_name: lastName,
+            email: user?.email,
+            phone: values.phone,
+            status: 'active',
+          })
+          .select()
+          .single();
+
+        tenantData = data;
+        tenantError = error;
+      }
+
+      // Handle duplicate key error (409) gracefully - tenant already exists
+      if (tenantError) {
+        if (tenantError.code === '23505' || tenantError.message?.includes('duplicate key')) {
+          // Tenant record already exists, try to update it instead
+          const { data: updatedTenant, error: updateError } = await supabase
+            .from('tenants')
+            .update({
+              first_name: firstName,
+              last_name: lastName,
+              email: user?.email,
+              phone: values.phone,
+              status: 'active',
+              updated_at: new Date().toISOString(),
+            })
+            .eq('user_id', user.id)
+            .select()
+            .single();
+
+          if (updateError) {
+            throw updateError;
+          }
+          tenantData = updatedTenant;
+        } else {
+          throw tenantError;
+        }
+      }
 
       // Update user metadata
       const { error: updateError } = await supabase.auth.updateUser({
         data: {
           full_name: values.fullName,
           phone: values.phone,
-          onboarded: false // Will be set to true after AI preferences
-        }
+          onboarded: false, // Will be set to true after AI preferences
+        },
       });
 
       if (updateError) throw updateError;
@@ -123,24 +193,28 @@ export function EnhancedTenantOnboarding() {
 
   const handlePreferencesComplete = async () => {
     setIsSubmitting(true);
-    
+
     try {
       // Mark user as fully onboarded
       const { error: updateError } = await supabase.auth.updateUser({
         data: {
-          onboarded: true
-        }
+          onboarded: true,
+        },
       });
 
       if (updateError) throw updateError;
 
-      await refreshUserRole();
+      const refreshedRole = await refreshUserRole();
       setCurrentStep('complete');
-      toast.success('Welcome to Nigeria Homes! Your AI preferences are set up.');
-      
-      // Navigate to dashboard after a short delay
+      toast.success('Welcome to DamianixPro! Your AI preferences are set up.');
+
+      // Navigate to role-specific dashboard after a short delay
       setTimeout(() => {
-        navigate('/dashboard');
+        if (refreshedRole === 'tenant') {
+          navigate('/tenant/dashboard', { replace: true });
+        } else {
+          navigate('/dashboard', { replace: true });
+        }
       }, 2000);
     } catch (error: any) {
       console.error('Error completing onboarding:', error);
@@ -152,20 +226,29 @@ export function EnhancedTenantOnboarding() {
 
   const handleSkipPreferences = async () => {
     setIsSubmitting(true);
-    
+
     try {
       // Mark user as onboarded even without preferences
       const { error: updateError } = await supabase.auth.updateUser({
         data: {
-          onboarded: true
-        }
+          onboarded: true,
+        },
       });
 
       if (updateError) throw updateError;
 
-      await refreshUserRole();
-      toast.success('Welcome to Nigeria Homes! You can set up AI preferences later in your profile.');
-      navigate('/dashboard');
+      const refreshedRole = await refreshUserRole();
+
+      // Verify role is actually 'tenant' before proceeding
+      if (refreshedRole !== 'tenant') {
+        console.error('Role mismatch: Expected tenant, got:', refreshedRole);
+        toast.error('Role verification failed. Please contact support.');
+        return;
+      }
+
+      toast.success('Welcome to DamianixPro! You can set up AI preferences later in your profile.');
+      // Navigate to tenant dashboard
+      navigate('/tenant/dashboard', { replace: true });
     } catch (error: any) {
       console.error('Error completing onboarding:', error);
       toast.error(error.message || 'Failed to complete onboarding');
@@ -175,64 +258,61 @@ export function EnhancedTenantOnboarding() {
   };
 
   const renderWelcomeStep = () => (
-    <Card className="w-full max-w-2xl mx-auto">
+    <Card className="mx-auto w-full max-w-2xl border-border bg-card text-card-foreground shadow-md">
       <CardHeader className="text-center">
-        <div className="mx-auto mb-4 p-3 rounded-full bg-gradient-to-r from-purple-100 to-blue-100 w-16 h-16 flex items-center justify-center">
-          <Home className="h-8 w-8 text-purple-600" />
+        <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-primary/15 p-3 ring-1 ring-border">
+          <Home className="h-8 w-8 text-primary" />
         </div>
-        <CardTitle className="text-2xl">Welcome to Nigeria Homes!</CardTitle>
+        <CardTitle className="text-2xl">Welcome to DamianixPro!</CardTitle>
         <CardDescription className="text-lg">
           Let's get you set up with your personalized property management experience
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
-        <div className="grid md:grid-cols-3 gap-4">
-          <div className="text-center p-4 rounded-lg bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200">
-            <User className="h-8 w-8 mx-auto mb-2 text-blue-600" />
-            <h3 className="font-semibold">Your Profile</h3>
+        <div className="grid gap-4 md:grid-cols-3">
+          <div className="rounded-lg border border-border bg-muted/60 p-4 text-center">
+            <User className="mx-auto mb-2 h-8 w-8 text-primary" />
+            <h3 className="font-semibold text-foreground">Your Profile</h3>
             <p className="text-sm text-muted-foreground">Basic information and preferences</p>
           </div>
-          <div className="text-center p-4 rounded-lg bg-gradient-to-r from-purple-50 to-pink-50 border border-purple-200">
-            <Brain className="h-8 w-8 mx-auto mb-2 text-purple-600" />
-            <h3 className="font-semibold">AI Matching</h3>
+          <div className="rounded-lg border border-border bg-muted/60 p-4 text-center">
+            <Brain className="mx-auto mb-2 h-8 w-8 text-primary" />
+            <h3 className="font-semibold text-foreground">AI Matching</h3>
             <p className="text-sm text-muted-foreground">Personalized property recommendations</p>
           </div>
-          <div className="text-center p-4 rounded-lg bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200">
-            <Sparkles className="h-8 w-8 mx-auto mb-2 text-green-600" />
-            <h3 className="font-semibold">Smart Features</h3>
+          <div className="rounded-lg border border-border bg-muted/60 p-4 text-center">
+            <Sparkles className="mx-auto mb-2 h-8 w-8 text-primary" />
+            <h3 className="font-semibold text-foreground">Smart Features</h3>
             <p className="text-sm text-muted-foreground">Intelligent property management</p>
           </div>
         </div>
-        
-        <div className="bg-gradient-to-r from-yellow-50 to-orange-50 border border-yellow-200 rounded-lg p-4">
-          <div className="flex items-center space-x-2 mb-2">
-            <Brain className="h-5 w-5 text-orange-600" />
-            <h4 className="font-semibold text-orange-800">AI-Powered Experience</h4>
+
+        <div className="rounded-lg border border-amber-500/35 bg-amber-500/10 p-4">
+          <div className="mb-2 flex items-center space-x-2">
+            <Brain className="h-5 w-5 text-amber-600 dark:text-amber-400" />
+            <h4 className="font-semibold text-foreground">AI-Powered Experience</h4>
           </div>
-          <p className="text-sm text-orange-700">
-            Our AI learns your preferences to recommend properties that perfectly match your lifestyle, 
-            budget, and location needs. The more you use the platform, the smarter it gets!
+          <p className="text-sm text-muted-foreground">
+            Our AI learns your preferences to recommend properties that perfectly match your
+            lifestyle, budget, and location needs. The more you use the platform, the smarter it
+            gets!
           </p>
         </div>
       </CardContent>
       <CardFooter>
-        <Button 
-          onClick={() => setCurrentStep('basic-info')} 
-          className="w-full"
-          size="lg"
-        >
+        <Button onClick={() => setCurrentStep('basic-info')} className="w-full" size="lg">
           Get Started
-          <ArrowRight className="h-4 w-4 ml-2" />
+          <ArrowRight className="ml-2 h-4 w-4" />
         </Button>
       </CardFooter>
     </Card>
   );
 
   const renderBasicInfoStep = () => (
-    <Card className="w-full max-w-2xl mx-auto">
+    <Card className="mx-auto w-full max-w-2xl border-border bg-card text-card-foreground shadow-md">
       <CardHeader>
         <div className="flex items-center space-x-2">
-          <User className="h-6 w-6 text-blue-600" />
+          <User className="h-6 w-6 text-primary" />
           <div>
             <CardTitle>Basic Information</CardTitle>
             <CardDescription>Tell us a bit about yourself</CardDescription>
@@ -255,7 +335,7 @@ export function EnhancedTenantOnboarding() {
                 </FormItem>
               )}
             />
-            
+
             <FormField
               control={form.control}
               name="phone"
@@ -269,7 +349,7 @@ export function EnhancedTenantOnboarding() {
                 </FormItem>
               )}
             />
-            
+
             <FormField
               control={form.control}
               name="emergencyContact"
@@ -283,7 +363,7 @@ export function EnhancedTenantOnboarding() {
                 </FormItem>
               )}
             />
-            
+
             <FormField
               control={form.control}
               name="occupation"
@@ -301,26 +381,20 @@ export function EnhancedTenantOnboarding() {
         </Form>
       </CardContent>
       <CardFooter className="flex justify-between">
-        <Button 
-          variant="outline" 
-          onClick={() => setCurrentStep('welcome')}
-        >
-          <ArrowLeft className="h-4 w-4 mr-2" />
+        <Button variant="outline" onClick={() => setCurrentStep('welcome')}>
+          <ArrowLeft className="mr-2 h-4 w-4" />
           Back
         </Button>
-        <Button 
-          onClick={form.handleSubmit(handleBasicInfoSubmit)}
-          disabled={isSubmitting}
-        >
+        <Button onClick={form.handleSubmit(handleBasicInfoSubmit)} disabled={isSubmitting}>
           {isSubmitting ? (
             <>
-              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
               Saving...
             </>
           ) : (
             <>
               Continue
-              <ArrowRight className="h-4 w-4 ml-2" />
+              <ArrowRight className="ml-2 h-4 w-4" />
             </>
           )}
         </Button>
@@ -329,50 +403,50 @@ export function EnhancedTenantOnboarding() {
   );
 
   const renderAIPreferencesStep = () => (
-    <div className="w-full max-w-4xl mx-auto space-y-4">
-      <Card>
+    <div className="mx-auto w-full max-w-4xl space-y-4">
+      <Card className="border-border bg-card text-card-foreground shadow-md">
         <CardHeader className="text-center">
-          <div className="flex items-center justify-center space-x-2 mb-2">
-            <Brain className="h-6 w-6 text-purple-600" />
+          <div className="mb-2 flex items-center justify-center space-x-2">
+            <Brain className="h-6 w-6 text-primary" />
             <CardTitle>AI Preferences Setup</CardTitle>
           </div>
           <CardDescription>
             Help our AI understand your preferences for personalized property recommendations
           </CardDescription>
-          <div className="flex justify-center space-x-2 mt-4">
-            <Badge variant="secondary" className="bg-purple-100 text-purple-700">
-              <Sparkles className="h-3 w-3 mr-1" />
+          <div className="mt-4 flex justify-center space-x-2">
+            <Badge
+              variant="secondary"
+              className="border border-primary/25 bg-primary/15 text-foreground"
+            >
+              <Sparkles className="mr-1 h-3 w-3" />
               Smart Matching
             </Badge>
-            <Badge variant="secondary" className="bg-blue-100 text-blue-700">
+            <Badge variant="secondary" className="border border-border bg-muted text-foreground">
               Personalized
             </Badge>
-            <Badge variant="secondary" className="bg-green-100 text-green-700">
+            <Badge
+              variant="secondary"
+              className="border border-primary/25 bg-primary/10 text-foreground"
+            >
               Learning AI
             </Badge>
           </div>
         </CardHeader>
       </Card>
-      
-      <PreferencesSetup 
+
+      <PreferencesSetup
         onComplete={handlePreferencesComplete}
         showProgress={false}
+        onboardingMode={true}
       />
-      
-      <Card>
+
+      <Card className="border-border bg-card text-card-foreground shadow-md">
         <CardFooter className="flex justify-between">
-          <Button 
-            variant="outline" 
-            onClick={() => setCurrentStep('basic-info')}
-          >
-            <ArrowLeft className="h-4 w-4 mr-2" />
+          <Button variant="outline" onClick={() => setCurrentStep('basic-info')}>
+            <ArrowLeft className="mr-2 h-4 w-4" />
             Back
           </Button>
-          <Button 
-            variant="ghost" 
-            onClick={handleSkipPreferences}
-            disabled={isSubmitting}
-          >
+          <Button variant="ghost" onClick={handleSkipPreferences} disabled={isSubmitting}>
             Skip for now (can set up later)
           </Button>
         </CardFooter>
@@ -381,33 +455,33 @@ export function EnhancedTenantOnboarding() {
   );
 
   const renderCompleteStep = () => (
-    <Card className="w-full max-w-2xl mx-auto">
+    <Card className="mx-auto w-full max-w-2xl border-border bg-card text-card-foreground shadow-md">
       <CardHeader className="text-center">
-        <div className="mx-auto mb-4 p-3 rounded-full bg-green-100 w-16 h-16 flex items-center justify-center">
-          <CheckCircle className="h-8 w-8 text-green-600" />
+        <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-emerald-500/15 p-3 ring-1 ring-border">
+          <CheckCircle className="h-8 w-8 text-emerald-600 dark:text-emerald-400" />
         </div>
-        <CardTitle className="text-2xl">Welcome to Nigeria Homes!</CardTitle>
+        <CardTitle className="text-2xl">Welcome to DamianixPro!</CardTitle>
         <CardDescription className="text-lg">
           Your account is set up and ready to go
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
-        <div className="bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-lg p-4">
-          <h4 className="font-semibold text-green-800 mb-2">What's Next?</h4>
-          <ul className="text-sm text-green-700 space-y-1">
+        <div className="rounded-lg border border-emerald-500/35 bg-emerald-500/10 p-4">
+          <h4 className="mb-2 font-semibold text-foreground">What's Next?</h4>
+          <ul className="space-y-1 text-sm text-muted-foreground">
             <li>• Browse personalized property recommendations</li>
             <li>• Apply for properties that match your preferences</li>
             <li>• Manage payments and maintenance requests</li>
             <li>• Connect with property owners and agents</li>
           </ul>
         </div>
-        
+
         <div className="text-center">
           <p className="text-sm text-muted-foreground">
             Redirecting to your dashboard in a moment...
           </p>
           <div className="mt-2">
-            <Loader2 className="h-4 w-4 animate-spin mx-auto" />
+            <Loader2 className="mx-auto h-4 w-4 animate-spin" />
           </div>
         </div>
       </CardContent>
@@ -415,21 +489,24 @@ export function EnhancedTenantOnboarding() {
   );
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 flex items-center justify-center p-4">
+    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-primary/10 via-background to-muted/60 p-4 text-foreground">
       <div className="w-full max-w-5xl">
         {/* Progress Header */}
         <div className="mb-8">
-          <div className="flex justify-center mb-4">
+          <div className="mb-4 flex justify-center">
             <div className="flex items-center space-x-2">
               {steps.map((step, index) => (
                 <div key={step.id} className="flex items-center">
-                  <div className={`
-                    w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium
-                    ${index <= getCurrentStepIndex() 
-                      ? 'bg-purple-600 text-white' 
-                      : 'bg-gray-200 text-gray-500'
+                  <div
+                    className={`
+                    flex h-8 w-8 items-center justify-center rounded-full text-sm font-medium
+                    ${
+                      index <= getCurrentStepIndex()
+                        ? 'bg-primary text-primary-foreground'
+                        : 'bg-muted text-muted-foreground'
                     }
-                  `}>
+                  `}
+                  >
                     {index < getCurrentStepIndex() ? (
                       <CheckCircle className="h-4 w-4" />
                     ) : (
@@ -437,28 +514,28 @@ export function EnhancedTenantOnboarding() {
                     )}
                   </div>
                   {index < steps.length - 1 && (
-                    <div className={`
-                      w-8 h-0.5 mx-2
-                      ${index < getCurrentStepIndex() ? 'bg-purple-600' : 'bg-gray-200'}
-                    `} />
+                    <div
+                      className={`
+                      mx-2 h-0.5 w-8
+                      ${index < getCurrentStepIndex() ? 'bg-primary' : 'bg-border'}
+                    `}
+                    />
                   )}
                 </div>
               ))}
             </div>
           </div>
-          
+
           <div className="text-center">
-            <h2 className="text-lg font-semibold">
-              {steps[getCurrentStepIndex()]?.title}
-            </h2>
+            <h2 className="text-lg font-semibold">{steps[getCurrentStepIndex()]?.title}</h2>
             <p className="text-sm text-muted-foreground">
               {steps[getCurrentStepIndex()]?.description}
             </p>
           </div>
-          
-          <div className="mt-4 max-w-md mx-auto">
+
+          <div className="mx-auto mt-4 max-w-md">
             <Progress value={getProgressPercentage()} className="h-2" />
-            <p className="text-xs text-center mt-1 text-muted-foreground">
+            <p className="mt-1 text-center text-xs text-muted-foreground">
               Step {getCurrentStepIndex() + 1} of {steps.length}
             </p>
           </div>

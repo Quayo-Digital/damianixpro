@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { DocGenerator } from '@/components/documentation/DocGenerator';
@@ -8,11 +7,11 @@ import { Button } from '@/components/ui/button';
 
 const PublicDocumentation = () => {
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="flex min-h-screen flex-col">
       <div className="flex-grow">
         {/* Home link navigation */}
-        <div className="bg-muted/40 border-b">
-          <div className="container py-2 max-w-7xl mx-auto">
+        <div className="border-b bg-muted/40">
+          <div className="container mx-auto max-w-7xl py-2">
             <Link to="/">
               <Button variant="ghost" size="sm" className="flex items-center gap-1">
                 <Home className="h-4 w-4" />
@@ -22,14 +21,14 @@ const PublicDocumentation = () => {
           </div>
         </div>
 
-        <div className="container py-8 max-w-7xl mx-auto">
+        <div className="container mx-auto max-w-7xl py-8">
           <div className="mb-8">
-            <h1 className="text-4xl font-bold mb-2">DamianixPro Documentation</h1>
+            <h1 className="mb-2 text-4xl font-bold">DamianixPro Documentation</h1>
             <p className="text-lg text-muted-foreground">
               Find comprehensive guides for all user roles and features of the DamianixPro platform.
             </p>
           </div>
-          
+
           <DocGenerator />
         </div>
       </div>

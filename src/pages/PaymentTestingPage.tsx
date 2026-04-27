@@ -8,16 +8,17 @@ import { CreditCard, AlertTriangle } from 'lucide-react';
 const PaymentTestingPage: React.FC = () => {
   return (
     <PageLayout>
-      <PageContent 
-        title="Payment System Testing" 
+      <PageContent
+        title="Payment System Testing"
         description="Comprehensive testing suite for payment functionality"
       >
         <div className="space-y-6">
           <Alert>
             <CreditCard className="h-4 w-4" />
             <AlertDescription>
-              This page provides comprehensive testing for the payment system including Paystack, Flutterwave, bank transfers, and USSD codes.
-              Test all payment functionality to ensure everything works correctly.
+              This page provides comprehensive testing for the payment system including Flutterwave,
+              bank transfers, and USSD codes. Test all payment functionality to ensure everything
+              works correctly.
             </AlertDescription>
           </Alert>
 

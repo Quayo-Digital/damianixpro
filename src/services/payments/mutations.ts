@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { Payment, RecurringPaymentType } from '@/utils/PaymentTypes';
 import { toast } from '@/components/ui/sonner';
@@ -13,9 +12,9 @@ export const recordPayment = async (payment: Omit<Payment, 'id'>): Promise<Payme
       ...payment,
       id: uuidv4(),
       created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString()
+      updated_at: new Date().toISOString(),
     };
-    
+
     const { data, error } = await supabase
       .from('rent_payments')
       .insert({
@@ -30,15 +29,15 @@ export const recordPayment = async (payment: Omit<Payment, 'id'>): Promise<Payme
         description: payment.description || '',
         is_recurring: payment.is_recurring || false,
         recurring_type: payment.recurring_type,
-        next_payment_date: payment.next_payment_date
+        next_payment_date: payment.next_payment_date,
       })
       .select()
       .single();
-      
+
     if (error) {
       throw error;
     }
-    
+
     if (!payment.is_recurring && payment.status !== 'pending') {
       toast.success('Payment recorded successfully');
     }
@@ -53,21 +52,25 @@ export const recordPayment = async (payment: Omit<Payment, 'id'>): Promise<Payme
 /**
  * Updates the status of an existing payment
  */
-export const updatePaymentStatus = async (id: string, status: 'successful' | 'pending' | 'failed' | 'active', silent = false): Promise<boolean> => {
+export const updatePaymentStatus = async (
+  id: string,
+  status: 'successful' | 'pending' | 'failed' | 'active',
+  silent = false
+): Promise<boolean> => {
   try {
     const { error } = await supabase
       .from('rent_payments')
-      .update({ 
+      .update({
         status,
         updated_at: new Date().toISOString(),
-        payment_date: status === 'successful' ? new Date().toISOString() : null
+        payment_date: status === 'successful' ? new Date().toISOString() : null,
       })
       .eq('id', id);
-      
+
     if (error) {
       throw error;
     }
-    
+
     if (!silent) {
       toast.success(`Payment status updated to ${status}`);
     }
@@ -86,7 +89,7 @@ export const updatePaymentStatus = async (id: string, status: 'successful' | 'pe
  */
 export const createRecurringPayment = async (
   tenantId: string,
-  amount: number, 
+  amount: number,
   recurringType: RecurringPaymentType,
   category: string,
   description?: string
@@ -102,11 +105,11 @@ export const createRecurringPayment = async (
     if (!propertyTenant) {
       throw new Error('No active tenancy found for this user.');
     }
-    
+
     // Calculate the next payment date based on the recurring type
     const now = new Date();
-    let nextPaymentDate = new Date();
-    
+    const nextPaymentDate = new Date();
+
     switch (recurringType) {
       case 'monthly':
         nextPaymentDate.setMonth(now.getMonth() + 1);
@@ -118,7 +121,7 @@ export const createRecurringPayment = async (
         nextPaymentDate.setFullYear(now.getFullYear() + 1);
         break;
     }
-    
+
     // Record the payment plan in the database
     const result = await recordPayment({
       date: new Date().toISOString().split('T')[0],
@@ -130,9 +133,9 @@ export const createRecurringPayment = async (
       description,
       is_recurring: true,
       recurring_type: recurringType,
-      next_payment_date: nextPaymentDate.toISOString().split('T')[0]
+      next_payment_date: nextPaymentDate.toISOString().split('T')[0],
     });
-    
+
     return result;
   } catch (error) {
     console.error('Error creating recurring payment:', error);

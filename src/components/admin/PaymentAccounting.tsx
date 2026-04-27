@@ -1,11 +1,10 @@
-
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ArrowDownUp, BarChart3, WalletCards } from 'lucide-react';
 import { OverviewTab } from './accounting/OverviewTab';
 import { PaymentsTab } from './accounting/PaymentsTab';
 import { PayoutsTab } from './accounting/PayoutsTab';
 import { AccountingSummary, Payment, OwnerPayout } from '@/utils/AccountingTypes';
-import React from "react";
+import React from 'react';
 
 interface PaymentAccountingProps {
   activeTab: string;
@@ -22,7 +21,8 @@ interface PaymentAccountingProps {
 }
 
 export const PaymentAccounting = ({
-  activeTab, setActiveTab,
+  activeTab,
+  setActiveTab,
   loading,
   accounting,
   payments,
@@ -31,9 +31,8 @@ export const PaymentAccounting = ({
   selectedPayments,
   handleProcessPayout,
   handleGenerateInvoice,
-  handleSelectPayment
+  handleSelectPayment,
 }: PaymentAccountingProps) => {
-  
   return (
     <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
       <TabsList className="grid w-full grid-cols-3">
@@ -50,13 +49,13 @@ export const PaymentAccounting = ({
           Payouts
         </TabsTrigger>
       </TabsList>
-      
+
       <TabsContent value="overview" className="mt-6">
         <OverviewTab accounting={accounting} />
       </TabsContent>
-      
+
       <TabsContent value="payments" className="mt-6">
-        <PaymentsTab 
+        <PaymentsTab
           loading={loading}
           payments={payments}
           selectedPayments={selectedPayments}
@@ -66,7 +65,7 @@ export const PaymentAccounting = ({
           onGenerateInvoice={handleGenerateInvoice}
         />
       </TabsContent>
-      
+
       <TabsContent value="payouts" className="mt-6">
         <PayoutsTab loading={loading} ownerPayouts={ownerPayouts} />
       </TabsContent>

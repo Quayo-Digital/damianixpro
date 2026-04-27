@@ -24,7 +24,7 @@ import {
   TimeFrame,
   NetworkType,
   PropertyType,
-  RiskLevel
+  RiskLevel,
 } from '@/types/blockchainAnalytics';
 
 // Custom error class implementation for analytics
@@ -70,8 +70,15 @@ class BlockchainAnalyticsService {
           version: '2.1.0',
           accuracy: 0.87,
           lastTrained: new Date('2025-07-15'),
-          features: ['price_history', 'volume', 'market_cap', 'location', 'property_type', 'economic_indicators'],
-          parameters: { learning_rate: 0.001, epochs: 100, batch_size: 32 }
+          features: [
+            'price_history',
+            'volume',
+            'market_cap',
+            'location',
+            'property_type',
+            'economic_indicators',
+          ],
+          parameters: { learning_rate: 0.001, epochs: 100, batch_size: 32 },
         },
         riskAssessment: {
           id: 'risk-assessment-v1.5',
@@ -80,8 +87,14 @@ class BlockchainAnalyticsService {
           version: '1.5.0',
           accuracy: 0.92,
           lastTrained: new Date('2025-07-20'),
-          features: ['volatility', 'liquidity', 'market_correlation', 'regulatory_score', 'technical_indicators'],
-          parameters: { n_estimators: 100, max_depth: 10, min_samples_split: 5 }
+          features: [
+            'volatility',
+            'liquidity',
+            'market_correlation',
+            'regulatory_score',
+            'technical_indicators',
+          ],
+          parameters: { n_estimators: 100, max_depth: 10, min_samples_split: 5 },
         },
         opportunityDetection: {
           id: 'opportunity-detection-v1.3',
@@ -91,7 +104,7 @@ class BlockchainAnalyticsService {
           accuracy: 0.84,
           lastTrained: new Date('2025-07-25'),
           features: ['price_momentum', 'volume_profile', 'market_sentiment', 'fundamental_metrics'],
-          parameters: { n_clusters: 5, algorithm: 'k-means++', random_state: 42 }
+          parameters: { n_clusters: 5, algorithm: 'k-means++', random_state: 42 },
         },
         marketSentiment: {
           id: 'market-sentiment-v2.0',
@@ -101,8 +114,8 @@ class BlockchainAnalyticsService {
           accuracy: 0.89,
           lastTrained: new Date('2025-07-30'),
           features: ['social_sentiment', 'news_sentiment', 'trading_volume', 'price_action'],
-          parameters: { hidden_layers: [128, 64, 32], dropout: 0.2, activation: 'relu' }
-        }
+          parameters: { hidden_layers: [128, 64, 32], dropout: 0.2, activation: 'relu' },
+        },
       };
     } catch (error) {
       console.error('Failed to initialize ML models:', error);
@@ -130,27 +143,35 @@ class BlockchainAnalyticsService {
             polygon: 28.7,
             bsc: 15.1,
             arbitrum: 7.3,
-            optimism: 3.7
+            optimism: 3.7,
           },
           sentiment: 'bullish',
-          sentimentScore: 72
+          sentimentScore: 72,
         },
         trends: await this.generateMarketTrends(),
         topPerformers: await this.getTopPerformingProperties(),
         opportunities: await this.detectInvestmentOpportunities(),
         riskFactors: await this.assessMarketRisks(),
-        predictions: await this.generateMarketPredictions()
+        predictions: await this.generateMarketPredictions(),
       };
 
       this.setCachedData(cacheKey, marketAnalytics, 300000); // 5 minutes TTL
       return marketAnalytics;
     } catch (error) {
-      throw new AnalyticsErrorImpl(`Failed to get market analytics: ${error.message}`, 'MARKET_ANALYTICS_ERROR', error, true);
+      throw new AnalyticsErrorImpl(
+        `Failed to get market analytics: ${error.message}`,
+        'MARKET_ANALYTICS_ERROR',
+        error,
+        true
+      );
     }
   }
 
   // Portfolio Analytics
-  public async getPortfolioAnalytics(userId: string, walletAddress: string): Promise<PortfolioAnalytics> {
+  public async getPortfolioAnalytics(
+    userId: string,
+    walletAddress: string
+  ): Promise<PortfolioAnalytics> {
     try {
       const cacheKey = `portfolio_${userId}_${walletAddress}`;
       const cached = this.getCachedData(cacheKey);
@@ -174,7 +195,7 @@ class BlockchainAnalyticsService {
             valueChangePercentage: 1.85,
             weight: 36.0,
             performance: 'outperforming',
-            riskLevel: 'medium'
+            riskLevel: 'medium',
           },
           {
             propertyId: 'prop-2',
@@ -185,22 +206,27 @@ class BlockchainAnalyticsService {
             valueChangePercentage: 0.95,
             weight: 64.0,
             performance: 'neutral',
-            riskLevel: 'low'
-          }
+            riskLevel: 'low',
+          },
         ],
         allocation: {
           byLocation: { Lagos: 36.0, Abuja: 64.0 },
           byPropertyType: { residential: 36.0, commercial: 64.0 },
           byNetwork: { ethereum: 70.0, polygon: 30.0 },
-          byRiskLevel: { low: 64.0, medium: 36.0, high: 0.0 }
+          byRiskLevel: { low: 64.0, medium: 36.0, high: 0.0 },
         },
-        recommendations: await this.generatePortfolioRecommendations(userId, walletAddress)
+        recommendations: await this.generatePortfolioRecommendations(userId, walletAddress),
       };
 
       this.setCachedData(cacheKey, portfolio, 180000); // 3 minutes TTL
       return portfolio;
     } catch (error) {
-      throw new AnalyticsErrorImpl(`Failed to get portfolio analytics: ${error.message}`, 'PORTFOLIO_ANALYTICS_ERROR', error, true);
+      throw new AnalyticsErrorImpl(
+        `Failed to get portfolio analytics: ${error.message}`,
+        'PORTFOLIO_ANALYTICS_ERROR',
+        error,
+        true
+      );
     }
   }
 
@@ -208,9 +234,9 @@ class BlockchainAnalyticsService {
   public async generateAIInsights(request: AIAnalysisRequest): Promise<AIAnalysisResponse> {
     try {
       const startTime = Date.now();
-      
+
       // Simulate AI processing
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      await new Promise((resolve) => setTimeout(resolve, 1500));
 
       const insights: InvestmentInsight[] = [];
       const recommendations = [];
@@ -221,17 +247,18 @@ class BlockchainAnalyticsService {
             id: `insight-${Date.now()}`,
             type: 'opportunity',
             title: 'Emerging Market Trend in Lagos Properties',
-            description: 'AI analysis indicates a 23% increase in demand for residential properties in Lagos VI, driven by infrastructure development and foreign investment.',
+            description:
+              'AI analysis indicates a 23% increase in demand for residential properties in Lagos VI, driven by infrastructure development and foreign investment.',
             confidence: 87,
             impact: 'high',
             timeframe: 'medium',
             propertyIds: ['prop-1', 'prop-3', 'prop-7'],
             metrics: [
               { name: 'Demand Growth', value: 23, unit: '%', change: 5.2 },
-              { name: 'Price Momentum', value: 1.8, unit: 'score', benchmark: 1.0 }
+              { name: 'Price Momentum', value: 1.8, unit: 'score', benchmark: 1.0 },
             ],
             aiGenerated: true,
-            createdAt: new Date()
+            createdAt: new Date(),
           });
           break;
 
@@ -240,11 +267,12 @@ class BlockchainAnalyticsService {
             id: `rec-${Date.now()}`,
             type: 'rebalance',
             title: 'Optimize Portfolio Allocation',
-            description: 'Consider rebalancing your portfolio to reduce concentration risk in commercial properties.',
+            description:
+              'Consider rebalancing your portfolio to reduce concentration risk in commercial properties.',
             reasoning: [
               'Current allocation: 64% commercial, 36% residential',
               'Optimal allocation for your risk profile: 55% commercial, 45% residential',
-              'Diversification score would improve from 78 to 85'
+              'Diversification score would improve from 78 to 85',
             ],
             confidence: 92,
             potentialReturn: 8.5,
@@ -253,7 +281,7 @@ class BlockchainAnalyticsService {
             propertyIds: ['prop-2'],
             priority: 'medium',
             aiGenerated: true,
-            createdAt: new Date()
+            createdAt: new Date(),
           });
           break;
 
@@ -262,18 +290,19 @@ class BlockchainAnalyticsService {
             id: `insight-${Date.now()}`,
             type: 'warning',
             title: 'Elevated Market Volatility Detected',
-            description: 'AI models detect increased volatility in the Ethereum network property market, suggesting caution for new investments.',
+            description:
+              'AI models detect increased volatility in the Ethereum network property market, suggesting caution for new investments.',
             confidence: 94,
             impact: 'medium',
             timeframe: 'short',
             propertyIds: [],
             metrics: [
               { name: 'Volatility Index', value: 2.3, unit: 'score', benchmark: 1.5 },
-              { name: 'Risk Score', value: 68, unit: 'points', change: 12 }
+              { name: 'Risk Score', value: 68, unit: 'points', change: 12 },
             ],
             aiGenerated: true,
             createdAt: new Date(),
-            expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000) // 7 days
+            expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days
           });
           break;
 
@@ -282,17 +311,18 @@ class BlockchainAnalyticsService {
             id: `insight-${Date.now()}`,
             type: 'opportunity',
             title: 'Undervalued Property Cluster Identified',
-            description: 'Machine learning algorithms have identified a cluster of undervalued properties in Port Harcourt with strong growth potential.',
+            description:
+              'Machine learning algorithms have identified a cluster of undervalued properties in Port Harcourt with strong growth potential.',
             confidence: 81,
             impact: 'high',
             timeframe: 'long',
             propertyIds: ['prop-12', 'prop-15', 'prop-18'],
             metrics: [
               { name: 'Value Score', value: 0.72, unit: 'ratio', benchmark: 1.0 },
-              { name: 'Growth Potential', value: 34, unit: '%' }
+              { name: 'Growth Potential', value: 34, unit: '%' },
             ],
             aiGenerated: true,
-            createdAt: new Date()
+            createdAt: new Date(),
           });
           break;
       }
@@ -308,17 +338,22 @@ class BlockchainAnalyticsService {
         methodology: 'Ensemble ML models with real-time data fusion',
         dataPoints: 15420,
         processingTime,
-        createdAt: new Date()
+        createdAt: new Date(),
       };
     } catch (error) {
-      throw new AnalyticsErrorImpl(`Failed to generate AI insights: ${error.message}`, 'AI_ANALYSIS_ERROR', error, true);
+      throw new AnalyticsErrorImpl(
+        `Failed to generate AI insights: ${error.message}`,
+        'AI_ANALYSIS_ERROR',
+        error,
+        true
+      );
     }
   }
 
   // Real-time Updates
   public subscribeToUpdates(userId: string, callback: (update: RealTimeUpdate) => void): void {
     this.updateCallbacks.set(userId, callback);
-    
+
     // Simulate real-time updates
     const interval = setInterval(() => {
       const update: RealTimeUpdate = {
@@ -326,10 +361,10 @@ class BlockchainAnalyticsService {
         propertyId: 'prop-1',
         data: {
           price: 450000 + (Math.random() - 0.5) * 10000,
-          change: (Math.random() - 0.5) * 2
+          change: (Math.random() - 0.5) * 2,
         },
         timestamp: new Date(),
-        network: 'ethereum'
+        network: 'ethereum',
       };
       callback(update);
     }, 30000); // Every 30 seconds
@@ -349,7 +384,8 @@ class BlockchainAnalyticsService {
         id: 'opp-1',
         propertyId: 'prop-15',
         title: 'Undervalued Lagos Waterfront Property',
-        description: 'AI analysis suggests this property is 28% undervalued based on comparable sales and market trends.',
+        description:
+          'AI analysis suggests this property is 28% undervalued based on comparable sales and market trends.',
         opportunityType: 'undervalued',
         potentialReturn: 28.5,
         riskLevel: 'medium',
@@ -357,17 +393,29 @@ class BlockchainAnalyticsService {
         timeframe: '6-12 months',
         requiredInvestment: 320000,
         metrics: [
-          { name: 'Price-to-Value Ratio', value: 0.72, benchmark: 1.0, interpretation: 'Significantly undervalued' },
-          { name: 'Market Momentum', value: 1.8, benchmark: 1.0, interpretation: 'Strong positive momentum' }
+          {
+            name: 'Price-to-Value Ratio',
+            value: 0.72,
+            benchmark: 1.0,
+            interpretation: 'Significantly undervalued',
+          },
+          {
+            name: 'Market Momentum',
+            value: 1.8,
+            benchmark: 1.0,
+            interpretation: 'Strong positive momentum',
+          },
         ],
-        aiAnalysis: 'Machine learning models indicate strong fundamentals with recent infrastructure development nearby increasing long-term value proposition.',
-        createdAt: new Date()
+        aiAnalysis:
+          'Machine learning models indicate strong fundamentals with recent infrastructure development nearby increasing long-term value proposition.',
+        createdAt: new Date(),
       },
       {
         id: 'opp-2',
         propertyId: 'prop-22',
         title: 'High-Yield Abuja Commercial Space',
-        description: 'Exceptional rental yield opportunity in growing business district with government backing.',
+        description:
+          'Exceptional rental yield opportunity in growing business district with government backing.',
         opportunityType: 'yield',
         potentialReturn: 12.8,
         riskLevel: 'low',
@@ -375,12 +423,18 @@ class BlockchainAnalyticsService {
         timeframe: '1-2 years',
         requiredInvestment: 580000,
         metrics: [
-          { name: 'Rental Yield', value: 12.8, benchmark: 8.5, interpretation: 'Above market average' },
-          { name: 'Occupancy Rate', value: 95, benchmark: 85, interpretation: 'High demand area' }
+          {
+            name: 'Rental Yield',
+            value: 12.8,
+            benchmark: 8.5,
+            interpretation: 'Above market average',
+          },
+          { name: 'Occupancy Rate', value: 95, benchmark: 85, interpretation: 'High demand area' },
         ],
-        aiAnalysis: 'Predictive models show sustained demand growth in this commercial corridor with low vacancy risk.',
-        createdAt: new Date()
-      }
+        aiAnalysis:
+          'Predictive models show sustained demand growth in this commercial corridor with low vacancy risk.',
+        createdAt: new Date(),
+      },
     ];
   }
 
@@ -391,7 +445,8 @@ class BlockchainAnalyticsService {
         id: 'risk-1',
         type: 'regulatory',
         title: 'Potential Regulatory Changes',
-        description: 'Nigerian government considering new regulations for tokenized real estate that could impact market liquidity.',
+        description:
+          'Nigerian government considering new regulations for tokenized real estate that could impact market liquidity.',
         severity: 'medium',
         probability: 35,
         impact: 65,
@@ -399,15 +454,16 @@ class BlockchainAnalyticsService {
         mitigation: [
           'Monitor regulatory developments closely',
           'Diversify across multiple networks',
-          'Maintain liquid reserves for quick adaptation'
+          'Maintain liquid reserves for quick adaptation',
         ],
-        createdAt: new Date()
+        createdAt: new Date(),
       },
       {
         id: 'risk-2',
         type: 'market',
         title: 'Network Congestion Risk',
-        description: 'Ethereum network congestion could lead to higher transaction costs and slower settlement times.',
+        description:
+          'Ethereum network congestion could lead to higher transaction costs and slower settlement times.',
         severity: 'low',
         probability: 25,
         impact: 40,
@@ -415,10 +471,10 @@ class BlockchainAnalyticsService {
         mitigation: [
           'Use Layer 2 solutions when possible',
           'Consider multi-chain deployment',
-          'Implement gas optimization strategies'
+          'Implement gas optimization strategies',
         ],
-        createdAt: new Date()
-      }
+        createdAt: new Date(),
+      },
     ];
   }
 
@@ -434,11 +490,26 @@ class BlockchainAnalyticsService {
         timeframe: '30d',
         methodology: 'LSTM Neural Network with economic indicators',
         factors: [
-          { name: 'Infrastructure Development', weight: 0.35, impact: 'positive', description: 'New transportation projects' },
-          { name: 'Foreign Investment', weight: 0.28, impact: 'positive', description: 'Increased FDI in real estate' },
-          { name: 'Interest Rates', weight: 0.22, impact: 'negative', description: 'Central bank policy tightening' }
+          {
+            name: 'Infrastructure Development',
+            weight: 0.35,
+            impact: 'positive',
+            description: 'New transportation projects',
+          },
+          {
+            name: 'Foreign Investment',
+            weight: 0.28,
+            impact: 'positive',
+            description: 'Increased FDI in real estate',
+          },
+          {
+            name: 'Interest Rates',
+            weight: 0.22,
+            impact: 'negative',
+            description: 'Central bank policy tightening',
+          },
         ],
-        createdAt: new Date()
+        createdAt: new Date(),
       },
       {
         id: 'pred-2',
@@ -449,12 +520,27 @@ class BlockchainAnalyticsService {
         timeframe: '7d',
         methodology: 'Ensemble model with sentiment analysis',
         factors: [
-          { name: 'Market Sentiment', weight: 0.40, impact: 'positive', description: 'Bullish investor sentiment' },
-          { name: 'Seasonal Trends', weight: 0.35, impact: 'positive', description: 'Q3 historically strong' },
-          { name: 'Liquidity Conditions', weight: 0.25, impact: 'positive', description: 'Improved market liquidity' }
+          {
+            name: 'Market Sentiment',
+            weight: 0.4,
+            impact: 'positive',
+            description: 'Bullish investor sentiment',
+          },
+          {
+            name: 'Seasonal Trends',
+            weight: 0.35,
+            impact: 'positive',
+            description: 'Q3 historically strong',
+          },
+          {
+            name: 'Liquidity Conditions',
+            weight: 0.25,
+            impact: 'positive',
+            description: 'Improved market liquidity',
+          },
         ],
-        createdAt: new Date()
-      }
+        createdAt: new Date(),
+      },
     ];
   }
 
@@ -463,15 +549,15 @@ class BlockchainAnalyticsService {
     const networks = ['ethereum', 'polygon', 'bsc'];
     const metrics = ['price', 'volume', 'market_cap', 'transactions'];
     const periods: Array<'24h' | '7d' | '30d'> = ['24h', '7d', '30d'];
-    
+
     const trends: MarketTrend[] = [];
-    
+
     for (const network of networks) {
       for (const metric of metrics) {
         for (const period of periods) {
           const baseValue = Math.random() * 1000000;
           const change = (Math.random() - 0.5) * baseValue * 0.1;
-          
+
           trends.push({
             id: `${network}-${metric}-${period}`,
             metric,
@@ -480,12 +566,12 @@ class BlockchainAnalyticsService {
             changePercentage: (change / baseValue) * 100,
             period,
             timestamp: new Date(),
-            network
+            network,
           });
         }
       }
     }
-    
+
     return trends;
   }
 
@@ -505,7 +591,7 @@ class BlockchainAnalyticsService {
         volatility: 15.2,
         roi: { daily: 1.85, weekly: 8.2, monthly: 24.5, yearly: 185.3 },
         ranking: 1,
-        network: 'ethereum'
+        network: 'ethereum',
       },
       {
         propertyId: 'prop-2',
@@ -520,8 +606,8 @@ class BlockchainAnalyticsService {
         volatility: 12.8,
         roi: { daily: 0.95, weekly: 5.1, monthly: 18.7, yearly: 142.8 },
         ranking: 2,
-        network: 'polygon'
-      }
+        network: 'polygon',
+      },
     ];
   }
 
@@ -532,11 +618,12 @@ class BlockchainAnalyticsService {
         id: `rec-${Date.now()}-1`,
         type: 'diversify' as const,
         title: 'Diversify Geographic Exposure',
-        description: 'Consider adding properties from Port Harcourt or Kano to reduce Lagos concentration risk.',
+        description:
+          'Consider adding properties from Port Harcourt or Kano to reduce Lagos concentration risk.',
         reasoning: [
           'Current portfolio: 100% Lagos-based properties',
           'Optimal allocation: 60% Lagos, 25% Abuja, 15% other cities',
-          'Risk reduction potential: 15-20%'
+          'Risk reduction potential: 15-20%',
         ],
         confidence: 85,
         potentialReturn: 12.5,
@@ -545,8 +632,8 @@ class BlockchainAnalyticsService {
         propertyIds: [],
         priority: 'medium' as const,
         aiGenerated: true,
-        createdAt: new Date()
-      }
+        createdAt: new Date(),
+      },
     ];
   }
 
@@ -555,19 +642,19 @@ class BlockchainAnalyticsService {
     const history = [];
     let price = currentPrice * 0.8; // Start 20% lower
     const now = new Date();
-    
+
     for (let i = 30; i >= 0; i--) {
       const date = new Date(now.getTime() - i * 24 * 60 * 60 * 1000);
       price += (Math.random() - 0.4) * price * 0.02; // Slight upward bias
-      
+
       history.push({
         timestamp: date,
         price: Math.max(price, currentPrice * 0.5), // Floor at 50% of current
         volume: Math.random() * 1000000,
-        marketCap: price * 10
+        marketCap: price * 10,
       });
     }
-    
+
     return history;
   }
 
@@ -585,14 +672,14 @@ class BlockchainAnalyticsService {
     this.analyticsCache.set(key, {
       data,
       timestamp: new Date(),
-      ttl
+      ttl,
     });
   }
 
   // Cleanup
   public cleanup(): void {
     this.updateCallbacks.clear();
-    this.wsConnections.forEach(ws => ws.close());
+    this.wsConnections.forEach((ws) => ws.close());
     this.wsConnections.clear();
     this.analyticsCache.clear();
   }

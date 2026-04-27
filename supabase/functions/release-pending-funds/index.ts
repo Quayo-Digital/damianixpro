@@ -17,8 +17,8 @@ serve(async (req) => {
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
       auth: {
         autoRefreshToken: false,
-        persistSession: false
-      }
+        persistSession: false,
+      },
     });
 
     // Get bookings that are completed and past clearance period
@@ -34,10 +34,10 @@ serve(async (req) => {
 
     if (fetchError) {
       console.error('Error fetching bookings:', fetchError);
-      return new Response(
-        JSON.stringify({ error: 'Failed to fetch bookings' }),
-        { status: 500, headers: { 'Content-Type': 'application/json' } }
-      );
+      return new Response(JSON.stringify({ error: 'Failed to fetch bookings' }), {
+        status: 500,
+        headers: { 'Content-Type': 'application/json' },
+      });
     }
 
     if (!bookings || bookings.length === 0) {
@@ -80,7 +80,7 @@ serve(async (req) => {
           .update({
             balance: currentBalance + payoutAmount,
             pending_balance: pendingBalance - payoutAmount,
-            updated_at: new Date().toISOString()
+            updated_at: new Date().toISOString(),
           })
           .eq('id', wallet.id);
 
@@ -88,6 +88,18 @@ serve(async (req) => {
           errors.push(`Failed to update wallet for booking ${booking.id}: ${updateError.message}`);
           continue;
         }
+
+        // Create transaction record for audit trail (pending → available)
+        const { error: txError } = await supabase.from('transactions').insert({
+          booking_id: booking.id,
+          user_id: booking.owner_id,
+          amount: payoutAmount,
+          type: 'deposit',
+          provider: 'system',
+          status: 'success',
+          description: `Funds released from pending after checkout (booking ${booking.id})`,
+        });
+        if (txError) console.error('Failed to create release transaction:', txError);
 
         released++;
         console.log(`Released ₦${payoutAmount} for booking ${booking.id}`);
@@ -103,7 +115,7 @@ serve(async (req) => {
         success: true,
         released,
         total: bookings.length,
-        errors: errors.length > 0 ? errors : undefined
+        errors: errors.length > 0 ? errors : undefined,
       }),
       { status: 200, headers: { 'Content-Type': 'application/json' } }
     );
@@ -112,10 +124,9 @@ serve(async (req) => {
     return new Response(
       JSON.stringify({
         success: false,
-        error: error instanceof Error ? error.message : 'Unknown error'
+        error: error instanceof Error ? error.message : 'Unknown error',
       }),
       { status: 500, headers: { 'Content-Type': 'application/json' } }
     );
   }
 });
-

@@ -1,13 +1,17 @@
-
 import { useState } from 'react';
-import { initializePayment } from '@/utils/PaystackUtils';
+import { initializePayment } from '@/utils/FlutterwaveUtils';
 import { Payment, PaymentCategory } from '@/utils/PaymentTypes';
 import { toast } from '@/components/ui/sonner';
 import { fetchTenantIdFromUser, validatePayment } from '../utils/paymentUtils';
-import { useAuth } from '@/contexts/auth';
+import { useAuthSession } from '@/contexts/auth';
 import { recordPayment } from '@/services/payments';
 import { v4 as uuidv4 } from 'uuid';
 import { supabase } from '@/integrations/supabase/client';
+import {
+  isMissingSupabaseRelationError,
+  isPropertyTenantsRelationMissing,
+  markPropertyTenantsRelationMissing,
+} from '@/utils/supabaseErrors';
 
 interface UsePaymentHandlerProps {
   tenantId?: string;
@@ -15,12 +19,12 @@ interface UsePaymentHandlerProps {
   setIsOpen: (isOpen: boolean) => void;
 }
 
-export const usePaymentHandler = ({ 
-  tenantId: initialTenantId, 
+export const usePaymentHandler = ({
+  tenantId: initialTenantId,
   onPaymentSuccess,
-  setIsOpen
+  setIsOpen,
 }: UsePaymentHandlerProps) => {
-  const { user } = useAuth();
+  const { user } = useAuthSession();
   const [isProcessing, setIsProcessing] = useState(false);
 
   const handleOneTimePayment = async (
@@ -29,16 +33,25 @@ export const usePaymentHandler = ({
     description: string
   ) => {
     setIsProcessing(true);
-    
+
     try {
       let effectiveTenantId = initialTenantId;
       if (!effectiveTenantId && user) {
         effectiveTenantId = await fetchTenantIdFromUser(user.id);
       }
-      
+
       const validation = validatePayment(amount, effectiveTenantId);
       if (!validation.valid) {
         throw new Error(validation.message);
+      }
+
+      if (isPropertyTenantsRelationMissing()) {
+        toast.error('Payments unavailable', {
+          description:
+            'The tenancy table is not available on this project yet. Apply database migrations or contact support.',
+          duration: 8000,
+        });
+        throw new Error('property_tenants table not available');
       }
 
       // Find the active tenancy to link the payment
@@ -48,13 +61,26 @@ export const usePaymentHandler = ({
         .eq('tenant_id', effectiveTenantId)
         .maybeSingle();
 
-      if (ptError) throw ptError;
+      if (ptError) {
+        if (isMissingSupabaseRelationError(ptError)) {
+          markPropertyTenantsRelationMissing();
+          toast.error('Payments unavailable', {
+            description:
+              'The tenancy table is not available on this project yet. Apply database migrations or contact support.',
+            duration: 8000,
+          });
+          throw new Error('property_tenants table not available');
+        }
+        throw ptError;
+      }
 
       if (!propertyTenant) {
-        toast.error("No active tenancy found.", { description: "Please contact your property manager." });
+        toast.error('No active tenancy found.', {
+          description: 'Please contact your property manager.',
+        });
         throw new Error('No active tenancy found for this user.');
       }
-      
+
       const reference = uuidv4();
 
       const pendingPayment: Omit<Payment, 'id'> = {
@@ -66,18 +92,18 @@ export const usePaymentHandler = ({
         category,
         description,
       };
-      
+
       const recordedPayment = await recordPayment(pendingPayment);
       if (!recordedPayment) {
-        throw new Error("Could not initiate payment record.");
+        throw new Error('Could not initiate payment record.');
       }
 
       onPaymentSuccess(recordedPayment);
 
       initializePayment({
-        amount: amount * 100, // Convert to kobo
-        email: user?.email || "tenant@example.com",
-        currency: "NGN",
+        amount,
+        email: user?.email || 'tenant@example.com',
+        currency: 'NGN',
         ref: reference,
         metadata: {
           tenantId: effectiveTenantId,
@@ -96,10 +122,15 @@ export const usePaymentHandler = ({
         onCancel: () => {
           setIsProcessing(false);
           toast.error('Payment was cancelled');
-        }
+        },
       });
     } catch (error) {
-      console.error("Payment error:", error);
+      const msg = error instanceof Error ? error.message : '';
+      if (msg === 'property_tenants table not available') {
+        setIsProcessing(false);
+        return;
+      }
+      console.error('Payment error:', error);
       setIsProcessing(false);
       toast.error(error instanceof Error ? error.message : 'Failed to process payment');
     }
@@ -113,6 +144,6 @@ export const usePaymentHandler = ({
   return {
     isProcessing,
     handleOneTimePayment,
-    handleViewReceipt
+    handleViewReceipt,
   };
 };

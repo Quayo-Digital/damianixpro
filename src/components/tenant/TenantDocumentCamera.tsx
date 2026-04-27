@@ -8,16 +8,16 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { 
-  FileText, 
-  CreditCard, 
-  User, 
-  Building, 
+import {
+  FileText,
+  CreditCard,
+  User,
+  Building,
   Camera,
   CheckCircle,
   AlertCircle,
   Info,
-  Download
+  Download,
 } from 'lucide-react';
 import CameraButton from '@/components/camera/CameraButton';
 import PhotoGallery from '@/components/camera/PhotoGallery';
@@ -39,7 +39,7 @@ const DOCUMENT_TYPES: DocumentType[] = [
     description: 'Nigerian National Identity Card (front and back)',
     icon: CreditCard,
     required: true,
-    maxPhotos: 2
+    maxPhotos: 2,
   },
   {
     id: 'passport',
@@ -47,7 +47,7 @@ const DOCUMENT_TYPES: DocumentType[] = [
     description: 'Nigerian International Passport (photo page)',
     icon: User,
     required: false,
-    maxPhotos: 1
+    maxPhotos: 1,
   },
   {
     id: 'drivers_license',
@@ -55,7 +55,7 @@ const DOCUMENT_TYPES: DocumentType[] = [
     description: "Nigerian Driver's License (front and back)",
     icon: CreditCard,
     required: false,
-    maxPhotos: 2
+    maxPhotos: 2,
   },
   {
     id: 'employment_letter',
@@ -63,7 +63,7 @@ const DOCUMENT_TYPES: DocumentType[] = [
     description: 'Official employment verification letter',
     icon: FileText,
     required: true,
-    maxPhotos: 3
+    maxPhotos: 3,
   },
   {
     id: 'salary_slip',
@@ -71,7 +71,7 @@ const DOCUMENT_TYPES: DocumentType[] = [
     description: 'Recent salary slip or pay stub',
     icon: FileText,
     required: true,
-    maxPhotos: 2
+    maxPhotos: 2,
   },
   {
     id: 'bank_statement',
@@ -79,7 +79,7 @@ const DOCUMENT_TYPES: DocumentType[] = [
     description: 'Recent bank statement (last 3 months)',
     icon: Building,
     required: true,
-    maxPhotos: 5
+    maxPhotos: 5,
   },
   {
     id: 'guarantor_id',
@@ -87,8 +87,8 @@ const DOCUMENT_TYPES: DocumentType[] = [
     description: "Guarantor's identification document",
     icon: User,
     required: true,
-    maxPhotos: 2
-  }
+    maxPhotos: 2,
+  },
 ];
 
 interface TenantDocumentCameraProps {
@@ -96,9 +96,9 @@ interface TenantDocumentCameraProps {
   initialDocuments?: Record<string, CapturedPhoto[]>;
 }
 
-export function TenantDocumentCamera({ 
-  onDocumentsUpdate, 
-  initialDocuments = {} 
+export function TenantDocumentCamera({
+  onDocumentsUpdate,
+  initialDocuments = {},
 }: TenantDocumentCameraProps) {
   const [documents, setDocuments] = useState<Record<string, CapturedPhoto[]>>(initialDocuments);
   const [selectedDocumentType, setSelectedDocumentType] = useState<string | null>(null);
@@ -106,7 +106,7 @@ export function TenantDocumentCamera({
   const handleDocumentPhoto = (documentTypeId: string) => (photo: CapturedPhoto) => {
     const updatedDocuments = {
       ...documents,
-      [documentTypeId]: [...(documents[documentTypeId] || []), photo]
+      [documentTypeId]: [...(documents[documentTypeId] || []), photo],
     };
     setDocuments(updatedDocuments);
     onDocumentsUpdate(updatedDocuments);
@@ -115,7 +115,7 @@ export function TenantDocumentCamera({
   const handleDocumentPhotos = (documentTypeId: string) => (photos: CapturedPhoto[]) => {
     const updatedDocuments = {
       ...documents,
-      [documentTypeId]: [...(documents[documentTypeId] || []), ...photos]
+      [documentTypeId]: [...(documents[documentTypeId] || []), ...photos],
     };
     setDocuments(updatedDocuments);
     onDocumentsUpdate(updatedDocuments);
@@ -124,7 +124,7 @@ export function TenantDocumentCamera({
   const removeDocumentPhoto = (documentTypeId: string) => (photoId: string) => {
     const updatedDocuments = {
       ...documents,
-      [documentTypeId]: (documents[documentTypeId] || []).filter(photo => photo.id !== photoId)
+      [documentTypeId]: (documents[documentTypeId] || []).filter((photo) => photo.id !== photoId),
     };
     setDocuments(updatedDocuments);
     onDocumentsUpdate(updatedDocuments);
@@ -133,7 +133,7 @@ export function TenantDocumentCamera({
   const getDocumentStatus = (documentType: DocumentType) => {
     const photos = documents[documentType.id] || [];
     const photoCount = photos.length;
-    
+
     if (documentType.required && photoCount === 0) {
       return { status: 'missing', color: 'destructive', text: 'Required' };
     } else if (photoCount === 0) {
@@ -141,17 +141,21 @@ export function TenantDocumentCamera({
     } else if (photoCount >= documentType.maxPhotos) {
       return { status: 'complete', color: 'default', text: 'Complete' };
     } else {
-      return { status: 'partial', color: 'secondary', text: `${photoCount}/${documentType.maxPhotos}` };
+      return {
+        status: 'partial',
+        color: 'secondary',
+        text: `${photoCount}/${documentType.maxPhotos}`,
+      };
     }
   };
 
   const getTotalProgress = () => {
-    const requiredDocs = DOCUMENT_TYPES.filter(doc => doc.required);
-    const completedRequired = requiredDocs.filter(doc => (documents[doc.id] || []).length > 0);
+    const requiredDocs = DOCUMENT_TYPES.filter((doc) => doc.required);
+    const completedRequired = requiredDocs.filter((doc) => (documents[doc.id] || []).length > 0);
     return {
       completed: completedRequired.length,
       total: requiredDocs.length,
-      percentage: Math.round((completedRequired.length / requiredDocs.length) * 100)
+      percentage: Math.round((completedRequired.length / requiredDocs.length) * 100),
     };
   };
 
@@ -176,19 +180,20 @@ export function TenantDocumentCamera({
           <Alert>
             <Camera className="h-4 w-4" />
             <AlertDescription>
-              📱 <strong>Mobile Document Scanning:</strong> Use your camera to scan official documents. 
-              Ensure documents are well-lit and all text is clearly visible. Optimized for Nigerian networks.
+              📱 <strong>Mobile Document Scanning:</strong> Use your camera to scan official
+              documents. Ensure documents are well-lit and all text is clearly visible. Optimized
+              for Nigerian networks.
             </AlertDescription>
           </Alert>
-          
+
           <div className="mt-4">
-            <div className="flex items-center justify-between text-sm mb-2">
+            <div className="mb-2 flex items-center justify-between text-sm">
               <span>Application Progress</span>
               <span>{progress.percentage}%</span>
             </div>
-            <div className="w-full bg-gray-200 rounded-full h-2">
-              <div 
-                className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+            <div className="h-2 w-full rounded-full bg-gray-200">
+              <div
+                className="h-2 rounded-full bg-blue-600 transition-all duration-300"
                 style={{ width: `${progress.percentage}%` }}
               />
             </div>
@@ -197,7 +202,7 @@ export function TenantDocumentCamera({
       </Card>
 
       {/* Document Types */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
         {DOCUMENT_TYPES.map((documentType) => {
           const IconComponent = documentType.icon;
           const status = getDocumentStatus(documentType);
@@ -212,15 +217,11 @@ export function TenantDocumentCamera({
                     <IconComponent className="h-4 w-4" />
                     {documentType.name}
                   </div>
-                  <Badge variant={status.color as any}>
-                    {status.text}
-                  </Badge>
+                  <Badge variant={status.color as any}>{status.text}</Badge>
                 </CardTitle>
-                <p className="text-sm text-muted-foreground">
-                  {documentType.description}
-                </p>
+                <p className="text-sm text-muted-foreground">{documentType.description}</p>
               </CardHeader>
-              
+
               <CardContent className="space-y-4">
                 {/* Camera Buttons */}
                 <div className="flex gap-2">
@@ -230,10 +231,10 @@ export function TenantDocumentCamera({
                     onPhotoCapture={handleDocumentPhoto(documentType.id)}
                     disabled={!canAddMore}
                   >
-                    <Camera className="h-3 w-3 mr-1" />
+                    <Camera className="mr-1 h-3 w-3" />
                     Scan
                   </CameraButton>
-                  
+
                   {documentType.maxPhotos > 1 && canAddMore && (
                     <CameraButton
                       variant="document"
@@ -242,7 +243,7 @@ export function TenantDocumentCamera({
                       maxPhotos={documentType.maxPhotos - photos.length}
                       onPhotosCapture={handleDocumentPhotos(documentType.id)}
                     >
-                      <Camera className="h-3 w-3 mr-1" />
+                      <Camera className="mr-1 h-3 w-3" />
                       Multiple
                     </CameraButton>
                   )}
@@ -256,17 +257,17 @@ export function TenantDocumentCamera({
                     </h5>
                     <div className="grid grid-cols-2 gap-2">
                       {photos.map((photo) => (
-                        <div key={photo.id} className="relative group">
+                        <div key={photo.id} className="group relative">
                           <img
                             src={photo.dataUrl}
                             alt={`${documentType.name} scan`}
-                            className="w-full aspect-[3/2] object-cover rounded border"
+                            className="aspect-[3/2] w-full rounded border object-cover"
                           />
                           <Button
                             variant="destructive"
                             size="sm"
                             onClick={() => removeDocumentPhoto(documentType.id)(photo.id)}
-                            className="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity w-6 h-6 p-0"
+                            className="absolute right-1 top-1 h-6 w-6 p-0 opacity-0 transition-opacity group-hover:opacity-100"
                           >
                             ×
                           </Button>
@@ -285,7 +286,7 @@ export function TenantDocumentCamera({
                 <Alert>
                   <Info className="h-4 w-4" />
                   <AlertDescription className="text-xs">
-                    <strong>Tips:</strong> Ensure good lighting, avoid shadows, capture all corners, 
+                    <strong>Tips:</strong> Ensure good lighting, avoid shadows, capture all corners,
                     and keep text clearly readable for faster verification.
                   </AlertDescription>
                 </Alert>
@@ -302,12 +303,10 @@ export function TenantDocumentCamera({
             <div className="flex items-center gap-3">
               <CheckCircle className="h-6 w-6 text-green-600" />
               <div>
-                <h4 className="font-medium text-green-900">
-                  🎉 All Required Documents Scanned!
-                </h4>
+                <h4 className="font-medium text-green-900">🎉 All Required Documents Scanned!</h4>
                 <p className="text-sm text-green-700">
-                  Your tenant application documents are ready for review. 
-                  You can now proceed with your application.
+                  Your tenant application documents are ready for review. You can now proceed with
+                  your application.
                 </p>
               </div>
             </div>
@@ -319,9 +318,9 @@ export function TenantDocumentCamera({
       <Alert>
         <Info className="h-4 w-4" />
         <AlertDescription>
-          🇳🇬 <strong>Nigerian Document Verification:</strong> All scanned documents will be verified 
-          according to Nigerian standards. Ensure your National ID, employment documents, and bank statements 
-          are current and clearly legible for faster processing.
+          🇳🇬 <strong>Nigerian Document Verification:</strong> All scanned documents will be verified
+          according to Nigerian standards. Ensure your National ID, employment documents, and bank
+          statements are current and clearly legible for faster processing.
         </AlertDescription>
       </Alert>
     </div>

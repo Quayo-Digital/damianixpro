@@ -1,19 +1,19 @@
 import { useState, useEffect } from 'react';
-import { useAuth } from '@/contexts/auth';
+import { useAuthSession } from '@/contexts/auth';
 import { CompanyService } from '@/services/companyService';
-import { 
-  CompanyProfile, 
-  CompanyTeamMember, 
-  CompanyDocument, 
+import {
+  CompanyProfile,
+  CompanyTeamMember,
+  CompanyDocument,
   UserCompanyProfile,
   CompanyProfileFormValues,
   TeamMemberFormValues,
-  CompanyDocumentFormValues
+  CompanyDocumentFormValues,
 } from '@/types/company';
 import { toast } from 'sonner';
 
 export const useCompanyProfile = () => {
-  const { user } = useAuth();
+  const { user } = useAuthSession();
   const [companyProfile, setCompanyProfile] = useState<CompanyProfile | null>(null);
   const [userCompanyProfile, setUserCompanyProfile] = useState<UserCompanyProfile | null>(null);
   const [teamMembers, setTeamMembers] = useState<CompanyTeamMember[]>([]);
@@ -47,7 +47,7 @@ export const useCompanyProfile = () => {
       const [profile, members, docs] = await Promise.all([
         CompanyService.getCompanyProfile(companyId),
         CompanyService.getTeamMembers(companyId),
-        CompanyService.getCompanyDocuments(companyId)
+        CompanyService.getCompanyDocuments(companyId),
       ]);
 
       setCompanyProfile(profile);
@@ -60,15 +60,17 @@ export const useCompanyProfile = () => {
   };
 
   // Create company profile
-  const createCompanyProfile = async (data: CompanyProfileFormValues): Promise<CompanyProfile | null> => {
+  const createCompanyProfile = async (
+    data: CompanyProfileFormValues
+  ): Promise<CompanyProfile | null> => {
     try {
       setIsLoading(true);
       const newProfile = await CompanyService.createCompanyProfile(data);
       setCompanyProfile(newProfile);
-      
+
       // Update user company profile
       await loadUserCompanyProfile();
-      
+
       toast.success('Company profile created successfully!');
       return newProfile;
     } catch (err) {
@@ -83,7 +85,9 @@ export const useCompanyProfile = () => {
   };
 
   // Update company profile
-  const updateCompanyProfile = async (data: Partial<CompanyProfileFormValues>): Promise<boolean> => {
+  const updateCompanyProfile = async (
+    data: Partial<CompanyProfileFormValues>
+  ): Promise<boolean> => {
     if (!companyProfile?.id) return false;
 
     try {
@@ -109,7 +113,7 @@ export const useCompanyProfile = () => {
 
     try {
       const newMember = await CompanyService.addTeamMember(companyProfile.id, data);
-      setTeamMembers(prev => [newMember, ...prev]);
+      setTeamMembers((prev) => [newMember, ...prev]);
       toast.success('Team member added successfully!');
       return true;
     } catch (err) {
@@ -121,12 +125,13 @@ export const useCompanyProfile = () => {
     }
   };
 
-  const updateTeamMember = async (id: string, data: Partial<TeamMemberFormValues>): Promise<boolean> => {
+  const updateTeamMember = async (
+    id: string,
+    data: Partial<TeamMemberFormValues>
+  ): Promise<boolean> => {
     try {
       const updatedMember = await CompanyService.updateTeamMember(id, data);
-      setTeamMembers(prev => prev.map(member => 
-        member.id === id ? updatedMember : member
-      ));
+      setTeamMembers((prev) => prev.map((member) => (member.id === id ? updatedMember : member)));
       toast.success('Team member updated successfully!');
       return true;
     } catch (err) {
@@ -141,7 +146,7 @@ export const useCompanyProfile = () => {
   const removeTeamMember = async (id: string): Promise<boolean> => {
     try {
       await CompanyService.removeTeamMember(id);
-      setTeamMembers(prev => prev.filter(member => member.id !== id));
+      setTeamMembers((prev) => prev.filter((member) => member.id !== id));
       toast.success('Team member removed successfully!');
       return true;
     } catch (err) {
@@ -153,17 +158,21 @@ export const useCompanyProfile = () => {
     }
   };
 
-  const updateTeamMemberStatus = async (id: string, status: 'ACTIVE' | 'INACTIVE' | 'SUSPENDED'): Promise<boolean> => {
+  const updateTeamMemberStatus = async (
+    id: string,
+    status: 'ACTIVE' | 'INACTIVE' | 'SUSPENDED'
+  ): Promise<boolean> => {
     try {
       await CompanyService.updateTeamMemberStatus(id, status);
-      setTeamMembers(prev => prev.map(member => 
-        member.id === id ? { ...member, status } : member
-      ));
+      setTeamMembers((prev) =>
+        prev.map((member) => (member.id === id ? { ...member, status } : member))
+      );
       toast.success(`Team member status updated to ${status.toLowerCase()}!`);
       return true;
     } catch (err) {
       console.error('Error updating team member status:', err);
-      const errorMessage = err instanceof Error ? err.message : 'Failed to update team member status';
+      const errorMessage =
+        err instanceof Error ? err.message : 'Failed to update team member status';
       setError(errorMessage);
       toast.error(errorMessage);
       return false;
@@ -176,7 +185,7 @@ export const useCompanyProfile = () => {
 
     try {
       const newDocument = await CompanyService.uploadDocument(companyProfile.id, data);
-      setDocuments(prev => [newDocument, ...prev]);
+      setDocuments((prev) => [newDocument, ...prev]);
       toast.success('Document uploaded successfully!');
       return true;
     } catch (err) {
@@ -188,12 +197,13 @@ export const useCompanyProfile = () => {
     }
   };
 
-  const updateDocument = async (id: string, data: Partial<CompanyDocumentFormValues>): Promise<boolean> => {
+  const updateDocument = async (
+    id: string,
+    data: Partial<CompanyDocumentFormValues>
+  ): Promise<boolean> => {
     try {
       const updatedDocument = await CompanyService.updateDocument(id, data);
-      setDocuments(prev => prev.map(doc => 
-        doc.id === id ? updatedDocument : doc
-      ));
+      setDocuments((prev) => prev.map((doc) => (doc.id === id ? updatedDocument : doc)));
       toast.success('Document updated successfully!');
       return true;
     } catch (err) {
@@ -208,7 +218,7 @@ export const useCompanyProfile = () => {
   const deleteDocument = async (id: string): Promise<boolean> => {
     try {
       await CompanyService.deleteDocument(id);
-      setDocuments(prev => prev.filter(doc => doc.id !== id));
+      setDocuments((prev) => prev.filter((doc) => doc.id !== id));
       toast.success('Document deleted successfully!');
       return true;
     } catch (err) {
@@ -235,7 +245,10 @@ export const useCompanyProfile = () => {
   };
 
   // Verification functions (admin only)
-  const verifyCompany = async (status: 'VERIFIED' | 'REJECTED', notes?: string): Promise<boolean> => {
+  const verifyCompany = async (
+    status: 'VERIFIED' | 'REJECTED',
+    notes?: string
+  ): Promise<boolean> => {
     if (!companyProfile?.id) return false;
 
     try {
@@ -252,12 +265,14 @@ export const useCompanyProfile = () => {
     }
   };
 
-  const verifyDocument = async (id: string, status: 'VERIFIED' | 'REJECTED', notes?: string): Promise<boolean> => {
+  const verifyDocument = async (
+    id: string,
+    status: 'VERIFIED' | 'REJECTED',
+    notes?: string
+  ): Promise<boolean> => {
     try {
       const updatedDocument = await CompanyService.verifyDocument(id, status, notes);
-      setDocuments(prev => prev.map(doc => 
-        doc.id === id ? updatedDocument : doc
-      ));
+      setDocuments((prev) => prev.map((doc) => (doc.id === id ? updatedDocument : doc)));
       toast.success(`Document ${status.toLowerCase()} successfully!`);
       return true;
     } catch (err) {
@@ -270,15 +285,21 @@ export const useCompanyProfile = () => {
   };
 
   // Settings management
-  const updateNotificationPreferences = async (preferences: Record<string, boolean>): Promise<boolean> => {
+  const updateNotificationPreferences = async (
+    preferences: Record<string, boolean>
+  ): Promise<boolean> => {
     if (!companyProfile?.id) return false;
 
     try {
       await CompanyService.updateNotificationPreferences(companyProfile.id, preferences);
-      setCompanyProfile(prev => prev ? {
-        ...prev,
-        notification_preferences: { ...prev.notification_preferences, ...preferences }
-      } : null);
+      setCompanyProfile((prev) =>
+        prev
+          ? {
+              ...prev,
+              notification_preferences: { ...prev.notification_preferences, ...preferences },
+            }
+          : null
+      );
       toast.success('Notification preferences updated!');
       return true;
     } catch (err) {
@@ -295,10 +316,14 @@ export const useCompanyProfile = () => {
 
     try {
       await CompanyService.updateBusinessHours(companyProfile.id, businessHours);
-      setCompanyProfile(prev => prev ? {
-        ...prev,
-        business_hours: businessHours
-      } : null);
+      setCompanyProfile((prev) =>
+        prev
+          ? {
+              ...prev,
+              business_hours: businessHours,
+            }
+          : null
+      );
       toast.success('Business hours updated!');
       return true;
     } catch (err) {
@@ -338,7 +363,7 @@ export const useCompanyProfile = () => {
       teamMembersCount: teamMembers.length,
       documentsCount: documents.length,
       verificationStatus: companyProfile.verification_status,
-      subscriptionStatus: companyProfile.subscription_status
+      subscriptionStatus: companyProfile.subscription_status,
     };
   };
 
@@ -398,6 +423,6 @@ export const useCompanyProfile = () => {
     getCompanyStats,
 
     // Clear error
-    clearError: () => setError(null)
+    clearError: () => setError(null),
   };
 };

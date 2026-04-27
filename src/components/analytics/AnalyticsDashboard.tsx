@@ -4,37 +4,59 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { 
-  TrendingUp, TrendingDown, BarChart3, PieChart, 
-  MapPin, DollarSign, Users, Building, 
-  AlertTriangle, CheckCircle, Clock, Target 
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import {
+  TrendingUp,
+  TrendingDown,
+  BarChart3,
+  PieChart,
+  MapPin,
+  DollarSign,
+  Users,
+  Building,
+  AlertTriangle,
+  CheckCircle,
+  Clock,
+  Target,
 } from 'lucide-react';
-import RealEstateAnalyticsEngine, { 
-  MarketTrend, InvestmentAnalysis, NeighborhoodInsights, PredictiveInsights 
+import RealEstateAnalyticsEngine, {
+  MarketTrend,
+  InvestmentAnalysis,
+  NeighborhoodInsights,
+  PredictiveInsights,
 } from '@/services/analytics/RealEstateAnalyticsEngine';
 
 const AnalyticsDashboard: React.FC = () => {
   const [analyticsEngine] = useState(() => new RealEstateAnalyticsEngine());
   const [selectedLocation, setSelectedLocation] = useState('lagos');
-  const [selectedPropertyType, setSelectedPropertyType] = useState<'RESIDENTIAL' | 'COMMERCIAL' | 'LAND' | 'INDUSTRIAL'>('RESIDENTIAL');
+  const [selectedPropertyType, setSelectedPropertyType] = useState<
+    'RESIDENTIAL' | 'COMMERCIAL' | 'LAND' | 'INDUSTRIAL'
+  >('RESIDENTIAL');
   const [marketTrend, setMarketTrend] = useState<MarketTrend | null>(null);
   const [investmentAnalysis, setInvestmentAnalysis] = useState<InvestmentAnalysis | null>(null);
-  const [neighborhoodInsights, setNeighborhoodInsights] = useState<NeighborhoodInsights | null>(null);
+  const [neighborhoodInsights, setNeighborhoodInsights] = useState<NeighborhoodInsights | null>(
+    null
+  );
   const [predictiveInsights, setPredictiveInsights] = useState<PredictiveInsights | null>(null);
   const [loading, setLoading] = useState(false);
 
   const locations = [
     { value: 'lagos', label: 'Lagos' },
     { value: 'abuja', label: 'Abuja' },
-    { value: 'port-harcourt', label: 'Port Harcourt' }
+    { value: 'port-harcourt', label: 'Port Harcourt' },
   ];
 
   const propertyTypes = [
     { value: 'RESIDENTIAL', label: 'Residential' },
     { value: 'COMMERCIAL', label: 'Commercial' },
     { value: 'LAND', label: 'Land' },
-    { value: 'INDUSTRIAL', label: 'Industrial' }
+    { value: 'INDUSTRIAL', label: 'Industrial' },
   ];
 
   const loadAnalytics = async () => {
@@ -42,9 +64,14 @@ const AnalyticsDashboard: React.FC = () => {
     try {
       const [trend, investment, neighborhood, predictive] = await Promise.all([
         analyticsEngine.analyzeMarketTrends(selectedLocation, selectedPropertyType),
-        analyticsEngine.analyzeInvestment('sample-property', 25000000, selectedLocation, selectedPropertyType),
+        analyticsEngine.analyzeInvestment(
+          'sample-property',
+          25000000,
+          selectedLocation,
+          selectedPropertyType
+        ),
         analyticsEngine.analyzeNeighborhood(selectedLocation),
-        analyticsEngine.generatePredictiveInsights(selectedLocation, selectedPropertyType, '1Y')
+        analyticsEngine.generatePredictiveInsights(selectedLocation, selectedPropertyType, '1Y'),
       ]);
 
       setMarketTrend(trend);
@@ -76,25 +103,49 @@ const AnalyticsDashboard: React.FC = () => {
   };
 
   const getTrendIcon = (value: number) => {
-    return value > 0 ? <TrendingUp className="h-4 w-4 text-green-500" /> : <TrendingDown className="h-4 w-4 text-red-500" />;
+    return value > 0 ? (
+      <TrendingUp className="h-4 w-4 text-green-500" />
+    ) : (
+      <TrendingDown className="h-4 w-4 text-red-500" />
+    );
   };
 
   const getBadgeVariant = (value: string) => {
     switch (value) {
-      case 'HIGH': case 'BUY': case 'POSITIVE': case 'A+': case 'A': return 'default';
-      case 'MEDIUM': case 'HOLD': case 'NEUTRAL': case 'B+': case 'B': return 'secondary';
-      case 'LOW': case 'SELL': case 'WATCH': case 'NEGATIVE': case 'C+': case 'C': case 'D': return 'destructive';
-      default: return 'outline';
+      case 'HIGH':
+      case 'BUY':
+      case 'POSITIVE':
+      case 'A+':
+      case 'A':
+        return 'default';
+      case 'MEDIUM':
+      case 'HOLD':
+      case 'NEUTRAL':
+      case 'B+':
+      case 'B':
+        return 'secondary';
+      case 'LOW':
+      case 'SELL':
+      case 'WATCH':
+      case 'NEGATIVE':
+      case 'C+':
+      case 'C':
+      case 'D':
+        return 'destructive';
+      default:
+        return 'outline';
     }
   };
 
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+      <div className="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
         <div>
           <h1 className="text-3xl font-bold">Real Estate Analytics</h1>
-          <p className="text-muted-foreground">Advanced market intelligence and investment insights</p>
+          <p className="text-muted-foreground">
+            Advanced market intelligence and investment insights
+          </p>
         </div>
         <div className="flex gap-2">
           <Select value={selectedLocation} onValueChange={setSelectedLocation}>
@@ -102,19 +153,22 @@ const AnalyticsDashboard: React.FC = () => {
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              {locations.map(location => (
+              {locations.map((location) => (
                 <SelectItem key={location.value} value={location.value}>
                   {location.label}
                 </SelectItem>
               ))}
             </SelectContent>
           </Select>
-          <Select value={selectedPropertyType} onValueChange={(value: any) => setSelectedPropertyType(value)}>
+          <Select
+            value={selectedPropertyType}
+            onValueChange={(value: any) => setSelectedPropertyType(value)}
+          >
             <SelectTrigger className="w-40">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              {propertyTypes.map(type => (
+              {propertyTypes.map((type) => (
                 <SelectItem key={type.value} value={type.value}>
                   {type.label}
                 </SelectItem>
@@ -146,10 +200,14 @@ const AnalyticsDashboard: React.FC = () => {
                     <DollarSign className="h-4 w-4 text-muted-foreground" />
                   </CardHeader>
                   <CardContent>
-                    <div className="text-2xl font-bold">{formatCurrency(marketTrend.currentAvgPrice)}</div>
+                    <div className="text-2xl font-bold">
+                      {formatCurrency(marketTrend.currentAvgPrice)}
+                    </div>
                     <div className="flex items-center text-xs text-muted-foreground">
                       {getTrendIcon(marketTrend.priceChange1Year)}
-                      <span className="ml-1">{formatPercentage(marketTrend.priceChange1Year)} YoY</span>
+                      <span className="ml-1">
+                        {formatPercentage(marketTrend.priceChange1Year)} YoY
+                      </span>
                     </div>
                   </CardContent>
                 </Card>
@@ -160,7 +218,9 @@ const AnalyticsDashboard: React.FC = () => {
                     <TrendingUp className="h-4 w-4 text-muted-foreground" />
                   </CardHeader>
                   <CardContent>
-                    <div className="text-2xl font-bold">{marketTrend.demandScore.toFixed(0)}/100</div>
+                    <div className="text-2xl font-bold">
+                      {marketTrend.demandScore.toFixed(0)}/100
+                    </div>
                     <Progress value={marketTrend.demandScore} className="mt-2" />
                   </CardContent>
                 </Card>
@@ -171,7 +231,9 @@ const AnalyticsDashboard: React.FC = () => {
                     <BarChart3 className="h-4 w-4 text-muted-foreground" />
                   </CardHeader>
                   <CardContent>
-                    <div className="text-2xl font-bold">{marketTrend.supplyScore.toFixed(0)}/100</div>
+                    <div className="text-2xl font-bold">
+                      {marketTrend.supplyScore.toFixed(0)}/100
+                    </div>
                     <Progress value={marketTrend.supplyScore} className="mt-2" />
                   </CardContent>
                 </Card>
@@ -182,7 +244,9 @@ const AnalyticsDashboard: React.FC = () => {
                     <PieChart className="h-4 w-4 text-muted-foreground" />
                   </CardHeader>
                   <CardContent>
-                    <div className="text-2xl font-bold">{marketTrend.liquidityScore.toFixed(0)}/100</div>
+                    <div className="text-2xl font-bold">
+                      {marketTrend.liquidityScore.toFixed(0)}/100
+                    </div>
                     <Progress value={marketTrend.liquidityScore} className="mt-2" />
                   </CardContent>
                 </Card>
@@ -194,19 +258,19 @@ const AnalyticsDashboard: React.FC = () => {
                     <CardTitle>Market Assessment</CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-4">
-                    <div className="flex justify-between items-center">
+                    <div className="flex items-center justify-between">
                       <span>Growth Potential:</span>
                       <Badge variant={getBadgeVariant(marketTrend.growthPotential)}>
                         {marketTrend.growthPotential}
                       </Badge>
                     </div>
-                    <div className="flex justify-between items-center">
+                    <div className="flex items-center justify-between">
                       <span>Risk Level:</span>
                       <Badge variant={getBadgeVariant(marketTrend.riskLevel)}>
                         {marketTrend.riskLevel}
                       </Badge>
                     </div>
-                    <div className="flex justify-between items-center">
+                    <div className="flex items-center justify-between">
                       <span>Recommendation:</span>
                       <Badge variant={getBadgeVariant(marketTrend.recommendedAction)}>
                         {marketTrend.recommendedAction}
@@ -220,25 +284,31 @@ const AnalyticsDashboard: React.FC = () => {
                     <CardTitle>Price Changes</CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-4">
-                    <div className="flex justify-between items-center">
+                    <div className="flex items-center justify-between">
                       <span>30 Days:</span>
                       <div className="flex items-center">
                         {getTrendIcon(marketTrend.priceChange30Days)}
-                        <span className="ml-1">{formatPercentage(marketTrend.priceChange30Days)}</span>
+                        <span className="ml-1">
+                          {formatPercentage(marketTrend.priceChange30Days)}
+                        </span>
                       </div>
                     </div>
-                    <div className="flex justify-between items-center">
+                    <div className="flex items-center justify-between">
                       <span>90 Days:</span>
                       <div className="flex items-center">
                         {getTrendIcon(marketTrend.priceChange90Days)}
-                        <span className="ml-1">{formatPercentage(marketTrend.priceChange90Days)}</span>
+                        <span className="ml-1">
+                          {formatPercentage(marketTrend.priceChange90Days)}
+                        </span>
                       </div>
                     </div>
-                    <div className="flex justify-between items-center">
+                    <div className="flex items-center justify-between">
                       <span>1 Year:</span>
                       <div className="flex items-center">
                         {getTrendIcon(marketTrend.priceChange1Year)}
-                        <span className="ml-1">{formatPercentage(marketTrend.priceChange1Year)}</span>
+                        <span className="ml-1">
+                          {formatPercentage(marketTrend.priceChange1Year)}
+                        </span>
                       </div>
                     </div>
                   </CardContent>
@@ -259,7 +329,9 @@ const AnalyticsDashboard: React.FC = () => {
                     <Target className="h-4 w-4 text-muted-foreground" />
                   </CardHeader>
                   <CardContent>
-                    <div className="text-2xl font-bold">{investmentAnalysis.expectedROI.toFixed(1)}%</div>
+                    <div className="text-2xl font-bold">
+                      {investmentAnalysis.expectedROI.toFixed(1)}%
+                    </div>
                     <p className="text-xs text-muted-foreground">Annual return</p>
                   </CardContent>
                 </Card>
@@ -270,7 +342,9 @@ const AnalyticsDashboard: React.FC = () => {
                     <DollarSign className="h-4 w-4 text-muted-foreground" />
                   </CardHeader>
                   <CardContent>
-                    <div className="text-2xl font-bold">{formatCurrency(investmentAnalysis.cashFlow)}</div>
+                    <div className="text-2xl font-bold">
+                      {formatCurrency(investmentAnalysis.cashFlow)}
+                    </div>
                     <p className="text-xs text-muted-foreground">Monthly net income</p>
                   </CardContent>
                 </Card>
@@ -281,7 +355,9 @@ const AnalyticsDashboard: React.FC = () => {
                     <Clock className="h-4 w-4 text-muted-foreground" />
                   </CardHeader>
                   <CardContent>
-                    <div className="text-2xl font-bold">{investmentAnalysis.paybackPeriod.toFixed(1)}</div>
+                    <div className="text-2xl font-bold">
+                      {investmentAnalysis.paybackPeriod.toFixed(1)}
+                    </div>
                     <p className="text-xs text-muted-foreground">Years to break even</p>
                   </CardContent>
                 </Card>
@@ -292,7 +368,9 @@ const AnalyticsDashboard: React.FC = () => {
                     <CheckCircle className="h-4 w-4 text-muted-foreground" />
                   </CardHeader>
                   <CardContent>
-                    <div className="text-2xl font-bold">{investmentAnalysis.overallScore.toFixed(0)}/100</div>
+                    <div className="text-2xl font-bold">
+                      {investmentAnalysis.overallScore.toFixed(0)}/100
+                    </div>
                     <Progress value={investmentAnalysis.overallScore} className="mt-2" />
                   </CardContent>
                 </Card>
@@ -309,8 +387,8 @@ const AnalyticsDashboard: React.FC = () => {
                   <CardContent>
                     <ul className="space-y-2">
                       {investmentAnalysis.keyFactors.map((factor, index) => (
-                        <li key={index} className="text-sm flex items-start gap-2">
-                          <div className="w-1.5 h-1.5 bg-green-500 rounded-full mt-2 flex-shrink-0" />
+                        <li key={index} className="flex items-start gap-2 text-sm">
+                          <div className="mt-2 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-green-500" />
                           {factor}
                         </li>
                       ))}
@@ -328,8 +406,8 @@ const AnalyticsDashboard: React.FC = () => {
                   <CardContent>
                     <ul className="space-y-2">
                       {investmentAnalysis.risks.map((risk, index) => (
-                        <li key={index} className="text-sm flex items-start gap-2">
-                          <div className="w-1.5 h-1.5 bg-yellow-500 rounded-full mt-2 flex-shrink-0" />
+                        <li key={index} className="flex items-start gap-2 text-sm">
+                          <div className="mt-2 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-yellow-500" />
                           {risk}
                         </li>
                       ))}
@@ -347,8 +425,8 @@ const AnalyticsDashboard: React.FC = () => {
                   <CardContent>
                     <ul className="space-y-2">
                       {investmentAnalysis.opportunities.map((opportunity, index) => (
-                        <li key={index} className="text-sm flex items-start gap-2">
-                          <div className="w-1.5 h-1.5 bg-blue-500 rounded-full mt-2 flex-shrink-0" />
+                        <li key={index} className="flex items-start gap-2 text-sm">
+                          <div className="mt-2 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-blue-500" />
                           {opportunity}
                         </li>
                       ))}
@@ -381,7 +459,10 @@ const AnalyticsDashboard: React.FC = () => {
                   </CardHeader>
                   <CardContent>
                     <div className="text-2xl font-bold">{neighborhoodInsights.investmentGrade}</div>
-                    <Badge variant={getBadgeVariant(neighborhoodInsights.investmentGrade)} className="mt-2">
+                    <Badge
+                      variant={getBadgeVariant(neighborhoodInsights.investmentGrade)}
+                      className="mt-2"
+                    >
                       {neighborhoodInsights.futureOutlook}
                     </Badge>
                   </CardContent>
@@ -393,7 +474,9 @@ const AnalyticsDashboard: React.FC = () => {
                     <Users className="h-4 w-4 text-muted-foreground" />
                   </CardHeader>
                   <CardContent>
-                    <div className="text-2xl font-bold">{neighborhoodInsights.populationGrowth.toFixed(1)}%</div>
+                    <div className="text-2xl font-bold">
+                      {neighborhoodInsights.populationGrowth.toFixed(1)}%
+                    </div>
                     <p className="text-xs text-muted-foreground">Annual growth rate</p>
                   </CardContent>
                 </Card>
@@ -415,7 +498,9 @@ const AnalyticsDashboard: React.FC = () => {
                     <DollarSign className="h-4 w-4 text-muted-foreground" />
                   </CardHeader>
                   <CardContent>
-                    <div className="text-2xl font-bold">{formatCurrency(neighborhoodInsights.averageIncome)}</div>
+                    <div className="text-2xl font-bold">
+                      {formatCurrency(neighborhoodInsights.averageIncome)}
+                    </div>
                     <p className="text-xs text-muted-foreground">Monthly household income</p>
                   </CardContent>
                 </Card>
@@ -465,8 +550,8 @@ const AnalyticsDashboard: React.FC = () => {
                   <CardContent>
                     <ul className="space-y-2">
                       {neighborhoodInsights.developmentProjects.map((project, index) => (
-                        <li key={index} className="text-sm flex items-start gap-2">
-                          <div className="w-1.5 h-1.5 bg-blue-500 rounded-full mt-2 flex-shrink-0" />
+                        <li key={index} className="flex items-start gap-2 text-sm">
+                          <div className="mt-2 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-blue-500" />
                           {project}
                         </li>
                       ))}
@@ -489,7 +574,9 @@ const AnalyticsDashboard: React.FC = () => {
                     <TrendingUp className="h-4 w-4 text-muted-foreground" />
                   </CardHeader>
                   <CardContent>
-                    <div className="text-2xl font-bold">{formatCurrency(predictiveInsights.priceProjection)}</div>
+                    <div className="text-2xl font-bold">
+                      {formatCurrency(predictiveInsights.priceProjection)}
+                    </div>
                     <p className="text-xs text-muted-foreground">1 year forecast</p>
                   </CardContent>
                 </Card>
@@ -511,7 +598,9 @@ const AnalyticsDashboard: React.FC = () => {
                     <TrendingUp className="h-4 w-4 text-green-500" />
                   </CardHeader>
                   <CardContent>
-                    <div className="text-2xl font-bold">{formatCurrency(predictiveInsights.scenarios.optimistic)}</div>
+                    <div className="text-2xl font-bold">
+                      {formatCurrency(predictiveInsights.scenarios.optimistic)}
+                    </div>
                     <p className="text-xs text-muted-foreground">Best case scenario</p>
                   </CardContent>
                 </Card>
@@ -522,7 +611,9 @@ const AnalyticsDashboard: React.FC = () => {
                     <TrendingDown className="h-4 w-4 text-red-500" />
                   </CardHeader>
                   <CardContent>
-                    <div className="text-2xl font-bold">{formatCurrency(predictiveInsights.scenarios.pessimistic)}</div>
+                    <div className="text-2xl font-bold">
+                      {formatCurrency(predictiveInsights.scenarios.pessimistic)}
+                    </div>
                     <p className="text-xs text-muted-foreground">Worst case scenario</p>
                   </CardContent>
                 </Card>
@@ -539,8 +630,8 @@ const AnalyticsDashboard: React.FC = () => {
                   <CardContent>
                     <ul className="space-y-2">
                       {predictiveInsights.marketDrivers.map((driver, index) => (
-                        <li key={index} className="text-sm flex items-start gap-2">
-                          <div className="w-1.5 h-1.5 bg-green-500 rounded-full mt-2 flex-shrink-0" />
+                        <li key={index} className="flex items-start gap-2 text-sm">
+                          <div className="mt-2 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-green-500" />
                           {driver}
                         </li>
                       ))}
@@ -558,8 +649,8 @@ const AnalyticsDashboard: React.FC = () => {
                   <CardContent>
                     <ul className="space-y-2">
                       {predictiveInsights.riskFactors.map((risk, index) => (
-                        <li key={index} className="text-sm flex items-start gap-2">
-                          <div className="w-1.5 h-1.5 bg-yellow-500 rounded-full mt-2 flex-shrink-0" />
+                        <li key={index} className="flex items-start gap-2 text-sm">
+                          <div className="mt-2 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-yellow-500" />
                           {risk}
                         </li>
                       ))}
@@ -574,17 +665,23 @@ const AnalyticsDashboard: React.FC = () => {
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
-                    <div className="flex justify-between items-center p-3 bg-green-50 rounded-lg">
+                    <div className="flex items-center justify-between rounded-lg bg-green-50 p-3">
                       <span className="font-medium text-green-800">Optimistic Scenario</span>
-                      <span className="text-green-600 font-bold">{formatCurrency(predictiveInsights.scenarios.optimistic)}</span>
+                      <span className="font-bold text-green-600">
+                        {formatCurrency(predictiveInsights.scenarios.optimistic)}
+                      </span>
                     </div>
-                    <div className="flex justify-between items-center p-3 bg-blue-50 rounded-lg">
+                    <div className="flex items-center justify-between rounded-lg bg-blue-50 p-3">
                       <span className="font-medium text-blue-800">Realistic Scenario</span>
-                      <span className="text-blue-600 font-bold">{formatCurrency(predictiveInsights.scenarios.realistic)}</span>
+                      <span className="font-bold text-blue-600">
+                        {formatCurrency(predictiveInsights.scenarios.realistic)}
+                      </span>
                     </div>
-                    <div className="flex justify-between items-center p-3 bg-red-50 rounded-lg">
+                    <div className="flex items-center justify-between rounded-lg bg-red-50 p-3">
                       <span className="font-medium text-red-800">Pessimistic Scenario</span>
-                      <span className="text-red-600 font-bold">{formatCurrency(predictiveInsights.scenarios.pessimistic)}</span>
+                      <span className="font-bold text-red-600">
+                        {formatCurrency(predictiveInsights.scenarios.pessimistic)}
+                      </span>
                     </div>
                   </div>
                 </CardContent>

@@ -6,7 +6,12 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { cn } from '@/lib/utils';
-import { imageOptimizer, ImageOptimizer, getOptimizedImageProps, useNigerianImageLoading } from '@/utils/image-optimizer';
+import {
+  imageOptimizer,
+  ImageOptimizer,
+  getOptimizedImageProps,
+  useNigerianImageLoading,
+} from '@/utils/image-optimizer';
 
 interface OptimizedImageProps {
   src: string;
@@ -107,18 +112,10 @@ export const OptimizedImage: React.FC<OptimizedImageProps> = ({
     return (
       <div
         ref={imgRef}
-        className={cn(
-          'flex items-center justify-center bg-gray-100 text-gray-400',
-          className
-        )}
+        className={cn('flex items-center justify-center bg-gray-100 text-gray-400', className)}
         style={{ width, height }}
       >
-        <svg
-          className="w-8 h-8"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
+        <svg className="h-8 w-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path
             strokeLinecap="round"
             strokeLinejoin="round"
@@ -141,14 +138,14 @@ export const OptimizedImage: React.FC<OptimizedImageProps> = ({
         <img
           src={blurDataURL}
           alt=""
-          className="absolute inset-0 w-full h-full object-cover filter blur-sm scale-110"
+          className="absolute inset-0 h-full w-full scale-110 object-cover blur-sm filter"
           aria-hidden="true"
         />
       )}
 
       {/* Loading skeleton */}
       {!isLoaded && placeholder === 'empty' && (
-        <div className="absolute inset-0 bg-gray-200 animate-pulse" />
+        <div className="absolute inset-0 animate-pulse bg-gray-200" />
       )}
 
       {/* Main image */}
@@ -157,7 +154,7 @@ export const OptimizedImage: React.FC<OptimizedImageProps> = ({
           src={currentSrc || src}
           alt={alt}
           className={cn(
-            'w-full h-full object-cover transition-opacity duration-300',
+            'h-full w-full object-cover transition-opacity duration-300',
             isLoaded ? 'opacity-100' : 'opacity-0'
           )}
           srcSet={generateSrcSet(src)}
@@ -173,7 +170,7 @@ export const OptimizedImage: React.FC<OptimizedImageProps> = ({
       {/* Loading indicator */}
       {!isLoaded && isInView && (
         <div className="absolute inset-0 flex items-center justify-center">
-          <div className="w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
+          <div className="h-6 w-6 animate-spin rounded-full border-2 border-blue-500 border-t-transparent" />
         </div>
       )}
     </div>
@@ -219,8 +216,8 @@ export const PropertyImage: React.FC<PropertyImageProps> = ({
         size === 'thumbnail'
           ? '(max-width: 768px) 150px, 300px'
           : size === 'medium'
-          ? '(max-width: 768px) 300px, 600px'
-          : '(max-width: 768px) 100vw, 1200px'
+            ? '(max-width: 768px) 300px, 600px'
+            : '(max-width: 768px) 100vw, 1200px'
       }
       placeholder="blur"
       blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAABAAEDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAhEAACAQMDBQAAAAAAAAAAAAABAgMABAUGIWGRkqGx0f/EABUBAQEAAAAAAAAAAAAAAAAAAAMF/8QAGhEAAgIDAAAAAAAAAAAAAAAAAAECEgMRkf/aAAwDAQACEQMRAD8AltJagyeH0AthI5xdrLcNM91BF5pX2HaH9bcfaSXWGaRmknyJckliyjqTzSlT54b6bk+h0R//2Q=="

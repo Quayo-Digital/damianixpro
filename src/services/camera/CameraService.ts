@@ -1,5 +1,5 @@
 /**
- * Mobile Camera Service for Nigeria Homes Platform
+ * Mobile Camera Service for DamianixPro Platform
  * Provides comprehensive camera functionality for property photos, documents, and inspections
  */
 
@@ -62,8 +62,41 @@ export class CameraService {
       format: 'jpeg',
       enableFlash: false,
       enableZoom: false,
-      maxFileSize: 10 // 10MB max for Nigerian networks
+      maxFileSize: 10, // 10MB max for Nigerian networks
     };
+  }
+
+  /**
+   * Check camera permission status using Permissions API (if available)
+   */
+  async checkPermissionStatus(): Promise<'granted' | 'denied' | 'prompt' | 'unknown'> {
+    try {
+      // Check if Permissions API is available
+      if (navigator.permissions && navigator.permissions.query) {
+        try {
+          const result = await navigator.permissions.query({ name: 'camera' as PermissionName });
+          return result.state as 'granted' | 'denied' | 'prompt';
+        } catch (error) {
+          // Permissions API might not support 'camera' name in all browsers
+          // Fall back to trying getUserMedia
+        }
+      }
+
+      // Fallback: Try to access camera to check permission
+      try {
+        const testStream = await navigator.mediaDevices.getUserMedia({ video: true });
+        testStream.getTracks().forEach((track) => track.stop());
+        return 'granted';
+      } catch (error: any) {
+        const errorName = error?.name || '';
+        if (errorName === 'NotAllowedError' || errorName === 'PermissionDeniedError') {
+          return 'denied';
+        }
+        return 'prompt'; // Unknown, but likely needs prompt
+      }
+    } catch (error) {
+      return 'unknown';
+    }
   }
 
   /**
@@ -79,14 +112,14 @@ export class CameraService {
           supportsFlash: false,
           supportsZoom: false,
           maxResolution: { width: 0, height: 0 },
-          supportedFormats: []
+          supportedFormats: [],
         };
       }
 
       // Check available devices
       const devices = await navigator.mediaDevices.enumerateDevices();
-      const videoDevices = devices.filter(device => device.kind === 'videoinput');
-      
+      const videoDevices = devices.filter((device) => device.kind === 'videoinput');
+
       const capabilities: CameraCapabilities = {
         hasCamera: videoDevices.length > 0,
         hasMultipleCameras: videoDevices.length > 1,
@@ -94,32 +127,57 @@ export class CameraService {
         supportsFlash: false,
         supportsZoom: false,
         maxResolution: { width: 1920, height: 1080 },
-        supportedFormats: ['jpeg', 'png', 'webp']
+        supportedFormats: ['jpeg', 'png', 'webp'],
       };
 
       // Test camera access
       if (capabilities.hasCamera) {
         try {
-          const testStream = await navigator.mediaDevices.getUserMedia({ 
-            video: { facingMode: 'environment' } 
+          const testStream = await navigator.mediaDevices.getUserMedia({
+            video: { facingMode: 'environment' },
           });
-          
+
           const track = testStream.getVideoTracks()[0];
           const trackCapabilities = track.getCapabilities();
-          
+
           capabilities.supportsFlash = 'torch' in trackCapabilities;
           capabilities.supportsZoom = 'zoom' in trackCapabilities;
-          
+
           if (trackCapabilities.width && trackCapabilities.height) {
             capabilities.maxResolution = {
               width: trackCapabilities.width.max || 1920,
-              height: trackCapabilities.height.max || 1080
+              height: trackCapabilities.height.max || 1080,
             };
           }
 
-          testStream.getTracks().forEach(track => track.stop());
-        } catch (error) {
-          console.warn('Camera test failed:', error);
+          testStream.getTracks().forEach((track) => track.stop());
+        } catch (error: any) {
+          // Check if it's a permission error
+          const errorName = error?.name || '';
+          const errorMessage = error?.message || '';
+
+          if (
+            errorName === 'NotAllowedError' ||
+            errorName === 'PermissionDeniedError' ||
+            errorMessage.includes('permission') ||
+            errorMessage.includes('denied')
+          ) {
+            // Camera exists but permission was denied
+            console.warn('Camera permission denied:', error);
+            // Keep hasCamera as true but we'll handle permission separately
+          } else if (
+            errorName === 'NotFoundError' ||
+            errorName === 'DevicesNotFoundError' ||
+            errorMessage.includes('not found') ||
+            errorMessage.includes('no device')
+          ) {
+            // No camera hardware found
+            console.warn('No camera device found:', error);
+            capabilities.hasCamera = false;
+          } else {
+            // Other error (could be temporary)
+            console.warn('Camera test failed:', error);
+          }
         }
       }
 
@@ -150,20 +208,70 @@ export class CameraService {
 
       // Get resolution constraints
       const resolution = this.getResolutionConstraints();
-      
+
       const constraints: MediaStreamConstraints = {
         video: {
           facingMode: this.settings.facingMode,
           width: resolution.width,
           height: resolution.height,
-          frameRate: { ideal: 30, max: 60 }
+          frameRate: { ideal: 30, max: 60 },
         },
-        audio: false
+        audio: false,
       };
 
-      // Request camera access
-      this.stream = await navigator.mediaDevices.getUserMedia(constraints);
-      
+      // Request camera access with fallback to lower constraints
+      let stream: MediaStream | null = null;
+      let lastError: any = null;
+
+      // Try with requested constraints first
+      try {
+        stream = await navigator.mediaDevices.getUserMedia(constraints);
+      } catch (error: any) {
+        lastError = error;
+        const errorName = error?.name || '';
+
+        // If OverconstrainedError, try with simpler constraints
+        if (errorName === 'OverconstrainedError') {
+          try {
+            console.log('Trying with simplified constraints...');
+            stream = await navigator.mediaDevices.getUserMedia({
+              video: {
+                facingMode: this.settings.facingMode,
+              },
+              audio: false,
+            });
+          } catch (fallbackError: any) {
+            lastError = fallbackError;
+          }
+        }
+
+        // If still failed, provide specific error messages
+        if (!stream) {
+          const errorName = lastError?.name || '';
+          const errorMessage = lastError?.message || '';
+
+          if (errorName === 'NotAllowedError' || errorName === 'PermissionDeniedError') {
+            throw this.createCameraError(
+              'PERMISSION_DENIED',
+              'Camera permission was denied. Please allow camera access in your browser settings.',
+              lastError
+            );
+          } else if (errorName === 'NotFoundError' || errorName === 'DevicesNotFoundError') {
+            throw this.createCameraError('NO_CAMERA', 'No camera found on this device.', lastError);
+          } else if (errorName === 'NotReadableError' || errorName === 'TrackStartError') {
+            throw this.createCameraError(
+              'CAMERA_IN_USE',
+              'Camera is already in use by another application. Please close other apps using the camera.',
+              lastError
+            );
+          } else {
+            throw this.createCameraError('INIT_FAILED', 'Failed to access camera', lastError);
+          }
+        }
+      }
+
+      this.stream = stream;
+
       // Create video element
       this.video = document.createElement('video');
       this.video.srcObject = this.stream;
@@ -177,10 +285,10 @@ export class CameraService {
       // Wait for video to be ready
       await new Promise<void>((resolve, reject) => {
         if (!this.video) return reject(new Error('Video element not created'));
-        
+
         this.video.onloadedmetadata = () => resolve();
         this.video.onerror = () => reject(new Error('Video loading failed'));
-        
+
         // Timeout after 10 seconds
         setTimeout(() => reject(new Error('Camera initialization timeout')), 10000);
       });
@@ -232,8 +340,10 @@ export class CameraService {
       // Check file size (Nigerian network optimization)
       const sizeMB = blob.size / (1024 * 1024);
       if (sizeMB > this.settings.maxFileSize) {
-        throw this.createCameraError('FILE_TOO_LARGE', 
-          `Photo size (${sizeMB.toFixed(1)}MB) exceeds limit (${this.settings.maxFileSize}MB)`);
+        throw this.createCameraError(
+          'FILE_TOO_LARGE',
+          `Photo size (${sizeMB.toFixed(1)}MB) exceeds limit (${this.settings.maxFileSize}MB)`
+        );
       }
 
       // Create data URL
@@ -246,12 +356,12 @@ export class CameraService {
           const position = await new Promise<GeolocationPosition>((resolve, reject) => {
             navigator.geolocation.getCurrentPosition(resolve, reject, {
               timeout: 5000,
-              enableHighAccuracy: false
+              enableHighAccuracy: false,
             });
           });
           location = {
             latitude: position.coords.latitude,
-            longitude: position.coords.longitude
+            longitude: position.coords.longitude,
           };
         }
       } catch (error) {
@@ -271,8 +381,8 @@ export class CameraService {
           height: canvas.height,
           format: this.settings.format,
           quality: this.settings.quality,
-          facingMode: this.settings.facingMode
-        }
+          facingMode: this.settings.facingMode,
+        },
       };
 
       return photo;
@@ -292,10 +402,10 @@ export class CameraService {
       }
 
       const newFacingMode = this.settings.facingMode === 'user' ? 'environment' : 'user';
-      
+
       // Stop current stream
       this.cleanup();
-      
+
       // Reinitialize with new facing mode
       await this.initializeCamera({ facingMode: newFacingMode });
     } catch (error) {
@@ -315,9 +425,9 @@ export class CameraService {
 
       const track = this.stream.getVideoTracks()[0];
       const newFlashState = !this.settings.enableFlash;
-      
+
       await track.applyConstraints({
-        advanced: [{ torch: newFlashState }]
+        advanced: [{ torch: newFlashState }],
       });
 
       this.settings.enableFlash = newFlashState;
@@ -368,7 +478,7 @@ export class CameraService {
    */
   cleanup(): void {
     if (this.stream) {
-      this.stream.getTracks().forEach(track => track.stop());
+      this.stream.getTracks().forEach((track) => track.stop());
       this.stream = null;
     }
 
@@ -389,7 +499,7 @@ export class CameraService {
       low: { width: 640, height: 480 },
       medium: { width: 1280, height: 720 },
       high: { width: 1920, height: 1080 },
-      ultra: { width: 3840, height: 2160 }
+      ultra: { width: 3840, height: 2160 },
     };
 
     return resolutions[this.settings.resolution] || resolutions.high;

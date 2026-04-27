@@ -26,7 +26,7 @@ export function ImageGallery({
   showThumbnails = true,
   autoPlay = false,
   autoPlayInterval = 5000,
-  startIndex = 0
+  startIndex = 0,
 }: ImageGalleryProps) {
   const [currentIndex, setCurrentIndex] = useState(startIndex);
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
@@ -41,13 +41,13 @@ export function ImageGallery({
   // Ensure images is an array of strings
   const validImages = React.useMemo(() => {
     return (images || [])
-      .map(img => {
+      .map((img) => {
         if (typeof img === 'string') return img;
         if (img && typeof img === 'object' && 'url' in img) return String(img.url);
         if (img && typeof img === 'object' && 'src' in img) return String(img.src);
         return String(img || '');
       })
-      .filter(img => img && img.trim() !== '');
+      .filter((img) => img && img.trim() !== '');
   }, [images]);
 
   // Auto-play functionality
@@ -60,13 +60,38 @@ export function ImageGallery({
     }
   }, [autoPlay, autoPlayInterval, validImages.length, isLightboxOpen]);
 
-  if (validImages.length === 0) {
-    return (
-      <div className={cn('flex items-center justify-center h-64 bg-muted rounded-lg', className)}>
-        <p className="text-muted-foreground">No images available</p>
-      </div>
-    );
-  }
+  // Keyboard navigation (must run before any conditional return — rules-of-hooks)
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (!isLightboxOpen || validImages.length === 0) return;
+
+      switch (e.key) {
+        case 'ArrowLeft':
+          setLightboxIndex((prev) => (prev - 1 + validImages.length) % validImages.length);
+          break;
+        case 'ArrowRight':
+          setLightboxIndex((prev) => (prev + 1) % validImages.length);
+          break;
+        case 'Escape':
+          setIsLightboxOpen(false);
+          setZoom(1);
+          break;
+        case '+':
+        case '=':
+          setZoom((prev) => Math.min(prev + 0.25, 3));
+          break;
+        case '-':
+          setZoom((prev) => Math.max(prev - 0.25, 0.5));
+          break;
+        case '0':
+          setZoom(1);
+          break;
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isLightboxOpen, validImages.length]);
 
   const goToPrevious = () => {
     setCurrentIndex((prev) => (prev - 1 + validImages.length) % validImages.length);
@@ -110,47 +135,26 @@ export function ImageGallery({
     setZoom(1);
   };
 
-  // Keyboard navigation
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (!isLightboxOpen) return;
-
-      switch (e.key) {
-        case 'ArrowLeft':
-          lightboxGoToPrevious();
-          break;
-        case 'ArrowRight':
-          lightboxGoToNext();
-          break;
-        case 'Escape':
-          closeLightbox();
-          break;
-        case '+':
-        case '=':
-          handleZoomIn();
-          break;
-        case '-':
-          handleZoomOut();
-          break;
-        case '0':
-          handleResetZoom();
-          break;
-      }
-    };
-
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isLightboxOpen, lightboxIndex, validImages.length]);
+  if (validImages.length === 0) {
+    return (
+      <div className={cn('flex h-64 items-center justify-center rounded-lg bg-muted', className)}>
+        <p className="text-muted-foreground">No images available</p>
+      </div>
+    );
+  }
 
   return (
     <>
       <div className={cn('relative w-full', className)}>
         {/* Main Image */}
         <div className="relative aspect-video w-full overflow-hidden rounded-lg bg-muted">
-            <img
-              src={validImages[currentIndex]}
-              alt={title ? `${String(title)} - Image ${currentIndex + 1}` : `Image ${currentIndex + 1}`}
-            className="h-full w-full object-cover transition-transform duration-300 hover:scale-105 cursor-pointer"
+          <img
+            src={validImages[currentIndex]}
+            alt={
+              title ? `${String(title)} - Image ${currentIndex + 1}` : `Image ${currentIndex + 1}`
+            }
+            decoding="async"
+            className="h-full w-full cursor-pointer object-cover transition-transform duration-300 hover:scale-105"
             onClick={() => openLightbox(currentIndex)}
             onError={(e) => {
               const target = e.target as HTMLImageElement;
@@ -164,7 +168,7 @@ export function ImageGallery({
               <Button
                 variant="ghost"
                 size="icon"
-                className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white"
+                className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/50 text-white hover:bg-black/70"
                 onClick={(e) => {
                   e.stopPropagation();
                   goToPrevious();
@@ -175,7 +179,7 @@ export function ImageGallery({
               <Button
                 variant="ghost"
                 size="icon"
-                className="absolute right-2 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white"
+                className="absolute right-2 top-1/2 -translate-y-1/2 bg-black/50 text-white hover:bg-black/70"
                 onClick={(e) => {
                   e.stopPropagation();
                   goToNext();
@@ -188,7 +192,7 @@ export function ImageGallery({
 
           {/* Image Counter */}
           {validImages.length > 1 && (
-            <div className="absolute bottom-2 right-2 bg-black/50 text-white px-2 py-1 rounded text-sm">
+            <div className="absolute bottom-2 right-2 rounded bg-black/50 px-2 py-1 text-sm text-white">
               {currentIndex + 1} / {validImages.length}
             </div>
           )}
@@ -198,7 +202,7 @@ export function ImageGallery({
             <Button
               variant="ghost"
               size="icon"
-              className="absolute top-2 right-2 bg-black/50 hover:bg-black/70 text-white"
+              className="absolute right-2 top-2 bg-black/50 text-white hover:bg-black/70"
               onClick={(e) => {
                 e.stopPropagation();
                 openLightbox(currentIndex);
@@ -217,7 +221,7 @@ export function ImageGallery({
                 key={index}
                 onClick={() => goToImage(index)}
                 className={cn(
-                  'relative flex-shrink-0 w-20 h-20 rounded-md overflow-hidden border-2 transition-all',
+                  'relative h-20 w-20 flex-shrink-0 overflow-hidden rounded-md border-2 transition-all',
                   index === currentIndex
                     ? 'border-primary ring-2 ring-primary ring-offset-2'
                     : 'border-transparent opacity-60 hover:opacity-100'
@@ -226,6 +230,8 @@ export function ImageGallery({
                 <img
                   src={image}
                   alt={`Thumbnail ${index + 1}`}
+                  loading="lazy"
+                  decoding="async"
                   className="h-full w-full object-cover"
                   onError={(e) => {
                     const target = e.target as HTMLImageElement;
@@ -240,13 +246,13 @@ export function ImageGallery({
 
       {/* Lightbox */}
       <Dialog open={isLightboxOpen} onOpenChange={setIsLightboxOpen}>
-        <DialogContent className="max-w-7xl w-full h-[90vh] p-0 bg-black/95">
-          <div className="relative w-full h-full flex items-center justify-center">
+        <DialogContent className="h-[90vh] w-full max-w-7xl bg-black/95 p-0">
+          <div className="relative flex h-full w-full items-center justify-center">
             {/* Close Button */}
             <Button
               variant="ghost"
               size="icon"
-              className="absolute top-4 right-4 z-50 text-white hover:bg-white/20"
+              className="absolute right-4 top-4 z-50 text-white hover:bg-foreground/20"
               onClick={closeLightbox}
             >
               <X className="h-6 w-6" />
@@ -258,7 +264,7 @@ export function ImageGallery({
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="absolute left-4 top-1/2 -translate-y-1/2 z-50 text-white hover:bg-white/20"
+                  className="absolute left-4 top-1/2 z-50 -translate-y-1/2 text-white hover:bg-foreground/20"
                   onClick={lightboxGoToPrevious}
                 >
                   <ChevronLeft className="h-8 w-8" />
@@ -266,7 +272,7 @@ export function ImageGallery({
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="absolute right-4 top-1/2 -translate-y-1/2 z-50 text-white hover:bg-white/20"
+                  className="absolute right-4 top-1/2 z-50 -translate-y-1/2 text-white hover:bg-foreground/20"
                   onClick={lightboxGoToNext}
                 >
                   <ChevronRight className="h-8 w-8" />
@@ -275,11 +281,11 @@ export function ImageGallery({
             )}
 
             {/* Zoom Controls */}
-            <div className="absolute top-4 left-4 z-50 flex gap-2">
+            <div className="absolute left-4 top-4 z-50 flex gap-2">
               <Button
                 variant="ghost"
                 size="icon"
-                className="text-white hover:bg-white/20"
+                className="text-white hover:bg-foreground/20"
                 onClick={handleZoomOut}
                 disabled={zoom <= 0.5}
               >
@@ -288,7 +294,7 @@ export function ImageGallery({
               <Button
                 variant="ghost"
                 size="icon"
-                className="text-white hover:bg-white/20"
+                className="text-white hover:bg-foreground/20"
                 onClick={handleResetZoom}
               >
                 <span className="text-xs text-white">{Math.round(zoom * 100)}%</span>
@@ -296,7 +302,7 @@ export function ImageGallery({
               <Button
                 variant="ghost"
                 size="icon"
-                className="text-white hover:bg-white/20"
+                className="text-white hover:bg-foreground/20"
                 onClick={handleZoomIn}
                 disabled={zoom >= 3}
               >
@@ -305,11 +311,16 @@ export function ImageGallery({
             </div>
 
             {/* Main Image */}
-            <div className="w-full h-full flex items-center justify-center overflow-hidden p-8">
+            <div className="flex h-full w-full items-center justify-center overflow-hidden p-8">
               <img
                 src={validImages[lightboxIndex]}
-                alt={title ? `${String(title)} - Image ${lightboxIndex + 1}` : `Image ${lightboxIndex + 1}`}
-                className="max-w-full max-h-full object-contain transition-transform duration-200"
+                alt={
+                  title
+                    ? `${String(title)} - Image ${lightboxIndex + 1}`
+                    : `Image ${lightboxIndex + 1}`
+                }
+                decoding="async"
+                className="max-h-full max-w-full object-contain transition-transform duration-200"
                 style={{ transform: `scale(${zoom})` }}
                 onError={(e) => {
                   const target = e.target as HTMLImageElement;
@@ -320,28 +331,30 @@ export function ImageGallery({
 
             {/* Image Counter */}
             {validImages.length > 1 && (
-              <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-black/50 text-white px-4 py-2 rounded text-sm">
+              <div className="absolute bottom-4 left-1/2 -translate-x-1/2 rounded bg-black/50 px-4 py-2 text-sm text-white">
                 {lightboxIndex + 1} / {validImages.length}
               </div>
             )}
 
             {/* Thumbnail Strip */}
             {showThumbnails && validImages.length > 1 && (
-              <div className="absolute bottom-16 left-1/2 -translate-x-1/2 flex gap-2 overflow-x-auto max-w-[90%] pb-2">
+              <div className="absolute bottom-16 left-1/2 flex max-w-[90%] -translate-x-1/2 gap-2 overflow-x-auto pb-2">
                 {validImages.map((image, index) => (
                   <button
                     key={index}
                     onClick={() => setLightboxIndex(index)}
                     className={cn(
-                      'flex-shrink-0 w-16 h-16 rounded overflow-hidden border-2 transition-all',
+                      'h-16 w-16 flex-shrink-0 overflow-hidden rounded border-2 transition-all',
                       index === lightboxIndex
-                        ? 'border-white ring-2 ring-white'
+                        ? 'border-primary-foreground ring-2 ring-primary-foreground'
                         : 'border-transparent opacity-60 hover:opacity-100'
                     )}
                   >
                     <img
                       src={image}
                       alt={`Thumbnail ${index + 1}`}
+                      loading="lazy"
+                      decoding="async"
                       className="h-full w-full object-cover"
                       onError={(e) => {
                         const target = e.target as HTMLImageElement;
@@ -358,4 +371,3 @@ export function ImageGallery({
     </>
   );
 }
-

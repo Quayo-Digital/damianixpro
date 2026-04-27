@@ -1,4 +1,3 @@
-
 // Helper functions for activity service
 
 import { toast } from '@/components/ui/sonner';
@@ -6,11 +5,14 @@ import { toast } from '@/components/ui/sonner';
 /**
  * Validate and sanitize pagination parameters
  */
-export const validatePaginationParams = (page: number, pageSize: number): { page: number, pageSize: number } => {
+export const validatePaginationParams = (
+  page: number,
+  pageSize: number
+): { page: number; pageSize: number } => {
   // Ensure positive integers for pagination parameters
   const validPage = Math.max(1, Math.floor(Number(page) || 1));
   const validPageSize = Math.min(100, Math.max(1, Math.floor(Number(pageSize) || 10)));
-  
+
   return { page: validPage, pageSize: validPageSize };
 };
 
@@ -36,15 +38,17 @@ export const formatDate = (dateString: string): string => {
 /**
  * Validate activity data before submission
  */
-export const validateActivityData = (activity: Omit<import('./types').ActivityItem, 'id' | 'date'>): { valid: boolean, message?: string } => {
+export const validateActivityData = (
+  activity: Omit<import('./types').ActivityItem, 'id' | 'date'>
+): { valid: boolean; message?: string } => {
   if (!activity) {
     return { valid: false, message: 'No activity data provided' };
   }
-  
+
   if (!activity.type || !activity.type.trim()) {
     return { valid: false, message: 'Activity type is required' };
   }
-  
+
   if (!activity.description || !activity.description.trim()) {
     return { valid: false, message: 'Activity description is required' };
   }
@@ -53,7 +57,7 @@ export const validateActivityData = (activity: Omit<import('./types').ActivityIt
   if (activity.amount && typeof activity.amount !== 'string') {
     return { valid: false, message: 'Amount must be a string' };
   }
-  
+
   return { valid: true };
 };
 

@@ -5,7 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Progress } from '@/components/ui/progress';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { 
+import {
   Image as ImageIcon,
   Globe,
   Zap,
@@ -18,7 +18,7 @@ import {
   Monitor,
   Download,
   Upload,
-  BarChart3
+  BarChart3,
 } from 'lucide-react';
 import { imageOptimizer, ImageOptimizer } from '@/utils/image-optimizer';
 import { nigerianCDN, NigerianCDN } from '@/utils/nigerian-cdn';
@@ -71,7 +71,7 @@ export const ImageCDNOptimizationTest = () => {
         category: 'image',
         status: 'pending',
         score: 0,
-        details: 'Test image compression ratios for Nigerian networks'
+        details: 'Test image compression ratios for Nigerian networks',
       },
       {
         id: 'webp-support',
@@ -79,7 +79,7 @@ export const ImageCDNOptimizationTest = () => {
         category: 'image',
         status: 'pending',
         score: 0,
-        details: 'Verify WebP format support and fallbacks'
+        details: 'Verify WebP format support and fallbacks',
       },
       {
         id: 'lazy-loading',
@@ -87,7 +87,7 @@ export const ImageCDNOptimizationTest = () => {
         category: 'image',
         status: 'pending',
         score: 0,
-        details: 'Test lazy loading for improved performance'
+        details: 'Test lazy loading for improved performance',
       },
       {
         id: 'responsive-images',
@@ -95,7 +95,7 @@ export const ImageCDNOptimizationTest = () => {
         category: 'image',
         status: 'pending',
         score: 0,
-        details: 'Verify responsive images for different devices'
+        details: 'Verify responsive images for different devices',
       },
       {
         id: 'nigerian-presets',
@@ -103,9 +103,9 @@ export const ImageCDNOptimizationTest = () => {
         category: 'image',
         status: 'pending',
         score: 0,
-        details: 'Test Nigerian market-specific optimizations'
+        details: 'Test Nigerian market-specific optimizations',
       },
-      
+
       // CDN Performance Tests
       {
         id: 'cdn-latency',
@@ -113,7 +113,7 @@ export const ImageCDNOptimizationTest = () => {
         category: 'cdn',
         status: 'pending',
         score: 0,
-        details: 'Measure CDN response times across Nigerian locations'
+        details: 'Measure CDN response times across Nigerian locations',
       },
       {
         id: 'cdn-availability',
@@ -121,7 +121,7 @@ export const ImageCDNOptimizationTest = () => {
         category: 'cdn',
         status: 'pending',
         score: 0,
-        details: 'Test CDN uptime and reliability'
+        details: 'Test CDN uptime and reliability',
       },
       {
         id: 'geolocation-routing',
@@ -129,7 +129,7 @@ export const ImageCDNOptimizationTest = () => {
         category: 'cdn',
         status: 'pending',
         score: 0,
-        details: 'Verify location-based CDN endpoint selection'
+        details: 'Verify location-based CDN endpoint selection',
       },
       {
         id: 'cdn-caching',
@@ -137,7 +137,7 @@ export const ImageCDNOptimizationTest = () => {
         category: 'cdn',
         status: 'pending',
         score: 0,
-        details: 'Test caching headers and cache hit rates'
+        details: 'Test caching headers and cache hit rates',
       },
       {
         id: 'cdn-compression',
@@ -145,7 +145,7 @@ export const ImageCDNOptimizationTest = () => {
         category: 'cdn',
         status: 'pending',
         score: 0,
-        details: 'Verify gzip/brotli compression is working'
+        details: 'Verify gzip/brotli compression is working',
       },
 
       // Performance Tests
@@ -155,7 +155,7 @@ export const ImageCDNOptimizationTest = () => {
         category: 'performance',
         status: 'pending',
         score: 0,
-        details: 'Measure before/after image loading performance'
+        details: 'Measure before/after image loading performance',
       },
       {
         id: 'bandwidth-usage',
@@ -163,8 +163,8 @@ export const ImageCDNOptimizationTest = () => {
         category: 'performance',
         status: 'pending',
         score: 0,
-        details: 'Test data usage reduction for Nigerian networks'
-      }
+        details: 'Test data usage reduction for Nigerian networks',
+      },
     ];
 
     setTests(initialTests);
@@ -184,16 +184,16 @@ export const ImageCDNOptimizationTest = () => {
         formatSupport: false,
         lazyLoadingWorks: false,
         responsiveImages: false,
-        nigerianOptimized: false
+        nigerianOptimized: false,
       },
       cdnPerformance: {
         latency: 0,
         availability: 0,
         geolocation: false,
         caching: false,
-        compression: false
+        compression: false,
       },
-      overallScore: 0
+      overallScore: 0,
     };
 
     // Run each test
@@ -211,7 +211,6 @@ export const ImageCDNOptimizationTest = () => {
 
         // Update test results
         updateTestResults(test, testResults);
-
       } catch (error) {
         test.status = 'failed';
         test.score = 0;
@@ -223,7 +222,7 @@ export const ImageCDNOptimizationTest = () => {
       setTests([...updatedTests]);
 
       // Small delay between tests
-      await new Promise(resolve => setTimeout(resolve, 500));
+      await new Promise((resolve) => setTimeout(resolve, 500));
     }
 
     // Calculate overall score
@@ -234,7 +233,9 @@ export const ImageCDNOptimizationTest = () => {
     setIsRunning(false);
   };
 
-  const runIndividualTest = async (test: OptimizationTest): Promise<{
+  const runIndividualTest = async (
+    test: OptimizationTest
+  ): Promise<{
     passed: boolean;
     score: number;
     details: string;
@@ -243,45 +244,45 @@ export const ImageCDNOptimizationTest = () => {
     switch (test.id) {
       case 'image-compression':
         return await testImageCompression();
-      
+
       case 'webp-support':
         return await testWebPSupport();
-      
+
       case 'lazy-loading':
         return await testLazyLoading();
-      
+
       case 'responsive-images':
         return await testResponsiveImages();
-      
+
       case 'nigerian-presets':
         return await testNigerianPresets();
-      
+
       case 'cdn-latency':
         return await testCDNLatency();
-      
+
       case 'cdn-availability':
         return await testCDNAvailability();
-      
+
       case 'geolocation-routing':
         return await testGeolocationRouting();
-      
+
       case 'cdn-caching':
         return await testCDNCaching();
-      
+
       case 'cdn-compression':
         return await testCDNCompression();
-      
+
       case 'load-time-improvement':
         return await testLoadTimeImprovement();
-      
+
       case 'bandwidth-usage':
         return await testBandwidthUsage();
-      
+
       default:
         return {
           passed: false,
           score: 0,
-          details: 'Unknown test'
+          details: 'Unknown test',
         };
     }
   };
@@ -291,12 +292,15 @@ export const ImageCDNOptimizationTest = () => {
     try {
       // Test compression with Nigerian preset
       const compressionRatio = 65; // Simulated - would test actual compression
-      
+
       return {
         passed: compressionRatio > 50,
         score: Math.min(100, compressionRatio + 20),
         details: `Achieved ${compressionRatio}% compression ratio`,
-        recommendation: compressionRatio < 60 ? 'Consider more aggressive compression for Nigerian networks' : undefined
+        recommendation:
+          compressionRatio < 60
+            ? 'Consider more aggressive compression for Nigerian networks'
+            : undefined,
       };
     } catch (error) {
       return { passed: false, score: 0, details: 'Compression test failed' };
@@ -307,12 +311,12 @@ export const ImageCDNOptimizationTest = () => {
     try {
       const supportsWebP = ImageOptimizer.supportsWebP();
       const optimalFormat = ImageOptimizer.getOptimalFormat();
-      
+
       return {
         passed: supportsWebP,
         score: supportsWebP ? 100 : 70,
         details: `WebP support: ${supportsWebP ? 'Yes' : 'No'}, Optimal format: ${optimalFormat}`,
-        recommendation: !supportsWebP ? 'WebP not supported, using JPEG fallback' : undefined
+        recommendation: !supportsWebP ? 'WebP not supported, using JPEG fallback' : undefined,
       };
     } catch (error) {
       return { passed: false, score: 0, details: 'WebP test failed' };
@@ -323,12 +327,14 @@ export const ImageCDNOptimizationTest = () => {
     try {
       // Test intersection observer support
       const supportsIntersectionObserver = 'IntersectionObserver' in window;
-      
+
       return {
         passed: supportsIntersectionObserver,
         score: supportsIntersectionObserver ? 100 : 60,
         details: `Intersection Observer support: ${supportsIntersectionObserver ? 'Yes' : 'No'}`,
-        recommendation: !supportsIntersectionObserver ? 'Fallback to scroll-based lazy loading' : undefined
+        recommendation: !supportsIntersectionObserver
+          ? 'Fallback to scroll-based lazy loading'
+          : undefined,
       };
     } catch (error) {
       return { passed: false, score: 0, details: 'Lazy loading test failed' };
@@ -340,12 +346,12 @@ export const ImageCDNOptimizationTest = () => {
       // Test responsive image generation
       const urls = imageOptimizer.generateResponsiveUrls('/test-image.jpg', 'property_gallery');
       const hasMultipleSizes = Object.keys(urls).length >= 3;
-      
+
       return {
         passed: hasMultipleSizes,
         score: hasMultipleSizes ? 95 : 50,
         details: `Generated ${Object.keys(urls).length} responsive image sizes`,
-        recommendation: !hasMultipleSizes ? 'Add more responsive breakpoints' : undefined
+        recommendation: !hasMultipleSizes ? 'Add more responsive breakpoints' : undefined,
       };
     } catch (error) {
       return { passed: false, score: 0, details: 'Responsive images test failed' };
@@ -356,12 +362,14 @@ export const ImageCDNOptimizationTest = () => {
     try {
       const presets = Object.keys(ImageOptimizer.NIGERIAN_PRESETS);
       const hasNigerianOptimization = presets.length > 0;
-      
+
       return {
         passed: hasNigerianOptimization,
         score: hasNigerianOptimization ? 100 : 0,
         details: `Available Nigerian presets: ${presets.join(', ')}`,
-        recommendation: !hasNigerianOptimization ? 'Implement Nigerian market-specific presets' : undefined
+        recommendation: !hasNigerianOptimization
+          ? 'Implement Nigerian market-specific presets'
+          : undefined,
       };
     } catch (error) {
       return { passed: false, score: 0, details: 'Nigerian presets test failed' };
@@ -371,15 +379,17 @@ export const ImageCDNOptimizationTest = () => {
   const testCDNLatency = async () => {
     try {
       const performanceResults = await nigerianCDN.testCDNPerformance();
-      const avgLatency = performanceResults.reduce((sum, r) => sum + r.latency, 0) / performanceResults.length;
-      
+      const avgLatency =
+        performanceResults.reduce((sum, r) => sum + r.latency, 0) / performanceResults.length;
+
       const score = avgLatency < 500 ? 100 : avgLatency < 1000 ? 80 : avgLatency < 2000 ? 60 : 30;
-      
+
       return {
         passed: avgLatency < 2000,
         score,
         details: `Average CDN latency: ${Math.round(avgLatency)}ms`,
-        recommendation: avgLatency > 1000 ? 'Consider additional edge locations in Nigeria' : undefined
+        recommendation:
+          avgLatency > 1000 ? 'Consider additional edge locations in Nigeria' : undefined,
       };
     } catch (error) {
       return { passed: false, score: 0, details: 'CDN latency test failed' };
@@ -389,13 +399,14 @@ export const ImageCDNOptimizationTest = () => {
   const testCDNAvailability = async () => {
     try {
       const performanceResults = await nigerianCDN.testCDNPerformance();
-      const avgAvailability = performanceResults.reduce((sum, r) => sum + r.availability, 0) / performanceResults.length;
-      
+      const avgAvailability =
+        performanceResults.reduce((sum, r) => sum + r.availability, 0) / performanceResults.length;
+
       return {
         passed: avgAvailability > 95,
         score: Math.round(avgAvailability),
         details: `CDN availability: ${avgAvailability.toFixed(1)}%`,
-        recommendation: avgAvailability < 99 ? 'Implement redundant CDN providers' : undefined
+        recommendation: avgAvailability < 99 ? 'Implement redundant CDN providers' : undefined,
       };
     } catch (error) {
       return { passed: false, score: 0, details: 'CDN availability test failed' };
@@ -406,12 +417,12 @@ export const ImageCDNOptimizationTest = () => {
     try {
       const endpoint = await nigerianCDN.getOptimalEndpoint();
       const hasGeolocation = endpoint.includes('lagos') || endpoint.includes('abuja');
-      
+
       return {
         passed: hasGeolocation,
         score: hasGeolocation ? 90 : 60,
         details: `Optimal endpoint: ${endpoint}`,
-        recommendation: !hasGeolocation ? 'Implement geolocation-based routing' : undefined
+        recommendation: !hasGeolocation ? 'Implement geolocation-based routing' : undefined,
       };
     } catch (error) {
       return { passed: false, score: 0, details: 'Geolocation routing test failed' };
@@ -422,12 +433,12 @@ export const ImageCDNOptimizationTest = () => {
     try {
       const recommendations = nigerianCDN.getCDNRecommendations();
       const hasCaching = recommendations.configuration.caching !== undefined;
-      
+
       return {
         passed: hasCaching,
         score: hasCaching ? 85 : 40,
         details: `Caching configuration: ${hasCaching ? 'Configured' : 'Not configured'}`,
-        recommendation: !hasCaching ? 'Configure CDN caching rules' : undefined
+        recommendation: !hasCaching ? 'Configure CDN caching rules' : undefined,
       };
     } catch (error) {
       return { passed: false, score: 0, details: 'CDN caching test failed' };
@@ -438,12 +449,12 @@ export const ImageCDNOptimizationTest = () => {
     try {
       const recommendations = nigerianCDN.getCDNRecommendations();
       const hasCompression = recommendations.configuration.compression?.gzip === true;
-      
+
       return {
         passed: hasCompression,
         score: hasCompression ? 90 : 50,
         details: `Compression: ${hasCompression ? 'Enabled (gzip/brotli)' : 'Not configured'}`,
-        recommendation: !hasCompression ? 'Enable gzip and brotli compression' : undefined
+        recommendation: !hasCompression ? 'Enable gzip and brotli compression' : undefined,
       };
     } catch (error) {
       return { passed: false, score: 0, details: 'CDN compression test failed' };
@@ -454,12 +465,12 @@ export const ImageCDNOptimizationTest = () => {
     try {
       // Simulate load time improvement measurement
       const improvement = 55; // Percentage improvement
-      
+
       return {
         passed: improvement > 30,
         score: Math.min(100, improvement + 20),
         details: `Load time improvement: ${improvement}%`,
-        recommendation: improvement < 50 ? 'Further optimize image loading strategy' : undefined
+        recommendation: improvement < 50 ? 'Further optimize image loading strategy' : undefined,
       };
     } catch (error) {
       return { passed: false, score: 0, details: 'Load time test failed' };
@@ -470,12 +481,12 @@ export const ImageCDNOptimizationTest = () => {
     try {
       // Simulate bandwidth usage reduction
       const reduction = 60; // Percentage reduction
-      
+
       return {
         passed: reduction > 40,
         score: Math.min(100, reduction + 15),
         details: `Bandwidth usage reduction: ${reduction}%`,
-        recommendation: reduction < 50 ? 'Implement more aggressive compression' : undefined
+        recommendation: reduction < 50 ? 'Implement more aggressive compression' : undefined,
       };
     } catch (error) {
       return { passed: false, score: 0, details: 'Bandwidth usage test failed' };
@@ -485,29 +496,40 @@ export const ImageCDNOptimizationTest = () => {
   const updateTestResults = (test: OptimizationTest, results: TestResults) => {
     switch (test.category) {
       case 'image':
-        if (test.id === 'image-compression') results.imageOptimization.compressionRatio = test.score;
-        if (test.id === 'webp-support') results.imageOptimization.formatSupport = test.status === 'passed';
-        if (test.id === 'lazy-loading') results.imageOptimization.lazyLoadingWorks = test.status === 'passed';
-        if (test.id === 'responsive-images') results.imageOptimization.responsiveImages = test.status === 'passed';
-        if (test.id === 'nigerian-presets') results.imageOptimization.nigerianOptimized = test.status === 'passed';
+        if (test.id === 'image-compression')
+          results.imageOptimization.compressionRatio = test.score;
+        if (test.id === 'webp-support')
+          results.imageOptimization.formatSupport = test.status === 'passed';
+        if (test.id === 'lazy-loading')
+          results.imageOptimization.lazyLoadingWorks = test.status === 'passed';
+        if (test.id === 'responsive-images')
+          results.imageOptimization.responsiveImages = test.status === 'passed';
+        if (test.id === 'nigerian-presets')
+          results.imageOptimization.nigerianOptimized = test.status === 'passed';
         break;
-      
+
       case 'cdn':
         if (test.id === 'cdn-latency') results.cdnPerformance.latency = test.score;
         if (test.id === 'cdn-availability') results.cdnPerformance.availability = test.score;
-        if (test.id === 'geolocation-routing') results.cdnPerformance.geolocation = test.status === 'passed';
+        if (test.id === 'geolocation-routing')
+          results.cdnPerformance.geolocation = test.status === 'passed';
         if (test.id === 'cdn-caching') results.cdnPerformance.caching = test.status === 'passed';
-        if (test.id === 'cdn-compression') results.cdnPerformance.compression = test.status === 'passed';
+        if (test.id === 'cdn-compression')
+          results.cdnPerformance.compression = test.status === 'passed';
         break;
     }
   };
 
   const getStatusIcon = (status: string) => {
     switch (status) {
-      case 'passed': return <CheckCircle2 className="h-4 w-4 text-green-600" />;
-      case 'failed': return <AlertTriangle className="h-4 w-4 text-red-600" />;
-      case 'running': return <Clock className="h-4 w-4 text-blue-600 animate-spin" />;
-      default: return <Clock className="h-4 w-4 text-gray-400" />;
+      case 'passed':
+        return <CheckCircle2 className="h-4 w-4 text-green-600" />;
+      case 'failed':
+        return <AlertTriangle className="h-4 w-4 text-red-600" />;
+      case 'running':
+        return <Clock className="h-4 w-4 animate-spin text-blue-600" />;
+      default:
+        return <Clock className="h-4 w-4 text-gray-400" />;
     }
   };
 
@@ -532,11 +554,7 @@ export const ImageCDNOptimizationTest = () => {
         </CardHeader>
         <CardContent>
           <div className="flex items-center gap-4">
-            <Button 
-              onClick={runAllTests} 
-              disabled={isRunning}
-              className="flex items-center gap-2"
-            >
+            <Button onClick={runAllTests} disabled={isRunning} className="flex items-center gap-2">
               {isRunning ? (
                 <>
                   <Clock className="h-4 w-4 animate-spin" />
@@ -549,10 +567,10 @@ export const ImageCDNOptimizationTest = () => {
                 </>
               )}
             </Button>
-            
+
             {isRunning && (
               <div className="flex-1">
-                <div className="flex justify-between text-sm mb-1">
+                <div className="mb-1 flex justify-between text-sm">
                   <span>Progress</span>
                   <span>{Math.round(progress)}%</span>
                 </div>
@@ -565,7 +583,7 @@ export const ImageCDNOptimizationTest = () => {
 
       {/* Results Overview */}
       {results && (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
           <Card>
             <CardHeader className="pb-3">
               <CardTitle className="text-lg">Overall Score</CardTitle>
@@ -574,8 +592,21 @@ export const ImageCDNOptimizationTest = () => {
               <div className={`text-3xl font-bold ${getScoreColor(results.overallScore)}`}>
                 {results.overallScore}/100
               </div>
-              <Badge variant={results.overallScore >= 80 ? 'default' : results.overallScore >= 60 ? 'secondary' : 'destructive'} className="mt-2">
-                {results.overallScore >= 80 ? 'Excellent' : results.overallScore >= 60 ? 'Good' : 'Needs Improvement'}
+              <Badge
+                variant={
+                  results.overallScore >= 80
+                    ? 'default'
+                    : results.overallScore >= 60
+                      ? 'secondary'
+                      : 'destructive'
+                }
+                className="mt-2"
+              >
+                {results.overallScore >= 80
+                  ? 'Excellent'
+                  : results.overallScore >= 60
+                    ? 'Good'
+                    : 'Needs Improvement'}
               </Badge>
             </CardContent>
           </Card>
@@ -649,14 +680,17 @@ export const ImageCDNOptimizationTest = () => {
             <CardContent>
               <div className="space-y-3">
                 {tests.map((test) => (
-                  <div key={test.id} className="flex items-center justify-between p-3 border rounded-lg">
+                  <div
+                    key={test.id}
+                    className="flex items-center justify-between rounded-lg border p-3"
+                  >
                     <div className="flex items-center gap-3">
                       {getStatusIcon(test.status)}
                       <div>
                         <div className="font-medium">{test.name}</div>
                         <div className="text-sm text-gray-600">{test.details}</div>
                         {test.recommendation && (
-                          <div className="text-sm text-yellow-700 mt-1">
+                          <div className="mt-1 text-sm text-yellow-700">
                             💡 {test.recommendation}
                           </div>
                         )}
@@ -678,90 +712,90 @@ export const ImageCDNOptimizationTest = () => {
         </TabsContent>
 
         <TabsContent value="image" className="space-y-4">
-          {tests.filter(t => t.category === 'image').map((test) => (
-            <Card key={test.id}>
-              <CardHeader>
-                <div className="flex items-center justify-between">
-                  <CardTitle className="flex items-center gap-2">
-                    {getStatusIcon(test.status)}
-                    {test.name}
-                  </CardTitle>
-                  <div className={`text-2xl font-bold ${getScoreColor(test.score)}`}>
-                    {test.score}/100
+          {tests
+            .filter((t) => t.category === 'image')
+            .map((test) => (
+              <Card key={test.id}>
+                <CardHeader>
+                  <div className="flex items-center justify-between">
+                    <CardTitle className="flex items-center gap-2">
+                      {getStatusIcon(test.status)}
+                      {test.name}
+                    </CardTitle>
+                    <div className={`text-2xl font-bold ${getScoreColor(test.score)}`}>
+                      {test.score}/100
+                    </div>
                   </div>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <p className="text-gray-600">{test.details}</p>
-                {test.recommendation && (
-                  <Alert className="mt-3">
-                    <AlertTriangle className="h-4 w-4" />
-                    <AlertDescription>
-                      {test.recommendation}
-                    </AlertDescription>
-                  </Alert>
-                )}
-              </CardContent>
-            </Card>
-          ))}
+                </CardHeader>
+                <CardContent>
+                  <p className="text-gray-600">{test.details}</p>
+                  {test.recommendation && (
+                    <Alert className="mt-3">
+                      <AlertTriangle className="h-4 w-4" />
+                      <AlertDescription>{test.recommendation}</AlertDescription>
+                    </Alert>
+                  )}
+                </CardContent>
+              </Card>
+            ))}
         </TabsContent>
 
         <TabsContent value="cdn" className="space-y-4">
-          {tests.filter(t => t.category === 'cdn').map((test) => (
-            <Card key={test.id}>
-              <CardHeader>
-                <div className="flex items-center justify-between">
-                  <CardTitle className="flex items-center gap-2">
-                    {getStatusIcon(test.status)}
-                    {test.name}
-                  </CardTitle>
-                  <div className={`text-2xl font-bold ${getScoreColor(test.score)}`}>
-                    {test.score}/100
+          {tests
+            .filter((t) => t.category === 'cdn')
+            .map((test) => (
+              <Card key={test.id}>
+                <CardHeader>
+                  <div className="flex items-center justify-between">
+                    <CardTitle className="flex items-center gap-2">
+                      {getStatusIcon(test.status)}
+                      {test.name}
+                    </CardTitle>
+                    <div className={`text-2xl font-bold ${getScoreColor(test.score)}`}>
+                      {test.score}/100
+                    </div>
                   </div>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <p className="text-gray-600">{test.details}</p>
-                {test.recommendation && (
-                  <Alert className="mt-3">
-                    <AlertTriangle className="h-4 w-4" />
-                    <AlertDescription>
-                      {test.recommendation}
-                    </AlertDescription>
-                  </Alert>
-                )}
-              </CardContent>
-            </Card>
-          ))}
+                </CardHeader>
+                <CardContent>
+                  <p className="text-gray-600">{test.details}</p>
+                  {test.recommendation && (
+                    <Alert className="mt-3">
+                      <AlertTriangle className="h-4 w-4" />
+                      <AlertDescription>{test.recommendation}</AlertDescription>
+                    </Alert>
+                  )}
+                </CardContent>
+              </Card>
+            ))}
         </TabsContent>
 
         <TabsContent value="performance" className="space-y-4">
-          {tests.filter(t => t.category === 'performance').map((test) => (
-            <Card key={test.id}>
-              <CardHeader>
-                <div className="flex items-center justify-between">
-                  <CardTitle className="flex items-center gap-2">
-                    {getStatusIcon(test.status)}
-                    {test.name}
-                  </CardTitle>
-                  <div className={`text-2xl font-bold ${getScoreColor(test.score)}`}>
-                    {test.score}/100
+          {tests
+            .filter((t) => t.category === 'performance')
+            .map((test) => (
+              <Card key={test.id}>
+                <CardHeader>
+                  <div className="flex items-center justify-between">
+                    <CardTitle className="flex items-center gap-2">
+                      {getStatusIcon(test.status)}
+                      {test.name}
+                    </CardTitle>
+                    <div className={`text-2xl font-bold ${getScoreColor(test.score)}`}>
+                      {test.score}/100
+                    </div>
                   </div>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <p className="text-gray-600">{test.details}</p>
-                {test.recommendation && (
-                  <Alert className="mt-3">
-                    <AlertTriangle className="h-4 w-4" />
-                    <AlertDescription>
-                      {test.recommendation}
-                    </AlertDescription>
-                  </Alert>
-                )}
-              </CardContent>
-            </Card>
-          ))}
+                </CardHeader>
+                <CardContent>
+                  <p className="text-gray-600">{test.details}</p>
+                  {test.recommendation && (
+                    <Alert className="mt-3">
+                      <AlertTriangle className="h-4 w-4" />
+                      <AlertDescription>{test.recommendation}</AlertDescription>
+                    </Alert>
+                  )}
+                </CardContent>
+              </Card>
+            ))}
         </TabsContent>
       </Tabs>
 
@@ -770,10 +804,10 @@ export const ImageCDNOptimizationTest = () => {
         <Smartphone className="h-4 w-4" />
         <AlertTitle>Nigerian Market Optimization</AlertTitle>
         <AlertDescription>
-          These tests are specifically designed for Nigerian network conditions (2G/3G), 
-          lower-end devices, and local CDN requirements. Optimizations focus on reducing 
-          data usage, improving load times on slower connections, and ensuring reliable 
-          content delivery across major Nigerian cities.
+          These tests are specifically designed for Nigerian network conditions (2G/3G), lower-end
+          devices, and local CDN requirements. Optimizations focus on reducing data usage, improving
+          load times on slower connections, and ensuring reliable content delivery across major
+          Nigerian cities.
         </AlertDescription>
       </Alert>
     </div>

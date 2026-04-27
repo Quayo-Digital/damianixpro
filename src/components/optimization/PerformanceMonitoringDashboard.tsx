@@ -4,19 +4,19 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { 
-  Activity, 
-  Clock, 
-  Zap, 
-  Database, 
-  Wifi, 
+import {
+  Activity,
+  Clock,
+  Zap,
+  Database,
+  Wifi,
   HardDrive,
   Cpu,
   MemoryStick,
   TrendingUp,
   TrendingDown,
   AlertTriangle,
-  CheckCircle
+  CheckCircle,
 } from 'lucide-react';
 
 interface PerformanceMetric {
@@ -54,11 +54,11 @@ export const PerformanceMonitoringDashboard: React.FC = () => {
 
   const startPerformanceMonitoring = async () => {
     setIsMonitoring(true);
-    
+
     // Initial system health assessment
     const health = await assessSystemHealth();
     setSystemHealth(health);
-    
+
     // Start real-time monitoring
     updateRealTimeMetrics();
   };
@@ -77,7 +77,7 @@ export const PerformanceMonitoringDashboard: React.FC = () => {
         unit: 'ms',
         status: 'good',
         trend: 'stable',
-        threshold: { good: 2000, warning: 3000 }
+        threshold: { good: 2000, warning: 3000 },
       },
       {
         name: 'First Contentful Paint',
@@ -85,7 +85,7 @@ export const PerformanceMonitoringDashboard: React.FC = () => {
         unit: 'ms',
         status: 'good',
         trend: 'down',
-        threshold: { good: 1500, warning: 2500 }
+        threshold: { good: 1500, warning: 2500 },
       },
       {
         name: 'Time to Interactive',
@@ -93,7 +93,7 @@ export const PerformanceMonitoringDashboard: React.FC = () => {
         unit: 'ms',
         status: 'warning',
         trend: 'up',
-        threshold: { good: 3000, warning: 5000 }
+        threshold: { good: 3000, warning: 5000 },
       },
       {
         name: 'Bundle Size',
@@ -101,7 +101,7 @@ export const PerformanceMonitoringDashboard: React.FC = () => {
         unit: 'KB',
         status: 'good',
         trend: 'stable',
-        threshold: { good: 2000, warning: 3000 }
+        threshold: { good: 2000, warning: 3000 },
       },
       {
         name: 'Memory Usage',
@@ -109,7 +109,7 @@ export const PerformanceMonitoringDashboard: React.FC = () => {
         unit: 'MB',
         status: 'good',
         trend: 'stable',
-        threshold: { good: 150, warning: 250 }
+        threshold: { good: 150, warning: 250 },
       },
       {
         name: 'API Response Time',
@@ -117,7 +117,7 @@ export const PerformanceMonitoringDashboard: React.FC = () => {
         unit: 'ms',
         status: 'good',
         trend: 'down',
-        threshold: { good: 500, warning: 1000 }
+        threshold: { good: 500, warning: 1000 },
       },
       {
         name: 'Database Query Time',
@@ -125,7 +125,7 @@ export const PerformanceMonitoringDashboard: React.FC = () => {
         unit: 'ms',
         status: 'good',
         trend: 'stable',
-        threshold: { good: 100, warning: 200 }
+        threshold: { good: 100, warning: 200 },
       },
       {
         name: 'Error Rate',
@@ -133,12 +133,12 @@ export const PerformanceMonitoringDashboard: React.FC = () => {
         unit: '%',
         status: 'good',
         trend: 'stable',
-        threshold: { good: 1, warning: 5 }
-      }
+        threshold: { good: 1, warning: 5 },
+      },
     ];
 
     // Update status based on thresholds
-    metrics.forEach(metric => {
+    metrics.forEach((metric) => {
       if (metric.value <= metric.threshold.good) {
         metric.status = 'good';
       } else if (metric.value <= metric.threshold.warning) {
@@ -148,28 +148,28 @@ export const PerformanceMonitoringDashboard: React.FC = () => {
       }
     });
 
-    const overallScore = metrics.reduce((sum, metric) => {
-      const score = metric.status === 'good' ? 100 : 
-                   metric.status === 'warning' ? 70 : 40;
-      return sum + score;
-    }, 0) / metrics.length;
+    const overallScore =
+      metrics.reduce((sum, metric) => {
+        const score = metric.status === 'good' ? 100 : metric.status === 'warning' ? 70 : 40;
+        return sum + score;
+      }, 0) / metrics.length;
 
     const recommendations = generateRecommendations(metrics);
 
     return {
       overall: Math.round(overallScore),
       metrics,
-      recommendations
+      recommendations,
     };
   };
 
   const updateRealTimeMetrics = () => {
     if (!systemHealth) return;
 
-    const updatedMetrics = systemHealth.metrics.map(metric => ({
+    const updatedMetrics = systemHealth.metrics.map((metric) => ({
       ...metric,
       value: metric.value + (Math.random() - 0.5) * (metric.value * 0.1),
-      trend: Math.random() > 0.5 ? 'up' : Math.random() > 0.5 ? 'down' : 'stable'
+      trend: Math.random() > 0.5 ? 'up' : Math.random() > 0.5 ? 'down' : 'stable',
     }));
 
     setRealTimeData(updatedMetrics);
@@ -178,23 +178,29 @@ export const PerformanceMonitoringDashboard: React.FC = () => {
   const generateRecommendations = (metrics: PerformanceMetric[]): string[] => {
     const recommendations: string[] = [];
 
-    metrics.forEach(metric => {
+    metrics.forEach((metric) => {
       if (metric.status === 'critical' || metric.status === 'warning') {
         switch (metric.name) {
           case 'Page Load Time':
             recommendations.push('Implement code splitting and lazy loading for faster page loads');
             break;
           case 'First Contentful Paint':
-            recommendations.push('Optimize critical rendering path and reduce render-blocking resources');
+            recommendations.push(
+              'Optimize critical rendering path and reduce render-blocking resources'
+            );
             break;
           case 'Time to Interactive':
-            recommendations.push('Reduce JavaScript execution time and optimize third-party scripts');
+            recommendations.push(
+              'Reduce JavaScript execution time and optimize third-party scripts'
+            );
             break;
           case 'Bundle Size':
             recommendations.push('Enable tree shaking and remove unused dependencies');
             break;
           case 'Memory Usage':
-            recommendations.push('Implement memory leak detection and optimize component lifecycle');
+            recommendations.push(
+              'Implement memory leak detection and optimize component lifecycle'
+            );
             break;
           case 'API Response Time':
             recommendations.push('Implement API caching and optimize database queries');
@@ -293,15 +299,16 @@ export const PerformanceMonitoringDashboard: React.FC = () => {
               <div className="flex-1">
                 <Progress value={systemHealth.overall} className="h-3" />
               </div>
-              <div className="text-2xl font-bold">
-                {systemHealth.overall}/100
-              </div>
+              <div className="text-2xl font-bold">{systemHealth.overall}/100</div>
             </div>
-            <p className="text-sm text-muted-foreground mt-2">
-              {systemHealth.overall >= 90 ? 'Excellent performance!' :
-               systemHealth.overall >= 75 ? 'Good performance with room for improvement' :
-               systemHealth.overall >= 60 ? 'Performance needs attention' :
-               'Critical performance issues detected'}
+            <p className="mt-2 text-sm text-muted-foreground">
+              {systemHealth.overall >= 90
+                ? 'Excellent performance!'
+                : systemHealth.overall >= 75
+                  ? 'Good performance with room for improvement'
+                  : systemHealth.overall >= 60
+                    ? 'Performance needs attention'
+                    : 'Critical performance issues detected'}
             </p>
           </CardContent>
         </Card>
@@ -317,18 +324,18 @@ export const PerformanceMonitoringDashboard: React.FC = () => {
                     {getStatusIcon(metric.status)}
                     {getTrendIcon(metric.trend)}
                   </div>
-                  <Badge className={getStatusColor(metric.status)}>
-                    {metric.status}
-                  </Badge>
+                  <Badge className={getStatusColor(metric.status)}>{metric.status}</Badge>
                 </div>
                 <CardTitle className="text-sm">{metric.name}</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">
-                  {metric.value.toFixed(0)}{metric.unit}
+                  {metric.value.toFixed(0)}
+                  {metric.unit}
                 </div>
-                <div className="text-xs text-muted-foreground mt-1">
-                  Target: ≤{metric.threshold.good}{metric.unit}
+                <div className="mt-1 text-xs text-muted-foreground">
+                  Target: ≤{metric.threshold.good}
+                  {metric.unit}
                 </div>
               </CardContent>
             </Card>
@@ -343,15 +350,13 @@ export const PerformanceMonitoringDashboard: React.FC = () => {
               <TrendingUp className="h-5 w-5" />
               Performance Recommendations
             </CardTitle>
-            <CardDescription>
-              Actionable steps to improve platform performance
-            </CardDescription>
+            <CardDescription>Actionable steps to improve platform performance</CardDescription>
           </CardHeader>
           <CardContent>
             <ul className="space-y-2">
               {systemHealth.recommendations.map((recommendation, index) => (
                 <li key={index} className="flex items-start gap-2">
-                  <CheckCircle className="h-4 w-4 text-blue-500 mt-0.5 flex-shrink-0" />
+                  <CheckCircle className="mt-0.5 h-4 w-4 flex-shrink-0 text-blue-500" />
                   <span className="text-sm">{recommendation}</span>
                 </li>
               ))}

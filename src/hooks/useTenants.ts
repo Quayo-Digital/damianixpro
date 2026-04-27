@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/contexts/auth';
+import { useAuthSession } from '@/contexts/auth';
 import { toast } from 'sonner';
 
 export interface Tenant {
@@ -63,7 +63,7 @@ export interface TenantScreening {
 }
 
 export const useTenants = () => {
-  const { user, isOwner, isAdmin } = useAuth();
+  const { user, isOwner, isAdmin } = useAuthSession();
   const queryClient = useQueryClient();
 
   // Fetch all tenants with property and lease information
@@ -71,7 +71,7 @@ export const useTenants = () => {
     data: tenants = [],
     isLoading,
     error,
-    refetch
+    refetch,
   } = useQuery({
     queryKey: ['tenants'],
     queryFn: async () => {
@@ -81,7 +81,8 @@ export const useTenants = () => {
 
       const { data, error } = await supabase
         .from('tenants')
-        .select(`
+        .select(
+          `
           *,
           user:users(id, email, avatar_url),
           property_tenants(
@@ -94,7 +95,8 @@ export const useTenants = () => {
             monthly_rent,
             status
           )
-        `)
+        `
+        )
         .order('created_at', { ascending: false });
 
       if (error) throw error;
@@ -114,7 +116,7 @@ export const useTenants = () => {
   const {
     data: applications = [],
     isLoading: applicationsLoading,
-    refetch: refetchApplications
+    refetch: refetchApplications,
   } = useQuery({
     queryKey: ['tenant-applications'],
     queryFn: async () => {
@@ -124,11 +126,13 @@ export const useTenants = () => {
 
       const { data, error } = await supabase
         .from('tenant_applications')
-        .select(`
+        .select(
+          `
           *,
           tenant:tenants(*),
           property:properties(id, title, address, type)
-        `)
+        `
+        )
         .order('application_date', { ascending: false });
 
       if (error) throw error;
@@ -142,7 +146,7 @@ export const useTenants = () => {
   const {
     data: screenings = [],
     isLoading: screeningsLoading,
-    refetch: refetchScreenings
+    refetch: refetchScreenings,
   } = useQuery({
     queryKey: ['tenant-screenings'],
     queryFn: async () => {
@@ -152,10 +156,12 @@ export const useTenants = () => {
 
       const { data, error } = await supabase
         .from('tenant_screenings')
-        .select(`
+        .select(
+          `
           *,
           tenant:tenants(*)
-        `)
+        `
+        )
         .order('created_at', { ascending: false });
 
       if (error) throw error;
@@ -177,10 +183,12 @@ export const useTenants = () => {
     }) => {
       const { data, error } = await supabase
         .from('tenants')
-        .insert([{
-          ...tenantData,
-          status: tenantData.status || 'active'
-        }])
+        .insert([
+          {
+            ...tenantData,
+            status: tenantData.status || 'active',
+          },
+        ])
         .select()
         .single();
 
@@ -221,10 +229,7 @@ export const useTenants = () => {
   // Delete tenant mutation
   const deleteTenantMutation = useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await supabase
-        .from('tenants')
-        .delete()
-        .eq('id', id);
+      const { error } = await supabase.from('tenants').delete().eq('id', id);
 
       if (error) throw error;
     },
@@ -264,26 +269,26 @@ export const useTenants = () => {
     tenants,
     applications,
     screenings,
-    
+
     // Loading states
     isLoading,
     applicationsLoading,
     screeningsLoading,
-    
+
     // Error states
     error,
-    
+
     // Refetch functions
     refetch,
     refetchApplications,
     refetchScreenings,
-    
+
     // Mutations
     createTenant: createTenantMutation.mutate,
     updateTenant: updateTenantMutation.mutate,
     deleteTenant: deleteTenantMutation.mutate,
     updateApplication: updateApplicationMutation.mutate,
-    
+
     // Mutation states
     isCreating: createTenantMutation.isPending,
     isUpdating: updateTenantMutation.isPending,
@@ -294,7 +299,7 @@ export const useTenants = () => {
 
 // Hook for tenant statistics
 export const useTenantStats = () => {
-  const { user, isOwner, isAdmin } = useAuth();
+  const { user, isOwner, isAdmin } = useAuthSession();
 
   return useQuery({
     queryKey: ['tenant-stats'],
@@ -306,22 +311,24 @@ export const useTenantStats = () => {
       const [tenantsRes, applicationsRes, screeningsRes] = await Promise.all([
         supabase.from('tenants').select('status', { count: 'exact' }),
         supabase.from('tenant_applications').select('status', { count: 'exact' }),
-        supabase.from('tenant_screenings').select('background_check_status', { count: 'exact' })
+        supabase.from('tenant_screenings').select('background_check_status', { count: 'exact' }),
       ]);
 
       if (tenantsRes.error) throw tenantsRes.error;
       if (applicationsRes.error) throw applicationsRes.error;
       if (screeningsRes.error) throw screeningsRes.error;
 
-      const tenantsByStatus = tenantsRes.data?.reduce((acc: any, tenant: any) => {
-        acc[tenant.status] = (acc[tenant.status] || 0) + 1;
-        return acc;
-      }, {}) || {};
+      const tenantsByStatus =
+        tenantsRes.data?.reduce((acc: any, tenant: any) => {
+          acc[tenant.status] = (acc[tenant.status] || 0) + 1;
+          return acc;
+        }, {}) || {};
 
-      const applicationsByStatus = applicationsRes.data?.reduce((acc: any, app: any) => {
-        acc[app.status] = (acc[app.status] || 0) + 1;
-        return acc;
-      }, {}) || {};
+      const applicationsByStatus =
+        applicationsRes.data?.reduce((acc: any, app: any) => {
+          acc[app.status] = (acc[app.status] || 0) + 1;
+          return acc;
+        }, {}) || {};
 
       return {
         totalTenants: tenantsRes.count || 0,

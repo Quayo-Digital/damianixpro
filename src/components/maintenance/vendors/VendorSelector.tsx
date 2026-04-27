@@ -1,6 +1,11 @@
-
-import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Label } from '@/components/ui/label';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 
 interface Vendor {
   id: string;
@@ -23,7 +28,7 @@ export function VendorSelector({ vendors, value, onChange }: VendorSelectorProps
           <SelectValue placeholder="Select vendor" />
         </SelectTrigger>
         <SelectContent>
-          {vendors.map(vendor => (
+          {vendors.map((vendor) => (
             <SelectItem key={vendor.id} value={vendor.id}>
               {vendor.name} - {vendor.specialization}
             </SelectItem>

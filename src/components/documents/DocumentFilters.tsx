@@ -1,16 +1,15 @@
-
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { DocumentCategory, documentCategories } from "@/services/documents";
-import { Search, X } from "lucide-react";
+} from '@/components/ui/select';
+import { DocumentCategory, documentCategories } from '@/services/documents';
+import { Search, X } from 'lucide-react';
 
 interface DocumentFiltersProps {
   searchQuery: string;
@@ -40,12 +39,12 @@ export function DocumentFilters({
       setSelectedProperty('');
     }
   };
-  
+
   const hasActiveFilters = searchQuery || selectedCategory || selectedProperty;
 
   return (
     <div className="flex flex-col space-y-4">
-      <div className="flex flex-col sm:flex-row gap-4">
+      <div className="flex flex-col gap-4 sm:flex-row">
         <div className="flex-1">
           <div className="relative">
             <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
@@ -57,7 +56,7 @@ export function DocumentFilters({
             />
           </div>
         </div>
-        
+
         <div className="flex flex-row gap-2">
           <div className="w-full sm:w-[180px]">
             <Select value={selectedCategory} onValueChange={setSelectedCategory}>
@@ -74,7 +73,7 @@ export function DocumentFilters({
               </SelectContent>
             </Select>
           </div>
-          
+
           {showPropertyFilter && properties && properties.length > 0 && (
             <div className="w-full sm:w-[180px]">
               <Select value={selectedProperty} onValueChange={setSelectedProperty}>
@@ -92,14 +91,9 @@ export function DocumentFilters({
               </Select>
             </div>
           )}
-          
+
           {hasActiveFilters && (
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={clearFilters}
-              title="Clear filters"
-            >
+            <Button variant="ghost" size="icon" onClick={clearFilters} title="Clear filters">
               <X className="h-4 w-4" />
             </Button>
           )}

@@ -4,6 +4,7 @@
  */
 
 export { ShortletCalendar } from './ShortletCalendar';
+export { EnhancedCalendar } from './EnhancedCalendar';
 export { BookingFlow } from './BookingFlow';
 export { ShortletListingForm } from './ShortletListingForm';
 export { ShortletListingCard } from './ShortletListingCard';
@@ -19,4 +20,3 @@ export { ReviewList } from './ReviewList';
 export { ImageGallery } from './ImageGallery';
 export { ImageCarousel } from './ImageCarousel';
 export { ImageGrid } from './ImageGrid';
-

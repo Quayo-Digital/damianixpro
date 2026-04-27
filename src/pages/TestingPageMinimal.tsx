@@ -22,8 +22,8 @@ const TestingPageMinimal: React.FC = () => {
           <Alert>
             <AlertTriangle className="h-4 w-4" />
             <AlertDescription>
-              This is a minimal testing page focused on Agent Onboarding workflow verification.
-              Test the agent-specific onboarding form and workflow integration.
+              This is a minimal testing page focused on Agent Onboarding workflow verification. Test
+              the agent-specific onboarding form and workflow integration.
             </AlertDescription>
           </Alert>
 

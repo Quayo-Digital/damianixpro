@@ -4,10 +4,10 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { 
-  CheckCircle, 
-  XCircle, 
-  Clock, 
+import {
+  CheckCircle,
+  XCircle,
+  Clock,
   Play,
   Building,
   BarChart3,
@@ -17,7 +17,7 @@ import {
   Home,
   Target,
   TrendingUp,
-  Shield
+  Shield,
 } from 'lucide-react';
 
 interface TestResult {
@@ -47,7 +47,7 @@ const EnhancedOwnerDashboardTest: React.FC = () => {
         { name: 'Loading states work correctly', status: 'pending' },
         { name: 'Error handling is implemented', status: 'pending' },
         { name: 'Data refresh functionality', status: 'pending' },
-      ]
+      ],
     },
     {
       name: 'Component Loading Tests',
@@ -60,7 +60,7 @@ const EnhancedOwnerDashboardTest: React.FC = () => {
         { name: 'EnhancedOwnerDashboardPage loads', status: 'pending' },
         { name: 'All icons and UI elements render', status: 'pending' },
         { name: 'Responsive layout works correctly', status: 'pending' },
-      ]
+      ],
     },
     {
       name: 'Data Display Tests',
@@ -73,7 +73,7 @@ const EnhancedOwnerDashboardTest: React.FC = () => {
         { name: 'Currency formatting is correct (NGN)', status: 'pending' },
         { name: 'Progress bars and indicators work', status: 'pending' },
         { name: 'Tenant information displays properly', status: 'pending' },
-      ]
+      ],
     },
     {
       name: 'Interactive Features Tests',
@@ -86,7 +86,7 @@ const EnhancedOwnerDashboardTest: React.FC = () => {
         { name: 'Property detail modal works', status: 'pending' },
         { name: 'Quick action buttons respond', status: 'pending' },
         { name: 'Data refresh triggers correctly', status: 'pending' },
-      ]
+      ],
     },
     {
       name: 'Business Logic Tests',
@@ -99,7 +99,7 @@ const EnhancedOwnerDashboardTest: React.FC = () => {
         { name: 'Risk analysis scoring', status: 'pending' },
         { name: 'Market intelligence data', status: 'pending' },
         { name: 'Performance metrics accuracy', status: 'pending' },
-      ]
+      ],
     },
     {
       name: 'Integration Tests',
@@ -112,24 +112,31 @@ const EnhancedOwnerDashboardTest: React.FC = () => {
         { name: 'Navigation and breadcrumbs', status: 'pending' },
         { name: 'Error boundary handling', status: 'pending' },
         { name: 'Performance optimization', status: 'pending' },
-      ]
-    }
+      ],
+    },
   ]);
 
   const [isRunning, setIsRunning] = useState(false);
   const [overallProgress, setOverallProgress] = useState(0);
 
-  const updateTestResult = (categoryIndex: number, testIndex: number, result: Partial<TestResult>) => {
-    setTestCategories(prev => {
+  const updateTestResult = (
+    categoryIndex: number,
+    testIndex: number,
+    result: Partial<TestResult>
+  ) => {
+    setTestCategories((prev) => {
       const updated = [...prev];
-      updated[categoryIndex].tests[testIndex] = { ...updated[categoryIndex].tests[testIndex], ...result };
-      
+      updated[categoryIndex].tests[testIndex] = {
+        ...updated[categoryIndex].tests[testIndex],
+        ...result,
+      };
+
       // Update category status
       const categoryTests = updated[categoryIndex].tests;
-      const allPassed = categoryTests.every(t => t.status === 'passed');
-      const anyFailed = categoryTests.some(t => t.status === 'failed');
-      const anyRunning = categoryTests.some(t => t.status === 'running');
-      
+      const allPassed = categoryTests.every((t) => t.status === 'passed');
+      const anyFailed = categoryTests.some((t) => t.status === 'failed');
+      const anyRunning = categoryTests.some((t) => t.status === 'running');
+
       if (allPassed) {
         updated[categoryIndex].status = 'passed';
       } else if (anyFailed) {
@@ -137,7 +144,7 @@ const EnhancedOwnerDashboardTest: React.FC = () => {
       } else if (anyRunning) {
         updated[categoryIndex].status = 'running';
       }
-      
+
       return updated;
     });
   };
@@ -148,10 +155,10 @@ const EnhancedOwnerDashboardTest: React.FC = () => {
 
     try {
       const startTime = Date.now();
-      
+
       // Simulate test execution with actual checks
-      await new Promise(resolve => setTimeout(resolve, 500 + Math.random() * 1000));
-      
+      await new Promise((resolve) => setTimeout(resolve, 500 + Math.random() * 1000));
+
       let passed = false;
       let message = '';
 
@@ -190,7 +197,7 @@ const EnhancedOwnerDashboardTest: React.FC = () => {
             break;
         }
       }
-      
+
       // Component Loading Tests
       else if (categoryIndex === 1) {
         switch (testIndex) {
@@ -244,25 +251,25 @@ const EnhancedOwnerDashboardTest: React.FC = () => {
             break;
         }
       }
-      
+
       // Data Display Tests
       else if (categoryIndex === 2) {
         passed = true;
         message = 'Data display functionality verified';
       }
-      
+
       // Interactive Features Tests
       else if (categoryIndex === 3) {
         passed = true;
         message = 'Interactive features working';
       }
-      
+
       // Business Logic Tests
       else if (categoryIndex === 4) {
         passed = true;
         message = 'Business logic calculations correct';
       }
-      
+
       // Integration Tests
       else if (categoryIndex === 5) {
         switch (testIndex) {
@@ -284,14 +291,13 @@ const EnhancedOwnerDashboardTest: React.FC = () => {
       updateTestResult(categoryIndex, testIndex, {
         status: passed ? 'passed' : 'failed',
         message,
-        duration
+        duration,
       });
-
     } catch (error) {
       updateTestResult(categoryIndex, testIndex, {
         status: 'failed',
         message: `Test execution failed: ${error}`,
-        duration: Date.now()
+        duration: Date.now(),
       });
     }
   };
@@ -299,20 +305,20 @@ const EnhancedOwnerDashboardTest: React.FC = () => {
   const runAllTests = async () => {
     setIsRunning(true);
     setOverallProgress(0);
-    
+
     const totalTests = testCategories.reduce((sum, category) => sum + category.tests.length, 0);
     let completedTests = 0;
 
     for (let categoryIndex = 0; categoryIndex < testCategories.length; categoryIndex++) {
       const category = testCategories[categoryIndex];
-      
+
       for (let testIndex = 0; testIndex < category.tests.length; testIndex++) {
         await runTest(categoryIndex, testIndex);
         completedTests++;
         setOverallProgress((completedTests / totalTests) * 100);
       }
     }
-    
+
     setIsRunning(false);
   };
 
@@ -323,7 +329,7 @@ const EnhancedOwnerDashboardTest: React.FC = () => {
       case 'failed':
         return <XCircle className="h-4 w-4 text-red-600" />;
       case 'running':
-        return <Clock className="h-4 w-4 text-blue-600 animate-spin" />;
+        return <Clock className="h-4 w-4 animate-spin text-blue-600" />;
       default:
         return <Clock className="h-4 w-4 text-gray-400" />;
     }
@@ -342,33 +348,37 @@ const EnhancedOwnerDashboardTest: React.FC = () => {
     }
   };
 
-  const overallStatus = testCategories.every(cat => cat.status === 'passed') ? 'passed' :
-                       testCategories.some(cat => cat.status === 'failed') ? 'failed' :
-                       testCategories.some(cat => cat.status === 'running') ? 'running' : 'pending';
+  const overallStatus = testCategories.every((cat) => cat.status === 'passed')
+    ? 'passed'
+    : testCategories.some((cat) => cat.status === 'failed')
+      ? 'failed'
+      : testCategories.some((cat) => cat.status === 'running')
+        ? 'running'
+        : 'pending';
 
-  const passedTests = testCategories.reduce((sum, cat) => 
-    sum + cat.tests.filter(test => test.status === 'passed').length, 0);
+  const passedTests = testCategories.reduce(
+    (sum, cat) => sum + cat.tests.filter((test) => test.status === 'passed').length,
+    0
+  );
   const totalTests = testCategories.reduce((sum, cat) => sum + cat.tests.length, 0);
 
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center space-y-4 lg:space-y-0">
+      <div className="flex flex-col items-start justify-between space-y-4 lg:flex-row lg:items-center lg:space-y-0">
         <div>
-          <h2 className="text-2xl font-bold text-gray-900 flex items-center space-x-2">
+          <h2 className="flex items-center space-x-2 text-2xl font-bold text-gray-900">
             <Building className="h-6 w-6 text-blue-600" />
             <span>Enhanced Owner Dashboard Test Suite</span>
           </h2>
-          <p className="text-gray-600 mt-1">
+          <p className="mt-1 text-gray-600">
             Comprehensive testing for advanced owner business management features
           </p>
         </div>
         <div className="flex items-center space-x-3">
-          <Badge className={getStatusColor(overallStatus)}>
-            {overallStatus.toUpperCase()}
-          </Badge>
-          <Button 
-            onClick={runAllTests} 
+          <Badge className={getStatusColor(overallStatus)}>{overallStatus.toUpperCase()}</Badge>
+          <Button
+            onClick={runAllTests}
             disabled={isRunning}
             className="flex items-center space-x-2"
           >
@@ -382,36 +392,44 @@ const EnhancedOwnerDashboardTest: React.FC = () => {
       <Card>
         <CardContent className="p-6">
           <div className="space-y-4">
-            <div className="flex justify-between items-center">
+            <div className="flex items-center justify-between">
               <h3 className="text-lg font-semibold">Test Progress</h3>
               <span className="text-sm text-gray-600">
                 {passedTests} / {totalTests} tests passed
               </span>
             </div>
             <Progress value={overallProgress} className="h-3" />
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+            <div className="grid grid-cols-2 gap-4 text-center md:grid-cols-4">
               <div>
                 <div className="text-2xl font-bold text-green-600">{passedTests}</div>
                 <div className="text-sm text-gray-600">Passed</div>
               </div>
               <div>
                 <div className="text-2xl font-bold text-red-600">
-                  {testCategories.reduce((sum, cat) => 
-                    sum + cat.tests.filter(test => test.status === 'failed').length, 0)}
+                  {testCategories.reduce(
+                    (sum, cat) => sum + cat.tests.filter((test) => test.status === 'failed').length,
+                    0
+                  )}
                 </div>
                 <div className="text-sm text-gray-600">Failed</div>
               </div>
               <div>
                 <div className="text-2xl font-bold text-blue-600">
-                  {testCategories.reduce((sum, cat) => 
-                    sum + cat.tests.filter(test => test.status === 'running').length, 0)}
+                  {testCategories.reduce(
+                    (sum, cat) =>
+                      sum + cat.tests.filter((test) => test.status === 'running').length,
+                    0
+                  )}
                 </div>
                 <div className="text-sm text-gray-600">Running</div>
               </div>
               <div>
                 <div className="text-2xl font-bold text-gray-600">
-                  {testCategories.reduce((sum, cat) => 
-                    sum + cat.tests.filter(test => test.status === 'pending').length, 0)}
+                  {testCategories.reduce(
+                    (sum, cat) =>
+                      sum + cat.tests.filter((test) => test.status === 'pending').length,
+                    0
+                  )}
                 </div>
                 <div className="text-sm text-gray-600">Pending</div>
               </div>
@@ -421,7 +439,7 @@ const EnhancedOwnerDashboardTest: React.FC = () => {
       </Card>
 
       {/* Test Categories */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         {testCategories.map((category, categoryIndex) => (
           <Card key={categoryIndex} className="h-fit">
             <CardHeader>
@@ -431,7 +449,8 @@ const EnhancedOwnerDashboardTest: React.FC = () => {
                   <span>{category.name}</span>
                 </div>
                 <Badge className={getStatusColor(category.status)}>
-                  {category.tests.filter(t => t.status === 'passed').length} / {category.tests.length}
+                  {category.tests.filter((t) => t.status === 'passed').length} /{' '}
+                  {category.tests.length}
                 </Badge>
               </CardTitle>
               <p className="text-sm text-gray-600">{category.description}</p>
@@ -439,7 +458,10 @@ const EnhancedOwnerDashboardTest: React.FC = () => {
             <CardContent>
               <div className="space-y-2">
                 {category.tests.map((test, testIndex) => (
-                  <div key={testIndex} className="flex items-center justify-between p-2 rounded border">
+                  <div
+                    key={testIndex}
+                    className="flex items-center justify-between rounded border p-2"
+                  >
                     <div className="flex items-center space-x-2">
                       {getStatusIcon(test.status)}
                       <span className="text-sm">{test.name}</span>
@@ -462,12 +484,11 @@ const EnhancedOwnerDashboardTest: React.FC = () => {
         <Alert>
           <AlertTriangle className="h-4 w-4" />
           <AlertDescription>
-            {overallStatus === 'passed' 
+            {overallStatus === 'passed'
               ? '🎉 All tests passed! Enhanced Owner Dashboard is ready for production.'
               : overallStatus === 'failed'
-              ? '⚠️ Some tests failed. Please review the results and fix any issues.'
-              : '⏳ Tests are currently running. Please wait for completion.'
-            }
+                ? '⚠️ Some tests failed. Please review the results and fix any issues.'
+                : '⏳ Tests are currently running. Please wait for completion.'}
           </AlertDescription>
         </Alert>
       )}

@@ -1,7 +1,6 @@
-
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/contexts/auth';
+import { useAuthSession } from '@/contexts/auth';
 
 async function getOwnerDashboardData(userId: string) {
   // 1. Fetch properties owned by the user
@@ -12,7 +11,7 @@ async function getOwnerDashboardData(userId: string) {
 
   if (propertiesError) throw propertiesError;
 
-  const propertyIds = ownerProperties.map(p => p.id);
+  const propertyIds = ownerProperties.map((p) => p.id);
   const totalProperties = propertyIds.length;
 
   if (totalProperties === 0) {
@@ -27,17 +26,17 @@ async function getOwnerDashboardData(userId: string) {
   }
 
   // 2. Fetch aggregated data based on the owner's property IDs
-  
+
   // First, get all tenant associations for the owner's properties
   const { data: propertyTenants, error: propertyTenantsError } = await supabase
     .from('property_tenants')
     .select('id')
     .in('property_id', propertyIds);
-  
+
   if (propertyTenantsError) throw propertyTenantsError;
 
   const totalTenants = propertyTenants.length;
-  const propertyTenantIds = propertyTenants.map(pt => pt.id);
+  const propertyTenantIds = propertyTenants.map((pt) => pt.id);
 
   // Fetch total revenue using the property-tenant links
   let totalRevenue = 0;
@@ -50,7 +49,7 @@ async function getOwnerDashboardData(userId: string) {
     if (revenueError) throw revenueError;
     totalRevenue = revenueData?.reduce((sum, payment) => sum + Number(payment.amount), 0) || 0;
   }
-  
+
   // Fetch pending maintenance requests
   const { count: pendingMaintenance, error: maintenanceError } = await supabase
     .from('maintenance_requests')
@@ -77,13 +76,13 @@ async function getOwnerDashboardData(userId: string) {
 }
 
 export function useOwnerDashboardData() {
-  const { user } = useAuth();
-  
+  const { user } = useAuthSession();
+
   return useQuery({
     queryKey: ['ownerDashboardData', user?.id],
     queryFn: () => {
-      if (!user) throw new Error("User not authenticated");
-      return getOwnerDashboardData(user.id)
+      if (!user) throw new Error('User not authenticated');
+      return getOwnerDashboardData(user.id);
     },
     enabled: !!user,
   });

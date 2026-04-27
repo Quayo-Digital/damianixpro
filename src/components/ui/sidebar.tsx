@@ -1,4 +1,3 @@
-
 // This file re-exports all sidebar components from the new modular structure
 // for backward compatibility
 
@@ -27,4 +26,4 @@ export {
   SidebarSeparator,
   SidebarTrigger,
   useSidebar,
-} from "./sidebar/index";
+} from './sidebar/index';

@@ -1,10 +1,15 @@
-
 import { useState } from 'react';
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Textarea } from "@/components/ui/textarea";
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Textarea } from '@/components/ui/textarea';
 import { PaymentCategory, PAYMENT_CATEGORIES } from '@/utils/PaymentTypes';
 import { CreditCard } from 'lucide-react';
 
@@ -27,16 +32,13 @@ export const OneTimePaymentForm = ({
   description,
   setDescription,
   onSubmit,
-  isProcessing
+  isProcessing,
 }: OneTimePaymentFormProps) => {
   return (
     <div className="grid gap-4">
       <div className="space-y-2">
         <Label htmlFor="category">Payment Type</Label>
-        <Select 
-          value={category} 
-          onValueChange={(value) => setCategory(value as PaymentCategory)}
-        >
+        <Select value={category} onValueChange={(value) => setCategory(value as PaymentCategory)}>
           <SelectTrigger id="category">
             <SelectValue placeholder="Select payment type" />
           </SelectTrigger>
@@ -61,9 +63,7 @@ export const OneTimePaymentForm = ({
           min={1000}
           className="col-span-3"
         />
-        <p className="text-sm text-muted-foreground">
-          Default amount is ₦50,000
-        </p>
+        <p className="text-sm text-muted-foreground">Default amount is ₦50,000</p>
       </div>
 
       <div className="space-y-2">
@@ -76,9 +76,9 @@ export const OneTimePaymentForm = ({
           className="resize-none"
         />
       </div>
-      
+
       <Button onClick={onSubmit} disabled={isProcessing} className="mt-2">
-        {isProcessing ? "Processing..." : `Pay ₦${amount.toLocaleString()}`}
+        {isProcessing ? 'Processing...' : `Pay ₦${amount.toLocaleString()}`}
       </Button>
     </div>
   );

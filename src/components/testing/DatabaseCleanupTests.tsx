@@ -30,7 +30,7 @@ export function DatabaseCleanupTests() {
   const handleCheckDuplicates = async () => {
     setIsChecking(true);
     setDuplicateStatus(null);
-    
+
     try {
       const result = await checkForDuplicateTenants();
       setDuplicateStatus(result);
@@ -44,11 +44,11 @@ export function DatabaseCleanupTests() {
   const handleCleanupDuplicates = async () => {
     setIsCleaning(true);
     setCleanupResult(null);
-    
+
     try {
       const result = await cleanupDuplicateTenants();
       setCleanupResult(result);
-      
+
       // Refresh duplicate status after cleanup
       if (result.success) {
         const newStatus = await checkForDuplicateTenants();
@@ -61,7 +61,7 @@ export function DatabaseCleanupTests() {
         duplicatesFound: 0,
         duplicatesRemoved: 0,
         errors: [error instanceof Error ? error.message : String(error)],
-        message: 'Cleanup failed due to unexpected error'
+        message: 'Cleanup failed due to unexpected error',
       });
     } finally {
       setIsCleaning(false);
@@ -85,11 +85,7 @@ export function DatabaseCleanupTests() {
           <div className="space-y-3">
             <div className="flex items-center justify-between">
               <h3 className="text-lg font-medium">1. Check for Duplicate Records</h3>
-              <Button
-                onClick={handleCheckDuplicates}
-                disabled={isChecking}
-                variant="outline"
-              >
+              <Button onClick={handleCheckDuplicates} disabled={isChecking} variant="outline">
                 {isChecking ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -112,7 +108,7 @@ export function DatabaseCleanupTests() {
                     </div>
                     <div className="flex items-center gap-2">
                       <span>User IDs with duplicates:</span>
-                      <Badge variant={duplicateStatus.hasDuplicates ? "destructive" : "default"}>
+                      <Badge variant={duplicateStatus.hasDuplicates ? 'destructive' : 'default'}>
                         {duplicateStatus.duplicateCount}
                       </Badge>
                     </div>
@@ -137,7 +133,7 @@ export function DatabaseCleanupTests() {
               <Button
                 onClick={handleCleanupDuplicates}
                 disabled={isCleaning || !duplicateStatus?.hasDuplicates}
-                variant={duplicateStatus?.hasDuplicates ? "default" : "secondary"}
+                variant={duplicateStatus?.hasDuplicates ? 'default' : 'secondary'}
               >
                 {isCleaning ? (
                   <>
@@ -154,13 +150,14 @@ export function DatabaseCleanupTests() {
               <Alert>
                 <CheckCircle className="h-4 w-4" />
                 <AlertDescription>
-                  No duplicate records found. Database is clean and console errors should be resolved.
+                  No duplicate records found. Database is clean and console errors should be
+                  resolved.
                 </AlertDescription>
               </Alert>
             )}
 
             {cleanupResult && (
-              <Alert variant={cleanupResult.success ? "default" : "destructive"}>
+              <Alert variant={cleanupResult.success ? 'default' : 'destructive'}>
                 {cleanupResult.success ? (
                   <CheckCircle className="h-4 w-4" />
                 ) : (
@@ -176,7 +173,7 @@ export function DatabaseCleanupTests() {
                     {cleanupResult.errors.length > 0 && (
                       <div className="mt-2">
                         <p className="font-medium text-red-600">Errors:</p>
-                        <ul className="list-disc list-inside text-sm">
+                        <ul className="list-inside list-disc text-sm">
                           {cleanupResult.errors.map((error, index) => (
                             <li key={index}>{error}</li>
                           ))}
@@ -190,22 +187,34 @@ export function DatabaseCleanupTests() {
           </div>
 
           {/* Instructions */}
-          <div className="mt-6 p-4 bg-blue-50 rounded-lg">
-            <h4 className="font-medium text-blue-900 mb-2">How This Fixes Console Errors:</h4>
-            <ul className="text-sm text-blue-800 space-y-1">
-              <li>• <strong>PGRST116 Error:</strong> Caused by multiple tenant records for the same user_id</li>
-              <li>• <strong>Smart Recommendations Error:</strong> AI service fails when tenant queries return multiple rows</li>
-              <li>• <strong>Database Query Issues:</strong> .single() queries expect exactly one row but get multiple</li>
-              <li>• <strong>Solution:</strong> Remove duplicate records, keeping the most recent one for each user</li>
+          <div className="mt-6 rounded-lg bg-blue-50 p-4">
+            <h4 className="mb-2 font-medium text-blue-900">How This Fixes Console Errors:</h4>
+            <ul className="space-y-1 text-sm text-blue-800">
+              <li>
+                • <strong>PGRST116 Error:</strong> Caused by multiple tenant records for the same
+                user_id
+              </li>
+              <li>
+                • <strong>Smart Recommendations Error:</strong> AI service fails when tenant queries
+                return multiple rows
+              </li>
+              <li>
+                • <strong>Database Query Issues:</strong> .single() queries expect exactly one row
+                but get multiple
+              </li>
+              <li>
+                • <strong>Solution:</strong> Remove duplicate records, keeping the most recent one
+                for each user
+              </li>
             </ul>
           </div>
 
           {/* Post-Cleanup Instructions */}
           {cleanupResult?.success && (
-            <div className="mt-4 p-4 bg-green-50 rounded-lg">
-              <h4 className="font-medium text-green-900 mb-2">✅ Cleanup Successful!</h4>
+            <div className="mt-4 rounded-lg bg-green-50 p-4">
+              <h4 className="mb-2 font-medium text-green-900">✅ Cleanup Successful!</h4>
               <p className="text-sm text-green-800">
-                Duplicate tenant records have been removed. Console errors should now be resolved. 
+                Duplicate tenant records have been removed. Console errors should now be resolved.
                 You may need to refresh the browser to see the changes take effect.
               </p>
             </div>

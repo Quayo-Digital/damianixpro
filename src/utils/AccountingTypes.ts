@@ -100,7 +100,12 @@ export interface OwnerPaymentGroup {
 // --- End of new types ---
 
 // Import and re-export maintenance types from the maintenance-data.ts file
-import { MaintenanceRequest, MaintenanceUpdate, parseUpdatesFromJson, updatesToJson } from '../components/communication/maintenance/maintenance-data';
+import {
+  MaintenanceRequest,
+  MaintenanceUpdate,
+  parseUpdatesFromJson,
+  updatesToJson,
+} from '../components/communication/maintenance/maintenance-data';
 
 export type { MaintenanceRequest, MaintenanceUpdate };
 export { parseUpdatesFromJson, updatesToJson };

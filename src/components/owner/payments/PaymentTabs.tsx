@@ -1,7 +1,6 @@
-
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Card, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import { Download } from 'lucide-react';
 import { toast } from '@/components/ui/sonner';
 import { PaymentsTable } from './PaymentsTable';
@@ -25,13 +24,13 @@ export const PaymentTabs = ({ activeTab, setActiveTab, payments, loading }: Paym
         <TabsTrigger value="received">Received Payments</TabsTrigger>
         <TabsTrigger value="pending">Pending Payments</TabsTrigger>
       </TabsList>
-      
+
       <TabsContent value="received" className="space-y-4">
-        <div className="flex justify-between items-center">
+        <div className="flex items-center justify-between">
           <h3 className="text-lg font-semibold">Payment History</h3>
-          <Button 
-            variant="outline" 
-            size="sm" 
+          <Button
+            variant="outline"
+            size="sm"
             onClick={handleDownloadStatement}
             disabled={payments.length === 0}
           >
@@ -40,7 +39,7 @@ export const PaymentTabs = ({ activeTab, setActiveTab, payments, loading }: Paym
         </div>
         <Card>
           <CardContent className="p-0">
-            <PaymentsTable 
+            <PaymentsTable
               payments={payments}
               loading={loading}
               emptyMessage="No payments found for the selected period"
@@ -49,9 +48,9 @@ export const PaymentTabs = ({ activeTab, setActiveTab, payments, loading }: Paym
           </CardContent>
         </Card>
       </TabsContent>
-      
+
       <TabsContent value="pending" className="space-y-4">
-        <div className="flex justify-between items-center">
+        <div className="flex items-center justify-between">
           <h3 className="text-lg font-semibold">Pending Payments</h3>
         </div>
         <Card>

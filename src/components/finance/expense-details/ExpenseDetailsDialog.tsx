@@ -1,4 +1,3 @@
-
 import React from 'react';
 import {
   Dialog,
@@ -7,7 +6,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogClose,
-  DialogFooter
+  DialogFooter,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Download } from 'lucide-react';
@@ -34,18 +33,18 @@ interface ExpenseDetailsDialogProps {
   monthlyExpenses: MonthlyExpense[];
 }
 
-export function ExpenseDetailsDialog({ 
-  open, 
+export function ExpenseDetailsDialog({
+  open,
   onOpenChange,
   expenseData,
-  monthlyExpenses
+  monthlyExpenses,
 }: ExpenseDetailsDialogProps) {
   const formatAmount = (amount: number) => {
     return new Intl.NumberFormat('en-NG', {
       style: 'currency',
       currency: 'NGN',
       minimumFractionDigits: 0,
-      maximumFractionDigits: 0
+      maximumFractionDigits: 0,
     }).format(amount);
   };
 
@@ -59,8 +58,8 @@ export function ExpenseDetailsDialog({
       mapper: (item) => [
         item.name,
         formatAmountForCsv(item.value),
-        ((item.value / totalExpenses) * 100).toFixed(1)
-      ]
+        ((item.value / totalExpenses) * 100).toFixed(1),
+      ],
     });
   };
 
@@ -69,10 +68,7 @@ export function ExpenseDetailsDialog({
       filename: 'Monthly_Expenses',
       headers: ['Month', 'Expenses'],
       data: monthlyExpenses,
-      mapper: (item) => [
-        item.month,
-        formatAmountForCsv(item.expenses)
-      ]
+      mapper: (item) => [item.month, formatAmountForCsv(item.expenses)],
     });
   };
 
@@ -82,45 +78,43 @@ export function ExpenseDetailsDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[800px] max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-[800px]">
         <DialogHeader className="sticky top-0 z-10 bg-background pb-4 pt-6">
           <DialogTitle>Expense Breakdown Details</DialogTitle>
-          <DialogDescription>
-            Detailed analysis of your property expenses
-          </DialogDescription>
+          <DialogDescription>Detailed analysis of your property expenses</DialogDescription>
         </DialogHeader>
-        
+
         <div className="space-y-6 pb-4">
           {/* Summary Section */}
-          <ExpenseSummarySection 
-            totalExpenses={totalExpenses} 
-            expenseData={expenseData} 
-            formatAmount={formatAmount} 
+          <ExpenseSummarySection
+            totalExpenses={totalExpenses}
+            expenseData={expenseData}
+            formatAmount={formatAmount}
           />
-          
+
           {/* Expense Distribution Chart */}
-          <ExpenseDistributionChart 
-            expenseData={expenseData} 
+          <ExpenseDistributionChart
+            expenseData={expenseData}
             formatAmount={formatAmount}
             onDownload={handleDownloadExpenseDetails}
           />
-          
+
           {/* Monthly Expense Trend */}
-          <ExpenseTrendChart 
-            monthlyExpenses={monthlyExpenses} 
+          <ExpenseTrendChart
+            monthlyExpenses={monthlyExpenses}
             formatAmount={formatAmount}
             onDownload={handleDownloadMonthlyExpenses}
           />
-          
+
           {/* Detailed Expense Table */}
-          <ExpenseDetailsTable 
-            expenseData={expenseData} 
+          <ExpenseDetailsTable
+            expenseData={expenseData}
             totalExpenses={totalExpenses}
             formatAmount={formatAmount}
           />
         </div>
-        
-        <DialogFooter className="sticky bottom-0 bg-background pt-4 pb-6 border-t mt-4">
+
+        <DialogFooter className="sticky bottom-0 mt-4 border-t bg-background pb-6 pt-4">
           <Button variant="outline" onClick={handleDownloadExpenseDetails} className="mr-auto">
             <Download className="mr-2 h-4 w-4" />
             Download All Data

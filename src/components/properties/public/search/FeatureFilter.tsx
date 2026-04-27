@@ -1,4 +1,3 @@
-
 import { Checkbox } from '@/components/ui/checkbox';
 
 interface FeatureFilterProps {
@@ -10,16 +9,16 @@ interface FeatureFilterProps {
 export function FeatureFilter({
   selectedFeatures,
   toggleFeature,
-  availableFeatures
+  availableFeatures,
 }: FeatureFilterProps) {
   return (
     <div>
-      <h4 className="font-medium mb-2">Property Features</h4>
-      <div className="grid grid-cols-2 gap-2 max-h-40 overflow-y-auto">
+      <h4 className="mb-2 font-medium">Property Features</h4>
+      <div className="grid max-h-40 grid-cols-2 gap-2 overflow-y-auto">
         {availableFeatures.map((feature) => (
           <div key={feature} className="flex items-center space-x-2">
-            <Checkbox 
-              id={`feature-${feature}`} 
+            <Checkbox
+              id={`feature-${feature}`}
               checked={selectedFeatures.includes(feature)}
               onCheckedChange={() => toggleFeature(feature)}
             />
@@ -32,7 +31,7 @@ export function FeatureFilter({
           </div>
         ))}
         {availableFeatures.length === 0 && (
-          <p className="text-sm text-muted-foreground col-span-2">No features available</p>
+          <p className="col-span-2 text-sm text-muted-foreground">No features available</p>
         )}
       </div>
     </div>

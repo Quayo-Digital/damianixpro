@@ -9,11 +9,11 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Progress } from '@/components/ui/progress';
-import { 
-  Camera, 
-  CheckCircle, 
-  XCircle, 
-  AlertCircle, 
+import {
+  Camera,
+  CheckCircle,
+  XCircle,
+  AlertCircle,
   RefreshCw,
   Smartphone,
   Image as ImageIcon,
@@ -23,7 +23,7 @@ import {
   Download,
   Share2,
   MapPin,
-  Clock
+  Clock,
 } from 'lucide-react';
 import { useCamera } from '@/hooks/useCamera';
 import CameraButton from '@/components/camera/CameraButton';
@@ -53,7 +53,7 @@ export function CameraFunctionalityTest() {
     capturePhoto,
     switchCamera,
     toggleFlash,
-    cleanup
+    cleanup,
   } = useCamera(false);
 
   const tests = [
@@ -66,7 +66,7 @@ export function CameraFunctionalityTest() {
             name: 'Camera Support Detection',
             status: 'failed',
             message: 'MediaDevices API not supported',
-            details: 'Browser does not support camera access'
+            details: 'Browser does not support camera access',
           };
         }
 
@@ -75,7 +75,7 @@ export function CameraFunctionalityTest() {
             name: 'Camera Support Detection',
             status: 'warning',
             message: 'Camera not available or permission denied',
-            details: 'Device may not have camera or user denied permission'
+            details: 'Device may not have camera or user denied permission',
           };
         }
 
@@ -83,9 +83,9 @@ export function CameraFunctionalityTest() {
           name: 'Camera Support Detection',
           status: 'passed',
           message: 'Camera support detected successfully',
-          score: 100
+          score: 100,
         };
-      }
+      },
     },
     {
       name: 'Camera Capabilities Check',
@@ -96,7 +96,7 @@ export function CameraFunctionalityTest() {
             name: 'Camera Capabilities Check',
             status: 'failed',
             message: 'Unable to detect camera capabilities',
-            details: 'Camera capabilities not available'
+            details: 'Camera capabilities not available',
           };
         }
 
@@ -128,9 +128,9 @@ export function CameraFunctionalityTest() {
           status: 'passed',
           message: `Camera capabilities detected: ${features.length} features`,
           details: features.join(', '),
-          score: Math.min(score, 100)
+          score: Math.min(score, 100),
         };
-      }
+      },
     },
     {
       name: 'Camera Initialization',
@@ -142,14 +142,14 @@ export function CameraFunctionalityTest() {
           }
 
           // Wait a moment for initialization
-          await new Promise(resolve => setTimeout(resolve, 1000));
+          await new Promise((resolve) => setTimeout(resolve, 1000));
 
           if (!isInitialized) {
             return {
               name: 'Camera Initialization',
               status: 'failed',
               message: 'Camera initialization failed',
-              details: 'Unable to start camera stream'
+              details: 'Unable to start camera stream',
             };
           }
 
@@ -158,17 +158,17 @@ export function CameraFunctionalityTest() {
             status: 'passed',
             message: 'Camera initialized successfully',
             details: 'Video stream active and ready for capture',
-            score: 95
+            score: 95,
           };
         } catch (error) {
           return {
             name: 'Camera Initialization',
             status: 'failed',
             message: 'Camera initialization error',
-            details: error instanceof Error ? error.message : 'Unknown error'
+            details: error instanceof Error ? error.message : 'Unknown error',
           };
         }
-      }
+      },
     },
     {
       name: 'Photo Capture Test',
@@ -180,12 +180,12 @@ export function CameraFunctionalityTest() {
               name: 'Photo Capture Test',
               status: 'failed',
               message: 'Camera not initialized',
-              details: 'Cannot capture photo without initialized camera'
+              details: 'Cannot capture photo without initialized camera',
             };
           }
 
           const photo = await capturePhoto();
-          setTestPhotos(prev => [...prev, photo]);
+          setTestPhotos((prev) => [...prev, photo]);
 
           // Validate photo properties
           const validations = [];
@@ -216,17 +216,17 @@ export function CameraFunctionalityTest() {
             status: 'passed',
             message: `Photo captured successfully (${(photo.size / 1024).toFixed(1)}KB)`,
             details: validations.join(', '),
-            score
+            score,
           };
         } catch (error) {
           return {
             name: 'Photo Capture Test',
             status: 'failed',
             message: 'Photo capture failed',
-            details: error instanceof Error ? error.message : 'Unknown error'
+            details: error instanceof Error ? error.message : 'Unknown error',
           };
         }
-      }
+      },
     },
     {
       name: 'Camera Switch Test',
@@ -239,31 +239,31 @@ export function CameraFunctionalityTest() {
               status: 'warning',
               message: 'Single camera device',
               details: 'Device has only one camera, switch not applicable',
-              score: 80
+              score: 80,
             };
           }
 
           await switchCamera();
-          
+
           // Wait for camera switch
-          await new Promise(resolve => setTimeout(resolve, 1500));
+          await new Promise((resolve) => setTimeout(resolve, 1500));
 
           return {
             name: 'Camera Switch Test',
             status: 'passed',
             message: 'Camera switch successful',
             details: 'Successfully switched between front and back cameras',
-            score: 90
+            score: 90,
           };
         } catch (error) {
           return {
             name: 'Camera Switch Test',
             status: 'failed',
             message: 'Camera switch failed',
-            details: error instanceof Error ? error.message : 'Unknown error'
+            details: error instanceof Error ? error.message : 'Unknown error',
           };
         }
-      }
+      },
     },
     {
       name: 'Flash Toggle Test',
@@ -276,14 +276,14 @@ export function CameraFunctionalityTest() {
               status: 'warning',
               message: 'Flash not supported',
               details: 'Device does not support flash/torch',
-              score: 75
+              score: 75,
             };
           }
 
           const flashEnabled = await toggleFlash();
-          
+
           // Toggle back
-          await new Promise(resolve => setTimeout(resolve, 500));
+          await new Promise((resolve) => setTimeout(resolve, 500));
           await toggleFlash();
 
           return {
@@ -291,17 +291,17 @@ export function CameraFunctionalityTest() {
             status: 'passed',
             message: 'Flash toggle successful',
             details: `Flash was ${flashEnabled ? 'enabled' : 'disabled'} and toggled back`,
-            score: 85
+            score: 85,
           };
         } catch (error) {
           return {
             name: 'Flash Toggle Test',
             status: 'failed',
             message: 'Flash toggle failed',
-            details: error instanceof Error ? error.message : 'Unknown error'
+            details: error instanceof Error ? error.message : 'Unknown error',
           };
         }
-      }
+      },
     },
     {
       name: 'Nigerian Network Optimization',
@@ -312,13 +312,13 @@ export function CameraFunctionalityTest() {
             name: 'Nigerian Network Optimization',
             status: 'warning',
             message: 'No test photos available',
-            details: 'Need captured photos to test optimization'
+            details: 'Need captured photos to test optimization',
           };
         }
 
         const photo = testPhotos[0];
         const sizeMB = photo.size / (1024 * 1024);
-        
+
         let score = 60;
         const optimizations = [];
 
@@ -351,9 +351,9 @@ export function CameraFunctionalityTest() {
           status: 'passed',
           message: `Photo optimized for Nigerian networks (${sizeMB.toFixed(1)}MB)`,
           details: optimizations.join(', '),
-          score
+          score,
         };
-      }
+      },
     },
     {
       name: 'UI Component Integration',
@@ -371,7 +371,7 @@ export function CameraFunctionalityTest() {
             name: 'UI Component Integration',
             status: 'failed',
             message: 'UI component integration failed',
-            details: 'CameraButton component not working'
+            details: 'CameraButton component not working',
           };
         }
 
@@ -390,10 +390,10 @@ export function CameraFunctionalityTest() {
           status: 'passed',
           message: 'UI components integrated successfully',
           details: integrationChecks.join(', '),
-          score
+          score,
         };
-      }
-    }
+      },
+    },
   ];
 
   const runTests = async () => {
@@ -415,14 +415,14 @@ export function CameraFunctionalityTest() {
       const pendingResult: TestResult = {
         name: test.name,
         status: 'running',
-        message: 'Running...'
+        message: 'Running...',
       };
       setResults([...testResults, pendingResult]);
 
       try {
         const result = await test.test();
         testResults.push(result);
-        
+
         if (result.score) {
           totalScore += result.score;
           scoredTests++;
@@ -432,15 +432,15 @@ export function CameraFunctionalityTest() {
           name: test.name,
           status: 'failed',
           message: 'Test execution failed',
-          details: error instanceof Error ? error.message : 'Unknown error'
+          details: error instanceof Error ? error.message : 'Unknown error',
         };
         testResults.push(errorResult);
       }
 
       setResults([...testResults]);
-      
+
       // Small delay between tests
-      await new Promise(resolve => setTimeout(resolve, 500));
+      await new Promise((resolve) => setTimeout(resolve, 500));
     }
 
     const finalScore = scoredTests > 0 ? Math.round(totalScore / scoredTests) : 0;
@@ -462,7 +462,7 @@ export function CameraFunctionalityTest() {
       case 'warning':
         return <AlertCircle className="h-4 w-4 text-orange-600" />;
       case 'running':
-        return <RefreshCw className="h-4 w-4 text-blue-600 animate-spin" />;
+        return <RefreshCw className="h-4 w-4 animate-spin text-blue-600" />;
       default:
         return <AlertCircle className="h-4 w-4 text-gray-400" />;
     }
@@ -494,30 +494,26 @@ export function CameraFunctionalityTest() {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="flex items-center justify-between mb-4">
+          <div className="mb-4 flex items-center justify-between">
             <div>
               <p className="text-muted-foreground">
                 Comprehensive testing of camera features for Nigerian mobile users
               </p>
               {results.length > 0 && (
-                <p className="text-sm text-muted-foreground mt-1">
+                <p className="mt-1 text-sm text-muted-foreground">
                   Overall Score: <span className="font-semibold">{overallScore}/100</span>
                 </p>
               )}
             </div>
-            <Button
-              onClick={runTests}
-              disabled={isRunning}
-              className="min-w-32"
-            >
+            <Button onClick={runTests} disabled={isRunning} className="min-w-32">
               {isRunning ? (
                 <>
-                  <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+                  <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
                   Testing...
                 </>
               ) : (
                 <>
-                  <Camera className="h-4 w-4 mr-2" />
+                  <Camera className="mr-2 h-4 w-4" />
                   Run Tests
                 </>
               )}
@@ -542,7 +538,11 @@ export function CameraFunctionalityTest() {
           <CardHeader>
             <CardTitle className="flex items-center justify-between">
               <span>Test Results</span>
-              <Badge variant={overallScore >= 80 ? 'default' : overallScore >= 60 ? 'secondary' : 'destructive'}>
+              <Badge
+                variant={
+                  overallScore >= 80 ? 'default' : overallScore >= 60 ? 'secondary' : 'destructive'
+                }
+              >
                 {overallScore}/100
               </Badge>
             </CardTitle>
@@ -552,11 +552,11 @@ export function CameraFunctionalityTest() {
               {results.map((result, index) => (
                 <div
                   key={index}
-                  className={`p-4 rounded-lg border ${getStatusColor(result.status)}`}
+                  className={`rounded-lg border p-4 ${getStatusColor(result.status)}`}
                 >
                   <div className="flex items-start gap-3">
                     {getStatusIcon(result.status)}
-                    <div className="flex-1 min-w-0">
+                    <div className="min-w-0 flex-1">
                       <div className="flex items-center justify-between">
                         <h4 className="font-medium">{result.name}</h4>
                         {result.score && (
@@ -565,13 +565,9 @@ export function CameraFunctionalityTest() {
                           </Badge>
                         )}
                       </div>
-                      <p className="text-sm text-muted-foreground mt-1">
-                        {result.message}
-                      </p>
+                      <p className="mt-1 text-sm text-muted-foreground">{result.message}</p>
                       {result.details && (
-                        <p className="text-xs text-muted-foreground mt-2">
-                          {result.details}
-                        </p>
+                        <p className="mt-2 text-xs text-muted-foreground">{result.details}</p>
                       )}
                     </div>
                   </div>
@@ -595,7 +591,8 @@ export function CameraFunctionalityTest() {
             <Alert>
               <Camera className="h-4 w-4" />
               <AlertDescription>
-                Test camera functionality directly with these buttons. Photos will be captured and displayed below.
+                Test camera functionality directly with these buttons. Photos will be captured and
+                displayed below.
               </AlertDescription>
             </Alert>
 
@@ -603,36 +600,38 @@ export function CameraFunctionalityTest() {
               <CameraButton
                 variant="property"
                 size="md"
-                onPhotoCapture={(photo) => setTestPhotos(prev => [...prev, photo])}
+                onPhotoCapture={(photo) => setTestPhotos((prev) => [...prev, photo])}
               />
-              
+
               <CameraButton
                 variant="document"
                 size="md"
-                onPhotoCapture={(photo) => setTestPhotos(prev => [...prev, photo])}
+                onPhotoCapture={(photo) => setTestPhotos((prev) => [...prev, photo])}
               />
-              
+
               <CameraButton
                 variant="general"
                 size="md"
-                onPhotoCapture={(photo) => setTestPhotos(prev => [...prev, photo])}
+                onPhotoCapture={(photo) => setTestPhotos((prev) => [...prev, photo])}
               />
             </div>
 
             {testPhotos.length > 0 && (
               <div className="mt-6">
-                <h4 className="font-medium mb-3">Captured Photos ({testPhotos.length})</h4>
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+                <h4 className="mb-3 font-medium">Captured Photos ({testPhotos.length})</h4>
+                <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4">
                   {testPhotos.map((photo) => (
                     <div key={photo.id} className="space-y-2">
                       <img
                         src={photo.dataUrl}
                         alt={photo.filename}
-                        className="w-full aspect-square object-cover rounded-lg border"
+                        className="aspect-square w-full rounded-lg border object-cover"
                       />
                       <div className="text-xs text-muted-foreground">
                         <p>{(photo.size / 1024).toFixed(1)}KB</p>
-                        <p>{photo.metadata.width}×{photo.metadata.height}</p>
+                        <p>
+                          {photo.metadata.width}×{photo.metadata.height}
+                        </p>
                       </div>
                     </div>
                   ))}
@@ -646,12 +645,10 @@ export function CameraFunctionalityTest() {
       {/* Nigerian Market Features */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            🇳🇬 Nigerian Market Features
-          </CardTitle>
+          <CardTitle className="flex items-center gap-2">🇳🇬 Nigerian Market Features</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             <div className="space-y-3">
               <div className="flex items-center gap-2">
                 <CheckCircle className="h-4 w-4 text-green-600" />

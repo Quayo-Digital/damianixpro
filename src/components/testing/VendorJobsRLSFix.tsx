@@ -56,7 +56,7 @@ AND schemaname = 'public';`;
 
     try {
       console.log('Testing current RLS policy...');
-      
+
       // Test if we can query the policies table to understand the current state
       const { data: policies, error: policiesError } = await supabase
         .from('pg_policies')
@@ -71,7 +71,7 @@ AND schemaname = 'public';`;
       }
 
       console.log('Current vendor_jobs policies:', policies);
-      
+
       setResult(`📋 MANUAL FIX REQUIRED:
 
 Current vendor_jobs RLS policies found: ${policies?.length || 0}
@@ -85,7 +85,6 @@ To fix the RLS policy issue:
 
 Click "Show SQL Script" to see the exact SQL to run.`);
       setStatus('success');
-      
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
       console.error('RLS fix failed:', errorMessage, error);
@@ -96,49 +95,61 @@ Click "Show SQL Script" to see the exact SQL to run.`);
     }
   };
 
-  const StatusIcon = status === 'success' ? CheckCircle : status === 'error' ? AlertCircle : Database;
-  const statusColor = status === 'success' ? 'text-green-600' : status === 'error' ? 'text-red-600' : 'text-blue-600';
+  const StatusIcon =
+    status === 'success' ? CheckCircle : status === 'error' ? AlertCircle : Database;
+  const statusColor =
+    status === 'success' ? 'text-green-600' : status === 'error' ? 'text-red-600' : 'text-blue-600';
 
   return (
-    <Card className="w-full max-w-2xl mx-auto">
+    <Card className="mx-auto w-full max-w-2xl">
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Database className="h-5 w-5" />
           Vendor Jobs RLS Policy Fix
         </CardTitle>
         <CardDescription>
-          Fix the Row-Level Security policy on vendor_jobs table to allow vendors to create their own jobs
+          Fix the Row-Level Security policy on vendor_jobs table to allow vendors to create their
+          own jobs
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="flex items-center gap-2">
-          <Button 
-            onClick={applyRLSFix}
-            disabled={isRunning}
-            className="flex items-center gap-2"
-          >
+          <Button onClick={applyRLSFix} disabled={isRunning} className="flex items-center gap-2">
             <Database className="h-4 w-4" />
             {isRunning ? 'Applying Fix...' : 'Apply RLS Policy Fix'}
           </Button>
         </div>
 
         {result && (
-          <div className={`p-4 rounded-lg border ${
-            status === 'success' ? 'bg-green-50 border-green-200' : 
-            status === 'error' ? 'bg-red-50 border-red-200' : 
-            'bg-blue-50 border-blue-200'
-          }`}>
+          <div
+            className={`rounded-lg border p-4 ${
+              status === 'success'
+                ? 'border-green-200 bg-green-50'
+                : status === 'error'
+                  ? 'border-red-200 bg-red-50'
+                  : 'border-blue-200 bg-blue-50'
+            }`}
+          >
             <div className="flex items-start gap-2">
-              <StatusIcon className={`h-5 w-5 mt-0.5 ${statusColor}`} />
-              <pre className="text-sm whitespace-pre-wrap font-mono">{result}</pre>
+              <StatusIcon className={`mt-0.5 h-5 w-5 ${statusColor}`} />
+              <pre className="whitespace-pre-wrap font-mono text-sm">{result}</pre>
             </div>
           </div>
         )}
 
-        <div className="text-sm text-gray-600 space-y-2">
-          <p><strong>Issue:</strong> Vendor onboarding tests fail with "new row violates row-level security policy for table vendor_jobs"</p>
-          <p><strong>Root Cause:</strong> Current RLS policy only allows admin/owner/agent roles to create jobs, but test runs as vendor user</p>
-          <p><strong>Solution:</strong> Update policy to allow vendors to create jobs for themselves while maintaining security</p>
+        <div className="space-y-2 text-sm text-gray-600">
+          <p>
+            <strong>Issue:</strong> Vendor onboarding tests fail with "new row violates row-level
+            security policy for table vendor_jobs"
+          </p>
+          <p>
+            <strong>Root Cause:</strong> Current RLS policy only allows admin/owner/agent roles to
+            create jobs, but test runs as vendor user
+          </p>
+          <p>
+            <strong>Solution:</strong> Update policy to allow vendors to create jobs for themselves
+            while maintaining security
+          </p>
         </div>
       </CardContent>
     </Card>

@@ -13,7 +13,8 @@ const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-paystack-signature',
+  'Access-Control-Allow-Headers':
+    'authorization, x-client-info, apikey, content-type, x-paystack-signature',
 };
 
 interface PaystackWebhookEvent {
@@ -95,8 +96,8 @@ async function handleChargeSuccess(
         metadata: {
           ...transaction.metadata,
           paystack_data: data,
-          verified_at: new Date().toISOString()
-        }
+          verified_at: new Date().toISOString(),
+        },
       })
       .eq('id', transaction.id);
 
@@ -112,7 +113,7 @@ async function handleChargeSuccess(
         .from('bookings')
         .update({
           status: 'confirmed',
-          updated_at: new Date().toISOString()
+          updated_at: new Date().toISOString(),
         })
         .eq('id', booking.id);
 
@@ -142,7 +143,7 @@ async function handleChargeSuccess(
             pending_balance: Number(booking.payout_amount),
             balance: 0,
             total_earned: Number(booking.payout_amount),
-            total_paid_out: 0
+            total_paid_out: 0,
           })
           .select()
           .single();
@@ -159,7 +160,7 @@ async function handleChargeSuccess(
           .update({
             pending_balance: (wallet.pending_balance || 0) + Number(booking.payout_amount),
             total_earned: (wallet.total_earned || 0) + Number(booking.payout_amount),
-            updated_at: new Date().toISOString()
+            updated_at: new Date().toISOString(),
           })
           .eq('id', wallet.id);
 
@@ -167,17 +168,31 @@ async function handleChargeSuccess(
           console.error('Failed to update wallet:', walletError);
         }
       }
+
+      // Create transaction record for audit trail (owner earnings)
+      const { error: txInsertError } = await supabase.from('transactions').insert({
+        booking_id: booking.id,
+        user_id: booking.owner_id,
+        amount: Number(booking.payout_amount),
+        type: 'commission',
+        provider: 'paystack',
+        provider_ref: data.reference,
+        status: 'success',
+        description: `Earnings from booking ${booking.id}`,
+      });
+      if (txInsertError)
+        console.error('Failed to create owner earnings transaction:', txInsertError);
     }
 
     return {
       success: true,
-      message: `Payment verified for booking ${booking?.id || 'unknown'}`
+      message: `Payment verified for booking ${booking?.id || 'unknown'}`,
     };
   } catch (error) {
     console.error('Charge success handling error:', error);
     return {
       success: false,
-      error: error instanceof Error ? error.message : 'Unknown error'
+      error: error instanceof Error ? error.message : 'Unknown error',
     };
   }
 }
@@ -201,8 +216,8 @@ async function handleChargeFailed(
         updated_at: new Date().toISOString(),
         metadata: {
           paystack_data: data,
-          failed_at: new Date().toISOString()
-        }
+          failed_at: new Date().toISOString(),
+        },
       })
       .eq('provider_ref', data.reference);
 
@@ -216,7 +231,7 @@ async function handleChargeFailed(
     console.error('Charge failed handling error:', error);
     return {
       success: false,
-      error: error instanceof Error ? error.message : 'Unknown error'
+      error: error instanceof Error ? error.message : 'Unknown error',
     };
   }
 }
@@ -256,8 +271,8 @@ async function handleTransferSuccess(
         metadata: {
           ...transaction.metadata,
           paystack_transfer_data: transfer,
-          completed_at: new Date().toISOString()
-        }
+          completed_at: new Date().toISOString(),
+        },
       })
       .eq('id', transaction.id);
 
@@ -279,7 +294,7 @@ async function handleTransferSuccess(
         .update({
           balance: Math.max(0, (wallet.balance || 0) - Number(transaction.amount)),
           total_paid_out: (wallet.total_paid_out || 0) + Number(transaction.amount),
-          updated_at: new Date().toISOString()
+          updated_at: new Date().toISOString(),
         })
         .eq('id', wallet.id);
 
@@ -293,7 +308,7 @@ async function handleTransferSuccess(
     console.error('Transfer success handling error:', error);
     return {
       success: false,
-      error: error instanceof Error ? error.message : 'Unknown error'
+      error: error instanceof Error ? error.message : 'Unknown error',
     };
   }
 }
@@ -318,8 +333,8 @@ async function handleTransferFailed(
         updated_at: new Date().toISOString(),
         metadata: {
           paystack_transfer_data: transfer,
-          failed_at: new Date().toISOString()
-        }
+          failed_at: new Date().toISOString(),
+        },
       })
       .eq('provider_ref', transfer.transfer_code)
       .eq('type', 'payout');
@@ -334,7 +349,7 @@ async function handleTransferFailed(
     console.error('Transfer failed handling error:', error);
     return {
       success: false,
-      error: error instanceof Error ? error.message : 'Unknown error'
+      error: error instanceof Error ? error.message : 'Unknown error',
     };
   }
 }
@@ -373,8 +388,8 @@ async function handleRefundSuccess(
         metadata: {
           ...transaction.metadata,
           paystack_refund_data: data,
-          refunded_at: new Date().toISOString()
-        }
+          refunded_at: new Date().toISOString(),
+        },
       })
       .eq('id', transaction.id);
 
@@ -390,7 +405,7 @@ async function handleRefundSuccess(
         .from('bookings')
         .update({
           status: 'refunded',
-          updated_at: new Date().toISOString()
+          updated_at: new Date().toISOString(),
         })
         .eq('id', booking.id);
 
@@ -404,7 +419,7 @@ async function handleRefundSuccess(
     console.error('Refund success handling error:', error);
     return {
       success: false,
-      error: error instanceof Error ? error.message : 'Unknown error'
+      error: error instanceof Error ? error.message : 'Unknown error',
     };
   }
 }
@@ -420,10 +435,10 @@ serve(async (req) => {
 
   // Only allow POST
   if (req.method !== 'POST') {
-    return new Response(
-      JSON.stringify({ error: 'Method not allowed' }),
-      { status: 405, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    );
+    return new Response(JSON.stringify({ error: 'Method not allowed' }), {
+      status: 405,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
   }
 
   try {
@@ -431,10 +446,10 @@ serve(async (req) => {
     const signature = req.headers.get('x-paystack-signature');
     if (!signature) {
       console.warn('Missing Paystack signature header');
-      return new Response(
-        JSON.stringify({ error: 'Missing signature' }),
-        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+      return new Response(JSON.stringify({ error: 'Missing signature' }), {
+        status: 401,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
     }
 
     // Get raw body for signature verification
@@ -443,19 +458,19 @@ serve(async (req) => {
     // Verify signature
     if (!PAYSTACK_WEBHOOK_SECRET) {
       console.error('PAYSTACK_WEBHOOK_SECRET is not configured');
-      return new Response(
-        JSON.stringify({ error: 'Webhook secret not configured' }),
-        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+      return new Response(JSON.stringify({ error: 'Webhook secret not configured' }), {
+        status: 500,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
     }
 
     const isValid = verifySignature(body, signature, PAYSTACK_WEBHOOK_SECRET);
     if (!isValid) {
       console.warn('Invalid webhook signature');
-      return new Response(
-        JSON.stringify({ error: 'Invalid signature' }),
-        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+      return new Response(JSON.stringify({ error: 'Invalid signature' }), {
+        status: 401,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
     }
 
     // Parse event
@@ -466,8 +481,8 @@ serve(async (req) => {
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
       auth: {
         autoRefreshToken: false,
-        persistSession: false
-      }
+        persistSession: false,
+      },
     });
 
     // Handle event based on type
@@ -497,30 +512,26 @@ serve(async (req) => {
         console.log(`Unhandled event type: ${event.event}`);
         result = {
           success: true,
-          message: `Event ${event.event} acknowledged but not processed`
+          message: `Event ${event.event} acknowledged but not processed`,
         };
     }
 
     // Return response
-    return new Response(
-      JSON.stringify(result),
-      {
-        status: result.success ? 200 : 400,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-      }
-    );
+    return new Response(JSON.stringify(result), {
+      status: result.success ? 200 : 400,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
   } catch (error) {
     console.error('Webhook processing error:', error);
     return new Response(
       JSON.stringify({
         success: false,
-        error: error instanceof Error ? error.message : 'Unknown error'
+        error: error instanceof Error ? error.message : 'Unknown error',
       }),
       {
         status: 500,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       }
     );
   }
 });
-

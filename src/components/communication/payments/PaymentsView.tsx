@@ -1,4 +1,3 @@
-
 import { Loader2, AlertCircle } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Payment } from '@/utils/PaymentTypes';
@@ -50,11 +49,7 @@ export const PaymentsView = ({
           amount={upcomingPayment.amount}
         />
       )}
-      <PaymentOverview
-        onMakePayment={onMakePayment}
-        payments={payments}
-        isLoading={isLoading}
-      />
+      <PaymentOverview onMakePayment={onMakePayment} payments={payments} isLoading={isLoading} />
       <PaymentHistory payments={payments} isLoading={isLoading} />
     </>
   );

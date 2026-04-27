@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent } from '@/components/ui/card';
-import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Loader2, AlertCircle, BarChart3, Users, Home, User } from 'lucide-react';
 import { useEnhancedAgentData } from '@/hooks/useEnhancedAgentData';
 import AgentDashboardOverview from '@/components/agent/AgentDashboardOverview';
 import AgentLeadManagement from '@/components/agent/AgentLeadManagement';
 import AgentPerformanceAnalytics from '@/components/agent/AgentPerformanceAnalytics';
+import { RoleScreeningBanner } from '@/components/screening/RoleScreeningBanner';
 
 const EnhancedAgentDashboardPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState('overview');
@@ -20,16 +20,16 @@ const EnhancedAgentDashboardPage: React.FC = () => {
     isLoading,
     error,
     updateLeadStatus,
-    addNewLead
+    addNewLead,
   } = useEnhancedAgentData();
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="flex min-h-screen items-center justify-center bg-gray-50">
         <Card className="w-96">
           <CardContent className="p-8 text-center">
-            <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4 text-blue-600" />
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">Loading Agent Dashboard</h3>
+            <Loader2 className="mx-auto mb-4 h-8 w-8 animate-spin text-blue-600" />
+            <h3 className="mb-2 text-lg font-semibold text-gray-900">Loading Agent Dashboard</h3>
             <p className="text-gray-600">Fetching your business data and analytics...</p>
           </CardContent>
         </Card>
@@ -39,15 +39,15 @@ const EnhancedAgentDashboardPage: React.FC = () => {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+      <div className="flex min-h-screen items-center justify-center bg-gray-50 p-4">
         <Card className="w-full max-w-md">
           <CardContent className="p-8 text-center">
-            <AlertCircle className="h-8 w-8 text-red-600 mx-auto mb-4" />
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">Dashboard Error</h3>
-            <p className="text-gray-600 mb-4">{error}</p>
-            <button 
-              onClick={() => window.location.reload()} 
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+            <AlertCircle className="mx-auto mb-4 h-8 w-8 text-red-600" />
+            <h3 className="mb-2 text-lg font-semibold text-gray-900">Dashboard Error</h3>
+            <p className="mb-4 text-gray-600">{error}</p>
+            <button
+              onClick={() => window.location.reload()}
+              className="rounded-lg bg-blue-600 px-4 py-2 text-white transition-colors hover:bg-blue-700"
             >
               Retry Loading
             </button>
@@ -75,41 +75,34 @@ const EnhancedAgentDashboardPage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+        <RoleScreeningBanner />
         {/* Header */}
         <div className="mb-8">
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-3xl font-bold text-gray-900">Agent Dashboard</h1>
-              <p className="text-gray-600 mt-1">
+              <p className="mt-1 text-gray-600">
                 Welcome back, {agentProfile?.name || 'Agent'}! Here's your business overview.
               </p>
             </div>
-            <div className="hidden md:flex items-center space-x-4">
+            <div className="hidden items-center space-x-4 md:flex">
               <div className="text-right">
                 <p className="text-sm text-gray-500">Total Commission</p>
                 <p className="text-xl font-bold text-green-600">
-                  {stats ? new Intl.NumberFormat('en-NG', {
-                    style: 'currency',
-                    currency: 'NGN',
-                    minimumFractionDigits: 0,
-                    maximumFractionDigits: 0,
-                  }).format(stats.totalCommission) : '₦0'}
+                  {stats
+                    ? new Intl.NumberFormat('en-NG', {
+                        style: 'currency',
+                        currency: 'NGN',
+                        minimumFractionDigits: 0,
+                        maximumFractionDigits: 0,
+                      }).format(stats.totalCommission)
+                    : '₦0'}
                 </p>
               </div>
             </div>
           </div>
         </div>
-
-        {/* Development Notice */}
-        <Alert className="mb-6 border-blue-200 bg-blue-50">
-          <AlertCircle className="h-4 w-4 text-blue-600" />
-          <AlertDescription className="text-blue-800">
-            <strong>Enhanced Agent Dashboard</strong> - This is a comprehensive business management platform 
-            with advanced analytics, lead tracking, and performance insights. Currently showing demo data 
-            for development purposes.
-          </AlertDescription>
-        </Alert>
 
         {/* Main Dashboard Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
@@ -151,17 +144,15 @@ const EnhancedAgentDashboardPage: React.FC = () => {
 
           {/* Analytics Tab */}
           <TabsContent value="analytics" className="space-y-6">
-            <AgentPerformanceAnalytics
-              performanceMetrics={performanceMetrics}
-            />
+            <AgentPerformanceAnalytics performanceMetrics={performanceMetrics} />
           </TabsContent>
         </Tabs>
 
         {/* Footer */}
-        <div className="mt-12 pt-8 border-t border-gray-200">
-          <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
+        <div className="mt-12 border-t border-gray-200 pt-8">
+          <div className="flex flex-col items-center justify-between space-y-4 md:flex-row md:space-y-0">
             <div className="text-sm text-gray-500">
-              <p>Nigeria Homes - Enhanced Agent Dashboard</p>
+              <p>DamianixPro - Enhanced Agent Dashboard</p>
               <p>Professional property management platform for Nigerian real estate agents</p>
             </div>
             <div className="flex items-center space-x-4 text-sm text-gray-500">

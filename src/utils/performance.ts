@@ -1,4 +1,4 @@
-// Performance optimization utilities for Nigeria Homes
+// Performance optimization utilities for DamianixPro
 import React from 'react';
 import { toast } from '@/components/ui/use-toast';
 
@@ -6,22 +6,19 @@ import { toast } from '@/components/ui/use-toast';
 export const CDN_CONFIG = {
   // Primary CDN for static assets
   PRIMARY_CDN: 'https://cdn.nigeriahomes.com',
-  
+
   // Image CDN with optimization
   IMAGE_CDN: 'https://images.nigeriahomes.com',
-  
+
   // Video CDN
   VIDEO_CDN: 'https://videos.nigeriahomes.com',
-  
+
   // Font CDN
   FONT_CDN: 'https://fonts.nigeriahomes.com',
-  
+
   // Fallback CDNs
-  FALLBACK_CDNS: [
-    'https://cdn-backup.nigeriahomes.com',
-    'https://assets.nigeriahomes.com',
-  ],
-  
+  FALLBACK_CDNS: ['https://cdn-backup.nigeriahomes.com', 'https://assets.nigeriahomes.com'],
+
   // Regional CDN endpoints for Nigeria
   REGIONAL_CDNS: {
     lagos: 'https://lagos-cdn.nigeriahomes.com',
@@ -119,7 +116,7 @@ export class PerformanceMonitor {
     }
     const values = this.metrics.get(name)!;
     values.push(value);
-    
+
     // Keep only last 100 measurements
     if (values.length > 100) {
       values.shift();
@@ -157,7 +154,7 @@ export class PerformanceMonitor {
     if (typeof window === 'undefined' || !window.performance) return;
 
     const navigation = performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming;
-    
+
     if (navigation) {
       // Time to First Byte
       const ttfb = navigation.responseStart - navigation.requestStart;
@@ -193,49 +190,52 @@ export class PerformanceMonitor {
 
   getMetrics(): Record<string, { avg: number; min: number; max: number; latest: number }> {
     const result: Record<string, { avg: number; min: number; max: number; latest: number }> = {};
-    
+
     this.metrics.forEach((values, name) => {
       if (values.length === 0) return;
-      
+
       const avg = values.reduce((sum, val) => sum + val, 0) / values.length;
       const min = Math.min(...values);
       const max = Math.max(...values);
       const latest = values[values.length - 1];
-      
+
       result[name] = { avg, min, max, latest };
     });
-    
+
     return result;
   }
 
   getPerformanceScore(): number {
     const metrics = this.getMetrics();
     let score = 100;
-    
+
     // Penalize based on Core Web Vitals
-    if (metrics.LCP?.latest > 2500) score -= 20; // Poor LCP
+    if (metrics.LCP?.latest > 2500)
+      score -= 20; // Poor LCP
     else if (metrics.LCP?.latest > 1200) score -= 10; // Needs improvement
-    
-    if (metrics.FID?.latest > 100) score -= 20; // Poor FID
+
+    if (metrics.FID?.latest > 100)
+      score -= 20; // Poor FID
     else if (metrics.FID?.latest > 25) score -= 10; // Needs improvement
-    
-    if (metrics.CLS?.latest > 0.25) score -= 20; // Poor CLS
+
+    if (metrics.CLS?.latest > 0.25)
+      score -= 20; // Poor CLS
     else if (metrics.CLS?.latest > 0.1) score -= 10; // Needs improvement
-    
+
     // Penalize slow loading times
     if (metrics.LoadTime?.latest > 3000) score -= 15;
     else if (metrics.LoadTime?.latest > 1500) score -= 5;
-    
+
     return Math.max(0, score);
   }
 
   reportToAnalytics() {
     const metrics = this.getMetrics();
     const score = this.getPerformanceScore();
-    
+
     // Send to analytics service (implement based on your analytics provider)
     console.log('Performance Report:', { metrics, score });
-    
+
     // Show warning if performance is poor
     if (score < 60) {
       toast({
@@ -247,7 +247,7 @@ export class PerformanceMonitor {
   }
 
   cleanup() {
-    this.observers.forEach(observer => observer.disconnect());
+    this.observers.forEach((observer) => observer.disconnect());
     this.observers = [];
     this.metrics.clear();
   }
@@ -276,25 +276,25 @@ export class CDNManager {
     };
 
     const baseCDN = cdnMap[type];
-    
+
     // Add regional optimization for Nigerian users
     const regionalCDN = this.getRegionalCDN();
     const finalCDN = regionalCDN || baseCDN;
-    
+
     return `${finalCDN}${path.startsWith('/') ? '' : '/'}${path}`;
   }
 
   // Get regional CDN based on user location
   private getRegionalCDN(): string | null {
     if (typeof window === 'undefined') return null;
-    
+
     // Try to detect user's location (simplified)
     const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-    
+
     if (timezone === 'Africa/Lagos') {
       return CDN_CONFIG.REGIONAL_CDNS.lagos;
     }
-    
+
     // Default to primary CDN
     return null;
   }
@@ -302,14 +302,14 @@ export class CDNManager {
   // Test CDN availability and switch if needed
   async testAndSwitchCDN(): Promise<void> {
     const testUrl = `${this.activeCDN}/health-check.json`;
-    
+
     try {
-      const response = await fetch(testUrl, { 
+      const response = await fetch(testUrl, {
         method: 'HEAD',
         cache: 'no-cache',
-        signal: AbortSignal.timeout(5000) // 5 second timeout
+        signal: AbortSignal.timeout(5000), // 5 second timeout
       });
-      
+
       if (!response.ok) {
         throw new Error('CDN health check failed');
       }
@@ -321,10 +321,8 @@ export class CDNManager {
   }
 
   private switchToFallbackCDN(): void {
-    const availableCDNs = CDN_CONFIG.FALLBACK_CDNS.filter(
-      cdn => !this.failedCDNs.has(cdn)
-    );
-    
+    const availableCDNs = CDN_CONFIG.FALLBACK_CDNS.filter((cdn) => !this.failedCDNs.has(cdn));
+
     if (availableCDNs.length > 0) {
       this.activeCDN = availableCDNs[0];
       console.log('Switched to fallback CDN:', this.activeCDN);
@@ -342,7 +340,7 @@ export class CDNManager {
       const link = document.createElement('link');
       link.rel = 'preload';
       link.href = this.getAssetUrl(url);
-      
+
       switch (type) {
         case 'image':
           link.as = 'image';
@@ -358,7 +356,7 @@ export class CDNManager {
           link.crossOrigin = 'anonymous';
           break;
       }
-      
+
       document.head.appendChild(link);
     });
   }
@@ -390,7 +388,7 @@ export const BundleAnalyzer = {
           const response = await fetch(src, { method: 'HEAD' });
           const size = parseInt(response.headers.get('content-length') || '0');
           const name = src.split('/').pop() || 'unknown';
-          
+
           chunks.push({ name, size });
           totalSize += size;
         } catch (error) {
@@ -412,12 +410,12 @@ export const BundleAnalyzer = {
   checkBundleSize: async (maxSizeMB: number = 2): Promise<boolean> => {
     const analysis = await BundleAnalyzer.analyzeBundleSize();
     const sizeMB = analysis.totalSize / (1024 * 1024);
-    
+
     if (sizeMB > maxSizeMB) {
       console.warn(`Bundle size (${sizeMB.toFixed(2)}MB) exceeds threshold (${maxSizeMB}MB)`);
       return false;
     }
-    
+
     return true;
   },
 };
@@ -430,7 +428,7 @@ export const usePerformanceMonitoring = () => {
 
   React.useEffect(() => {
     monitor.current = PerformanceMonitor.getInstance();
-    
+
     const interval = setInterval(() => {
       if (monitor.current) {
         setMetrics(monitor.current.getMetrics());
@@ -459,7 +457,7 @@ export const LazyComponentLoader = {
     fallback?: React.ComponentType
   ) {
     const LazyComponent = React.lazy(importFn);
-    
+
     return React.forwardRef<any, React.ComponentProps<T>>((props, ref) => {
       const FallbackComponent = fallback || (() => React.createElement('div', null, 'Loading...'));
       return React.createElement(
@@ -473,7 +471,7 @@ export const LazyComponentLoader = {
   // Preload component for better UX
   preloadComponent: (importFn: () => Promise<any>) => {
     // Start loading the component
-    importFn().catch(error => {
+    importFn().catch((error) => {
       console.warn('Component preload failed:', error);
     });
   },
@@ -485,30 +483,30 @@ export const initializePerformanceOptimization = () => {
 
   // Initialize performance monitoring
   const monitor = PerformanceMonitor.getInstance();
-  
+
   // Initialize CDN manager
   const cdnManager = CDNManager.getInstance();
-  
+
   // Test CDN availability
   cdnManager.testAndSwitchCDN();
-  
+
   // Preload critical assets
   cdnManager.preloadAssets([
     { url: '/fonts/inter-var.woff2', type: 'font' },
     { url: '/images/logo.webp', type: 'image' },
     { url: '/css/critical.css', type: 'style' },
   ]);
-  
+
   // Check bundle size
   BundleAnalyzer.checkBundleSize(2); // 2MB threshold
-  
+
   // Report metrics after page load
   window.addEventListener('load', () => {
     setTimeout(() => {
       monitor.reportToAnalytics();
     }, 2000);
   });
-  
+
   console.log('Performance optimization initialized');
 };
 

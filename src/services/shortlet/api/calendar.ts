@@ -5,7 +5,11 @@
 
 import { supabase } from '@/integrations/supabase/client';
 import { Availability, availabilitySchema, AvailabilityCalendar } from '../types';
-import { checkAvailability, generateDateRange, isDateAvailable } from '../utils/availabilityChecker';
+import {
+  checkAvailability,
+  generateDateRange,
+  isDateAvailable,
+} from '../utils/availabilityChecker';
 import { getBookingsByListing } from './bookings';
 
 // ============================================================================
@@ -51,9 +55,7 @@ export async function getListingAvailability(listingId: string): Promise<Availab
 /**
  * Get availability calendar view (with bookings)
  */
-export async function getCalendarView(
-  request: CalendarViewRequest
-): Promise<AvailabilityCalendar> {
+export async function getCalendarView(request: CalendarViewRequest): Promise<AvailabilityCalendar> {
   const { listing_id, start_date, end_date, include_bookings = true } = request;
 
   // Get all availabilities in date range
@@ -78,18 +80,18 @@ export async function getCalendarView(
   // Build calendar
   const calendar: AvailabilityCalendar = {
     listing_id,
-    dates: dates.map(date => {
+    dates: dates.map((date) => {
       const available = isDateAvailable(date, bookings, availabilities || []);
-      const blocked = availabilities?.some(
-        a => !a.available && date >= a.start_date && date <= a.end_date
-      ) || false;
+      const blocked =
+        availabilities?.some((a) => !a.available && date >= a.start_date && date <= a.end_date) ||
+        false;
 
       return {
         date,
         available,
-        blocked
+        blocked,
       };
-    })
+    }),
   };
 
   return calendar;
@@ -105,15 +107,17 @@ export async function createAvailability(
 
   const { data, error } = await supabase
     .from('listing_availabilities')
-    .insert([{
-      listing_id: validated.listing_id,
-      start_date: validated.start_date,
-      end_date: validated.end_date,
-      available: validated.available,
-      source: validated.source,
-      source_id: validated.source_id,
-      notes: validated.notes
-    }])
+    .insert([
+      {
+        listing_id: validated.listing_id,
+        start_date: validated.start_date,
+        end_date: validated.end_date,
+        available: validated.available,
+        source: validated.source,
+        source_id: validated.source_id,
+        notes: validated.notes,
+      },
+    ])
     .select()
     .single();
 
@@ -132,7 +136,7 @@ export async function updateAvailability(
     .from('listing_availabilities')
     .update({
       ...updates,
-      updated_at: new Date().toISOString()
+      updated_at: new Date().toISOString(),
     })
     .eq('id', availabilityId)
     .select()
@@ -146,10 +150,7 @@ export async function updateAvailability(
  * Delete availability entry
  */
 export async function deleteAvailability(availabilityId: string): Promise<void> {
-  const { error } = await supabase
-    .from('listing_availabilities')
-    .delete()
-    .eq('id', availabilityId);
+  const { error } = await supabase.from('listing_availabilities').delete().eq('id', availabilityId);
 
   if (error) throw error;
 }
@@ -172,14 +173,12 @@ export async function blockDates(
 
   if (existing && existing.length > 0) {
     // Update existing or create new
-    const overlapping = existing.find(
-      a => a.start_date <= endDate && a.end_date >= startDate
-    );
+    const overlapping = existing.find((a) => a.start_date <= endDate && a.end_date >= startDate);
 
     if (overlapping) {
       return updateAvailability(overlapping.id, {
         available: false,
-        notes: notes || overlapping.notes
+        notes: notes || overlapping.notes,
       });
     }
   }
@@ -191,7 +190,7 @@ export async function blockDates(
     end_date: endDate,
     available: false,
     source: 'manual',
-    notes
+    notes,
   });
 }
 
@@ -222,20 +221,24 @@ export async function unblockDates(
           await createAvailability({
             listing_id: listingId,
             start_date: entry.start_date,
-            end_date: new Date(new Date(startDate).getTime() - 86400000).toISOString().split('T')[0],
+            end_date: new Date(new Date(startDate).getTime() - 86400000)
+              .toISOString()
+              .split('T')[0],
             available: false,
             source: entry.source,
-            notes: entry.notes
+            notes: entry.notes,
           });
         }
         if (entry.end_date > endDate) {
           await createAvailability({
             listing_id: listingId,
-            start_date: new Date(new Date(endDate).getTime() + 86400000).toISOString().split('T')[0],
+            start_date: new Date(new Date(endDate).getTime() + 86400000)
+              .toISOString()
+              .split('T')[0],
             end_date: entry.end_date,
             available: false,
             source: entry.source,
-            notes: entry.notes
+            notes: entry.notes,
           });
         }
         await deleteAvailability(entry.id);
@@ -243,11 +246,15 @@ export async function unblockDates(
         // Trim the entry
         if (entry.start_date < startDate) {
           await updateAvailability(entry.id, {
-            end_date: new Date(new Date(startDate).getTime() - 86400000).toISOString().split('T')[0]
+            end_date: new Date(new Date(startDate).getTime() - 86400000)
+              .toISOString()
+              .split('T')[0],
           });
         } else {
           await updateAvailability(entry.id, {
-            start_date: new Date(new Date(endDate).getTime() + 86400000).toISOString().split('T')[0]
+            start_date: new Date(new Date(endDate).getTime() + 86400000)
+              .toISOString()
+              .split('T')[0],
           });
         }
       }
@@ -258,9 +265,7 @@ export async function unblockDates(
 /**
  * Bulk update availability
  */
-export async function bulkUpdateAvailability(
-  request: BulkAvailabilityRequest
-): Promise<{
+export async function bulkUpdateAvailability(request: BulkAvailabilityRequest): Promise<{
   created: number;
   updated: number;
   errors: string[];
@@ -285,7 +290,7 @@ export async function bulkUpdateAvailability(
         await updateAvailability(existing.id, {
           available: dateRange.available,
           source: dateRange.source || 'manual',
-          notes: dateRange.notes
+          notes: dateRange.notes,
         });
         updated++;
       } else {
@@ -295,7 +300,7 @@ export async function bulkUpdateAvailability(
           end_date: dateRange.end_date,
           available: dateRange.available,
           source: dateRange.source || 'manual',
-          notes: dateRange.notes
+          notes: dateRange.notes,
         });
         created++;
       }
@@ -339,7 +344,7 @@ export async function setDefaultAvailability(
     end_date: endDate,
     available: true,
     source: 'manual',
-    notes: 'Default availability'
+    notes: 'Default availability',
   });
 }
 
@@ -387,8 +392,8 @@ export async function getAvailabilityConflicts(
           details: {
             booking_id: booking.id,
             status: booking.status,
-            guest_id: booking.guest_id
-          }
+            guest_id: booking.guest_id,
+          },
         });
       }
     }
@@ -419,8 +424,8 @@ export async function getAvailabilityConflicts(
           details: {
             availability_id: block.id,
             source: block.source,
-            notes: block.notes
-          }
+            notes: block.notes,
+          },
         });
       }
     }
@@ -428,7 +433,7 @@ export async function getAvailabilityConflicts(
 
   return {
     has_conflicts: conflicts.length > 0,
-    conflicts
+    conflicts,
   };
 }
 
@@ -448,7 +453,7 @@ export async function getNextAvailableDates(
     listing_id: listingId,
     start_date: startDate,
     end_date: endDate.toISOString().split('T')[0],
-    include_bookings: true
+    include_bookings: true,
   });
 
   const availableDates: string[] = [];
@@ -477,4 +482,3 @@ export async function getNextAvailableDates(
 
   return availableDates;
 }
-

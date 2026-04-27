@@ -81,7 +81,9 @@ export const validateField = (value: any, rules: ValidationRule): ValidationResu
   // Strong password validation
   if (rules.strongPassword) {
     if (!PATTERNS.strongPassword.test(stringValue)) {
-      errors.push('Password must be at least 8 characters with uppercase, lowercase, number, and special character');
+      errors.push(
+        'Password must be at least 8 characters with uppercase, lowercase, number, and special character'
+      );
     }
   }
 
@@ -101,7 +103,7 @@ export const validateField = (value: any, rules: ValidationRule): ValidationResu
   return {
     isValid: errors.length === 0,
     errors,
-    warnings
+    warnings,
   };
 };
 
@@ -115,20 +117,15 @@ interface ValidatedInputProps extends React.InputHTMLAttributes<HTMLInputElement
 }
 
 export const ValidatedInput = React.forwardRef<HTMLInputElement, ValidatedInputProps>(
-  ({ 
-    label, 
-    helpText, 
-    rules = {}, 
-    showValidation = true,
-    onValidationChange,
-    className,
-    ...props 
-  }, ref) => {
+  (
+    { label, helpText, rules = {}, showValidation = true, onValidationChange, className, ...props },
+    ref
+  ) => {
     const [value, setValue] = React.useState(props.defaultValue || '');
-    const [validation, setValidation] = React.useState<ValidationResult>({ 
-      isValid: true, 
-      errors: [], 
-      warnings: [] 
+    const [validation, setValidation] = React.useState<ValidationResult>({
+      isValid: true,
+      errors: [],
+      warnings: [],
     });
     const [touched, setTouched] = React.useState(false);
     const [showPassword, setShowPassword] = React.useState(false);
@@ -156,7 +153,7 @@ export const ValidatedInput = React.forwardRef<HTMLInputElement, ValidatedInputP
 
     const getValidationIcon = () => {
       if (!showValidation || !touched) return null;
-      
+
       if (validation.isValid && value) {
         return <Check className="h-4 w-4 text-green-600" />;
       } else if (!validation.isValid) {
@@ -171,12 +168,12 @@ export const ValidatedInput = React.forwardRef<HTMLInputElement, ValidatedInputP
           <div className="flex items-center space-x-2">
             <label className="text-sm font-medium">
               {label}
-              {rules.required && <span className="text-red-500 ml-1">*</span>}
+              {rules.required && <span className="ml-1 text-red-500">*</span>}
             </label>
             {helpText && <HelpIcon content={helpText} />}
           </div>
         )}
-        
+
         <div className="relative">
           <Input
             ref={ref}
@@ -192,8 +189,8 @@ export const ValidatedInput = React.forwardRef<HTMLInputElement, ValidatedInputP
               className
             )}
           />
-          
-          <div className="absolute inset-y-0 right-0 flex items-center pr-3 space-x-1">
+
+          <div className="absolute inset-y-0 right-0 flex items-center space-x-1 pr-3">
             {isPasswordField && (
               <Button
                 type="button"
@@ -253,21 +250,24 @@ interface ValidatedTextareaProps extends React.TextareaHTMLAttributes<HTMLTextAr
 }
 
 export const ValidatedTextarea = React.forwardRef<HTMLTextAreaElement, ValidatedTextareaProps>(
-  ({ 
-    label, 
-    helpText, 
-    rules = {}, 
-    showValidation = true,
-    showCharCount = false,
-    onValidationChange,
-    className,
-    ...props 
-  }, ref) => {
+  (
+    {
+      label,
+      helpText,
+      rules = {},
+      showValidation = true,
+      showCharCount = false,
+      onValidationChange,
+      className,
+      ...props
+    },
+    ref
+  ) => {
     const [value, setValue] = React.useState(props.defaultValue || '');
-    const [validation, setValidation] = React.useState<ValidationResult>({ 
-      isValid: true, 
-      errors: [], 
-      warnings: [] 
+    const [validation, setValidation] = React.useState<ValidationResult>({
+      isValid: true,
+      errors: [],
+      warnings: [],
     });
     const [touched, setTouched] = React.useState(false);
 
@@ -299,12 +299,12 @@ export const ValidatedTextarea = React.forwardRef<HTMLTextAreaElement, Validated
           <div className="flex items-center space-x-2">
             <label className="text-sm font-medium">
               {label}
-              {rules.required && <span className="text-red-500 ml-1">*</span>}
+              {rules.required && <span className="ml-1 text-red-500">*</span>}
             </label>
             {helpText && <HelpIcon content={helpText} />}
           </div>
         )}
-        
+
         <div className="relative">
           <Textarea
             ref={ref}
@@ -318,7 +318,7 @@ export const ValidatedTextarea = React.forwardRef<HTMLTextAreaElement, Validated
               className
             )}
           />
-          
+
           {showCharCount && maxChars && (
             <div className="absolute bottom-2 right-2 text-xs text-muted-foreground">
               {charCount}/{maxChars}
@@ -366,18 +366,18 @@ export const PasswordStrengthIndicator = ({ password }: PasswordStrengthIndicato
       { test: /[@$!%*?&]/, label: 'Special character' },
     ];
 
-    const passed = checks.map(check => ({
+    const passed = checks.map((check) => ({
       ...check,
-      passed: check.test.test(pwd)
+      passed: check.test.test(pwd),
     }));
 
-    score = passed.filter(check => check.passed).length;
+    score = passed.filter((check) => check.passed).length;
 
     return { score, checks: passed };
   };
 
   const { score, checks } = getStrength(password);
-  
+
   const getStrengthLabel = (score: number) => {
     if (score < 2) return { label: 'Weak', color: 'text-red-600' };
     if (score < 4) return { label: 'Fair', color: 'text-yellow-600' };
@@ -391,31 +391,29 @@ export const PasswordStrengthIndicator = ({ password }: PasswordStrengthIndicato
     <div className="space-y-2">
       <div className="flex items-center justify-between">
         <span className="text-sm text-muted-foreground">Password strength:</span>
-        <span className={cn('text-sm font-medium', strength.color)}>
-          {strength.label}
-        </span>
+        <span className={cn('text-sm font-medium', strength.color)}>{strength.label}</span>
       </div>
-      
+
       <div className="flex space-x-1">
-        {[1, 2, 3, 4, 5].map(i => (
+        {[1, 2, 3, 4, 5].map((i) => (
           <div
             key={i}
             className={cn(
               'h-1 flex-1 rounded-full',
-              i <= score 
-                ? score < 2 
-                  ? 'bg-red-500' 
-                  : score < 4 
-                  ? 'bg-yellow-500' 
-                  : score < 5 
-                  ? 'bg-blue-500' 
-                  : 'bg-green-500'
+              i <= score
+                ? score < 2
+                  ? 'bg-red-500'
+                  : score < 4
+                    ? 'bg-yellow-500'
+                    : score < 5
+                      ? 'bg-blue-500'
+                      : 'bg-green-500'
                 : 'bg-gray-200'
             )}
           />
         ))}
       </div>
-      
+
       <div className="space-y-1">
         {checks.map((check, index) => (
           <div key={index} className="flex items-center space-x-2 text-xs">
@@ -424,9 +422,7 @@ export const PasswordStrengthIndicator = ({ password }: PasswordStrengthIndicato
             ) : (
               <X className="h-3 w-3 text-gray-400" />
             )}
-            <span className={check.passed ? 'text-green-600' : 'text-gray-500'}>
-              {check.label}
-            </span>
+            <span className={check.passed ? 'text-green-600' : 'text-gray-500'}>{check.label}</span>
           </div>
         ))}
       </div>
@@ -440,21 +436,28 @@ export const useFormValidation = <T extends Record<string, any>>(
   validationRules: Record<keyof T, ValidationRule>
 ) => {
   const [values, setValues] = React.useState<T>(initialValues);
-  const [errors, setErrors] = React.useState<Record<keyof T, string[]>>({} as Record<keyof T, string[]>);
-  const [touched, setTouchedState] = React.useState<Record<keyof T, boolean>>({} as Record<keyof T, boolean>);
+  const [errors, setErrors] = React.useState<Record<keyof T, string[]>>(
+    {} as Record<keyof T, string[]>
+  );
+  const [touched, setTouchedState] = React.useState<Record<keyof T, boolean>>(
+    {} as Record<keyof T, boolean>
+  );
 
-  const validateFieldValue = React.useCallback((name: keyof T, value: any) => {
-    const rules = validationRules[name];
-    if (!rules) return { isValid: true, errors: [], warnings: [] };
-    
-    return validateField(value, rules);
-  }, [validationRules]);
+  const validateFieldValue = React.useCallback(
+    (name: keyof T, value: any) => {
+      const rules = validationRules[name];
+      if (!rules) return { isValid: true, errors: [], warnings: [] };
+
+      return validateField(value, rules);
+    },
+    [validationRules]
+  );
 
   const validateForm = React.useCallback(() => {
     const newErrors: Record<keyof T, string[]> = {} as Record<keyof T, string[]>;
     let isValid = true;
 
-    Object.keys(validationRules).forEach(key => {
+    Object.keys(validationRules).forEach((key) => {
       const fieldName = key as keyof T;
       const result = validateFieldValue(fieldName, values[fieldName]);
       if (!result.isValid) {
@@ -467,30 +470,36 @@ export const useFormValidation = <T extends Record<string, any>>(
     return isValid;
   }, [values, validationRules, validateFieldValue]);
 
-  const setValue = React.useCallback((name: keyof T, value: any) => {
-    setValues(prev => ({ ...prev, [name]: value }));
-    
-    // Validate field if it's been touched
-    if (touched[name]) {
-      const result = validateFieldValue(name, value);
-      setErrors(prev => ({
-        ...prev,
-        [name]: result.errors
-      }));
-    }
-  }, [touched, validateFieldValue]);
+  const setValue = React.useCallback(
+    (name: keyof T, value: any) => {
+      setValues((prev) => ({ ...prev, [name]: value }));
 
-  const setTouched = React.useCallback((name: keyof T, isTouched = true) => {
-    setTouchedState(prev => ({ ...prev, [name]: isTouched }));
-    
-    if (isTouched) {
-      const result = validateFieldValue(name, values[name]);
-      setErrors(prev => ({
-        ...prev,
-        [name]: result.errors
-      }));
-    }
-  }, [values, validateFieldValue]);
+      // Validate field if it's been touched
+      if (touched[name]) {
+        const result = validateFieldValue(name, value);
+        setErrors((prev) => ({
+          ...prev,
+          [name]: result.errors,
+        }));
+      }
+    },
+    [touched, validateFieldValue]
+  );
+
+  const setTouched = React.useCallback(
+    (name: keyof T, isTouched = true) => {
+      setTouchedState((prev) => ({ ...prev, [name]: isTouched }));
+
+      if (isTouched) {
+        const result = validateFieldValue(name, values[name]);
+        setErrors((prev) => ({
+          ...prev,
+          [name]: result.errors,
+        }));
+      }
+    },
+    [values, validateFieldValue]
+  );
 
   const reset = React.useCallback(() => {
     setValues(initialValues);
@@ -498,8 +507,8 @@ export const useFormValidation = <T extends Record<string, any>>(
     setTouched({} as Record<keyof T, boolean>);
   }, [initialValues]);
 
-  const isValid = Object.keys(errors).every(key => 
-    !errors[key as keyof T] || errors[key as keyof T].length === 0
+  const isValid = Object.keys(errors).every(
+    (key) => !errors[key as keyof T] || errors[key as keyof T].length === 0
   );
 
   return {
@@ -510,21 +519,19 @@ export const useFormValidation = <T extends Record<string, any>>(
     setValue,
     setTouched,
     validateForm,
-    reset
+    reset,
   };
 };
 
 // Nigerian-specific validation helpers
 export const nigerianValidators = {
-  bvn: (value: string) => 
-    PATTERNS.bvn.test(value) ? null : 'Please enter a valid 11-digit BVN',
-  
-  nin: (value: string) => 
-    PATTERNS.nin.test(value) ? null : 'Please enter a valid 11-digit NIN',
-  
-  accountNumber: (value: string) => 
+  bvn: (value: string) => (PATTERNS.bvn.test(value) ? null : 'Please enter a valid 11-digit BVN'),
+
+  nin: (value: string) => (PATTERNS.nin.test(value) ? null : 'Please enter a valid 11-digit NIN'),
+
+  accountNumber: (value: string) =>
     PATTERNS.accountNumber.test(value) ? null : 'Please enter a valid 10-digit account number',
-  
+
   nairaAmount: (value: string) => {
     const amount = parseFloat(value);
     if (isNaN(amount) || amount < 0) {
@@ -535,12 +542,18 @@ export const nigerianValidators = {
     }
     return null;
   },
-  
+
   lagosAddress: (value: string) => {
-    const lagosAreas = ['lekki', 'victoria island', 'ikoyi', 'surulere', 'yaba', 'ikeja', 'gbagada'];
-    const hasLagosArea = lagosAreas.some(area => 
-      value.toLowerCase().includes(area)
-    );
+    const lagosAreas = [
+      'lekki',
+      'victoria island',
+      'ikoyi',
+      'surulere',
+      'yaba',
+      'ikeja',
+      'gbagada',
+    ];
+    const hasLagosArea = lagosAreas.some((area) => value.toLowerCase().includes(area));
     return hasLagosArea ? null : 'Please specify a valid Lagos area';
-  }
+  },
 };

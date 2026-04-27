@@ -16,7 +16,7 @@ interface NetworkInfo {
 
 const PWAStatus: React.FC = () => {
   const [networkInfo, setNetworkInfo] = useState<NetworkInfo>({
-    isOnline: navigator.onLine
+    isOnline: navigator.onLine,
   });
   const [isInstalled, setIsInstalled] = useState(false);
   const [cacheStatus, setCacheStatus] = useState<'loading' | 'ready' | 'error'>('loading');
@@ -36,7 +36,7 @@ const PWAStatus: React.FC = () => {
         isOnline: navigator.onLine,
         effectiveType: connection?.effectiveType,
         downlink: connection?.downlink,
-        rtt: connection?.rtt
+        rtt: connection?.rtt,
       });
     };
 
@@ -62,7 +62,7 @@ const PWAStatus: React.FC = () => {
     // Event listeners
     window.addEventListener('online', updateNetworkInfo);
     window.addEventListener('offline', updateNetworkInfo);
-    
+
     if ('connection' in navigator) {
       (navigator as any).connection.addEventListener('change', updateNetworkInfo);
     }
@@ -70,7 +70,7 @@ const PWAStatus: React.FC = () => {
     return () => {
       window.removeEventListener('online', updateNetworkInfo);
       window.removeEventListener('offline', updateNetworkInfo);
-      
+
       if ('connection' in navigator) {
         (navigator as any).connection.removeEventListener('change', updateNetworkInfo);
       }
@@ -88,19 +88,19 @@ const PWAStatus: React.FC = () => {
     }
 
     const { effectiveType, downlink } = networkInfo;
-    let variant: "default" | "secondary" | "destructive" | "outline" = "default";
-    let label = "Online";
+    let variant: 'default' | 'secondary' | 'destructive' | 'outline' = 'default';
+    let label = 'Online';
 
     if (effectiveType) {
       if (effectiveType === '2g') {
-        variant = "destructive";
-        label = "2G";
+        variant = 'destructive';
+        label = '2G';
       } else if (effectiveType === '3g') {
-        variant = "secondary";
-        label = "3G";
+        variant = 'secondary';
+        label = '3G';
       } else if (effectiveType === '4g') {
-        variant = "default";
-        label = "4G";
+        variant = 'default';
+        label = '4G';
       }
     }
 
@@ -139,11 +139,11 @@ const PWAStatus: React.FC = () => {
 
   // Only show on mobile or when offline
   const shouldShow = !networkInfo.isOnline || window.innerWidth <= 768 || isInstalled;
-  
+
   if (!shouldShow) return null;
 
   return (
-    <div className="fixed top-4 right-4 z-40 flex flex-col gap-1">
+    <div className="fixed right-4 top-4 z-40 flex flex-col gap-1">
       {getNetworkBadge()}
       {getCacheBadge()}
       {getInstallBadge()}

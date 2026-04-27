@@ -4,9 +4,8 @@
  */
 
 import { supabase } from '@/integrations/supabase/client';
-import { Wallet, walletSchema, Transaction, TransactionType, TransactionStatus } from '../types';
-import { getPaystackService } from '../integrations/paystack';
-import { getBookingById } from './bookings';
+import { Wallet, Transaction, TransactionType, TransactionStatus } from '../types';
+import { getPayoutProvider } from '../integrations/payoutService';
 import { createTransaction } from './transactions';
 
 /**
@@ -27,13 +26,15 @@ export async function getOrCreateWallet(userId: string): Promise<Wallet> {
   // Create new wallet if it doesn't exist
   const { data: newWallet, error: createError } = await supabase
     .from('wallets')
-    .insert([{
-      user_id: userId,
-      balance: 0,
-      pending_balance: 0,
-      total_earned: 0,
-      total_paid_out: 0
-    }])
+    .insert([
+      {
+        user_id: userId,
+        balance: 0,
+        pending_balance: 0,
+        total_earned: 0,
+        total_paid_out: 0,
+      },
+    ])
     .select()
     .single();
 
@@ -45,11 +46,7 @@ export async function getOrCreateWallet(userId: string): Promise<Wallet> {
  * Get wallet by user ID
  */
 export async function getWalletByUserId(userId: string): Promise<Wallet | null> {
-  const { data, error } = await supabase
-    .from('wallets')
-    .select('*')
-    .eq('user_id', userId)
-    .single();
+  const { data, error } = await supabase.from('wallets').select('*').eq('user_id', userId).single();
 
   if (error) {
     if (error.code === 'PGRST116') return null; // Not found
@@ -78,7 +75,7 @@ export async function creditWallet(
     .update({
       balance: newBalance,
       total_earned: newTotalEarned,
-      updated_at: new Date().toISOString()
+      updated_at: new Date().toISOString(),
     })
     .eq('id', wallet.id)
     .select()
@@ -86,18 +83,17 @@ export async function creditWallet(
 
   if (error) throw error;
 
-  // Create transaction record
-  if (bookingId) {
-    await createTransaction({
-      booking_id: bookingId,
-      user_id: userId,
-      amount,
-      type: TransactionType.CHARGE,
-      provider: 'paystack',
-      status: TransactionStatus.SUCCESS,
-      description: description || `Earnings from booking ${bookingId}`
-    });
-  }
+  // Always create transaction record for audit trail
+  await createTransaction({
+    booking_id: bookingId,
+    user_id: userId,
+    amount,
+    type: TransactionType.CHARGE,
+    provider: getPayoutProvider(),
+    status: TransactionStatus.SUCCESS,
+    description:
+      description || (bookingId ? `Earnings from booking ${bookingId}` : 'Wallet credit'),
+  });
 
   return data as Wallet;
 }
@@ -108,7 +104,8 @@ export async function creditWallet(
 export async function debitWallet(
   userId: string,
   amount: number,
-  description?: string
+  description?: string,
+  options?: { providerRef?: string; skipTransaction?: boolean }
 ): Promise<Wallet> {
   const wallet = await getOrCreateWallet(userId);
 
@@ -122,13 +119,28 @@ export async function debitWallet(
     .from('wallets')
     .update({
       balance: newBalance,
-      updated_at: new Date().toISOString()
+      total_paid_out: (wallet.total_paid_out || 0) + amount,
+      updated_at: new Date().toISOString(),
     })
     .eq('id', wallet.id)
     .select()
     .single();
 
   if (error) throw error;
+
+  // Create transaction for audit trail (unless caller creates own, e.g. payout flow)
+  if (!options?.skipTransaction) {
+    await createTransaction({
+      booking_id: undefined,
+      user_id: userId,
+      amount,
+      type: TransactionType.PAYOUT,
+      provider: getPayoutProvider(),
+      provider_ref: options?.providerRef,
+      status: TransactionStatus.SUCCESS,
+      description: description || 'Wallet debit / payout',
+    });
+  }
 
   return data as Wallet;
 }
@@ -156,13 +168,24 @@ export async function releasePendingFunds(
     .update({
       balance: newBalance,
       pending_balance: newPendingBalance,
-      updated_at: new Date().toISOString()
+      updated_at: new Date().toISOString(),
     })
     .eq('id', wallet.id)
     .select()
     .single();
 
   if (error) throw error;
+
+  // Create transaction for audit trail (pending → available release)
+  await createTransaction({
+    booking_id: bookingId,
+    user_id: userId,
+    amount,
+    type: TransactionType.DEPOSIT,
+    provider: getPayoutProvider(),
+    status: TransactionStatus.SUCCESS,
+    description: description || `Funds released from pending after checkout (booking ${bookingId})`,
+  });
 
   return data as Wallet;
 }
@@ -220,8 +243,7 @@ export async function getWalletSummary(userId: string): Promise<{
       total_paid_out: Number(wallet.total_paid_out || 0),
       available: Number(wallet.balance || 0),
       pending: Number(wallet.pending_balance || 0),
-      pending_payouts: pendingPayoutsAmount
-    }
+      pending_payouts: pendingPayoutsAmount,
+    },
   };
 }
-

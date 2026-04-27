@@ -1,4 +1,3 @@
-
 import { useVendorData } from '@/hooks/useVendorData';
 import { VendorJobList } from './VendorJobList';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -10,7 +9,7 @@ export function VendorMaintenanceManagement() {
 
   if (isLoading) {
     return (
-      <div className="flex justify-center items-center py-8">
+      <div className="flex items-center justify-center py-8">
         <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
       </div>
     );
@@ -25,7 +24,7 @@ export function VendorMaintenanceManagement() {
       </Alert>
     );
   }
-  
+
   return (
     <Card>
       <CardHeader>

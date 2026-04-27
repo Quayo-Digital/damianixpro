@@ -20,7 +20,7 @@ import {
   MapPin,
   BarChart3,
   Shield,
-  Loader2
+  Loader2,
 } from 'lucide-react';
 
 interface TestResult {
@@ -47,7 +47,7 @@ export function VRTourTests() {
     hasARAccess,
     canCreateTours,
     hasPremiumFeatures,
-    optimalQuality
+    optimalQuality,
   } = useVRTours();
 
   const [isRunning, setIsRunning] = useState(false);
@@ -66,8 +66,8 @@ export function VRTourTests() {
         { name: 'Device Type Detection', status: 'pending' },
         { name: 'Browser Capabilities', status: 'pending' },
         { name: 'Performance Measurement', status: 'pending' },
-        { name: 'Media Device Access', status: 'pending' }
-      ]
+        { name: 'Media Device Access', status: 'pending' },
+      ],
     },
     {
       name: 'VR Tour Creation',
@@ -79,8 +79,8 @@ export function VRTourTests() {
         { name: 'Add Scene to Tour', status: 'pending' },
         { name: 'Upload Media Assets', status: 'pending' },
         { name: 'Scene Navigation Setup', status: 'pending' },
-        { name: 'Tour Publishing', status: 'pending' }
-      ]
+        { name: 'Tour Publishing', status: 'pending' },
+      ],
     },
     {
       name: 'Interactive Features',
@@ -92,8 +92,8 @@ export function VRTourTests() {
         { name: 'Media Playback Hotspots', status: 'pending' },
         { name: 'Interactive Element Triggers', status: 'pending' },
         { name: 'Hotspot Animations', status: 'pending' },
-        { name: 'Scene Transitions', status: 'pending' }
-      ]
+        { name: 'Scene Transitions', status: 'pending' },
+      ],
     },
     {
       name: 'VR/AR Experience',
@@ -105,8 +105,8 @@ export function VRTourTests() {
         { name: 'AR Mode Testing', status: 'pending' },
         { name: 'Motion Controls', status: 'pending' },
         { name: 'Spatial Audio', status: 'pending' },
-        { name: 'Performance Optimization', status: 'pending' }
-      ]
+        { name: 'Performance Optimization', status: 'pending' },
+      ],
     },
     {
       name: 'Analytics & Tracking',
@@ -118,8 +118,8 @@ export function VRTourTests() {
         { name: 'Performance Metrics', status: 'pending' },
         { name: 'User Interaction Analytics', status: 'pending' },
         { name: 'Conversion Tracking', status: 'pending' },
-        { name: 'Real-time Analytics', status: 'pending' }
-      ]
+        { name: 'Real-time Analytics', status: 'pending' },
+      ],
     },
     {
       name: 'Subscription Features',
@@ -131,9 +131,9 @@ export function VRTourTests() {
         { name: 'Tour Creation Limits', status: 'pending' },
         { name: 'Quality Restrictions', status: 'pending' },
         { name: 'Analytics Access Control', status: 'pending' },
-        { name: 'Export/Import Permissions', status: 'pending' }
-      ]
-    }
+        { name: 'Export/Import Permissions', status: 'pending' },
+      ],
+    },
   ]);
 
   // Helper function to simulate test execution
@@ -143,9 +143,9 @@ export function VRTourTests() {
     testFunction: () => Promise<string>
   ): Promise<void> => {
     const startTime = Date.now();
-    
+
     // Update test status to running
-    setTestCategories(prev => {
+    setTestCategories((prev) => {
       const updated = [...prev];
       updated[categoryIndex].tests[testIndex].status = 'running';
       return updated;
@@ -156,13 +156,13 @@ export function VRTourTests() {
       const duration = Date.now() - startTime;
 
       // Update test status to passed
-      setTestCategories(prev => {
+      setTestCategories((prev) => {
         const updated = [...prev];
         updated[categoryIndex].tests[testIndex] = {
           ...updated[categoryIndex].tests[testIndex],
           status: 'passed',
           duration,
-          details: result
+          details: result,
         };
         return updated;
       });
@@ -173,18 +173,20 @@ export function VRTourTests() {
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
 
       // Update test status to failed
-      setTestCategories(prev => {
+      setTestCategories((prev) => {
         const updated = [...prev];
         updated[categoryIndex].tests[testIndex] = {
           ...updated[categoryIndex].tests[testIndex],
           status: 'failed',
           duration,
-          error: errorMessage
+          error: errorMessage,
         };
         return updated;
       });
 
-      toast.error(`❌ ${testCategories[categoryIndex].tests[testIndex].name} failed: ${errorMessage}`);
+      toast.error(
+        `❌ ${testCategories[categoryIndex].tests[testIndex].name} failed: ${errorMessage}`
+      );
     }
   };
 
@@ -198,25 +200,25 @@ export function VRTourTests() {
 
     try {
       // Reset all test statuses
-      setTestCategories(prev => 
-        prev.map(category => ({
+      setTestCategories((prev) =>
+        prev.map((category) => ({
           ...category,
-          tests: category.tests.map(test => ({ ...test, status: 'pending' as const }))
+          tests: category.tests.map((test) => ({ ...test, status: 'pending' as const })),
         }))
       );
 
       // Run tests for each category
       for (let categoryIndex = 0; categoryIndex < testCategories.length; categoryIndex++) {
         const category = testCategories[categoryIndex];
-        
+
         for (let testIndex = 0; testIndex < category.tests.length; testIndex++) {
           const test = category.tests[testIndex];
           setCurrentTest(test.name);
-          
+
           // Simulate test execution
           await simulateTest(categoryIndex, testIndex, async () => {
-            await new Promise(resolve => setTimeout(resolve, Math.random() * 1000 + 500));
-            
+            await new Promise((resolve) => setTimeout(resolve, Math.random() * 1000 + 500));
+
             // Simulate some test failures based on feature access
             if (test.name.includes('VR') && !isVRSupported) {
               throw new Error('VR not supported on this device');
@@ -230,10 +232,10 @@ export function VRTourTests() {
             if (test.name.includes('Create') && !canCreateTours) {
               throw new Error('Tour creation not available in current plan');
             }
-            
+
             return `${test.name} completed successfully`;
           });
-          
+
           completedTests++;
           setProgress((completedTests / totalTests) * 100);
         }
@@ -250,12 +252,12 @@ export function VRTourTests() {
 
   // Calculate test statistics
   const getTestStats = () => {
-    const allTests = testCategories.flatMap(category => category.tests);
-    const passed = allTests.filter(test => test.status === 'passed').length;
-    const failed = allTests.filter(test => test.status === 'failed').length;
-    const pending = allTests.filter(test => test.status === 'pending').length;
-    const running = allTests.filter(test => test.status === 'running').length;
-    
+    const allTests = testCategories.flatMap((category) => category.tests);
+    const passed = allTests.filter((test) => test.status === 'passed').length;
+    const failed = allTests.filter((test) => test.status === 'failed').length;
+    const pending = allTests.filter((test) => test.status === 'pending').length;
+    const running = allTests.filter((test) => test.status === 'running').length;
+
     return { total: allTests.length, passed, failed, pending, running };
   };
 
@@ -274,12 +276,12 @@ export function VRTourTests() {
         <Button onClick={runAllTests} disabled={isRunning}>
           {isRunning ? (
             <>
-              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
               Running Tests...
             </>
           ) : (
             <>
-              <Play className="h-4 w-4 mr-2" />
+              <Play className="mr-2 h-4 w-4" />
               Run All Tests
             </>
           )}
@@ -297,9 +299,7 @@ export function VRTourTests() {
               </div>
               <Progress value={progress} />
               {currentTest && (
-                <p className="text-sm text-muted-foreground">
-                  Currently running: {currentTest}
-                </p>
+                <p className="text-sm text-muted-foreground">Currently running: {currentTest}</p>
               )}
             </div>
           </CardContent>
@@ -307,7 +307,7 @@ export function VRTourTests() {
       )}
 
       {/* Test Statistics */}
-      <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+      <div className="grid grid-cols-2 gap-4 md:grid-cols-5">
         <Card>
           <CardContent className="p-4 text-center">
             <p className="text-2xl font-bold">{stats.total}</p>
@@ -344,12 +344,12 @@ export function VRTourTests() {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center">
-            <Monitor className="h-5 w-5 mr-2" />
+            <Monitor className="mr-2 h-5 w-5" />
             Device Information
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+          <div className="grid grid-cols-2 gap-4 text-sm md:grid-cols-4">
             <div>
               <p className="font-medium">Device Type</p>
               <p className="text-muted-foreground">{deviceInfo?.type || 'Unknown'}</p>
@@ -378,8 +378,8 @@ export function VRTourTests() {
       <Tabs defaultValue="device-capabilities" className="w-full">
         <TabsList className="grid w-full grid-cols-3 lg:grid-cols-6">
           {testCategories.map((category, index) => (
-            <TabsTrigger 
-              key={index} 
+            <TabsTrigger
+              key={index}
               value={category.name.toLowerCase().replace(/\s+/g, '-')}
               className="text-xs"
             >
@@ -390,10 +390,7 @@ export function VRTourTests() {
         </TabsList>
 
         {testCategories.map((category, categoryIndex) => (
-          <TabsContent 
-            key={categoryIndex} 
-            value={category.name.toLowerCase().replace(/\s+/g, '-')}
-          >
+          <TabsContent key={categoryIndex} value={category.name.toLowerCase().replace(/\s+/g, '-')}>
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center">
@@ -407,31 +404,25 @@ export function VRTourTests() {
                   {category.tests.map((test, testIndex) => (
                     <div
                       key={testIndex}
-                      className="flex items-center justify-between p-3 border rounded-lg"
+                      className="flex items-center justify-between rounded-lg border p-3"
                     >
                       <div className="flex items-center space-x-3">
                         <div className="flex-shrink-0">
-                          {test.status === 'pending' && (
-                            <Clock className="h-4 w-4 text-gray-400" />
-                          )}
+                          {test.status === 'pending' && <Clock className="h-4 w-4 text-gray-400" />}
                           {test.status === 'running' && (
-                            <Loader2 className="h-4 w-4 text-blue-500 animate-spin" />
+                            <Loader2 className="h-4 w-4 animate-spin text-blue-500" />
                           )}
                           {test.status === 'passed' && (
                             <CheckCircle className="h-4 w-4 text-green-500" />
                           )}
-                          {test.status === 'failed' && (
-                            <XCircle className="h-4 w-4 text-red-500" />
-                          )}
+                          {test.status === 'failed' && <XCircle className="h-4 w-4 text-red-500" />}
                         </div>
                         <div>
-                          <p className="font-medium text-sm">{test.name}</p>
+                          <p className="text-sm font-medium">{test.name}</p>
                           {test.details && (
                             <p className="text-xs text-muted-foreground">{test.details}</p>
                           )}
-                          {test.error && (
-                            <p className="text-xs text-red-600">{test.error}</p>
-                          )}
+                          {test.error && <p className="text-xs text-red-600">{test.error}</p>}
                         </div>
                       </div>
                       <div className="flex items-center space-x-2">
@@ -440,11 +431,15 @@ export function VRTourTests() {
                             {test.duration}ms
                           </Badge>
                         )}
-                        <Badge 
+                        <Badge
                           variant={
-                            test.status === 'passed' ? 'default' :
-                            test.status === 'failed' ? 'destructive' :
-                            test.status === 'running' ? 'secondary' : 'outline'
+                            test.status === 'passed'
+                              ? 'default'
+                              : test.status === 'failed'
+                                ? 'destructive'
+                                : test.status === 'running'
+                                  ? 'secondary'
+                                  : 'outline'
                           }
                           className="text-xs"
                         >
@@ -464,12 +459,12 @@ export function VRTourTests() {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center">
-            <Shield className="h-5 w-5 mr-2" />
+            <Shield className="mr-2 h-5 w-5" />
             Feature Access Summary
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-2 gap-4 md:grid-cols-3">
             <div className="flex items-center justify-between">
               <span className="text-sm">VR Tours</span>
               <Badge variant={hasVRAccess ? 'default' : 'secondary'}>

@@ -1,14 +1,14 @@
 // Predictive Maintenance System Types
 
-export type MaintenanceCategory = 
-  | 'plumbing' 
-  | 'electrical' 
-  | 'hvac' 
-  | 'structural' 
-  | 'appliances' 
-  | 'security' 
-  | 'exterior' 
-  | 'interior' 
+export type MaintenanceCategory =
+  | 'plumbing'
+  | 'electrical'
+  | 'hvac'
+  | 'structural'
+  | 'appliances'
+  | 'security'
+  | 'exterior'
+  | 'interior'
   | 'landscaping';
 
 export type MaintenancePriority = 'low' | 'medium' | 'high' | 'critical';
@@ -17,7 +17,13 @@ export type MaintenanceStatus = 'predicted' | 'scheduled' | 'in_progress' | 'com
 
 export type RiskLevel = 'low' | 'moderate' | 'high' | 'critical';
 
-export type SeasonalFactor = 'spring' | 'summer' | 'fall' | 'winter' | 'rainy_season' | 'dry_season';
+export type SeasonalFactor =
+  | 'spring'
+  | 'summer'
+  | 'fall'
+  | 'winter'
+  | 'rainy_season'
+  | 'dry_season';
 
 export interface EquipmentData {
   id: string;
@@ -57,7 +63,14 @@ export interface MaintenanceRecord {
 export interface SensorReading {
   id: string;
   equipment_id: string;
-  sensor_type: 'temperature' | 'humidity' | 'pressure' | 'vibration' | 'current' | 'voltage' | 'flow_rate';
+  sensor_type:
+    | 'temperature'
+    | 'humidity'
+    | 'pressure'
+    | 'vibration'
+    | 'current'
+    | 'voltage'
+    | 'flow_rate';
   value: number;
   unit: string;
   timestamp: string;
@@ -111,7 +124,14 @@ export interface MaintenanceSchedule {
   category: MaintenanceCategory;
   task_name: string;
   description: string;
-  frequency_type: 'daily' | 'weekly' | 'monthly' | 'quarterly' | 'semi_annual' | 'annual' | 'conditional';
+  frequency_type:
+    | 'daily'
+    | 'weekly'
+    | 'monthly'
+    | 'quarterly'
+    | 'semi_annual'
+    | 'annual'
+    | 'conditional';
   frequency_value: number;
   last_completed?: string;
   next_due: string;
@@ -164,7 +184,11 @@ export interface PropertyMaintenanceProfile {
 export interface MaintenanceInsight {
   id: string;
   property_id: string;
-  insight_type: 'cost_optimization' | 'efficiency_improvement' | 'risk_mitigation' | 'trend_analysis';
+  insight_type:
+    | 'cost_optimization'
+    | 'efficiency_improvement'
+    | 'risk_mitigation'
+    | 'trend_analysis';
   title: string;
   description: string;
   impact_score: number; // 0-100
@@ -243,6 +267,11 @@ export interface MaintenanceFilters {
 }
 
 export interface MaintenanceSortOptions {
-  field: 'predicted_failure_date' | 'priority' | 'risk_level' | 'estimated_cost' | 'confidence_score';
+  field:
+    | 'predicted_failure_date'
+    | 'priority'
+    | 'risk_level'
+    | 'estimated_cost'
+    | 'confidence_score';
   direction: 'asc' | 'desc';
 }

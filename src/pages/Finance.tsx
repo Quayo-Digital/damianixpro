@@ -6,6 +6,7 @@ import { FinancialSummary } from '@/components/finance/dashboard/FinancialSummar
 import { FinanceChartTabs } from '@/components/finance/charts/FinanceChartTabs';
 import { ExpenseDetailsDialog } from '@/components/finance/expense-details/ExpenseDetailsDialog';
 import { CashFlowDetailsDialog } from '@/components/finance/CashFlowDetailsDialog';
+import { AIFinancialAssistant } from '@/components/ai/AIFinancialAssistant';
 import { RevenueDetailsDialog } from '@/components/finance/RevenueDetailsDialog';
 import { PropertiesDetailsDialog } from '@/components/finance/PropertiesDetailsDialog';
 import { useFinanceData } from '@/hooks/useFinanceData';
@@ -20,30 +21,27 @@ const Finance = () => {
   const [cashFlowDetailsOpen, setCashFlowDetailsOpen] = useState(false);
   const [revenueDetailsOpen, setRevenueDetailsOpen] = useState(false);
   const [propertiesDetailsOpen, setPropertiesDetailsOpen] = useState(false);
-  
-  const { 
-    revenueData, 
-    expenseData, 
-    cashFlowData, 
-    propertyPerformanceData, 
-    monthlyExpenses, 
-    totalRevenue, 
-    totalExpenses, 
-    totalProfit, 
+
+  const {
+    revenueData,
+    expenseData,
+    cashFlowData,
+    propertyPerformanceData,
+    monthlyExpenses,
+    totalRevenue,
+    totalExpenses,
+    totalProfit,
     profitMargin,
     isLoading,
     error,
-    EXPENSE_COLORS, 
-    CHART_COLORS, 
-    formatAmount 
+    EXPENSE_COLORS,
+    CHART_COLORS,
+    formatAmount,
   } = useFinanceData({ timeframe, propertyFilter });
 
   return (
     <PageLayout>
-      <PageContent 
-        title="Finance" 
-        description="Manage your property financials"
-      >
+      <PageContent title="Finance" description="Manage your property financials">
         <FinancialHeader
           propertyFilter={propertyFilter}
           setPropertyFilter={setPropertyFilter}
@@ -61,12 +59,17 @@ const Finance = () => {
           isLoading={isLoading}
         />
 
+        <div className="my-6">
+          <AIFinancialAssistant />
+        </div>
+
         {error ? (
           <Alert variant="destructive" className="my-6">
             <AlertCircle className="h-4 w-4" />
             <AlertTitle>Error Loading Data</AlertTitle>
             <AlertDescription>
-              We couldn't load the financial data. Please try changing the filters or refresh the page.
+              We couldn't load the financial data. Please try changing the filters or refresh the
+              page.
             </AlertDescription>
           </Alert>
         ) : (
@@ -86,7 +89,7 @@ const Finance = () => {
             error={error}
           />
         )}
-        
+
         {/* Dialog components */}
         <ExpenseDetailsDialog
           open={expenseDetailsOpen}
@@ -94,19 +97,19 @@ const Finance = () => {
           expenseData={expenseData}
           monthlyExpenses={monthlyExpenses}
         />
-        
+
         <CashFlowDetailsDialog
           open={cashFlowDetailsOpen}
           onOpenChange={setCashFlowDetailsOpen}
           cashFlowData={cashFlowData}
         />
-        
+
         <RevenueDetailsDialog
           open={revenueDetailsOpen}
           onOpenChange={setRevenueDetailsOpen}
           revenueData={revenueData}
         />
-        
+
         <PropertiesDetailsDialog
           open={propertiesDetailsOpen}
           onOpenChange={setPropertiesDetailsOpen}

@@ -1,4 +1,3 @@
-
 import { useQuery } from '@tanstack/react-query';
 import { fetchFinanceDashboardData } from '@/services/payments/payment-reports';
 
@@ -19,7 +18,7 @@ export const useFinanceData = ({ timeframe, propertyFilter }: UseFinanceDataProp
     expenses: '#FF8042',
     profit: '#4CAF50',
     inflow: '#0088FE',
-    outflow: '#FF8042'
+    outflow: '#FF8042',
   };
 
   const formatAmount = (amount: number) => {
@@ -27,7 +26,7 @@ export const useFinanceData = ({ timeframe, propertyFilter }: UseFinanceDataProp
       style: 'currency',
       currency: 'NGN',
       minimumFractionDigits: 0,
-      maximumFractionDigits: 0
+      maximumFractionDigits: 0,
     }).format(amount);
   };
 
@@ -45,6 +44,6 @@ export const useFinanceData = ({ timeframe, propertyFilter }: UseFinanceDataProp
     error,
     EXPENSE_COLORS,
     CHART_COLORS,
-    formatAmount
+    formatAmount,
   };
 };

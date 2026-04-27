@@ -6,11 +6,11 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { 
-  CheckCircle, 
-  XCircle, 
-  AlertTriangle, 
-  Play, 
+import {
+  CheckCircle,
+  XCircle,
+  AlertTriangle,
+  Play,
   Shield,
   CreditCard,
   User,
@@ -19,7 +19,7 @@ import {
   Phone,
   Globe,
   Database,
-  Zap
+  Zap,
 } from 'lucide-react';
 import { useNigerianApis } from '@/hooks/useNigerianApis';
 import { KYCVerificationDashboard } from '@/components/kyc/KYCVerificationDashboard';
@@ -45,11 +45,11 @@ export const NigerianApiTests: React.FC = () => {
     isLoadingBanks,
     isLoadingProviders,
     testProviderConnection,
-    supportedVerificationTypes
+    supportedVerificationTypes,
   } = useNigerianApis();
 
   const addResult = (result: TestResult) => {
-    setTestResults(prev => [...prev, result]);
+    setTestResults((prev) => [...prev, result]);
   };
 
   const clearResults = () => {
@@ -61,8 +61,12 @@ export const NigerianApiTests: React.FC = () => {
     addResult({
       name: 'Nigerian API Feature Access',
       status: canUseNigerianApis ? 'pass' : 'warning',
-      message: canUseNigerianApis ? 'Nigerian API features are accessible' : 'Nigerian API features require premium subscription',
-      details: canUseNigerianApis ? 'User has access to all verification services' : 'Upgrade subscription to access Nigerian API integrations'
+      message: canUseNigerianApis
+        ? 'Nigerian API features are accessible'
+        : 'Nigerian API features require premium subscription',
+      details: canUseNigerianApis
+        ? 'User has access to all verification services'
+        : 'Upgrade subscription to access Nigerian API integrations',
     });
   };
 
@@ -73,7 +77,7 @@ export const NigerianApiTests: React.FC = () => {
         name: 'Provider Configuration',
         status: 'fail',
         message: 'Unable to load provider status',
-        details: 'Provider configuration could not be retrieved'
+        details: 'Provider configuration could not be retrieved',
       });
       return;
     }
@@ -83,7 +87,7 @@ export const NigerianApiTests: React.FC = () => {
         name: `${provider.charAt(0).toUpperCase() + provider.slice(1)} Configuration`,
         status: configured ? 'pass' : 'warning',
         message: configured ? `${provider} is configured` : `${provider} is not configured`,
-        details: configured ? 'API keys and endpoints are set up' : 'Missing API configuration'
+        details: configured ? 'API keys and endpoints are set up' : 'Missing API configuration',
       });
     });
   };
@@ -94,20 +98,23 @@ export const NigerianApiTests: React.FC = () => {
       name: 'Nigerian Banks Data',
       status: nigerianBanks.length > 0 ? 'pass' : 'fail',
       message: `${nigerianBanks.length} Nigerian banks loaded`,
-      details: nigerianBanks.length > 0 ? 'Bank codes and names available for verification' : 'Failed to load Nigerian banks data'
+      details:
+        nigerianBanks.length > 0
+          ? 'Bank codes and names available for verification'
+          : 'Failed to load Nigerian banks data',
     });
 
     // Test specific major banks
     const majorBanks = ['044', '058', '011', '033', '057']; // Access, GTB, First Bank, UBA, Zenith
-    const foundBanks = majorBanks.filter(code => 
-      nigerianBanks.some(bank => bank.code === code)
+    const foundBanks = majorBanks.filter((code) =>
+      nigerianBanks.some((bank) => bank.code === code)
     );
 
     addResult({
       name: 'Major Banks Coverage',
       status: foundBanks.length >= 4 ? 'pass' : 'warning',
       message: `${foundBanks.length}/5 major banks found`,
-      details: `Found banks with codes: ${foundBanks.join(', ')}`
+      details: `Found banks with codes: ${foundBanks.join(', ')}`,
     });
   };
 
@@ -116,13 +123,15 @@ export const NigerianApiTests: React.FC = () => {
     const requiredTypes = ['bvn', 'nin', 'cac', 'bank_account', 'phone'];
     const supportedTypes = supportedVerificationTypes;
 
-    requiredTypes.forEach(type => {
+    requiredTypes.forEach((type) => {
       const isSupported = supportedTypes.includes(type as any);
       addResult({
         name: `${type.toUpperCase()} Verification Support`,
         status: isSupported ? 'pass' : 'fail',
-        message: isSupported ? `${type.toUpperCase()} verification is supported` : `${type.toUpperCase()} verification not supported`,
-        details: isSupported ? 'Service integration available' : 'Service integration missing'
+        message: isSupported
+          ? `${type.toUpperCase()} verification is supported`
+          : `${type.toUpperCase()} verification not supported`,
+        details: isSupported ? 'Service integration available' : 'Service integration missing',
       });
     });
   };
@@ -133,7 +142,9 @@ export const NigerianApiTests: React.FC = () => {
       name: 'KYC Profile System',
       status: kycProfile ? 'pass' : 'warning',
       message: kycProfile ? 'KYC profile loaded successfully' : 'KYC profile not available',
-      details: kycProfile ? `Verification level: ${kycProfile.verification_level}, Risk: ${kycProfile.risk_level}` : 'User may not have a KYC profile yet'
+      details: kycProfile
+        ? `Verification level: ${kycProfile.verification_level}, Risk: ${kycProfile.risk_level}`
+        : 'User may not have a KYC profile yet',
     });
 
     if (kycProfile) {
@@ -142,7 +153,7 @@ export const NigerianApiTests: React.FC = () => {
         { key: 'nin_verified', name: 'NIN' },
         { key: 'phone_verified', name: 'Phone' },
         { key: 'bank_account_verified', name: 'Bank Account' },
-        { key: 'business_verified', name: 'Business' }
+        { key: 'business_verified', name: 'Business' },
       ];
 
       verifications.forEach(({ key, name }) => {
@@ -151,7 +162,7 @@ export const NigerianApiTests: React.FC = () => {
           name: `${name} Verification Status`,
           status: isVerified ? 'pass' : 'warning',
           message: isVerified ? `${name} is verified` : `${name} not yet verified`,
-          details: isVerified ? 'Verification completed successfully' : 'Verification pending'
+          details: isVerified ? 'Verification completed successfully' : 'Verification pending',
         });
       });
     }
@@ -164,25 +175,27 @@ export const NigerianApiTests: React.FC = () => {
         name: 'Provider Connectivity',
         status: 'warning',
         message: 'Cannot test connectivity without API access',
-        details: 'Premium subscription required for connectivity tests'
+        details: 'Premium subscription required for connectivity tests',
       });
       return;
     }
 
-    const providers = ['youverify', 'appruve', 'paystack'] as const;
-    
+    const providers = ['youverify', 'appruve', 'flutterwave'] as const;
+
     for (const provider of providers) {
       const startTime = Date.now();
       try {
         const isConnected = await testProviderConnection(provider);
         const duration = Date.now() - startTime;
-        
+
         addResult({
           name: `${provider.charAt(0).toUpperCase() + provider.slice(1)} Connectivity`,
           status: isConnected ? 'pass' : 'fail',
-          message: isConnected ? `${provider} connection successful` : `${provider} connection failed`,
+          message: isConnected
+            ? `${provider} connection successful`
+            : `${provider} connection failed`,
           details: isConnected ? `Response time: ${duration}ms` : 'Unable to establish connection',
-          duration
+          duration,
         });
       } catch (error) {
         const duration = Date.now() - startTime;
@@ -191,7 +204,7 @@ export const NigerianApiTests: React.FC = () => {
           status: 'fail',
           message: `${provider} connection error`,
           details: error instanceof Error ? error.message : 'Unknown connection error',
-          duration
+          duration,
         });
       }
     }
@@ -204,7 +217,7 @@ export const NigerianApiTests: React.FC = () => {
         name: 'Mock Verification Tests',
         status: 'warning',
         message: 'Cannot run mock tests without API access',
-        details: 'Premium subscription required for verification tests'
+        details: 'Premium subscription required for verification tests',
       });
       return;
     }
@@ -216,7 +229,7 @@ export const NigerianApiTests: React.FC = () => {
       name: 'BVN Format Validation',
       status: bvnValid ? 'pass' : 'fail',
       message: bvnValid ? 'BVN format validation works' : 'BVN format validation failed',
-      details: `Test BVN: ${testBvn}, Valid: ${bvnValid}`
+      details: `Test BVN: ${testBvn}, Valid: ${bvnValid}`,
     });
 
     // Test NIN format validation
@@ -226,7 +239,7 @@ export const NigerianApiTests: React.FC = () => {
       name: 'NIN Format Validation',
       status: ninValid ? 'pass' : 'fail',
       message: ninValid ? 'NIN format validation works' : 'NIN format validation failed',
-      details: `Test NIN: ${testNin}, Valid: ${ninValid}`
+      details: `Test NIN: ${testNin}, Valid: ${ninValid}`,
     });
 
     // Test phone format validation
@@ -236,7 +249,7 @@ export const NigerianApiTests: React.FC = () => {
       name: 'Phone Format Validation',
       status: phoneValid ? 'pass' : 'fail',
       message: phoneValid ? 'Phone format validation works' : 'Phone format validation failed',
-      details: `Test Phone: ${testPhone}, Valid: ${phoneValid}`
+      details: `Test Phone: ${testPhone}, Valid: ${phoneValid}`,
     });
 
     // Test account number format validation
@@ -245,8 +258,10 @@ export const NigerianApiTests: React.FC = () => {
     addResult({
       name: 'Account Number Format Validation',
       status: accountValid ? 'pass' : 'fail',
-      message: accountValid ? 'Account number format validation works' : 'Account number format validation failed',
-      details: `Test Account: ${testAccount}, Valid: ${accountValid}`
+      message: accountValid
+        ? 'Account number format validation works'
+        : 'Account number format validation failed',
+      details: `Test Account: ${testAccount}, Valid: ${accountValid}`,
     });
   };
 
@@ -261,17 +276,16 @@ export const NigerianApiTests: React.FC = () => {
       testBanksData();
       testVerificationTypes();
       testKycProfile();
-      
+
       // Run asynchronous tests
       await testMockVerifications();
       await testProviderConnectivity();
-      
     } catch (error) {
       addResult({
         name: 'Test Suite Error',
         status: 'fail',
         message: 'Error running test suite',
-        details: error instanceof Error ? error.message : 'Unknown error'
+        details: error instanceof Error ? error.message : 'Unknown error',
       });
     } finally {
       setIsRunning(false);
@@ -300,33 +314,33 @@ export const NigerianApiTests: React.FC = () => {
     }
   };
 
-  const passCount = testResults.filter(r => r.status === 'pass').length;
-  const failCount = testResults.filter(r => r.status === 'fail').length;
-  const warningCount = testResults.filter(r => r.status === 'warning').length;
+  const passCount = testResults.filter((r) => r.status === 'pass').length;
+  const failCount = testResults.filter((r) => r.status === 'fail').length;
+  const warningCount = testResults.filter((r) => r.status === 'warning').length;
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-2xl font-bold text-gray-900">Nigerian API Integration Tests</h2>
-          <p className="text-gray-600 mt-1">
+          <p className="mt-1 text-gray-600">
             Comprehensive testing of Nigerian banking and government service integrations
           </p>
         </div>
-        
-        <Button 
-          onClick={runAllTests} 
+
+        <Button
+          onClick={runAllTests}
           disabled={isRunning}
           className="bg-blue-600 hover:bg-blue-700"
         >
           {isRunning ? (
             <div className="flex items-center space-x-2">
-              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+              <div className="h-4 w-4 animate-spin rounded-full border-b-2 border-primary-foreground"></div>
               <span>Running Tests...</span>
             </div>
           ) : (
             <>
-              <Play className="h-4 w-4 mr-2" />
+              <Play className="mr-2 h-4 w-4" />
               Run All Tests
             </>
           )}
@@ -334,7 +348,7 @@ export const NigerianApiTests: React.FC = () => {
       </div>
 
       {testResults.length > 0 && (
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
           <Card>
             <CardContent className="flex items-center justify-between p-4">
               <div>
@@ -344,7 +358,7 @@ export const NigerianApiTests: React.FC = () => {
               <CheckCircle className="h-8 w-8 text-green-500" />
             </CardContent>
           </Card>
-          
+
           <Card>
             <CardContent className="flex items-center justify-between p-4">
               <div>
@@ -354,7 +368,7 @@ export const NigerianApiTests: React.FC = () => {
               <XCircle className="h-8 w-8 text-red-500" />
             </CardContent>
           </Card>
-          
+
           <Card>
             <CardContent className="flex items-center justify-between p-4">
               <div>
@@ -364,7 +378,7 @@ export const NigerianApiTests: React.FC = () => {
               <AlertTriangle className="h-8 w-8 text-yellow-500" />
             </CardContent>
           </Card>
-          
+
           <Card>
             <CardContent className="flex items-center justify-between p-4">
               <div>
@@ -401,9 +415,18 @@ export const NigerianApiTests: React.FC = () => {
             <CardContent>
               <div className="space-y-3">
                 {testResults
-                  .filter(r => ['Nigerian API Feature Access', 'Nigerian Banks Data', 'KYC Profile System'].includes(r.name))
+                  .filter((r) =>
+                    [
+                      'Nigerian API Feature Access',
+                      'Nigerian Banks Data',
+                      'KYC Profile System',
+                    ].includes(r.name)
+                  )
                   .map((result, index) => (
-                    <div key={index} className={`p-3 rounded-lg border ${getStatusColor(result.status)}`}>
+                    <div
+                      key={index}
+                      className={`rounded-lg border p-3 ${getStatusColor(result.status)}`}
+                    >
                       <div className="flex items-center justify-between">
                         <div className="flex items-center space-x-2">
                           {getStatusIcon(result.status)}
@@ -411,9 +434,9 @@ export const NigerianApiTests: React.FC = () => {
                         </div>
                         <Badge variant="outline">{result.status}</Badge>
                       </div>
-                      <p className="text-sm text-gray-600 mt-1">{result.message}</p>
+                      <p className="mt-1 text-sm text-gray-600">{result.message}</p>
                       {result.details && (
-                        <p className="text-xs text-gray-500 mt-1">{result.details}</p>
+                        <p className="mt-1 text-xs text-gray-500">{result.details}</p>
                       )}
                     </div>
                   ))}
@@ -436,9 +459,14 @@ export const NigerianApiTests: React.FC = () => {
             <CardContent>
               <div className="space-y-3">
                 {testResults
-                  .filter(r => r.name.includes('Configuration') || r.name.includes('Connectivity'))
+                  .filter(
+                    (r) => r.name.includes('Configuration') || r.name.includes('Connectivity')
+                  )
                   .map((result, index) => (
-                    <div key={index} className={`p-3 rounded-lg border ${getStatusColor(result.status)}`}>
+                    <div
+                      key={index}
+                      className={`rounded-lg border p-3 ${getStatusColor(result.status)}`}
+                    >
                       <div className="flex items-center justify-between">
                         <div className="flex items-center space-x-2">
                           {getStatusIcon(result.status)}
@@ -451,9 +479,9 @@ export const NigerianApiTests: React.FC = () => {
                           )}
                         </div>
                       </div>
-                      <p className="text-sm text-gray-600 mt-1">{result.message}</p>
+                      <p className="mt-1 text-sm text-gray-600">{result.message}</p>
                       {result.details && (
-                        <p className="text-xs text-gray-500 mt-1">{result.details}</p>
+                        <p className="mt-1 text-xs text-gray-500">{result.details}</p>
                       )}
                     </div>
                   ))}
@@ -469,16 +497,21 @@ export const NigerianApiTests: React.FC = () => {
                 <Shield className="h-5 w-5" />
                 <span>Verification Services</span>
               </CardTitle>
-              <CardDescription>
-                Testing verification service support and validation
-              </CardDescription>
+              <CardDescription>Testing verification service support and validation</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-3">
                 {testResults
-                  .filter(r => r.name.includes('Verification Support') || r.name.includes('Format Validation'))
+                  .filter(
+                    (r) =>
+                      r.name.includes('Verification Support') ||
+                      r.name.includes('Format Validation')
+                  )
                   .map((result, index) => (
-                    <div key={index} className={`p-3 rounded-lg border ${getStatusColor(result.status)}`}>
+                    <div
+                      key={index}
+                      className={`rounded-lg border p-3 ${getStatusColor(result.status)}`}
+                    >
                       <div className="flex items-center justify-between">
                         <div className="flex items-center space-x-2">
                           {getStatusIcon(result.status)}
@@ -486,9 +519,9 @@ export const NigerianApiTests: React.FC = () => {
                         </div>
                         <Badge variant="outline">{result.status}</Badge>
                       </div>
-                      <p className="text-sm text-gray-600 mt-1">{result.message}</p>
+                      <p className="mt-1 text-sm text-gray-600">{result.message}</p>
                       {result.details && (
-                        <p className="text-xs text-gray-500 mt-1">{result.details}</p>
+                        <p className="mt-1 text-xs text-gray-500">{result.details}</p>
                       )}
                     </div>
                   ))}
@@ -511,9 +544,12 @@ export const NigerianApiTests: React.FC = () => {
             <CardContent>
               <div className="space-y-3">
                 {testResults
-                  .filter(r => r.name.includes('KYC') || r.name.includes('Verification Status'))
+                  .filter((r) => r.name.includes('KYC') || r.name.includes('Verification Status'))
                   .map((result, index) => (
-                    <div key={index} className={`p-3 rounded-lg border ${getStatusColor(result.status)}`}>
+                    <div
+                      key={index}
+                      className={`rounded-lg border p-3 ${getStatusColor(result.status)}`}
+                    >
                       <div className="flex items-center justify-between">
                         <div className="flex items-center space-x-2">
                           {getStatusIcon(result.status)}
@@ -521,9 +557,9 @@ export const NigerianApiTests: React.FC = () => {
                         </div>
                         <Badge variant="outline">{result.status}</Badge>
                       </div>
-                      <p className="text-sm text-gray-600 mt-1">{result.message}</p>
+                      <p className="mt-1 text-sm text-gray-600">{result.message}</p>
                       {result.details && (
-                        <p className="text-xs text-gray-500 mt-1">{result.details}</p>
+                        <p className="mt-1 text-xs text-gray-500">{result.details}</p>
                       )}
                     </div>
                   ))}
@@ -539,16 +575,17 @@ export const NigerianApiTests: React.FC = () => {
                 <Zap className="h-5 w-5" />
                 <span>Provider Connectivity</span>
               </CardTitle>
-              <CardDescription>
-                Real-time connectivity tests with API providers
-              </CardDescription>
+              <CardDescription>Real-time connectivity tests with API providers</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-3">
                 {testResults
-                  .filter(r => r.name.includes('Connectivity'))
+                  .filter((r) => r.name.includes('Connectivity'))
                   .map((result, index) => (
-                    <div key={index} className={`p-3 rounded-lg border ${getStatusColor(result.status)}`}>
+                    <div
+                      key={index}
+                      className={`rounded-lg border p-3 ${getStatusColor(result.status)}`}
+                    >
                       <div className="flex items-center justify-between">
                         <div className="flex items-center space-x-2">
                           {getStatusIcon(result.status)}
@@ -561,9 +598,9 @@ export const NigerianApiTests: React.FC = () => {
                           )}
                         </div>
                       </div>
-                      <p className="text-sm text-gray-600 mt-1">{result.message}</p>
+                      <p className="mt-1 text-sm text-gray-600">{result.message}</p>
                       {result.details && (
-                        <p className="text-xs text-gray-500 mt-1">{result.details}</p>
+                        <p className="mt-1 text-xs text-gray-500">{result.details}</p>
                       )}
                     </div>
                   ))}
@@ -584,10 +621,7 @@ export const NigerianApiTests: React.FC = () => {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <KYCVerificationDashboard 
-                className="w-full"
-                compact={false}
-              />
+              <KYCVerificationDashboard className="w-full" compact={false} />
             </CardContent>
           </Card>
         </TabsContent>

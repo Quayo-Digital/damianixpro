@@ -1,4 +1,3 @@
-
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { MaintenanceRequest } from '@/components/communication/maintenance/maintenance-data';
@@ -28,7 +27,7 @@ const fetchSupportTickets = async (category?: string): Promise<AdminMaintenanceR
   if (!data) return [];
 
   // Transform the data to match our AdminMaintenanceRequest type
-  const formattedRequests: AdminMaintenanceRequest[] = data.map(item => ({
+  const formattedRequests: AdminMaintenanceRequest[] = data.map((item) => ({
     id: item.id,
     title: item.title,
     description: item.description,

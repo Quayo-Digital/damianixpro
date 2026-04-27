@@ -1,4 +1,3 @@
-
 import {
   Table,
   TableBody,
@@ -6,12 +5,12 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
+} from '@/components/ui/table';
 import { UserProfileWithRole } from '@/hooks/useAdminUsers';
-import { Badge } from "@/components/ui/badge";
-import { getRoleDisplay } from "@/contexts/auth/authUtils";
-import { Button } from "@/components/ui/button";
-import { useState } from "react";
+import { Badge } from '@/components/ui/badge';
+import { getRoleDisplay } from '@/contexts/auth/authUtils';
+import { Button } from '@/components/ui/button';
+import { useState } from 'react';
 import { ManageUserRolesSheet } from './ManageUserRolesSheet';
 
 interface RolesTableProps {
@@ -42,16 +41,32 @@ export function RolesTable({ users }: RolesTableProps) {
                 <TableCell>
                   <div className="flex flex-wrap gap-1">
                     {user.user_roles.length > 0 ? (
-                      user.user_roles.map(roleInfo => (
-                        <Badge key={roleInfo.role} variant="secondary">{getRoleDisplay(roleInfo.role)}</Badge>
+                      user.user_roles.map((roleInfo) => (
+                        <Badge
+                          key={roleInfo.role}
+                          variant="secondary"
+                          className="rounded-full border border-border bg-background dark:bg-muted/30"
+                        >
+                          {getRoleDisplay(roleInfo.role)}
+                        </Badge>
                       ))
                     ) : (
-                      <Badge variant="outline">User</Badge>
+                      <Badge
+                        variant="outline"
+                        className="rounded-full border-primary/25 bg-primary/5"
+                      >
+                        User
+                      </Badge>
                     )}
                   </div>
                 </TableCell>
                 <TableCell className="text-right">
-                  <Button variant="outline" size="sm" onClick={() => setSelectedUser(user)}>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="rounded-full border-primary/25 bg-background dark:bg-muted/30"
+                    onClick={() => setSelectedUser(user)}
+                  >
                     Manage Roles
                   </Button>
                 </TableCell>

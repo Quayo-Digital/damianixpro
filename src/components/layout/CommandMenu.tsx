@@ -1,4 +1,3 @@
-
 import {
   CommandDialog,
   CommandEmpty,
@@ -6,71 +5,72 @@ import {
   CommandInput,
   CommandItem,
   CommandList,
-} from "@/components/ui/command";
-import { Button } from "@/components/ui/button";
-import { useNavigate } from "react-router-dom";
-import { Search } from "lucide-react";
-import { useEffect, useState } from "react";
-import { useAuth } from "@/contexts/auth";
+} from '@/components/ui/command';
+import { Button } from '@/components/ui/button';
+import { useNavigate } from 'react-router-dom';
+import { Search } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { useAuthSession } from '@/contexts/auth';
+import { getDefaultDashboardPathForRole } from '@/utils/authRedirect';
+import type { UserRole } from '@/contexts/auth/types';
 
 export function CommandMenu() {
   const [open, setOpen] = useState(false);
   const navigate = useNavigate();
-  const { userRole, isAdmin } = useAuth();
+  const { userRole } = useAuthSession();
 
   useEffect(() => {
     const down = (e: KeyboardEvent) => {
-      if (e.key === "k" && (e.metaKey || e.ctrlKey)) {
+      if (e.key === 'k' && (e.metaKey || e.ctrlKey)) {
         e.preventDefault();
         setOpen((open) => !open);
       }
     };
-    document.addEventListener("keydown", down);
-    return () => document.removeEventListener("keydown", down);
+    document.addEventListener('keydown', down);
+    return () => document.removeEventListener('keydown', down);
   }, []);
 
-  const dashboardPath = userRole === 'tenant' 
-    ? '/tenant/dashboard' 
-    : isAdmin() 
-      ? '/admin/dashboard' 
-      : '/dashboard';
+  const dashboardPath = getDefaultDashboardPathForRole(userRole as UserRole);
 
   const items = [
     {
-      title: "Dashboard",
+      title: 'Dashboard',
       path: dashboardPath,
-      roles: ["admin", "owner", "tenant", "agent", "vendor"],
+      roles: ['admin', 'super_admin', 'owner', 'tenant', 'agent', 'manager', 'vendor'],
     },
     {
-      title: "Properties",
-      path: "/properties",
-      roles: ["admin", "owner", "agent"],
+      title: 'Properties',
+      path: '/properties',
+      roles: ['admin', 'super_admin', 'owner', 'agent', 'manager'],
     },
     {
-      title: "Maintenance",
-      path: "/maintenance",
-      roles: ["admin", "owner", "tenant", "agent", "vendor"],
+      title: 'Short-Lets',
+      path: userRole === 'owner' ? '/owner/shortlets' : '/shortlets',
+      roles: ['admin', 'super_admin', 'owner', 'agent', 'manager'],
     },
     {
-      title: "Tenants",
-      path: "/tenants",
-      roles: ["admin", "owner", "agent"],
+      title: 'Maintenance',
+      path: '/maintenance',
+      roles: ['admin', 'super_admin', 'owner', 'tenant', 'agent', 'manager', 'vendor'],
     },
     {
-      title: "Documents",
-      path: "/documents",
-      roles: ["admin", "owner", "tenant", "agent", "vendor"],
+      title: 'Tenants',
+      path: '/tenant-management',
+      roles: ['admin', 'super_admin', 'owner', 'agent', 'manager'],
     },
     {
-      title: "Settings",
-      path: "/settings",
-      roles: ["admin", "owner", "tenant", "agent", "vendor"],
+      title: 'Documents',
+      path: '/documents',
+      roles: ['admin', 'super_admin', 'owner', 'tenant', 'agent', 'manager', 'vendor'],
+    },
+    {
+      title: 'Settings',
+      path: '/settings',
+      roles: ['admin', 'super_admin', 'owner', 'tenant', 'agent', 'manager', 'vendor'],
     },
   ];
 
-  const filteredItems = userRole 
-    ? items.filter(item => item.roles.includes(userRole))
-    : items;
+  const filteredItems = userRole ? items.filter((item) => item.roles.includes(userRole)) : items;
 
   return (
     <>

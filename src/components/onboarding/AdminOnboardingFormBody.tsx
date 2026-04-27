@@ -1,19 +1,25 @@
-
-import React from "react";
-import { UseFormReturn } from "react-hook-form";
-import { AdminOnboardingFormValues } from "./adminOnboardingSchema";
-import { 
-  Form, 
-  FormField, 
-  FormItem, 
-  FormLabel, 
-  FormControl, 
-  FormMessage 
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Loader2, CheckCircle } from "lucide-react";
+import React from 'react';
+import { UseFormReturn } from 'react-hook-form';
+import { AdminOnboardingFormValues } from './adminOnboardingSchema';
+import {
+  Form,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormControl,
+  FormMessage,
+} from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardContent,
+  CardFooter,
+} from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Loader2, CheckCircle } from 'lucide-react';
 
 interface AdminOnboardingFormBodyProps {
   form: UseFormReturn<AdminOnboardingFormValues>;
@@ -21,7 +27,11 @@ interface AdminOnboardingFormBodyProps {
   isSubmitting: boolean;
 }
 
-export function AdminOnboardingFormBody({ form, onSubmit, isSubmitting }: AdminOnboardingFormBodyProps) {
+export function AdminOnboardingFormBody({
+  form,
+  onSubmit,
+  isSubmitting,
+}: AdminOnboardingFormBodyProps) {
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">

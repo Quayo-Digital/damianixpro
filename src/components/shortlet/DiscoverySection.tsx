@@ -36,28 +36,29 @@ export function DiscoverySection({ userId, location }: DiscoverySectionProps) {
         instant_book: true,
         sort_by: 'popular',
         page: 1,
-        page_size: 6
+        page_size: 6,
       });
       setFeatured(featuredResult.listings);
 
-      // Load popular listings (most bookings)
       const popularResult = await searchListings({
         sort_by: 'popular',
         page: 1,
-        page_size: 6
+        page_size: 6,
       });
       setPopular(popularResult.listings);
 
-      // Load recommended (based on user preferences if available)
       const recommendedResult = await searchListings({
         location: location,
         sort_by: 'popular',
         page: 1,
-        page_size: 6
+        page_size: 6,
       });
       setRecommended(recommendedResult.listings);
     } catch (error) {
       console.error('Error loading discovery data:', error);
+      setFeatured([]);
+      setPopular([]);
+      setRecommended([]);
     } finally {
       setIsLoading(false);
     }
@@ -65,7 +66,7 @@ export function DiscoverySection({ userId, location }: DiscoverySectionProps) {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center h-64">
+      <div className="flex h-64 items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
       </div>
     );
@@ -76,9 +77,9 @@ export function DiscoverySection({ userId, location }: DiscoverySectionProps) {
       {/* Featured Listings */}
       {featured.length > 0 && (
         <section>
-          <div className="flex items-center justify-between mb-6">
+          <div className="mb-6 flex items-center justify-between">
             <div>
-              <h2 className="text-2xl font-bold flex items-center gap-2">
+              <h2 className="flex items-center gap-2 text-2xl font-bold">
                 <Sparkles className="h-6 w-6 text-primary" />
                 Featured Listings
               </h2>
@@ -88,12 +89,12 @@ export function DiscoverySection({ userId, location }: DiscoverySectionProps) {
               View All
             </Button>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {featured.map(listing => (
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+            {featured.map((listing) => (
               <ShortletListingCard
-                key={listing.id}
+                key={String(listing.id)}
                 listing={listing}
-                onView={(id) => navigate(`/shortlets/${id}`)}
+                onView={(id) => navigate(`/shortlets/${String(id)}`)}
               />
             ))}
           </div>
@@ -103,9 +104,9 @@ export function DiscoverySection({ userId, location }: DiscoverySectionProps) {
       {/* Popular Listings */}
       {popular.length > 0 && (
         <section>
-          <div className="flex items-center justify-between mb-6">
+          <div className="mb-6 flex items-center justify-between">
             <div>
-              <h2 className="text-2xl font-bold flex items-center gap-2">
+              <h2 className="flex items-center gap-2 text-2xl font-bold">
                 <TrendingUp className="h-6 w-6 text-primary" />
                 Popular Right Now
               </h2>
@@ -115,12 +116,12 @@ export function DiscoverySection({ userId, location }: DiscoverySectionProps) {
               View All
             </Button>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {popular.map(listing => (
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+            {popular.map((listing) => (
               <ShortletListingCard
-                key={listing.id}
+                key={String(listing.id)}
                 listing={listing}
-                onView={(id) => navigate(`/shortlets/${id}`)}
+                onView={(id) => navigate(`/shortlets/${String(id)}`)}
               />
             ))}
           </div>
@@ -130,9 +131,9 @@ export function DiscoverySection({ userId, location }: DiscoverySectionProps) {
       {/* Recommended for You */}
       {recommended.length > 0 && userId && (
         <section>
-          <div className="flex items-center justify-between mb-6">
+          <div className="mb-6 flex items-center justify-between">
             <div>
-              <h2 className="text-2xl font-bold flex items-center gap-2">
+              <h2 className="flex items-center gap-2 text-2xl font-bold">
                 <Star className="h-6 w-6 text-primary" />
                 Recommended for You
               </h2>
@@ -144,12 +145,12 @@ export function DiscoverySection({ userId, location }: DiscoverySectionProps) {
               View All
             </Button>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {recommended.map(listing => (
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+            {recommended.map((listing) => (
               <ShortletListingCard
-                key={listing.id}
+                key={String(listing.id)}
                 listing={listing}
-                onView={(id) => navigate(`/shortlets/${id}`)}
+                onView={(id) => navigate(`/shortlets/${String(id)}`)}
               />
             ))}
           </div>
@@ -159,9 +160,9 @@ export function DiscoverySection({ userId, location }: DiscoverySectionProps) {
       {/* Location-based */}
       {location && (
         <section>
-          <div className="flex items-center justify-between mb-6">
+          <div className="mb-6 flex items-center justify-between">
             <div>
-              <h2 className="text-2xl font-bold flex items-center gap-2">
+              <h2 className="flex items-center gap-2 text-2xl font-bold">
                 <MapPin className="h-6 w-6 text-primary" />
                 Explore {location}
               </h2>
@@ -171,12 +172,12 @@ export function DiscoverySection({ userId, location }: DiscoverySectionProps) {
               View All
             </Button>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {recommended.slice(0, 6).map(listing => (
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+            {recommended.slice(0, 6).map((listing) => (
               <ShortletListingCard
-                key={listing.id}
+                key={String(listing.id)}
                 listing={listing}
-                onView={(id) => navigate(`/shortlets/${id}`)}
+                onView={(id) => navigate(`/shortlets/${String(id)}`)}
               />
             ))}
           </div>
@@ -185,4 +186,3 @@ export function DiscoverySection({ userId, location }: DiscoverySectionProps) {
     </div>
   );
 }
-

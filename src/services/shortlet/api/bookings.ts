@@ -4,18 +4,20 @@
  */
 
 import { supabase } from '@/integrations/supabase/client';
-import { 
-  Booking, 
-  bookingSchema, 
-  CreateBookingRequest, 
+import { logger } from '@/utils/logger';
+import {
+  Booking,
+  bookingSchema,
+  CreateBookingRequest,
   CreateBookingResponse,
-  BookingStatus 
+  BookingStatus,
 } from '../types';
 import { checkAvailability } from '../utils/availabilityChecker';
 import { calculatePriceBreakdown } from '../utils/priceCalculator';
 import { getListingById } from './listings';
 import { initializeBookingPayment } from './transactions';
 import { getOrCreateWallet } from './wallets';
+import { profileForUi } from '@/lib/profileDisplayName';
 
 /**
  * Create a new booking
@@ -45,7 +47,7 @@ export async function createBooking(
     listing_id: request.listing_id,
     checkin_date: request.checkin_date,
     checkout_date: request.checkout_date,
-    existing_bookings: existingBookings
+    existing_bookings: existingBookings,
   });
 
   if (!availabilityResult.available) {
@@ -57,7 +59,7 @@ export async function createBooking(
     listing,
     checkin_date: request.checkin_date,
     checkout_date: request.checkout_date,
-    guests_count: request.guests_count
+    guests_count: request.guests_count,
   });
 
   // Calculate nights
@@ -85,22 +87,24 @@ export async function createBooking(
   // Create booking
   const { data: booking, error } = await supabase
     .from('bookings')
-    .insert([{
-      listing_id: request.listing_id,
-      guest_id: guestId,
-      owner_id: property.owner_id,
-      status,
-      checkin_date: request.checkin_date,
-      checkout_date: request.checkout_date,
-      nights,
-      guests_count: request.guests_count,
-      total_amount: priceBreakdown.total,
-      payout_amount: priceBreakdown.total - priceBreakdown.service_fee,
-      commission_amount: priceBreakdown.service_fee,
-      currency: priceBreakdown.currency,
-      deposit_amount: listing.security_deposit,
-      cancellation_policy: listing.cancellation_policy
-    }])
+    .insert([
+      {
+        listing_id: request.listing_id,
+        guest_id: guestId,
+        owner_id: property.owner_id,
+        status,
+        checkin_date: request.checkin_date,
+        checkout_date: request.checkout_date,
+        nights,
+        guests_count: request.guests_count,
+        total_amount: priceBreakdown.total,
+        payout_amount: priceBreakdown.total - priceBreakdown.service_fee,
+        commission_amount: priceBreakdown.service_fee,
+        currency: priceBreakdown.currency,
+        deposit_amount: listing.security_deposit,
+        cancellation_policy: listing.cancellation_policy,
+      },
+    ])
     .select()
     .single();
 
@@ -118,10 +122,11 @@ export async function createBooking(
         .single();
 
       if (guestProfile?.email) {
-        const callbackUrl = typeof window !== 'undefined' 
-          ? `${window.location.origin}/shortlets/booking/${booking.id}/payment/callback`
-          : undefined;
-        
+        const callbackUrl =
+          typeof window !== 'undefined'
+            ? `${window.location.origin}/shortlets/booking/${booking.id}/payment/callback`
+            : undefined;
+
         const paymentResult = await initializeBookingPayment(
           booking.id,
           guestProfile.email,
@@ -131,7 +136,7 @@ export async function createBooking(
         payment_url = paymentResult.payment_url;
       }
     } catch (paymentError) {
-      console.error('Payment initialization error:', paymentError);
+      logger.error('Payment initialization error', paymentError);
       // Don't fail booking creation if payment init fails
     }
   }
@@ -141,7 +146,7 @@ export async function createBooking(
     status: booking.status as BookingStatus,
     amount_due: priceBreakdown.total + priceBreakdown.security_deposit,
     payment_url,
-    payment_reference: booking.payment_reference
+    payment_reference: booking.payment_reference,
   };
 }
 
@@ -151,7 +156,8 @@ export async function createBooking(
 export async function getBookingById(bookingId: string): Promise<Booking | null> {
   const { data, error } = await supabase
     .from('bookings')
-    .select(`
+    .select(
+      `
       *,
       listing:listings (
         id,
@@ -168,20 +174,9 @@ export async function getBookingById(bookingId: string): Promise<Booking | null>
           location,
           imageUrl
         )
-      ),
-      guest:profiles!bookings_guest_id_fkey (
-        id,
-        name,
-        email,
-        phone
-      ),
-      owner:profiles!bookings_owner_id_fkey (
-        id,
-        name,
-        email,
-        phone
       )
-    `)
+    `
+    )
     .eq('id', bookingId)
     .single();
 
@@ -190,7 +185,28 @@ export async function getBookingById(bookingId: string): Promise<Booking | null>
     throw error;
   }
 
-  return data as Booking;
+  if (!data) return null;
+
+  // Fetch profiles separately since bookings references auth.users, not profiles directly
+  // Handle errors gracefully in case of RLS restrictions
+  const [guestResult, ownerResult] = await Promise.all([
+    supabase
+      .from('profiles')
+      .select('id, first_name, last_name, email, phone')
+      .eq('id', data.guest_id)
+      .single(),
+    supabase
+      .from('profiles')
+      .select('id, first_name, last_name, email, phone')
+      .eq('id', data.owner_id)
+      .single(),
+  ]);
+
+  return {
+    ...data,
+    guest: guestResult.error || !guestResult.data ? null : profileForUi(guestResult.data),
+    owner: ownerResult.error || !ownerResult.data ? null : profileForUi(ownerResult.data),
+  } as Booking;
 }
 
 /**
@@ -199,7 +215,8 @@ export async function getBookingById(bookingId: string): Promise<Booking | null>
 export async function getBookingsByListing(listingId: string): Promise<Booking[]> {
   const { data, error } = await supabase
     .from('bookings')
-    .select(`
+    .select(
+      `
       *,
       listing:listings (
         id,
@@ -211,26 +228,41 @@ export async function getBookingsByListing(listingId: string): Promise<Booking[]
           location,
           imageUrl
         )
-      ),
-      guest:profiles!bookings_guest_id_fkey (
-        id,
-        name,
-        email,
-        phone
-      ),
-      owner:profiles!bookings_owner_id_fkey (
-        id,
-        name,
-        email,
-        phone
       )
-    `)
+    `
+    )
     .eq('listing_id', listingId)
     .in('status', ['pending', 'confirmed', 'completed'])
     .order('checkin_date', { ascending: true });
 
   if (error) throw error;
-  return data as Booking[];
+
+  // Fetch profiles separately since bookings references auth.users, not profiles directly
+  // Handle errors gracefully in case of RLS restrictions
+  const bookingsWithProfiles = await Promise.all(
+    (data || []).map(async (booking: any) => {
+      const [guestResult, ownerResult] = await Promise.all([
+        supabase
+          .from('profiles')
+          .select('id, first_name, last_name, email, phone')
+          .eq('id', booking.guest_id)
+          .single(),
+        supabase
+          .from('profiles')
+          .select('id, first_name, last_name, email, phone')
+          .eq('id', booking.owner_id)
+          .single(),
+      ]);
+
+      return {
+        ...booking,
+        guest: guestResult.error || !guestResult.data ? null : profileForUi(guestResult.data),
+        owner: ownerResult.error || !ownerResult.data ? null : profileForUi(ownerResult.data),
+      };
+    })
+  );
+
+  return bookingsWithProfiles as Booking[];
 }
 
 /**
@@ -239,10 +271,12 @@ export async function getBookingsByListing(listingId: string): Promise<Booking[]
 export async function getGuestBookings(guestId: string): Promise<Booking[]> {
   const { data, error } = await supabase
     .from('bookings')
-    .select(`
+    .select(
+      `
       *,
       listing:listings (*)
-    `)
+    `
+    )
     .eq('guest_id', guestId)
     .order('checkin_date', { ascending: false });
 
@@ -259,7 +293,8 @@ export async function getBookingsByOwner(
 ): Promise<Booking[]> {
   let query = supabase
     .from('bookings')
-    .select(`
+    .select(
+      `
       *,
       listing:listings (
         id,
@@ -271,14 +306,9 @@ export async function getBookingsByOwner(
           location,
           imageUrl
         )
-      ),
-      guest:profiles!bookings_guest_id_fkey (
-        id,
-        name,
-        email,
-        phone
       )
-    `)
+    `
+    )
     .eq('owner_id', ownerId);
 
   if (status) {
@@ -288,7 +318,25 @@ export async function getBookingsByOwner(
   const { data, error } = await query.order('checkin_date', { ascending: false });
 
   if (error) throw error;
-  return data as Booking[];
+
+  // Fetch profiles separately since bookings references auth.users, not profiles directly
+  // Handle errors gracefully in case of RLS restrictions
+  const bookingsWithProfiles = await Promise.all(
+    (data || []).map(async (booking: any) => {
+      const guestResult = await supabase
+        .from('profiles')
+        .select('id, first_name, last_name, email, phone')
+        .eq('id', booking.guest_id)
+        .single();
+
+      return {
+        ...booking,
+        guest: guestResult.error || !guestResult.data ? null : profileForUi(guestResult.data),
+      };
+    })
+  );
+
+  return bookingsWithProfiles as Booking[];
 }
 
 /**
@@ -305,7 +353,8 @@ export async function getBookingsByGuest(
 ): Promise<Booking[]> {
   let query = supabase
     .from('bookings')
-    .select(`
+    .select(
+      `
       *,
       listing:listings (
         id,
@@ -317,14 +366,9 @@ export async function getBookingsByGuest(
           location,
           imageUrl
         )
-      ),
-      owner:profiles!bookings_owner_id_fkey (
-        id,
-        name,
-        email,
-        phone
       )
-    `)
+    `
+    )
     .eq('guest_id', guestId);
 
   if (status) {
@@ -334,7 +378,24 @@ export async function getBookingsByGuest(
   const { data, error } = await query.order('checkin_date', { ascending: false });
 
   if (error) throw error;
-  return data as Booking[];
+
+  // Fetch profiles separately - handle errors gracefully in case of RLS restrictions
+  const bookingsWithProfiles = await Promise.all(
+    (data || []).map(async (booking: any) => {
+      const ownerResult = await supabase
+        .from('profiles')
+        .select('id, first_name, last_name, email, phone')
+        .eq('id', booking.owner_id)
+        .single();
+
+      return {
+        ...booking,
+        owner: ownerResult.error || !ownerResult.data ? null : profileForUi(ownerResult.data),
+      };
+    })
+  );
+
+  return bookingsWithProfiles as Booking[];
 }
 
 /**
@@ -347,7 +408,7 @@ export async function updateBookingStatus(
 ): Promise<Booking> {
   const updateData: any = {
     status,
-    updated_at: new Date().toISOString()
+    updated_at: new Date().toISOString(),
   };
 
   if (status === BookingStatus.CANCELLED) {
@@ -395,4 +456,3 @@ export async function cancelBooking(bookingId: string, reason?: string): Promise
 export async function completeBooking(bookingId: string): Promise<Booking> {
   return updateBookingStatus(bookingId, BookingStatus.COMPLETED);
 }
-

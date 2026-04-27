@@ -1,11 +1,10 @@
-
 import { useState, useEffect } from 'react';
 import {
-  Select, 
-  SelectContent, 
-  SelectItem, 
-  SelectTrigger, 
-  SelectValue 
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
 } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
 import { Plus } from 'lucide-react';
@@ -21,7 +20,7 @@ interface TemplateFiltersProps {
 export function TemplateFilters({ filter, setFilter, onCreateNew }: TemplateFiltersProps) {
   // In a full implementation, we could fetch categories from Supabase
   // This would make the filters dynamic based on what's in the database
-  
+
   /* Example implementation with Supabase:
   const [categories, setCategories] = useState<string[]>(['all']);
   
@@ -48,7 +47,7 @@ export function TemplateFilters({ filter, setFilter, onCreateNew }: TemplateFilt
   */
 
   return (
-    <div className="flex justify-between items-center">
+    <div className="flex items-center justify-between">
       <Select value={filter} onValueChange={(value) => setFilter(value as any)}>
         <SelectTrigger className="w-[180px]">
           <SelectValue placeholder="Filter by category" />
@@ -61,7 +60,7 @@ export function TemplateFilters({ filter, setFilter, onCreateNew }: TemplateFilt
           <SelectItem value="general">General</SelectItem>
         </SelectContent>
       </Select>
-      
+
       <Button onClick={onCreateNew}>
         <Plus className="mr-2 h-4 w-4" />
         New Template

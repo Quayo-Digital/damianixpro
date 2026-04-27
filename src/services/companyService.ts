@@ -1,12 +1,12 @@
 import { supabase } from '@/integrations/supabase/client';
-import { 
-  CompanyProfile, 
-  CompanyTeamMember, 
-  CompanyDocument, 
+import {
+  CompanyProfile,
+  CompanyTeamMember,
+  CompanyDocument,
   UserCompanyProfile,
   CompanyProfileFormValues,
   TeamMemberFormValues,
-  CompanyDocumentFormValues
+  CompanyDocumentFormValues,
 } from '@/types/company';
 
 export class CompanyService {
@@ -18,7 +18,7 @@ export class CompanyService {
         ...data,
         user_id: (await supabase.auth.getUser()).data.user?.id,
         created_by: (await supabase.auth.getUser()).data.user?.id,
-        updated_by: (await supabase.auth.getUser()).data.user?.id
+        updated_by: (await supabase.auth.getUser()).data.user?.id,
       })
       .select()
       .single();
@@ -27,12 +27,15 @@ export class CompanyService {
     return result;
   }
 
-  static async updateCompanyProfile(id: string, data: Partial<CompanyProfileFormValues>): Promise<CompanyProfile> {
+  static async updateCompanyProfile(
+    id: string,
+    data: Partial<CompanyProfileFormValues>
+  ): Promise<CompanyProfile> {
     const { data: result, error } = await supabase
       .from('company_profiles')
       .update({
         ...data,
-        updated_by: (await supabase.auth.getUser()).data.user?.id
+        updated_by: (await supabase.auth.getUser()).data.user?.id,
       })
       .eq('id', id)
       .select()
@@ -98,23 +101,24 @@ export class CompanyService {
   }
 
   static async deleteCompanyProfile(id: string): Promise<void> {
-    const { error } = await supabase
-      .from('company_profiles')
-      .delete()
-      .eq('id', id);
+    const { error } = await supabase.from('company_profiles').delete().eq('id', id);
 
     if (error) throw error;
   }
 
   // Team Member Management
-  static async addTeamMember(companyId: string, data: TeamMemberFormValues): Promise<CompanyTeamMember> {
+  static async addTeamMember(
+    companyId: string,
+    data: TeamMemberFormValues
+  ): Promise<CompanyTeamMember> {
     const { data: result, error } = await supabase
       .from('company_team_members')
       .insert({
         company_id: companyId,
-        ...data
+        ...data,
       })
-      .select(`
+      .select(
+        `
         *,
         user:user_id (
           id,
@@ -125,19 +129,24 @@ export class CompanyService {
             avatar_url
           )
         )
-      `)
+      `
+      )
       .single();
 
     if (error) throw error;
     return result;
   }
 
-  static async updateTeamMember(id: string, data: Partial<TeamMemberFormValues>): Promise<CompanyTeamMember> {
+  static async updateTeamMember(
+    id: string,
+    data: Partial<TeamMemberFormValues>
+  ): Promise<CompanyTeamMember> {
     const { data: result, error } = await supabase
       .from('company_team_members')
       .update(data)
       .eq('id', id)
-      .select(`
+      .select(
+        `
         *,
         user:user_id (
           id,
@@ -148,7 +157,8 @@ export class CompanyService {
             avatar_url
           )
         )
-      `)
+      `
+      )
       .single();
 
     if (error) throw error;
@@ -158,7 +168,8 @@ export class CompanyService {
   static async getTeamMembers(companyId: string): Promise<CompanyTeamMember[]> {
     const { data, error } = await supabase
       .from('company_team_members')
-      .select(`
+      .select(
+        `
         *,
         user:user_id (
           id,
@@ -169,7 +180,8 @@ export class CompanyService {
             avatar_url
           )
         )
-      `)
+      `
+      )
       .eq('company_id', companyId)
       .order('created_at', { ascending: false });
 
@@ -178,20 +190,20 @@ export class CompanyService {
   }
 
   static async removeTeamMember(id: string): Promise<void> {
-    const { error } = await supabase
-      .from('company_team_members')
-      .delete()
-      .eq('id', id);
+    const { error } = await supabase.from('company_team_members').delete().eq('id', id);
 
     if (error) throw error;
   }
 
-  static async updateTeamMemberStatus(id: string, status: 'ACTIVE' | 'INACTIVE' | 'SUSPENDED'): Promise<void> {
+  static async updateTeamMemberStatus(
+    id: string,
+    status: 'ACTIVE' | 'INACTIVE' | 'SUSPENDED'
+  ): Promise<void> {
     const { error } = await supabase
       .from('company_team_members')
-      .update({ 
+      .update({
         status,
-        leave_date: status === 'INACTIVE' ? new Date().toISOString() : null
+        leave_date: status === 'INACTIVE' ? new Date().toISOString() : null,
       })
       .eq('id', id);
 
@@ -199,13 +211,16 @@ export class CompanyService {
   }
 
   // Document Management
-  static async uploadDocument(companyId: string, data: CompanyDocumentFormValues): Promise<CompanyDocument> {
+  static async uploadDocument(
+    companyId: string,
+    data: CompanyDocumentFormValues
+  ): Promise<CompanyDocument> {
     const { data: result, error } = await supabase
       .from('company_documents')
       .insert({
         company_id: companyId,
         ...data,
-        uploaded_by: (await supabase.auth.getUser()).data.user?.id
+        uploaded_by: (await supabase.auth.getUser()).data.user?.id,
       })
       .select()
       .single();
@@ -214,7 +229,10 @@ export class CompanyService {
     return result;
   }
 
-  static async updateDocument(id: string, data: Partial<CompanyDocumentFormValues>): Promise<CompanyDocument> {
+  static async updateDocument(
+    id: string,
+    data: Partial<CompanyDocumentFormValues>
+  ): Promise<CompanyDocument> {
     const { data: result, error } = await supabase
       .from('company_documents')
       .update(data)
@@ -238,17 +256,14 @@ export class CompanyService {
   }
 
   static async deleteDocument(id: string): Promise<void> {
-    const { error } = await supabase
-      .from('company_documents')
-      .delete()
-      .eq('id', id);
+    const { error } = await supabase.from('company_documents').delete().eq('id', id);
 
     if (error) throw error;
   }
 
   static async verifyDocument(
-    id: string, 
-    status: 'VERIFIED' | 'REJECTED', 
+    id: string,
+    status: 'VERIFIED' | 'REJECTED',
     notes?: string
   ): Promise<CompanyDocument> {
     const { data: result, error } = await supabase
@@ -257,7 +272,7 @@ export class CompanyService {
         verification_status: status,
         verification_date: new Date().toISOString(),
         verified_by: (await supabase.auth.getUser()).data.user?.id,
-        verification_notes: notes
+        verification_notes: notes,
       })
       .eq('id', id)
       .select()
@@ -269,8 +284,8 @@ export class CompanyService {
 
   // Company Verification
   static async verifyCompany(
-    id: string, 
-    status: 'VERIFIED' | 'REJECTED', 
+    id: string,
+    status: 'VERIFIED' | 'REJECTED',
     notes?: string
   ): Promise<CompanyProfile> {
     const { data: result, error } = await supabase
@@ -279,7 +294,7 @@ export class CompanyService {
         verification_status: status,
         verification_date: new Date().toISOString(),
         verified_by: (await supabase.auth.getUser()).data.user?.id,
-        verification_notes: notes
+        verification_notes: notes,
       })
       .eq('id', id)
       .select()
@@ -295,15 +310,11 @@ export class CompanyService {
     const fileName = `${Math.random()}.${fileExt}`;
     const filePath = `${path}/${fileName}`;
 
-    const { error: uploadError } = await supabase.storage
-      .from(bucket)
-      .upload(filePath, file);
+    const { error: uploadError } = await supabase.storage.from(bucket).upload(filePath, file);
 
     if (uploadError) throw uploadError;
 
-    const { data } = supabase.storage
-      .from(bucket)
-      .getPublicUrl(filePath);
+    const { data } = supabase.storage.from(bucket).getPublicUrl(filePath);
 
     return data.publicUrl;
   }
@@ -325,16 +336,19 @@ export class CompanyService {
       totalTeamMembers: 0,
       documentsCount: 0,
       verificationStatus: 'PENDING',
-      monthlyRevenue: 0
+      monthlyRevenue: 0,
     };
   }
 
   // Search and Discovery
-  static async searchCompanies(query: string, filters?: {
-    company_type?: string;
-    state?: string;
-    verification_status?: string;
-  }): Promise<CompanyProfile[]> {
+  static async searchCompanies(
+    query: string,
+    filters?: {
+      company_type?: string;
+      state?: string;
+      verification_status?: string;
+    }
+  ): Promise<CompanyProfile[]> {
     let searchQuery = supabase
       .from('company_profiles')
       .select('*')
@@ -359,14 +373,14 @@ export class CompanyService {
 
   // Notification Management
   static async updateNotificationPreferences(
-    companyId: string, 
+    companyId: string,
     preferences: Record<string, boolean>
   ): Promise<void> {
     const { error } = await supabase
       .from('company_profiles')
       .update({
         notification_preferences: preferences,
-        updated_by: (await supabase.auth.getUser()).data.user?.id
+        updated_by: (await supabase.auth.getUser()).data.user?.id,
       })
       .eq('id', companyId);
 
@@ -375,14 +389,14 @@ export class CompanyService {
 
   // Business Hours Management
   static async updateBusinessHours(
-    companyId: string, 
+    companyId: string,
     businessHours: Record<string, any>
   ): Promise<void> {
     const { error } = await supabase
       .from('company_profiles')
       .update({
         business_hours: businessHours,
-        updated_by: (await supabase.auth.getUser()).data.user?.id
+        updated_by: (await supabase.auth.getUser()).data.user?.id,
       })
       .eq('id', companyId);
 

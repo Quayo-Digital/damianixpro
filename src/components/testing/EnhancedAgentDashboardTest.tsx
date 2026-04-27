@@ -4,11 +4,11 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { 
-  CheckCircle, 
-  XCircle, 
-  Clock, 
-  Play, 
+import {
+  CheckCircle,
+  XCircle,
+  Clock,
+  Play,
   BarChart3,
   Users,
   Home,
@@ -16,7 +16,7 @@ import {
   Target,
   Award,
   AlertTriangle,
-  Loader2
+  Loader2,
 } from 'lucide-react';
 
 interface TestResult {
@@ -40,7 +40,7 @@ const EnhancedAgentDashboardTest: React.FC = () => {
     { name: 'Market Intelligence Features', status: 'pending' },
     { name: 'Nigerian Localization', status: 'pending' },
     { name: 'TypeScript Compliance', status: 'pending' },
-    { name: 'UI/UX Components', status: 'pending' }
+    { name: 'UI/UX Components', status: 'pending' },
   ]);
 
   const [isRunning, setIsRunning] = useState(false);
@@ -48,21 +48,19 @@ const EnhancedAgentDashboardTest: React.FC = () => {
   const [overallStatus, setOverallStatus] = useState<'idle' | 'running' | 'completed'>('idle');
 
   const updateTest = (index: number, updates: Partial<TestResult>) => {
-    setTests(prev => prev.map((test, i) => 
-      i === index ? { ...test, ...updates } : test
-    ));
+    setTests((prev) => prev.map((test, i) => (i === index ? { ...test, ...updates } : test)));
   };
 
   const runTest = async (testIndex: number): Promise<void> => {
     const test = tests[testIndex];
     const startTime = Date.now();
-    
+
     updateTest(testIndex, { status: 'running' });
-    
+
     try {
       // Simulate test execution with actual checks
-      await new Promise(resolve => setTimeout(resolve, 500 + Math.random() * 1000));
-      
+      await new Promise((resolve) => setTimeout(resolve, 500 + Math.random() * 1000));
+
       let passed = false;
       let message = '';
       let details = '';
@@ -72,12 +70,16 @@ const EnhancedAgentDashboardTest: React.FC = () => {
           try {
             // Check if the hook file exists and exports are correct
             const hookModule = await import('@/hooks/useEnhancedAgentData');
-            passed = !!(hookModule.useEnhancedAgentData && 
-                       hookModule.AgentLead && 
-                       hookModule.AgentProperty && 
-                       hookModule.AgentClient);
+            passed = !!(
+              hookModule.useEnhancedAgentData &&
+              hookModule.AgentLead &&
+              hookModule.AgentProperty &&
+              hookModule.AgentClient
+            );
             message = passed ? 'Hook and types exported successfully' : 'Missing hook exports';
-            details = passed ? 'useEnhancedAgentData hook with all TypeScript interfaces found' : 'Hook or type exports missing';
+            details = passed
+              ? 'useEnhancedAgentData hook with all TypeScript interfaces found'
+              : 'Hook or type exports missing';
           } catch (error) {
             passed = false;
             message = 'Hook file not found or import error';
@@ -91,10 +93,12 @@ const EnhancedAgentDashboardTest: React.FC = () => {
             const overviewModule = await import('@/components/agent/AgentDashboardOverview');
             const leadModule = await import('@/components/agent/AgentLeadManagement');
             const analyticsModule = await import('@/components/agent/AgentPerformanceAnalytics');
-            
+
             passed = !!(overviewModule.default && leadModule.default && analyticsModule.default);
             message = passed ? 'All agent dashboard components found' : 'Some components missing';
-            details = passed ? 'AgentDashboardOverview, AgentLeadManagement, and AgentPerformanceAnalytics components exist' : 'One or more components not found';
+            details = passed
+              ? 'AgentDashboardOverview, AgentLeadManagement, and AgentPerformanceAnalytics components exist'
+              : 'One or more components not found';
           } catch (error) {
             passed = false;
             message = 'Component import error';
@@ -108,7 +112,9 @@ const EnhancedAgentDashboardTest: React.FC = () => {
             const dashboardModule = await import('@/pages/EnhancedAgentDashboardPage');
             passed = !!dashboardModule.default;
             message = passed ? 'Enhanced Agent Dashboard Page found' : 'Dashboard page missing';
-            details = passed ? 'EnhancedAgentDashboardPage exists and should be integrated in routing' : 'Main dashboard page not found';
+            details = passed
+              ? 'EnhancedAgentDashboardPage exists and should be integrated in routing'
+              : 'Main dashboard page not found';
           } catch (error) {
             passed = false;
             message = 'Dashboard page import error';
@@ -120,63 +126,72 @@ const EnhancedAgentDashboardTest: React.FC = () => {
           // Test lead management functionality
           passed = true; // Assume passed for comprehensive mock data
           message = 'Lead management system implemented';
-          details = 'Lead creation, status updates, filtering, and conversion tracking features available';
+          details =
+            'Lead creation, status updates, filtering, and conversion tracking features available';
           break;
 
         case 'Performance Analytics':
           // Test analytics features
           passed = true; // Assume passed for comprehensive analytics
           message = 'Performance analytics implemented';
-          details = 'Commission tracking, sales performance, client metrics, and market intelligence features available';
+          details =
+            'Commission tracking, sales performance, client metrics, and market intelligence features available';
           break;
 
         case 'Agent Profile Management':
           // Test profile management
           passed = true; // Assume passed for profile features
           message = 'Agent profile management implemented';
-          details = 'Profile display, specialization, service areas, and performance metrics available';
+          details =
+            'Profile display, specialization, service areas, and performance metrics available';
           break;
 
         case 'Commission Tracking':
           // Test commission tracking
           passed = true; // Assume passed for commission features
           message = 'Commission tracking implemented';
-          details = 'Total earnings, monthly earnings, projected annual, and average commission tracking available';
+          details =
+            'Total earnings, monthly earnings, projected annual, and average commission tracking available';
           break;
 
         case 'Client Relationship Management':
           // Test CRM features
           passed = true; // Assume passed for CRM features
           message = 'Client relationship management implemented';
-          details = 'Client tracking, satisfaction scores, retention rates, and referral tracking available';
+          details =
+            'Client tracking, satisfaction scores, retention rates, and referral tracking available';
           break;
 
         case 'Market Intelligence Features':
           // Test market intelligence
           passed = true; // Assume passed for market features
           message = 'Market intelligence implemented';
-          details = 'Market trends, price accuracy, demand levels, and area-specific analytics available';
+          details =
+            'Market trends, price accuracy, demand levels, and area-specific analytics available';
           break;
 
         case 'Nigerian Localization':
           // Test Nigerian localization
           passed = true; // Assume passed for localization
           message = 'Nigerian localization implemented';
-          details = 'Naira currency formatting, Nigerian locations, and local business context integrated';
+          details =
+            'Naira currency formatting, Nigerian locations, and local business context integrated';
           break;
 
         case 'TypeScript Compliance':
           // Test TypeScript compliance
           passed = true; // Assume passed for TypeScript
           message = 'TypeScript compliance verified';
-          details = 'All interfaces, types, and components properly typed with no major TypeScript errors';
+          details =
+            'All interfaces, types, and components properly typed with no major TypeScript errors';
           break;
 
         case 'UI/UX Components':
           // Test UI/UX components
           passed = true; // Assume passed for UI components
           message = 'UI/UX components implemented';
-          details = 'Modern shadcn/ui components, responsive design, loading states, and professional styling';
+          details =
+            'Modern shadcn/ui components, responsive design, loading states, and professional styling';
           break;
 
         default:
@@ -190,16 +205,15 @@ const EnhancedAgentDashboardTest: React.FC = () => {
         status: passed ? 'passed' : 'failed',
         message,
         details,
-        duration
+        duration,
       });
-
     } catch (error) {
       const duration = Date.now() - startTime;
       updateTest(testIndex, {
         status: 'failed',
         message: 'Test execution error',
         details: `Error: ${error}`,
-        duration
+        duration,
       });
     }
   };
@@ -207,12 +221,12 @@ const EnhancedAgentDashboardTest: React.FC = () => {
   const runAllTests = async () => {
     setIsRunning(true);
     setOverallStatus('running');
-    
+
     for (let i = 0; i < tests.length; i++) {
       setCurrentTestIndex(i);
       await runTest(i);
     }
-    
+
     setCurrentTestIndex(-1);
     setIsRunning(false);
     setOverallStatus('completed');
@@ -225,7 +239,7 @@ const EnhancedAgentDashboardTest: React.FC = () => {
       case 'failed':
         return <XCircle className="h-5 w-5 text-red-600" />;
       case 'running':
-        return <Loader2 className="h-5 w-5 text-blue-600 animate-spin" />;
+        return <Loader2 className="h-5 w-5 animate-spin text-blue-600" />;
       default:
         return <Clock className="h-5 w-5 text-gray-400" />;
     }
@@ -244,8 +258,8 @@ const EnhancedAgentDashboardTest: React.FC = () => {
     }
   };
 
-  const passedTests = tests.filter(t => t.status === 'passed').length;
-  const failedTests = tests.filter(t => t.status === 'failed').length;
+  const passedTests = tests.filter((t) => t.status === 'passed').length;
+  const failedTests = tests.filter((t) => t.status === 'failed').length;
   const totalTests = tests.length;
 
   return (
@@ -254,13 +268,11 @@ const EnhancedAgentDashboardTest: React.FC = () => {
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-2xl font-bold text-gray-900">Enhanced Agent Dashboard Test Suite</h2>
-          <p className="text-gray-600">Comprehensive testing for agent business management features</p>
+          <p className="text-gray-600">
+            Comprehensive testing for agent business management features
+          </p>
         </div>
-        <Button 
-          onClick={runAllTests} 
-          disabled={isRunning}
-          className="flex items-center space-x-2"
-        >
+        <Button onClick={runAllTests} disabled={isRunning} className="flex items-center space-x-2">
           {isRunning ? (
             <>
               <Loader2 className="h-4 w-4 animate-spin" />
@@ -285,7 +297,7 @@ const EnhancedAgentDashboardTest: React.FC = () => {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+            <div className="mb-4 grid grid-cols-1 gap-4 md:grid-cols-3">
               <div className="text-center">
                 <div className="text-2xl font-bold text-green-600">{passedTests}</div>
                 <p className="text-sm text-gray-600">Passed</p>
@@ -300,42 +312,48 @@ const EnhancedAgentDashboardTest: React.FC = () => {
               </div>
             </div>
             <Progress value={(passedTests / totalTests) * 100} className="h-2" />
-            <p className="text-sm text-gray-600 mt-2 text-center">
-              {passedTests}/{totalTests} tests passed ({((passedTests / totalTests) * 100).toFixed(1)}%)
+            <p className="mt-2 text-center text-sm text-gray-600">
+              {passedTests}/{totalTests} tests passed (
+              {((passedTests / totalTests) * 100).toFixed(1)}%)
             </p>
           </CardContent>
         </Card>
       )}
 
       {/* Test Results */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
         {tests.map((test, index) => (
-          <Card key={index} className={`${currentTestIndex === index ? 'ring-2 ring-blue-500' : ''}`}>
+          <Card
+            key={index}
+            className={`${currentTestIndex === index ? 'ring-2 ring-blue-500' : ''}`}
+          >
             <CardContent className="p-4">
               <div className="flex items-start justify-between">
-                <div className="flex items-start space-x-3 flex-1">
+                <div className="flex flex-1 items-start space-x-3">
                   {getStatusIcon(test.status)}
                   <div className="flex-1">
                     <h4 className="font-medium text-gray-900">{test.name}</h4>
                     {test.message && (
-                      <p className={`text-sm mt-1 ${getStatusColor(test.status)}`}>
+                      <p className={`mt-1 text-sm ${getStatusColor(test.status)}`}>
                         {test.message}
                       </p>
                     )}
-                    {test.details && (
-                      <p className="text-xs text-gray-500 mt-1">{test.details}</p>
-                    )}
+                    {test.details && <p className="mt-1 text-xs text-gray-500">{test.details}</p>}
                     {test.duration && (
-                      <p className="text-xs text-gray-400 mt-1">
-                        Completed in {test.duration}ms
-                      </p>
+                      <p className="mt-1 text-xs text-gray-400">Completed in {test.duration}ms</p>
                     )}
                   </div>
                 </div>
-                <Badge 
-                  variant={test.status === 'passed' ? 'default' : 
-                          test.status === 'failed' ? 'destructive' : 
-                          test.status === 'running' ? 'secondary' : 'outline'}
+                <Badge
+                  variant={
+                    test.status === 'passed'
+                      ? 'default'
+                      : test.status === 'failed'
+                        ? 'destructive'
+                        : test.status === 'running'
+                          ? 'secondary'
+                          : 'outline'
+                  }
                 >
                   {test.status.toUpperCase()}
                 </Badge>
@@ -350,8 +368,8 @@ const EnhancedAgentDashboardTest: React.FC = () => {
         <Alert className="border-green-200 bg-green-50">
           <CheckCircle className="h-4 w-4 text-green-600" />
           <AlertDescription className="text-green-800">
-            <strong>All tests passed!</strong> The Enhanced Agent Dashboard is ready for production use. 
-            All components, features, and integrations are working correctly.
+            <strong>All tests passed!</strong> The Enhanced Agent Dashboard is ready for production
+            use. All components, features, and integrations are working correctly.
           </AlertDescription>
         </Alert>
       )}
@@ -361,7 +379,7 @@ const EnhancedAgentDashboardTest: React.FC = () => {
         <Alert className="border-yellow-200 bg-yellow-50">
           <AlertTriangle className="h-4 w-4 text-yellow-600" />
           <AlertDescription className="text-yellow-800">
-            <strong>{failedTests} test(s) failed.</strong> Please review the failed tests above and 
+            <strong>{failedTests} test(s) failed.</strong> Please review the failed tests above and
             address any issues before deploying to production.
           </AlertDescription>
         </Alert>
@@ -373,29 +391,29 @@ const EnhancedAgentDashboardTest: React.FC = () => {
           <CardTitle>Enhanced Agent Dashboard Features</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            <div className="flex items-center space-x-3 p-3 bg-blue-50 rounded-lg">
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
+            <div className="flex items-center space-x-3 rounded-lg bg-blue-50 p-3">
               <Users className="h-8 w-8 text-blue-600" />
               <div>
                 <h4 className="font-semibold text-blue-900">Lead Management</h4>
                 <p className="text-sm text-blue-700">Track and convert leads</p>
               </div>
             </div>
-            <div className="flex items-center space-x-3 p-3 bg-green-50 rounded-lg">
+            <div className="flex items-center space-x-3 rounded-lg bg-green-50 p-3">
               <DollarSign className="h-8 w-8 text-green-600" />
               <div>
                 <h4 className="font-semibold text-green-900">Commission Tracking</h4>
                 <p className="text-sm text-green-700">Monitor earnings</p>
               </div>
             </div>
-            <div className="flex items-center space-x-3 p-3 bg-purple-50 rounded-lg">
+            <div className="flex items-center space-x-3 rounded-lg bg-purple-50 p-3">
               <BarChart3 className="h-8 w-8 text-purple-600" />
               <div>
                 <h4 className="font-semibold text-purple-900">Analytics</h4>
                 <p className="text-sm text-purple-700">Performance insights</p>
               </div>
             </div>
-            <div className="flex items-center space-x-3 p-3 bg-orange-50 rounded-lg">
+            <div className="flex items-center space-x-3 rounded-lg bg-orange-50 p-3">
               <Award className="h-8 w-8 text-orange-600" />
               <div>
                 <h4 className="font-semibold text-orange-900">Achievements</h4>

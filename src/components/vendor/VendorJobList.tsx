@@ -1,4 +1,3 @@
-
 import {
   Table,
   TableBody,
@@ -6,19 +5,20 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
+} from '@/components/ui/table';
+import { Badge } from '@/components/ui/badge';
 import { VendorJob } from './vendor-job-data';
 import { format } from 'date-fns';
-import { Button } from "@/components/ui/button";
+import { Button } from '@/components/ui/button';
 
 interface VendorJobListProps {
   jobs: VendorJob[];
 }
 
 export function VendorJobList({ jobs }: VendorJobListProps) {
-
-  const getStatusVariant = (status: string): 'default' | 'secondary' | 'destructive' | 'outline' => {
+  const getStatusVariant = (
+    status: string
+  ): 'default' | 'secondary' | 'destructive' | 'outline' => {
     switch (status.toLowerCase()) {
       case 'completed':
         return 'default';
@@ -32,9 +32,9 @@ export function VendorJobList({ jobs }: VendorJobListProps) {
         return 'outline';
     }
   };
-  
+
   if (jobs.length === 0) {
-    return <p className="text-center text-muted-foreground py-8">No jobs assigned yet.</p>;
+    return <p className="py-8 text-center text-muted-foreground">No jobs assigned yet.</p>;
   }
 
   return (
@@ -54,12 +54,16 @@ export function VendorJobList({ jobs }: VendorJobListProps) {
             <TableRow key={job.id}>
               <TableCell className="font-medium">{job.title}</TableCell>
               <TableCell className="hidden sm:table-cell">{job.property}</TableCell>
-              <TableCell className="hidden md:table-cell">{format(new Date(job.scheduled_date), 'PPP')}</TableCell>
+              <TableCell className="hidden md:table-cell">
+                {format(new Date(job.scheduled_date), 'PPP')}
+              </TableCell>
               <TableCell>
                 <Badge variant={getStatusVariant(job.status)}>{job.status}</Badge>
               </TableCell>
               <TableCell className="text-right">
-                <Button variant="outline" size="sm">View Details</Button>
+                <Button variant="outline" size="sm">
+                  View Details
+                </Button>
               </TableCell>
             </TableRow>
           ))}

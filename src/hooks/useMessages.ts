@@ -1,9 +1,12 @@
-
 import { useQuery } from '@tanstack/react-query';
 import { getMessageTemplates, MessageTemplatesMap } from '@/services/messages/messageService';
 
 export const useMessages = () => {
-  const { data: messages, isLoading, isError } = useQuery<MessageTemplatesMap>({
+  const {
+    data: messages,
+    isLoading,
+    isError,
+  } = useQuery<MessageTemplatesMap>({
     queryKey: ['message_templates'],
     queryFn: getMessageTemplates,
     staleTime: 1000 * 60 * 5, // 5 minutes

@@ -1,23 +1,37 @@
-
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Badge } from "@/components/ui/badge";
-import { X, Plus } from "lucide-react";
+import { Button } from '@/components/ui/button';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
+import {
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Badge } from '@/components/ui/badge';
+import { X, Plus } from 'lucide-react';
 
 const vendorFormSchema = z.object({
-  name: z.string().min(1, { message: "Vendor name is required" }),
-  category: z.string().min(1, { message: "Category is required" }),
-  email: z.string().email({ message: "Invalid email address" }),
-  phone: z.string().min(5, { message: "Phone number is required" }),
-  address: z.string().min(3, { message: "Address is required" }),
-  specialties: z.array(z.string()).min(1, { message: "At least one specialty is required" }),
+  name: z.string().min(1, { message: 'Vendor name is required' }),
+  category: z.string().min(1, { message: 'Category is required' }),
+  email: z.string().email({ message: 'Invalid email address' }),
+  phone: z.string().min(5, { message: 'Phone number is required' }),
+  address: z.string().min(3, { message: 'Address is required' }),
+  specialties: z.array(z.string()).min(1, { message: 'At least one specialty is required' }),
 });
 
 type VendorFormValues = z.infer<typeof vendorFormSchema>;
@@ -29,53 +43,53 @@ interface AddVendorDialogProps {
 export function AddVendorDialog({ onVendorAdded }: AddVendorDialogProps) {
   const [open, setOpen] = useState(false);
   const [specialtyInput, setSpecialtyInput] = useState('');
-  
+
   const form = useForm<VendorFormValues>({
     resolver: zodResolver(vendorFormSchema),
     defaultValues: {
-      name: "",
-      category: "",
-      email: "",
-      phone: "",
-      address: "",
+      name: '',
+      category: '',
+      email: '',
+      phone: '',
+      address: '',
       specialties: [],
     },
   });
-  
-  const specialties = form.watch("specialties") || [];
-  
+
+  const specialties = form.watch('specialties') || [];
+
   const addSpecialty = () => {
     if (specialtyInput && !specialties.includes(specialtyInput)) {
-      form.setValue("specialties", [...specialties, specialtyInput]);
+      form.setValue('specialties', [...specialties, specialtyInput]);
       setSpecialtyInput('');
     }
   };
-  
+
   const removeSpecialty = (specialty: string) => {
     form.setValue(
-      "specialties", 
-      specialties.filter(s => s !== specialty)
+      'specialties',
+      specialties.filter((s) => s !== specialty)
     );
   };
-  
+
   const onSubmit = (data: VendorFormValues) => {
     // In a real app, this would send data to an API
     console.log('Form submitted:', data);
-    
+
     const newVendor = {
       ...data,
       id: `v${Date.now()}`,
       rating: 0,
       totalJobs: 0,
       completedJobs: 0,
-      responseTime: "N/A",
+      responseTime: 'N/A',
       active: true,
     };
-    
+
     if (onVendorAdded) {
       onVendorAdded(newVendor);
     }
-    
+
     setOpen(false);
     form.reset();
   };
@@ -84,17 +98,21 @@ export function AddVendorDialog({ onVendorAdded }: AddVendorDialogProps) {
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button>
-          <Plus className="h-4 w-4 mr-2" />
+          <Plus className="mr-2 h-4 w-4" />
           Add Vendor
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[600px]">
         <DialogHeader>
           <DialogTitle>Add New Vendor</DialogTitle>
+          <DialogDescription>
+            Add a new maintenance vendor to your list. Fill in their contact information and
+            specialization.
+          </DialogDescription>
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 pt-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
               <FormField
                 control={form.control}
                 name="name"
@@ -108,7 +126,7 @@ export function AddVendorDialog({ onVendorAdded }: AddVendorDialogProps) {
                   </FormItem>
                 )}
               />
-              
+
               <FormField
                 control={form.control}
                 name="category"
@@ -123,8 +141,8 @@ export function AddVendorDialog({ onVendorAdded }: AddVendorDialogProps) {
                 )}
               />
             </div>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
               <FormField
                 control={form.control}
                 name="email"
@@ -138,7 +156,7 @@ export function AddVendorDialog({ onVendorAdded }: AddVendorDialogProps) {
                   </FormItem>
                 )}
               />
-              
+
               <FormField
                 control={form.control}
                 name="phone"
@@ -153,7 +171,7 @@ export function AddVendorDialog({ onVendorAdded }: AddVendorDialogProps) {
                 )}
               />
             </div>
-            
+
             <FormField
               control={form.control}
               name="address"
@@ -167,7 +185,7 @@ export function AddVendorDialog({ onVendorAdded }: AddVendorDialogProps) {
                 </FormItem>
               )}
             />
-            
+
             <FormField
               control={form.control}
               name="specialties"
@@ -185,12 +203,12 @@ export function AddVendorDialog({ onVendorAdded }: AddVendorDialogProps) {
                       Add
                     </Button>
                   </div>
-                  <div className="flex flex-wrap gap-2 mt-2">
+                  <div className="mt-2 flex flex-wrap gap-2">
                     {specialties.map((specialty) => (
-                      <Badge key={specialty} variant="secondary" className="py-1 px-2">
+                      <Badge key={specialty} variant="secondary" className="px-2 py-1">
                         {specialty}
-                        <button 
-                          type="button" 
+                        <button
+                          type="button"
                           onClick={() => removeSpecialty(specialty)}
                           className="ml-1"
                         >
@@ -208,7 +226,7 @@ export function AddVendorDialog({ onVendorAdded }: AddVendorDialogProps) {
                 </FormItem>
               )}
             />
-            
+
             <div className="flex justify-end space-x-2 pt-4">
               <Button type="button" variant="outline" onClick={() => setOpen(false)}>
                 Cancel

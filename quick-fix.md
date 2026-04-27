@@ -1,6 +1,7 @@
-# Quick Fix for Nigeria Homes App Issues
+# Quick Fix for DamianixPro App Issues
 
 ## 🚨 Current Issues
+
 1. **No agent users found** - System can't find users with "agent" role
 2. **Property creation failing** - Database schema issues
 3. **Supabase API errors** - 400 errors when fetching properties
@@ -14,12 +15,14 @@
 3. **Click "Add User"** and create these two users:
 
 **User 1 - Agent:**
+
 - Email: `agent@nigeriahomes.com`
 - Password: `password123`
 - Confirm email: ✅ Yes
 
 **User 2 - Owner:**
-- Email: `owner@nigeriahomes.com`  
+
+- Email: `owner@nigeriahomes.com`
 - Password: `password123`
 - Confirm email: ✅ Yes
 
@@ -33,8 +36,9 @@
 ### Step 3: Verify the Fix
 
 After running the SQL script, you should see:
+
 - ✅ 1 agent user created
-- ✅ 1 owner user created  
+- ✅ 1 owner user created
 - ✅ 1 test property created
 - ✅ All database columns added
 
@@ -58,6 +62,7 @@ If you prefer to set up the database manually:
 ## 🎯 Expected Results
 
 After the fix:
+
 - ✅ No more "No users with agent role found" errors
 - ✅ Property creation should work
 - ✅ Agent assignment dropdown should populate

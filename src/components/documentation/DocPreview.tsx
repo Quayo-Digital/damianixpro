@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Card } from '@/components/ui/card';
 import { getDocPreviewContent } from '@/services/documentation/docContent';
@@ -33,7 +32,7 @@ interface TocContent {
 
 export function DocPreview({ role, guide, type }: DocPreviewProps) {
   const content = getDocPreviewContent(role, guide, type);
-  
+
   if (!content) {
     return (
       <div className="space-y-3">
@@ -44,7 +43,7 @@ export function DocPreview({ role, guide, type }: DocPreviewProps) {
       </div>
     );
   }
-  
+
   if (type === 'overview') {
     // Type assertion to access overview content properties safely
     const overviewContent = content as OverviewContent;
@@ -52,19 +51,21 @@ export function DocPreview({ role, guide, type }: DocPreviewProps) {
       <div className="space-y-4">
         <h3 className="text-xl font-semibold">{overviewContent.title}</h3>
         <p className="text-muted-foreground">{overviewContent.description}</p>
-        
-        <div className="border rounded-md p-3 bg-muted/30">
-          <h4 className="font-medium mb-2">This guide covers:</h4>
-          <ul className="list-disc pl-5 space-y-1">
+
+        <div className="rounded-md border bg-muted/30 p-3">
+          <h4 className="mb-2 font-medium">This guide covers:</h4>
+          <ul className="list-disc space-y-1 pl-5">
             {overviewContent.topics.map((topic, index) => (
-              <li key={index} className="text-sm">{topic}</li>
+              <li key={index} className="text-sm">
+                {topic}
+              </li>
             ))}
           </ul>
         </div>
       </div>
     );
   }
-  
+
   if (type === 'sections') {
     // Type assertion to access sections content properties safely
     const sectionsContent = content as SectionsContent;
@@ -82,21 +83,23 @@ export function DocPreview({ role, guide, type }: DocPreviewProps) {
       </div>
     );
   }
-  
+
   if (type === 'toc') {
     // Type assertion to access toc content properties safely
     const tocContent = content as TocContent;
     return (
       <div className="space-y-4">
         <h3 className="text-xl font-semibold">Table of Contents</h3>
-        <ol className="list-decimal pl-5 space-y-2">
+        <ol className="list-decimal space-y-2 pl-5">
           {tocContent.toc.map((item, index) => (
             <li key={index}>
               <span className="font-medium">{item.title}</span>
               {item.subItems && item.subItems.length > 0 && (
-                <ol className="list-[lower-alpha] pl-5 mt-1 space-y-1">
+                <ol className="mt-1 list-[lower-alpha] space-y-1 pl-5">
                   {item.subItems.map((subItem, subIndex) => (
-                    <li key={subIndex} className="text-sm">{subItem}</li>
+                    <li key={subIndex} className="text-sm">
+                      {subItem}
+                    </li>
                   ))}
                 </ol>
               )}
@@ -106,6 +109,6 @@ export function DocPreview({ role, guide, type }: DocPreviewProps) {
       </div>
     );
   }
-  
+
   return null;
 }

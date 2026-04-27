@@ -377,7 +377,13 @@ export class BlockchainError extends Error {
 // ============================================================================
 
 export type TransactionStatus = 'pending' | 'confirmed' | 'failed' | 'cancelled';
-export type EscrowStatus = 'created' | 'funded' | 'pending_release' | 'released' | 'refunded' | 'disputed';
+export type EscrowStatus =
+  | 'created'
+  | 'funded'
+  | 'pending_release'
+  | 'released'
+  | 'refunded'
+  | 'disputed';
 export type ContractType = 'property_registry' | 'escrow' | 'payment' | 'identity';
 export type GasSpeed = 'slow' | 'standard' | 'fast';
 

@@ -1,4 +1,3 @@
-
 import { Calendar, Clock, AlertTriangle } from 'lucide-react';
 import { parseISO, differenceInDays } from 'date-fns';
 
@@ -34,7 +33,7 @@ export const getDaysLabel = (dateString: string) => {
   const date = parseISO(dateString);
   const today = new Date();
   const days = differenceInDays(date, today);
-  
+
   if (days > 0) {
     return `in ${days} day${days === 1 ? '' : 's'}`;
   } else if (days < 0) {

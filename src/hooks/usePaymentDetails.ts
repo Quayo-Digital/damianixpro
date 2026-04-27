@@ -10,26 +10,26 @@ export const usePaymentDetails = (paymentId: string | undefined) => {
   const [tenantName, setTenantName] = useState('');
   const [propertyName, setPropertyName] = useState('');
   const navigate = useNavigate();
-  
+
   // Load payment details when payment ID changes
   useEffect(() => {
     const loadPaymentDetails = async () => {
       if (!paymentId) return;
-      
+
       try {
         setLoading(true);
-        
+
         // Fetch payment by ID
         const { data: paymentData, error: paymentError } = await supabase
           .from('rent_payments')
           .select('*')
           .eq('id', paymentId)
           .single();
-        
+
         if (paymentError || !paymentData) {
           throw new Error('Payment not found');
         }
-        
+
         // Format payment data
         const formattedPayment: Payment = {
           id: paymentData.id,
@@ -44,7 +44,7 @@ export const usePaymentDetails = (paymentId: string | undefined) => {
           recurring_type: paymentData.recurring_type as RecurringPaymentType,
           next_payment_date: paymentData.next_payment_date,
         };
-        
+
         // Fetch tenant and property details
         if (paymentData.property_tenant_id) {
           const { data: propertyTenantData, error: ptError } = await supabase
@@ -62,26 +62,26 @@ export const usePaymentDetails = (paymentId: string | undefined) => {
                 .select('first_name, last_name')
                 .eq('id', propertyTenantData.tenant_id)
                 .single();
-                
+
               if (tenantData) {
                 setTenantName(`${tenantData.first_name} ${tenantData.last_name}`);
               }
             }
-            
+
             if (propertyTenantData.property_id) {
               const { data: propertyData } = await supabase
                 .from('properties')
                 .select('name')
                 .eq('id', propertyTenantData.property_id)
                 .single();
-                
+
               if (propertyData) {
                 setPropertyName(propertyData.name);
               }
             }
           }
         }
-        
+
         setPayment(formattedPayment);
         setLoading(false);
       } catch (error) {
@@ -91,16 +91,16 @@ export const usePaymentDetails = (paymentId: string | undefined) => {
         navigate('/payments');
       }
     };
-    
+
     if (paymentId) {
       loadPaymentDetails();
     }
   }, [paymentId, navigate]);
-  
+
   return {
     payment,
     loading,
     tenantName,
-    propertyName
+    propertyName,
   };
 };

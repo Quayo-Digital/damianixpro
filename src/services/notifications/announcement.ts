@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/components/ui/sonner';
 
@@ -11,43 +10,45 @@ export async function sendAnnouncementNotification(
 ): Promise<boolean> {
   try {
     let userIds: string[] = [];
-    
+
     if (Array.isArray(audience)) {
-        userIds = audience;
+      userIds = audience;
     } else if (audience === 'all') {
-        const { data, error } = await supabase.from('tenants').select('user_id').not('user_id', 'is', null);
-        if (error) throw error;
-        userIds = data.map(t => t.user_id!);
+      const { data, error } = await supabase
+        .from('tenants')
+        .select('user_id')
+        .not('user_id', 'is', null);
+      if (error) throw error;
+      userIds = data.map((t) => t.user_id!);
     } else {
-        console.warn(`Audience type '${audience}' not fully implemented for announcements.`);
-        return false;
+      console.warn(`Audience type '${audience}' not fully implemented for announcements.`);
+      return false;
     }
 
     if (userIds.length === 0) {
-        toast.warning("No recipients found for this announcement.");
-        return false;
+      toast.warning('No recipients found for this announcement.');
+      return false;
     }
 
-    const notificationsToInsert = userIds.map(userId => ({
-        user_id: userId,
-        title: title,
-        description: message,
-        type: 'announcement' as const,
-        link: '/notifications', // Changed to /notifications
-        metadata: { propertyIds }
+    const notificationsToInsert = userIds.map((userId) => ({
+      user_id: userId,
+      title: title,
+      description: message,
+      type: 'announcement' as const,
+      link: '/notifications', // Changed to /notifications
+      metadata: { propertyIds },
     }));
 
     const { error } = await supabase.from('notifications').insert(notificationsToInsert);
 
     if (error) throw error;
 
-    toast.success("Announcement sent successfully.");
-    
+    toast.success('Announcement sent successfully.');
+
     return true;
-    
   } catch (error) {
     console.error('Error sending announcement notification:', error);
-    toast.error("Failed to send announcement.");
+    toast.error('Failed to send announcement.');
     return false;
   }
 }

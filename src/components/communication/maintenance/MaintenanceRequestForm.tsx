@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
@@ -13,12 +12,14 @@ import { FormFields } from './form/FormFields';
 import { ImageUploadSection } from './form/ImageUploadSection';
 import { supabase } from '@/integrations/supabase/client';
 import { Loader2 } from 'lucide-react';
-import { useAuth } from '@/contexts/auth';
+import { useAuthSession } from '@/contexts/auth';
 import { useTenantDetails } from '@/hooks/useTenantDetails';
 
 const requestSchema = z.object({
-  title: z.string().min(3, { message: "Title must be at least 3 characters." }),
-  description: z.string().min(10, { message: "Description must be detailed (at least 10 characters)." }),
+  title: z.string().min(3, { message: 'Title must be at least 3 characters.' }),
+  description: z
+    .string()
+    .min(10, { message: 'Description must be detailed (at least 10 characters).' }),
   urgency: z.enum(['low', 'medium', 'high']),
   allowEntry: z.boolean().optional(),
 });
@@ -32,43 +33,47 @@ interface MaintenanceRequestFormProps {
 
 export function MaintenanceRequestForm({ onClose, onSuccess }: MaintenanceRequestFormProps) {
   const { toast } = useToast();
-  const { user } = useAuth();
+  const { user } = useAuthSession();
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const { tenantName, propertyId, propertyName, isLoading: isLoadingTenantDetails } = useTenantDetails();
-  
+  const {
+    tenantName,
+    propertyId,
+    propertyName,
+    isLoading: isLoadingTenantDetails,
+  } = useTenantDetails();
+
   const form = useForm<MaintenanceFormValues>({
     resolver: zodResolver(requestSchema),
     defaultValues: {
-      title: "",
-      description: "",
-      urgency: "medium",
+      title: '',
+      description: '',
+      urgency: 'medium',
       allowEntry: true,
     },
   });
-  
+
   async function onSubmit(data: MaintenanceFormValues) {
     if (!user) {
       toast({
-        title: "Not Logged In",
-        description: "You must be logged in to create a maintenance request.",
-        variant: "destructive",
+        title: 'Not Logged In',
+        description: 'You must be logged in to create a maintenance request.',
+        variant: 'destructive',
       });
       return;
     }
-    
+
     if (isLoadingTenantDetails) {
-        toast({ title: "Please wait", description: "Loading your details..." });
-        return;
+      toast({ title: 'Please wait', description: 'Loading your details...' });
+      return;
     }
 
     try {
       setIsSubmitting(true);
-      
+
       // Create a new maintenance request
-      const { error } = await supabase
-        .from('maintenance_requests')
-        .insert([{
+      const { error } = await supabase.from('maintenance_requests').insert([
+        {
           user_id: user.id,
           title: data.title,
           description: data.description,
@@ -79,13 +84,14 @@ export function MaintenanceRequestForm({ onClose, onSuccess }: MaintenanceReques
           property_name: propertyName,
           tenant_name: tenantName,
           updates: [],
-          category: 'maintenance'
-        }]);
+          category: 'maintenance',
+        },
+      ]);
 
       if (error) {
         throw error;
       }
-      
+
       // Create a temporary request object for the UI
       const newRequest: MaintenanceRequest = {
         id: crypto.randomUUID(), // Generate a random UUID string
@@ -101,26 +107,26 @@ export function MaintenanceRequestForm({ onClose, onSuccess }: MaintenanceReques
         property_name: propertyName || undefined,
         tenant_name: tenantName || undefined,
       };
-      
+
       if (onSuccess) {
         onSuccess(newRequest);
       }
-      
+
       onClose();
       form.reset();
       setImageUrl(null);
     } catch (error) {
       console.error('Error submitting maintenance request:', error);
       toast({
-        title: "Error",
-        description: "Failed to submit maintenance request. Please try again.",
-        variant: "destructive"
+        title: 'Error',
+        description: 'Failed to submit maintenance request. Please try again.',
+        variant: 'destructive',
       });
     } finally {
       setIsSubmitting(false);
     }
   }
-  
+
   const handleImageUploaded = (url: string | null) => {
     setImageUrl(url);
   };
@@ -130,25 +136,31 @@ export function MaintenanceRequestForm({ onClose, onSuccess }: MaintenanceReques
       <ScrollArea className="h-[60vh] pr-4">
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 py-4">
           <FormFields form={form} />
-          <ImageUploadSection 
-            imageUrl={imageUrl} 
-            onImageUploaded={handleImageUploaded} 
-          />
+          <ImageUploadSection imageUrl={imageUrl} onImageUploaded={handleImageUploaded} />
         </form>
       </ScrollArea>
-      
+
       <DialogFooter className="mt-6">
-        <Button type="button" variant="outline" onClick={onClose} disabled={isSubmitting || isLoadingTenantDetails}>
+        <Button
+          type="button"
+          variant="outline"
+          onClick={onClose}
+          disabled={isSubmitting || isLoadingTenantDetails}
+        >
           Cancel
         </Button>
-        <Button type="submit" onClick={form.handleSubmit(onSubmit)} disabled={isSubmitting || isLoadingTenantDetails}>
+        <Button
+          type="submit"
+          onClick={form.handleSubmit(onSubmit)}
+          disabled={isSubmitting || isLoadingTenantDetails}
+        >
           {isSubmitting || isLoadingTenantDetails ? (
             <>
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
               {isSubmitting ? 'Submitting...' : 'Loading details...'}
             </>
           ) : (
-            "Submit Request"
+            'Submit Request'
           )}
         </Button>
       </DialogFooter>

@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Control } from 'react-hook-form';
 import { Input } from '@/components/ui/input';
@@ -12,8 +11,8 @@ interface EmergencyContactSectionProps {
 const EmergencyContactSection = ({ control }: EmergencyContactSectionProps) => {
   return (
     <div>
-      <h3 className="text-lg font-medium mb-4">Emergency Contact</h3>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <h3 className="mb-4 text-lg font-medium">Emergency Contact</h3>
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
         <FormField
           control={control}
           name="emergencyContactName"
@@ -27,7 +26,7 @@ const EmergencyContactSection = ({ control }: EmergencyContactSectionProps) => {
             </FormItem>
           )}
         />
-        
+
         <FormField
           control={control}
           name="emergencyContactPhone"

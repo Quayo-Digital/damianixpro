@@ -1,4 +1,3 @@
-
 import { Form } from '@/components/ui/form';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { FormFields } from './FormFields';
@@ -20,33 +19,36 @@ export function MaintenanceRequestForm({ onClose, onSuccess }: MaintenanceReques
     properties,
     isLoadingProperties,
     handleImageUploaded,
-    onSubmit
+    onSubmit,
   } = useMaintenanceForm({ onClose, onSuccess });
 
   return (
     <Form {...form}>
-      <ScrollArea className="h-[60vh] pr-4">
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-          <FormFields 
-            form={form} 
-            isLoadingProperties={isLoadingProperties}
-            properties={properties}
-          />
-          
-          <ImageUploadSection
-            imageUrl={imageUrl}
-            onImageUploaded={handleImageUploaded}
-          />
-        </form>
-      </ScrollArea>
-      
-      <FormActions 
-        onClose={onClose} 
-        isSubmitting={isSubmitting}
-        isLoadingProperties={isLoadingProperties}
-        form={form}
-        onSubmit={onSubmit}
-      />
+      <form
+        onSubmit={form.handleSubmit(onSubmit)}
+        id="maintenance-request-form"
+        className="space-y-4"
+      >
+        <ScrollArea className="h-[60vh] pr-4">
+          <div className="space-y-4">
+            <FormFields
+              form={form}
+              isLoadingProperties={isLoadingProperties}
+              properties={properties}
+            />
+
+            <ImageUploadSection imageUrl={imageUrl} onImageUploaded={handleImageUploaded} />
+          </div>
+        </ScrollArea>
+
+        <FormActions
+          onClose={onClose}
+          isSubmitting={isSubmitting}
+          isLoadingProperties={isLoadingProperties}
+          form={form}
+          onSubmit={onSubmit}
+        />
+      </form>
     </Form>
   );
 }

@@ -1,14 +1,21 @@
-
 import { useState } from 'react';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { toast } from '@/hooks/use-toast';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuthSession, useAuthActions } from '@/contexts/AuthContext';
 
 export const AccountSettings = () => {
-  const { user, updateUserMetadata } = useAuth();
+  const { user } = useAuthSession();
+  const { updateUserMetadata } = useAuthActions();
   const [name, setName] = useState(user?.user_metadata?.full_name || '');
   const [email, setEmail] = useState(user?.email || '');
   const [isSaving, setIsSaving] = useState(false);
@@ -18,14 +25,14 @@ export const AccountSettings = () => {
     try {
       await updateUserMetadata({ full_name: name });
       toast({
-        title: "Account updated",
-        description: "Your account information has been updated successfully.",
+        title: 'Account updated',
+        description: 'Your account information has been updated successfully.',
       });
     } catch (error) {
       toast({
-        title: "Update failed",
-        description: "There was an error updating your account.",
-        variant: "destructive",
+        title: 'Update failed',
+        description: 'There was an error updating your account.',
+        variant: 'destructive',
       });
     } finally {
       setIsSaving(false);
@@ -43,20 +50,20 @@ export const AccountSettings = () => {
       <CardContent className="space-y-4">
         <div className="space-y-2">
           <Label htmlFor="name">Name</Label>
-          <Input 
-            id="name" 
-            placeholder="Your name" 
-            value={name} 
-            onChange={(e) => setName(e.target.value)} 
+          <Input
+            id="name"
+            placeholder="Your name"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
           />
         </div>
         <div className="space-y-2">
           <Label htmlFor="email">Email</Label>
-          <Input 
-            id="email" 
-            type="email" 
-            placeholder="Your email" 
-            value={email} 
+          <Input
+            id="email"
+            type="email"
+            placeholder="Your email"
+            value={email}
             onChange={(e) => setEmail(e.target.value)}
             disabled
           />

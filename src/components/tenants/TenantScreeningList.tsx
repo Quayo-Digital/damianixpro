@@ -1,21 +1,37 @@
-
 import React, { useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { getScreenings, processScreening } from '@/services/tenants/screening';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { format } from 'date-fns';
 import { ArrowRight, Loader2 } from 'lucide-react';
 import { TenantScreening } from './TenantScreening';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
 import { supabase } from '@/integrations/supabase/client';
 
 export function TenantScreeningList() {
   const queryClient = useQueryClient();
 
-  const { data: screenings, isLoading, error } = useQuery({
+  const {
+    data: screenings,
+    isLoading,
+    error,
+  } = useQuery({
     queryKey: ['tenantScreenings'],
     queryFn: getScreenings,
   });
@@ -29,7 +45,8 @@ export function TenantScreeningList() {
   });
 
   useEffect(() => {
-    const screeningsChannel = supabase.channel('tenant-screenings-list-changes')
+    const screeningsChannel = supabase
+      .channel('tenant-screenings-list-changes')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'tenant_screenings' }, () => {
         queryClient.invalidateQueries({ queryKey: ['tenantScreenings'] });
       })
@@ -72,7 +89,8 @@ export function TenantScreeningList() {
   }, [screenings]);
 
   if (isLoading) return <div className="p-4">Loading screenings...</div>;
-  if (error) return <div className="p-4 text-red-500">Error loading screenings: {error.message}</div>;
+  if (error)
+    return <div className="p-4 text-red-500">Error loading screenings: {error.message}</div>;
 
   const getStatusBadge = (status: string | null) => {
     switch (status) {
@@ -96,7 +114,7 @@ export function TenantScreeningList() {
         <CardDescription>Manage and review all tenant screening processes.</CardDescription>
       </CardHeader>
       <CardContent>
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 mb-6">
+        <div className="mb-6 grid gap-4 md:grid-cols-2 lg:grid-cols-4">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Total Requests</CardTitle>
@@ -142,7 +160,7 @@ export function TenantScreeningList() {
           <TableBody>
             {screenings?.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={4} className="text-center h-24">
+                <TableCell colSpan={4} className="h-24 text-center">
                   No screening requests have been made.
                 </TableCell>
               </TableRow>
@@ -150,32 +168,44 @@ export function TenantScreeningList() {
               screenings?.map((screening) => (
                 <TableRow key={screening.id}>
                   <TableCell className="font-medium">
-                    {screening.tenants ? `${screening.tenants.first_name} ${screening.tenants.last_name}` : 'Unknown Tenant'}
+                    {screening.tenants
+                      ? `${screening.tenants.first_name} ${screening.tenants.last_name}`
+                      : 'Unknown Tenant'}
                   </TableCell>
                   <TableCell>{getStatusBadge(screening.status)}</TableCell>
                   <TableCell>{format(new Date(screening.created_at), 'MMM d, yyyy')}</TableCell>
-                  <TableCell className="text-right space-x-2">
+                  <TableCell className="space-x-2 text-right">
                     {screening.status === 'pending' && (
-                      <Button size="sm" onClick={() => runScreening(screening.id)} disabled={isProcessing}>
+                      <Button
+                        size="sm"
+                        onClick={() => runScreening(screening.id)}
+                        disabled={isProcessing}
+                      >
                         {isProcessing ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
                         Start Screening
                       </Button>
                     )}
-                    {(screening.status === 'completed' || screening.status === 'failed' || screening.status === 'in_progress') && screening.tenants && (
-                      <Dialog>
-                        <DialogTrigger asChild>
-                           <Button variant="outline" size="sm">
+                    {(screening.status === 'completed' ||
+                      screening.status === 'failed' ||
+                      screening.status === 'in_progress') &&
+                      screening.tenants && (
+                        <Dialog>
+                          <DialogTrigger asChild>
+                            <Button variant="outline" size="sm">
                               View Details <ArrowRight className="ml-2 h-4 w-4" />
-                           </Button>
-                        </DialogTrigger>
-                        <DialogContent className="sm:max-w-[650px]">
-                           <DialogHeader>
+                            </Button>
+                          </DialogTrigger>
+                          <DialogContent className="sm:max-w-[650px]">
+                            <DialogHeader>
                               <DialogTitle>Screening Details</DialogTitle>
-                           </DialogHeader>
-                           <TenantScreening tenantId={String(screening.tenants.id)} tenantName={`${screening.tenants.first_name} ${screening.tenants.last_name}`} />
-                        </DialogContent>
-                      </Dialog>
-                    )}
+                            </DialogHeader>
+                            <TenantScreening
+                              tenantId={String(screening.tenants.id)}
+                              tenantName={`${screening.tenants.first_name} ${screening.tenants.last_name}`}
+                            />
+                          </DialogContent>
+                        </Dialog>
+                      )}
                   </TableCell>
                 </TableRow>
               ))

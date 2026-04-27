@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { 
+import {
   Shield,
   Activity,
   AlertTriangle,
@@ -22,7 +22,7 @@ import {
   Globe,
   Wifi,
   Smartphone,
-  Brain
+  Brain,
 } from 'lucide-react';
 
 // Import all our monitoring and testing components
@@ -45,17 +45,16 @@ interface AdminMonitoringPanelProps {
 export const AdminMonitoringPanel: React.FC<AdminMonitoringPanelProps> = ({ className }) => {
   const [activeTab, setActiveTab] = useState('overview');
   const [isMonitoring, setIsMonitoring] = useState(true);
-  
-  // Mock real-time admin metrics
-  const [adminMetrics, setAdminMetrics] = useState({
-    platformHealth: 87,
-    securityScore: 92,
-    performanceScore: 78,
-    activeUsers: 1247,
-    criticalAlerts: 2,
-    systemLoad: 34.5,
-    uptime: 99.8,
-    lastUpdate: new Date()
+
+  const [adminMetrics] = useState({
+    platformHealth: 0,
+    securityScore: 0,
+    performanceScore: 0,
+    activeUsers: 0,
+    criticalAlerts: 0,
+    systemLoad: 0,
+    uptime: 0,
+    lastUpdate: new Date(),
   });
 
   const getHealthColor = (score: number) => {
@@ -87,7 +86,7 @@ export const AdminMonitoringPanel: React.FC<AdminMonitoringPanelProps> = ({ clas
             </div>
             <div className="flex items-center gap-2">
               <div className="flex items-center gap-2">
-                <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                <div className="h-2 w-2 animate-pulse rounded-full bg-green-500"></div>
                 <span className="text-sm text-green-600">Live Monitoring</span>
               </div>
               <Badge variant={isMonitoring ? 'default' : 'secondary'}>
@@ -110,17 +109,22 @@ export const AdminMonitoringPanel: React.FC<AdminMonitoringPanelProps> = ({ clas
       )}
 
       {/* Admin Metrics Overview */}
-      <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4">
+      <div className="grid grid-cols-2 gap-4 md:grid-cols-4 lg:grid-cols-7">
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center gap-2">
               <Shield className="h-4 w-4 text-blue-600" />
               <span className="text-sm font-medium">Platform Health</span>
             </div>
-            <div className={`text-2xl font-bold mt-1 ${getHealthColor(adminMetrics.platformHealth)}`}>
+            <div
+              className={`mt-1 text-2xl font-bold ${getHealthColor(adminMetrics.platformHealth)}`}
+            >
               {adminMetrics.platformHealth}%
             </div>
-            <Badge variant={getHealthBadge(adminMetrics.platformHealth).variant} className="text-xs mt-1">
+            <Badge
+              variant={getHealthBadge(adminMetrics.platformHealth).variant}
+              className="mt-1 text-xs"
+            >
               {getHealthBadge(adminMetrics.platformHealth).label}
             </Badge>
           </CardContent>
@@ -132,7 +136,9 @@ export const AdminMonitoringPanel: React.FC<AdminMonitoringPanelProps> = ({ clas
               <Lock className="h-4 w-4 text-green-600" />
               <span className="text-sm font-medium">Security</span>
             </div>
-            <div className={`text-2xl font-bold mt-1 ${getHealthColor(adminMetrics.securityScore)}`}>
+            <div
+              className={`mt-1 text-2xl font-bold ${getHealthColor(adminMetrics.securityScore)}`}
+            >
               {adminMetrics.securityScore}%
             </div>
             <div className="text-xs text-gray-600">RLS + Auth</div>
@@ -145,7 +151,9 @@ export const AdminMonitoringPanel: React.FC<AdminMonitoringPanelProps> = ({ clas
               <Zap className="h-4 w-4 text-purple-600" />
               <span className="text-sm font-medium">Performance</span>
             </div>
-            <div className={`text-2xl font-bold mt-1 ${getHealthColor(adminMetrics.performanceScore)}`}>
+            <div
+              className={`mt-1 text-2xl font-bold ${getHealthColor(adminMetrics.performanceScore)}`}
+            >
               {adminMetrics.performanceScore}%
             </div>
             <div className="text-xs text-gray-600">Nigerian Optimized</div>
@@ -158,7 +166,9 @@ export const AdminMonitoringPanel: React.FC<AdminMonitoringPanelProps> = ({ clas
               <Activity className="h-4 w-4 text-indigo-600" />
               <span className="text-sm font-medium">Active Users</span>
             </div>
-            <div className="text-2xl font-bold mt-1">{adminMetrics.activeUsers.toLocaleString()}</div>
+            <div className="mt-1 text-2xl font-bold">
+              {adminMetrics.activeUsers.toLocaleString()}
+            </div>
             <div className="text-xs text-gray-600">Currently online</div>
           </CardContent>
         </Card>
@@ -169,7 +179,9 @@ export const AdminMonitoringPanel: React.FC<AdminMonitoringPanelProps> = ({ clas
               <AlertTriangle className="h-4 w-4 text-red-600" />
               <span className="text-sm font-medium">Alerts</span>
             </div>
-            <div className="text-2xl font-bold mt-1 text-red-600">{adminMetrics.criticalAlerts}</div>
+            <div className="mt-1 text-2xl font-bold text-red-600">
+              {adminMetrics.criticalAlerts}
+            </div>
             <div className="text-xs text-gray-600">Critical issues</div>
           </CardContent>
         </Card>
@@ -180,7 +192,7 @@ export const AdminMonitoringPanel: React.FC<AdminMonitoringPanelProps> = ({ clas
               <BarChart3 className="h-4 w-4 text-orange-600" />
               <span className="text-sm font-medium">System Load</span>
             </div>
-            <div className="text-2xl font-bold mt-1">{adminMetrics.systemLoad}%</div>
+            <div className="mt-1 text-2xl font-bold">{adminMetrics.systemLoad}%</div>
             <div className="text-xs text-gray-600">Server resources</div>
           </CardContent>
         </Card>
@@ -191,7 +203,7 @@ export const AdminMonitoringPanel: React.FC<AdminMonitoringPanelProps> = ({ clas
               <TrendingUp className="h-4 w-4 text-green-600" />
               <span className="text-sm font-medium">Uptime</span>
             </div>
-            <div className="text-2xl font-bold mt-1 text-green-600">{adminMetrics.uptime}%</div>
+            <div className="mt-1 text-2xl font-bold text-green-600">{adminMetrics.uptime}%</div>
             <div className="text-xs text-gray-600">Last 30 days</div>
           </CardContent>
         </Card>
@@ -202,9 +214,8 @@ export const AdminMonitoringPanel: React.FC<AdminMonitoringPanelProps> = ({ clas
         <Globe className="h-4 w-4" />
         <AlertTitle>Nigerian Market Platform Status</AlertTitle>
         <AlertDescription>
-          Platform serving {adminMetrics.activeUsers.toLocaleString()} Nigerian users with {adminMetrics.platformHealth}% health score. 
-          Security systems operational at {adminMetrics.securityScore}%. Performance optimized for Nigerian networks at {adminMetrics.performanceScore}%.
-          System uptime: {adminMetrics.uptime}% (Last updated: {adminMetrics.lastUpdate.toLocaleTimeString()}).
+          Live platform telemetry is not connected. Summary scores and user counts will populate
+          here when monitoring and analytics feeds are configured.
         </AlertDescription>
       </Alert>
 
@@ -220,7 +231,7 @@ export const AdminMonitoringPanel: React.FC<AdminMonitoringPanelProps> = ({ clas
             <TabsTrigger value="optimization">🚀 Optimization</TabsTrigger>
             <TabsTrigger value="monitor">📊 Live Monitor</TabsTrigger>
           </TabsList>
-          
+
           {/* Secondary Tabs Row */}
           <TabsList className="grid w-full grid-cols-6">
             <TabsTrigger value="analytics">🧠 AI Analytics</TabsTrigger>
@@ -233,7 +244,7 @@ export const AdminMonitoringPanel: React.FC<AdminMonitoringPanelProps> = ({ clas
         </div>
 
         <TabsContent value="overview" className="space-y-6">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
             {/* Platform Health Summary */}
             <Card>
               <CardHeader>
@@ -275,36 +286,36 @@ export const AdminMonitoringPanel: React.FC<AdminMonitoringPanelProps> = ({ clas
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
-                <Button 
-                  onClick={() => setActiveTab('security')} 
-                  variant="outline" 
+                <Button
+                  onClick={() => setActiveTab('security')}
+                  variant="outline"
                   className="w-full justify-start"
                 >
-                  <Lock className="h-4 w-4 mr-2" />
+                  <Lock className="mr-2 h-4 w-4" />
                   Run Security Audit
                 </Button>
-                <Button 
-                  onClick={() => setActiveTab('emergency')} 
-                  variant="outline" 
+                <Button
+                  onClick={() => setActiveTab('emergency')}
+                  variant="outline"
                   className="w-full justify-start"
                 >
-                  <AlertTriangle className="h-4 w-4 mr-2" />
+                  <AlertTriangle className="mr-2 h-4 w-4" />
                   Emergency Response
                 </Button>
-                <Button 
-                  onClick={() => setActiveTab('optimization')} 
-                  variant="outline" 
+                <Button
+                  onClick={() => setActiveTab('optimization')}
+                  variant="outline"
                   className="w-full justify-start"
                 >
-                  <Zap className="h-4 w-4 mr-2" />
+                  <Zap className="mr-2 h-4 w-4" />
                   Optimize Performance
                 </Button>
-                <Button 
-                  onClick={() => setActiveTab('monitoring')} 
-                  variant="outline" 
+                <Button
+                  onClick={() => setActiveTab('monitoring')}
+                  variant="outline"
                   className="w-full justify-start"
                 >
-                  <Eye className="h-4 w-4 mr-2" />
+                  <Eye className="mr-2 h-4 w-4" />
                   Live Monitoring
                 </Button>
               </CardContent>
@@ -322,28 +333,28 @@ export const AdminMonitoringPanel: React.FC<AdminMonitoringPanelProps> = ({ clas
                 <div className="flex items-center justify-between">
                   <span>Database Connection</span>
                   <Badge variant="default">
-                    <CheckCircle2 className="h-3 w-3 mr-1" />
+                    <CheckCircle2 className="mr-1 h-3 w-3" />
                     Healthy
                   </Badge>
                 </div>
                 <div className="flex items-center justify-between">
                   <span>Authentication Service</span>
                   <Badge variant="default">
-                    <CheckCircle2 className="h-3 w-3 mr-1" />
+                    <CheckCircle2 className="mr-1 h-3 w-3" />
                     Active
                   </Badge>
                 </div>
                 <div className="flex items-center justify-between">
                   <span>Payment Gateways</span>
                   <Badge variant="default">
-                    <CheckCircle2 className="h-3 w-3 mr-1" />
+                    <CheckCircle2 className="mr-1 h-3 w-3" />
                     Operational
                   </Badge>
                 </div>
                 <div className="flex items-center justify-between">
                   <span>Nigerian CDN</span>
                   <Badge variant="secondary">
-                    <AlertTriangle className="h-3 w-3 mr-1" />
+                    <AlertTriangle className="mr-1 h-3 w-3" />
                     Setup Required
                   </Badge>
                 </div>
@@ -360,7 +371,8 @@ export const AdminMonitoringPanel: React.FC<AdminMonitoringPanelProps> = ({ clas
                 Comprehensive Security Audit
               </CardTitle>
               <CardDescription>
-                Complete security assessment including authentication, database RLS, API security, and Nigerian payment gateway compliance
+                Complete security assessment including authentication, database RLS, API security,
+                and Nigerian payment gateway compliance
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -411,7 +423,8 @@ export const AdminMonitoringPanel: React.FC<AdminMonitoringPanelProps> = ({ clas
                 Image & CDN Optimization
               </CardTitle>
               <CardDescription>
-                Comprehensive image optimization and CDN performance testing for Nigerian infrastructure
+                Comprehensive image optimization and CDN performance testing for Nigerian
+                infrastructure
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -428,7 +441,8 @@ export const AdminMonitoringPanel: React.FC<AdminMonitoringPanelProps> = ({ clas
                 Real-World Performance Monitoring
               </CardTitle>
               <CardDescription>
-                Live performance metrics from Nigerian users across 2G/3G/4G networks with location-based analytics
+                Live performance metrics from Nigerian users across 2G/3G/4G networks with
+                location-based analytics
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -445,7 +459,8 @@ export const AdminMonitoringPanel: React.FC<AdminMonitoringPanelProps> = ({ clas
                 Intelligent Performance Analytics
               </CardTitle>
               <CardDescription>
-                AI-powered performance analysis with intelligent optimization recommendations for Nigerian market
+                AI-powered performance analysis with intelligent optimization recommendations for
+                Nigerian market
               </CardDescription>
             </CardHeader>
             <CardContent>

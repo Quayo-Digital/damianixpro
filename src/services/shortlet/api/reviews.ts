@@ -5,11 +5,15 @@
 
 import { supabase } from '@/integrations/supabase/client';
 import { Review, reviewSchema, ReviewType } from '../types';
+import { logger } from '@/utils/logger';
+import { profileForUi } from '@/lib/profileDisplayName';
 
 /**
  * Create a new review
  */
-export async function createReview(review: Omit<Review, 'id' | 'created_at' | 'updated_at'>): Promise<Review> {
+export async function createReview(
+  review: Omit<Review, 'id' | 'created_at' | 'updated_at'>
+): Promise<Review> {
   const validated = reviewSchema.parse(review);
 
   // Check if review already exists for this booking
@@ -25,14 +29,16 @@ export async function createReview(review: Omit<Review, 'id' | 'created_at' | 'u
 
   const { data, error } = await supabase
     .from('reviews')
-    .insert([{
-      booking_id: validated.booking_id,
-      reviewer_id: validated.reviewer_id,
-      reviewee_id: validated.reviewee_id,
-      review_type: validated.review_type,
-      rating: validated.rating,
-      comment: validated.comment
-    }])
+    .insert([
+      {
+        booking_id: validated.booking_id,
+        reviewer_id: validated.reviewer_id,
+        reviewee_id: validated.reviewee_id,
+        review_type: validated.review_type,
+        rating: validated.rating,
+        comment: validated.comment,
+      },
+    ])
     .select()
     .single();
 
@@ -46,7 +52,8 @@ export async function createReview(review: Omit<Review, 'id' | 'created_at' | 'u
 export async function getReviewById(reviewId: string): Promise<Review | null> {
   const { data, error } = await supabase
     .from('reviews')
-    .select(`
+    .select(
+      `
       *,
       booking:bookings (
         id,
@@ -59,18 +66,9 @@ export async function getReviewById(reviewId: string): Promise<Review | null> {
             address
           )
         )
-      ),
-      reviewer:profiles!reviews_reviewer_id_fkey (
-        id,
-        name,
-        email
-      ),
-      reviewee:profiles!reviews_reviewee_id_fkey (
-        id,
-        name,
-        email
       )
-    `)
+    `
+    )
     .eq('id', reviewId)
     .single();
 
@@ -79,7 +77,72 @@ export async function getReviewById(reviewId: string): Promise<Review | null> {
     throw error;
   }
 
-  return data as Review;
+  if (!data) return null;
+
+  // Fetch profiles separately since reviews.reviewer_id and reviewee_id reference auth.users, not profiles
+  // Note: RLS policies may block profile access, so we handle errors gracefully
+  // Check if user is authenticated before attempting profile fetches
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  const isAuthenticated = !!user;
+
+  let reviewerProfile = null;
+  let revieweeProfile = null;
+
+  if (isAuthenticated) {
+    try {
+      const [reviewerResult, revieweeResult] = await Promise.all([
+        supabase
+          .from('profiles')
+          .select('id, first_name, last_name, email, phone')
+          .eq('id', data.reviewer_id)
+          .single(),
+        supabase
+          .from('profiles')
+          .select('id, first_name, last_name, email, phone')
+          .eq('id', data.reviewee_id)
+          .single(),
+      ]);
+
+      // Suppress expected 406 errors (RLS blocking) - these are normal for restricted profiles
+      if (!reviewerResult.error && reviewerResult.data) {
+        reviewerProfile = profileForUi(reviewerResult.data);
+      } else if (
+        reviewerResult.error &&
+        reviewerResult.error.status !== 406 &&
+        reviewerResult.error.code !== 'PGRST116'
+      ) {
+        logger.debug('Could not fetch reviewer profile', { reviewer_id: data.reviewer_id });
+      }
+
+      // Suppress expected 406 errors (RLS blocking) - these are normal for restricted profiles
+      if (!revieweeResult.error && revieweeResult.data) {
+        revieweeProfile = profileForUi(revieweeResult.data);
+      } else if (
+        revieweeResult.error &&
+        revieweeResult.error.status !== 406 &&
+        revieweeResult.error.code !== 'PGRST116'
+      ) {
+        logger.debug('Could not fetch reviewee profile', { reviewee_id: data.reviewee_id });
+      }
+    } catch (error: any) {
+      // Silently fail for expected RLS errors (406 Not Acceptable)
+      // Profile data is optional for reviews
+      if (error?.status !== 406 && error?.code !== 'PGRST116') {
+        logger.debug('Could not fetch profiles', {
+          reviewer_id: data.reviewer_id,
+          reviewee_id: data.reviewee_id,
+        });
+      }
+    }
+  }
+
+  return {
+    ...data,
+    reviewer: reviewerProfile,
+    reviewee: revieweeProfile,
+  } as Review;
 }
 
 /**
@@ -88,7 +151,8 @@ export async function getReviewById(reviewId: string): Promise<Review | null> {
 export async function getReviewsByBooking(bookingId: string): Promise<Review | null> {
   const { data, error } = await supabase
     .from('reviews')
-    .select(`
+    .select(
+      `
       *,
       booking:bookings (
         id,
@@ -96,13 +160,9 @@ export async function getReviewsByBooking(bookingId: string): Promise<Review | n
           id,
           title
         )
-      ),
-      reviewer:profiles!reviews_reviewer_id_fkey (
-        id,
-        name,
-        email
       )
-    `)
+    `
+    )
     .eq('booking_id', bookingId)
     .single();
 
@@ -111,7 +171,44 @@ export async function getReviewsByBooking(bookingId: string): Promise<Review | n
     throw error;
   }
 
-  return data as Review;
+  if (!data) return null;
+
+  // Fetch reviewer profile separately since reviews.reviewer_id references auth.users, not profiles
+  // Note: RLS policies may block profile access, so we handle errors gracefully
+  // Check if user is authenticated before attempting profile fetch
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  const isAuthenticated = !!user;
+
+  let reviewerProfile = null;
+  if (isAuthenticated) {
+    try {
+      const { data: profile, error } = await supabase
+        .from('profiles')
+        .select('id, first_name, last_name, email, phone')
+        .eq('id', data.reviewer_id)
+        .single();
+
+      // Suppress expected 406 errors (RLS blocking) - these are normal for restricted profiles
+      if (!error && profile) {
+        reviewerProfile = profileForUi(profile);
+      } else if (error && error.status !== 406 && error.code !== 'PGRST116') {
+        logger.debug('Could not fetch reviewer profile', { reviewer_id: data.reviewer_id });
+      }
+    } catch (error: any) {
+      // Silently fail for expected RLS errors (406 Not Acceptable)
+      // Profile data is optional for reviews
+      if (error?.status !== 406 && error?.code !== 'PGRST116') {
+        logger.debug('Could not fetch reviewer profile', { reviewer_id: data.reviewer_id });
+      }
+    }
+  }
+
+  return {
+    ...data,
+    reviewer: reviewerProfile,
+  } as Review;
 }
 
 /**
@@ -120,7 +217,8 @@ export async function getReviewsByBooking(bookingId: string): Promise<Review | n
 export async function getReviewsByListing(listingId: string): Promise<Review[]> {
   const { data, error } = await supabase
     .from('reviews')
-    .select(`
+    .select(
+      `
       *,
       booking:bookings (
         id,
@@ -129,19 +227,64 @@ export async function getReviewsByListing(listingId: string): Promise<Review[]> 
           id,
           title
         )
-      ),
-      reviewer:profiles!reviews_reviewer_id_fkey (
-        id,
-        name,
-        email
       )
-    `)
+    `
+    )
     .eq('booking.listing_id', listingId)
     .eq('review_type', ReviewType.GUEST)
     .order('created_at', { ascending: false });
 
   if (error) throw error;
-  return data as Review[];
+
+  // Fetch profiles separately since reviews.reviewer_id references auth.users, not profiles
+  // Note: RLS policies may block profile access, so we handle errors gracefully
+  // Check if user is authenticated before attempting profile fetches
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  const isAuthenticated = !!user;
+
+  const reviewsWithProfiles = await Promise.all(
+    (data || []).map(async (review: any) => {
+      // Fetch reviewer profile - handle RLS errors gracefully
+      // Skip profile fetch if not authenticated (will always fail due to RLS)
+      let reviewerProfile = null;
+      if (isAuthenticated) {
+        try {
+          const { data: profile, error } = await supabase
+            .from('profiles')
+            .select('id, first_name, last_name, email, phone')
+            .eq('id', review.reviewer_id)
+            .single();
+
+          // Suppress expected 406 errors (RLS blocking) - these are normal for restricted profiles
+          if (!error && profile) {
+            reviewerProfile = profileForUi(profile);
+          } else if (error && error.status !== 406 && error.code !== 'PGRST116') {
+            // Only log unexpected errors (not 406 Not Acceptable which is expected for RLS blocks)
+            logger.debug('Could not fetch reviewer profile', {
+              reviewer_id: review.reviewer_id,
+              error_code: error.code,
+              error_status: error.status,
+            });
+          }
+        } catch (error: any) {
+          // Silently fail for expected RLS errors (406 Not Acceptable)
+          // Profile data is optional for reviews
+          if (error?.status !== 406 && error?.code !== 'PGRST116') {
+            logger.debug('Could not fetch reviewer profile', { reviewer_id: review.reviewer_id });
+          }
+        }
+      }
+
+      return {
+        ...review,
+        reviewer: reviewerProfile,
+      };
+    })
+  );
+
+  return reviewsWithProfiles as Review[];
 }
 
 /**
@@ -150,7 +293,8 @@ export async function getReviewsByListing(listingId: string): Promise<Review[]> 
 export async function getReviewsByUser(userId: string, reviewType?: ReviewType): Promise<Review[]> {
   let query = supabase
     .from('reviews')
-    .select(`
+    .select(
+      `
       *,
       booking:bookings (
         id,
@@ -163,13 +307,9 @@ export async function getReviewsByUser(userId: string, reviewType?: ReviewType):
             address
           )
         )
-      ),
-      reviewer:profiles!reviews_reviewer_id_fkey (
-        id,
-        name,
-        email
       )
-    `)
+    `
+    )
     .eq('reviewee_id', userId);
 
   if (reviewType) {
@@ -179,7 +319,56 @@ export async function getReviewsByUser(userId: string, reviewType?: ReviewType):
   const { data, error } = await query.order('created_at', { ascending: false });
 
   if (error) throw error;
-  return data as Review[];
+
+  // Fetch profiles separately since reviews.reviewer_id references auth.users, not profiles
+  // Note: RLS policies may block profile access, so we handle errors gracefully
+  // Check if user is authenticated before attempting profile fetches
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  const isAuthenticated = !!user;
+
+  const reviewsWithProfiles = await Promise.all(
+    (data || []).map(async (review: any) => {
+      // Fetch reviewer profile - handle RLS errors gracefully
+      // Skip profile fetch if not authenticated (will always fail due to RLS)
+      let reviewerProfile = null;
+      if (isAuthenticated) {
+        try {
+          const { data: profile, error } = await supabase
+            .from('profiles')
+            .select('id, first_name, last_name, email, phone')
+            .eq('id', review.reviewer_id)
+            .single();
+
+          // Suppress expected 406 errors (RLS blocking) - these are normal for restricted profiles
+          if (!error && profile) {
+            reviewerProfile = profileForUi(profile);
+          } else if (error && error.status !== 406 && error.code !== 'PGRST116') {
+            // Only log unexpected errors (not 406 Not Acceptable which is expected for RLS blocks)
+            logger.debug('Could not fetch reviewer profile', {
+              reviewer_id: review.reviewer_id,
+              error_code: error.code,
+              error_status: error.status,
+            });
+          }
+        } catch (error: any) {
+          // Silently fail for expected RLS errors (406 Not Acceptable)
+          // Profile data is optional for reviews
+          if (error?.status !== 406 && error?.code !== 'PGRST116') {
+            logger.debug('Could not fetch reviewer profile', { reviewer_id: review.reviewer_id });
+          }
+        }
+      }
+
+      return {
+        ...review,
+        reviewer: reviewerProfile,
+      };
+    })
+  );
+
+  return reviewsWithProfiles as Review[];
 }
 
 /**
@@ -193,7 +382,7 @@ export async function updateReview(
     .from('reviews')
     .update({
       ...updates,
-      updated_at: new Date().toISOString()
+      updated_at: new Date().toISOString(),
     })
     .eq('id', reviewId)
     .select()
@@ -207,10 +396,7 @@ export async function updateReview(
  * Delete review
  */
 export async function deleteReview(reviewId: string): Promise<void> {
-  const { error } = await supabase
-    .from('reviews')
-    .delete()
-    .eq('id', reviewId);
+  const { error } = await supabase.from('reviews').delete().eq('id', reviewId);
 
   if (error) throw error;
 }
@@ -223,7 +409,7 @@ export async function getListingAverageRating(listingId: string): Promise<{
   count: number;
 }> {
   const reviews = await getReviewsByListing(listingId);
-  
+
   if (reviews.length === 0) {
     return { average: 0, count: 0 };
   }
@@ -233,7 +419,6 @@ export async function getListingAverageRating(listingId: string): Promise<{
 
   return {
     average: Math.round(average * 10) / 10, // Round to 1 decimal
-    count: reviews.length
+    count: reviews.length,
   };
 }
-

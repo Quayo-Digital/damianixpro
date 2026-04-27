@@ -1,6 +1,5 @@
-
-import { LucideIcon } from "lucide-react";
-import React from "react";
+import { LucideIcon } from 'lucide-react';
+import React from 'react';
 
 interface FeatureCardProps {
   icon: React.ReactNode;
@@ -11,17 +10,20 @@ interface FeatureCardProps {
 
 export const FeatureCard: React.FC<FeatureCardProps> = ({ icon, title, description, features }) => {
   return (
-    <div className="bg-white p-8 rounded-lg shadow-md border border-green-100 hover:shadow-lg transition-shadow">
-      <div className="flex items-center gap-4 mb-4">
+    <div className="rounded-lg border border-border bg-card p-8 text-card-foreground shadow-md transition-shadow hover:shadow-lg">
+      <div className="mb-4 flex items-center gap-4">
         {icon}
-        <h4 className="text-xl font-semibold">{title}</h4>
+        <h4 className="text-xl font-semibold tracking-tight text-foreground">{title}</h4>
       </div>
-      <p className="mb-4">{description}</p>
-      <ul className="space-y-2">
+      <p className="mb-4 text-pretty leading-relaxed text-muted-foreground">{description}</p>
+      <ul className="space-y-2.5 rounded-lg border border-border bg-muted/50 px-3 py-3 dark:bg-muted/30">
         {features.map((feature, index) => (
-          <li key={index} className="flex items-center">
-            <div className="h-2 w-2 rounded-full bg-green-500 mr-2"></div>
-            <span>{feature}</span>
+          <li key={index} className="flex items-start gap-2.5 text-sm leading-snug">
+            <span
+              className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-green-600 dark:bg-green-400"
+              aria-hidden
+            />
+            <span className="text-foreground">{feature}</span>
           </li>
         ))}
       </ul>

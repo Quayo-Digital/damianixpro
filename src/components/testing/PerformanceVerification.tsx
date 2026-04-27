@@ -4,17 +4,17 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Progress } from '@/components/ui/progress';
-import { 
-  CheckCircle2, 
-  AlertTriangle, 
-  TrendingUp, 
-  Zap, 
+import {
+  CheckCircle2,
+  AlertTriangle,
+  TrendingUp,
+  Zap,
   Target,
   RefreshCw,
   BarChart3,
   Clock,
   Wifi,
-  Smartphone
+  Smartphone,
 } from 'lucide-react';
 import { performanceMonitor } from '@/utils/performance-monitor';
 
@@ -35,11 +35,11 @@ export const PerformanceVerification = () => {
 
   const runVerification = async () => {
     setIsVerifying(true);
-    
+
     try {
       // Simulate performance verification process
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
+      await new Promise((resolve) => setTimeout(resolve, 2000));
+
       // Mock verification results based on typical optimization outcomes
       const results: VerificationResult[] = [
         {
@@ -48,60 +48,60 @@ export const PerformanceVerification = () => {
           after: 1.2,
           improvement: 57,
           status: 'good',
-          recommendation: 'Consider further code splitting for Nigerian 2G networks'
+          recommendation: 'Consider further code splitting for Nigerian 2G networks',
         },
         {
           category: 'First Contentful Paint',
           before: 4200,
           after: 2100,
           improvement: 50,
-          status: 'good'
+          status: 'good',
         },
         {
           category: 'Largest Contentful Paint',
           before: 6800,
           after: 3200,
           improvement: 53,
-          status: 'good'
+          status: 'good',
         },
         {
           category: 'Cumulative Layout Shift',
           before: 0.35,
           after: 0.12,
           improvement: 66,
-          status: 'excellent'
+          status: 'excellent',
         },
         {
           category: 'Time to Interactive',
           before: 8500,
           after: 4200,
           improvement: 51,
-          status: 'good'
+          status: 'good',
         },
         {
           category: 'Total Blocking Time',
           before: 1200,
           after: 400,
           improvement: 67,
-          status: 'excellent'
-        }
+          status: 'excellent',
+        },
       ];
 
       setVerificationResults(results);
-      
+
       // Calculate overall improvement
       const avgImprovement = results.reduce((sum, r) => sum + r.improvement, 0) / results.length;
-      const newScore = Math.min(100, 12 + (avgImprovement * 0.8)); // Conservative estimate
-      
+      const newScore = Math.min(100, 12 + avgImprovement * 0.8); // Conservative estimate
+
       setOverallScore({
         before: 12,
         after: Math.round(newScore),
-        improvement: Math.round(newScore - 12)
+        improvement: Math.round(newScore - 12),
       });
 
       // Determine next steps based on results
       const steps: string[] = [];
-      
+
       if (newScore < 50) {
         steps.push('🚨 Run additional performance optimizations');
         steps.push('🔧 Implement advanced caching strategies');
@@ -118,7 +118,6 @@ export const PerformanceVerification = () => {
       }
 
       setNextSteps(steps);
-
     } catch (error) {
       console.error('Verification failed:', error);
     } finally {
@@ -128,21 +127,31 @@ export const PerformanceVerification = () => {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'excellent': return 'text-green-600';
-      case 'good': return 'text-blue-600';
-      case 'needs-work': return 'text-yellow-600';
-      case 'critical': return 'text-red-600';
-      default: return 'text-gray-600';
+      case 'excellent':
+        return 'text-green-600';
+      case 'good':
+        return 'text-blue-600';
+      case 'needs-work':
+        return 'text-yellow-600';
+      case 'critical':
+        return 'text-red-600';
+      default:
+        return 'text-gray-600';
     }
   };
 
   const getStatusBadge = (status: string) => {
     switch (status) {
-      case 'excellent': return { variant: 'default' as const, label: 'Excellent' };
-      case 'good': return { variant: 'secondary' as const, label: 'Good' };
-      case 'needs-work': return { variant: 'outline' as const, label: 'Needs Work' };
-      case 'critical': return { variant: 'destructive' as const, label: 'Critical' };
-      default: return { variant: 'outline' as const, label: 'Unknown' };
+      case 'excellent':
+        return { variant: 'default' as const, label: 'Excellent' };
+      case 'good':
+        return { variant: 'secondary' as const, label: 'Good' };
+      case 'needs-work':
+        return { variant: 'outline' as const, label: 'Needs Work' };
+      case 'critical':
+        return { variant: 'destructive' as const, label: 'Critical' };
+      default:
+        return { variant: 'outline' as const, label: 'Unknown' };
     }
   };
 
@@ -170,8 +179,8 @@ export const PerformanceVerification = () => {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <Button 
-            onClick={runVerification} 
+          <Button
+            onClick={runVerification}
             disabled={isVerifying}
             className="flex items-center gap-2"
           >
@@ -192,15 +201,13 @@ export const PerformanceVerification = () => {
 
       {/* Overall Score Improvement */}
       {verificationResults.length > 0 && (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
           <Card className="border-red-200">
             <CardHeader className="pb-3">
               <CardTitle className="text-lg">Before Emergency Response</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold text-red-600">
-                {overallScore.before}/100
-              </div>
+              <div className="text-3xl font-bold text-red-600">{overallScore.before}/100</div>
               <Badge variant="destructive" className="mt-2">
                 Grade {getGrade(overallScore.before)}
               </Badge>
@@ -212,9 +219,7 @@ export const PerformanceVerification = () => {
               <CardTitle className="text-lg">After Emergency Response</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold text-green-600">
-                {overallScore.after}/100
-              </div>
+              <div className="text-3xl font-bold text-green-600">{overallScore.after}/100</div>
               <Badge variant="default" className="mt-2">
                 Grade {getGrade(overallScore.after)}
               </Badge>
@@ -226,10 +231,8 @@ export const PerformanceVerification = () => {
               <CardTitle className="text-lg">Improvement</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold text-blue-600">
-                +{overallScore.improvement}
-              </div>
-              <div className="text-sm text-gray-600 mt-2">
+              <div className="text-3xl font-bold text-blue-600">+{overallScore.improvement}</div>
+              <div className="mt-2 text-sm text-gray-600">
                 {Math.round((overallScore.improvement / overallScore.before) * 100)}% improvement
               </div>
             </CardContent>
@@ -249,47 +252,43 @@ export const PerformanceVerification = () => {
           <CardContent>
             <div className="space-y-4">
               {verificationResults.map((result, index) => (
-                <div key={index} className="border rounded-lg p-4">
-                  <div className="flex items-center justify-between mb-2">
+                <div key={index} className="rounded-lg border p-4">
+                  <div className="mb-2 flex items-center justify-between">
                     <h4 className="font-medium">{result.category}</h4>
                     <Badge variant={getStatusBadge(result.status).variant}>
                       {getStatusBadge(result.status).label}
                     </Badge>
                   </div>
-                  
+
                   <div className="grid grid-cols-3 gap-4 text-sm">
                     <div>
                       <span className="text-gray-600">Before:</span>
                       <div className="font-medium">
-                        {result.category.includes('Paint') || result.category.includes('Time') 
-                          ? `${result.before}ms` 
-                          : result.category === 'Bundle Size' 
-                          ? `${result.before}MB`
-                          : result.before.toFixed(3)
-                        }
+                        {result.category.includes('Paint') || result.category.includes('Time')
+                          ? `${result.before}ms`
+                          : result.category === 'Bundle Size'
+                            ? `${result.before}MB`
+                            : result.before.toFixed(3)}
                       </div>
                     </div>
                     <div>
                       <span className="text-gray-600">After:</span>
                       <div className="font-medium text-green-600">
-                        {result.category.includes('Paint') || result.category.includes('Time') 
-                          ? `${result.after}ms` 
-                          : result.category === 'Bundle Size' 
-                          ? `${result.after}MB`
-                          : result.after.toFixed(3)
-                        }
+                        {result.category.includes('Paint') || result.category.includes('Time')
+                          ? `${result.after}ms`
+                          : result.category === 'Bundle Size'
+                            ? `${result.after}MB`
+                            : result.after.toFixed(3)}
                       </div>
                     </div>
                     <div>
                       <span className="text-gray-600">Improvement:</span>
-                      <div className="font-medium text-blue-600">
-                        +{result.improvement}%
-                      </div>
+                      <div className="font-medium text-blue-600">+{result.improvement}%</div>
                     </div>
                   </div>
 
                   {result.recommendation && (
-                    <div className="mt-2 text-sm text-yellow-700 bg-yellow-50 p-2 rounded">
+                    <div className="mt-2 rounded bg-yellow-50 p-2 text-sm text-yellow-700">
                       💡 {result.recommendation}
                     </div>
                   )}
@@ -308,15 +307,13 @@ export const PerformanceVerification = () => {
               <Zap className="h-5 w-5" />
               Recommended Next Steps
             </CardTitle>
-            <CardDescription>
-              Based on verification results, here's what to do next
-            </CardDescription>
+            <CardDescription>Based on verification results, here's what to do next</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
               {nextSteps.map((step, index) => (
                 <div key={index} className="flex items-start gap-3">
-                  <div className="w-6 h-6 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center text-sm font-medium mt-0.5">
+                  <div className="mt-0.5 flex h-6 w-6 items-center justify-center rounded-full bg-blue-100 text-sm font-medium text-blue-600">
                     {index + 1}
                   </div>
                   <div className="text-sm">{step}</div>
@@ -332,9 +329,9 @@ export const PerformanceVerification = () => {
         <Smartphone className="h-4 w-4" />
         <AlertTitle>Nigerian Market Performance</AlertTitle>
         <AlertDescription>
-          Performance optimizations have been specifically tuned for Nigerian network conditions 
-          (2G/3G), lower-end devices, and payment gateway integrations (Paystack/Flutterwave). 
-          Continue monitoring real-world performance with Nigerian users.
+          Performance optimizations have been specifically tuned for Nigerian network conditions
+          (2G/3G), lower-end devices, and payment gateway integrations (Flutterwave). Continue
+          monitoring real-world performance with Nigerian users.
         </AlertDescription>
       </Alert>
     </div>

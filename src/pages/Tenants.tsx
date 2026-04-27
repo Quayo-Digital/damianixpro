@@ -1,28 +1,37 @@
-
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { PageLayout } from '@/components/layout/PageLayout';
 import { PageContent } from '@/components/layout/PageContent';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Plus, Users, FileText, Shield } from 'lucide-react';
-import { useAuth } from '@/contexts/auth';
+import { useAuthSession } from '@/contexts/auth';
 import { AddTenantDialog } from '@/components/tenants/AddTenantDialog';
-import { TenantScreening } from '@/components/tenants/TenantScreening';
-import { ApplicationReview } from '@/components/tenants/ApplicationReview';
+import { TenantDetailSheet } from '@/components/tenants/TenantDetailSheet';
+import { ApplicationDetailSheet } from '@/components/tenants/ApplicationDetailSheet';
+import { ScreeningDetailSheet } from '@/components/tenants/ScreeningDetailSheet';
 import { TenantStats } from '@/components/tenants/TenantStats';
 import { TenantTable } from '@/components/tenants/TenantTable';
 import { ApplicationsTable } from '@/components/tenants/ApplicationsTable';
 import { ScreeningsTable } from '@/components/tenants/ScreeningsTable';
-import { Tenant, TenantApplication, TenantScreening as TenantScreeningType } from '@/hooks/useTenants';
+import {
+  Tenant,
+  TenantApplication,
+  TenantScreening as TenantScreeningType,
+} from '@/hooks/useTenants';
 
 const Tenants = () => {
+  const navigate = useNavigate();
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<'tenants' | 'applications' | 'screenings'>('tenants');
   const [selectedTenant, setSelectedTenant] = useState<Tenant | null>(null);
   const [selectedApplication, setSelectedApplication] = useState<TenantApplication | null>(null);
   const [selectedScreening, setSelectedScreening] = useState<TenantScreeningType | null>(null);
-  
-  const { isOwner, isAdmin } = useAuth();
+  const [tenantDetailOpen, setTenantDetailOpen] = useState(false);
+  const [applicationDetailOpen, setApplicationDetailOpen] = useState(false);
+  const [screeningDetailOpen, setScreeningDetailOpen] = useState(false);
+
+  const { isOwner, isAdmin } = useAuthSession();
 
   const handleEditTenant = (tenant: Tenant) => {
     setSelectedTenant(tenant);
@@ -30,46 +39,44 @@ const Tenants = () => {
   };
 
   const handleViewTenant = (tenant: Tenant) => {
-    // TODO: Implement tenant detail view
-    console.log('View tenant:', tenant);
+    setSelectedTenant(tenant);
+    setTenantDetailOpen(true);
   };
 
   const handleContactTenant = (tenant: Tenant) => {
-    // TODO: Implement tenant communication
-    console.log('Contact tenant:', tenant);
+    navigate(`/messages?userId=${tenant.user_id}`);
   };
 
   const handleViewApplication = (application: TenantApplication) => {
     setSelectedApplication(application);
-    // TODO: Implement application detail view
-    console.log('View application:', application);
+    setApplicationDetailOpen(true);
   };
 
   const handleApproveApplication = (application: TenantApplication) => {
-    console.log('Application approved:', application);
+    setSelectedApplication(application);
   };
 
   const handleRejectApplication = (application: TenantApplication) => {
-    console.log('Application rejected:', application);
+    setSelectedApplication(application);
   };
 
   const handleViewScreening = (screening: TenantScreeningType) => {
     setSelectedScreening(screening);
-    // TODO: Implement screening detail view
-    console.log('View screening:', screening);
+    setScreeningDetailOpen(true);
   };
 
   return (
     <PageLayout>
-      <PageContent 
-        title="Tenants" 
-        description="Manage tenant applications and screening"
-      >
+      <PageContent title="Tenants" description="Manage tenant applications and screening">
         {/* Statistics Overview */}
         <TenantStats />
-        
-        <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as any)} className="space-y-6">
-          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+
+        <Tabs
+          value={activeTab}
+          onValueChange={(value) => setActiveTab(value as any)}
+          className="space-y-6"
+        >
+          <div className="flex flex-col items-start justify-between gap-4 md:flex-row md:items-center">
             <TabsList className="grid w-full grid-cols-3 md:w-auto">
               <TabsTrigger value="tenants" className="flex items-center gap-2">
                 <Users className="h-4 w-4" />
@@ -84,7 +91,7 @@ const Tenants = () => {
                 <span>Screenings</span>
               </TabsTrigger>
             </TabsList>
-            
+
             {(isOwner() || isAdmin()) && (
               <Button onClick={() => setIsAddDialogOpen(true)}>
                 <Plus className="mr-2 h-4 w-4" />
@@ -94,7 +101,7 @@ const Tenants = () => {
           </div>
 
           <TabsContent value="tenants" className="space-y-4">
-            <TenantTable 
+            <TenantTable
               onEditTenant={handleEditTenant}
               onViewTenant={handleViewTenant}
               onContactTenant={handleContactTenant}
@@ -102,7 +109,7 @@ const Tenants = () => {
           </TabsContent>
 
           <TabsContent value="applications" className="space-y-4">
-            <ApplicationsTable 
+            <ApplicationsTable
               onViewApplication={handleViewApplication}
               onApproveApplication={handleApproveApplication}
               onRejectApplication={handleRejectApplication}
@@ -110,31 +117,42 @@ const Tenants = () => {
           </TabsContent>
 
           <TabsContent value="screenings" className="space-y-4">
-            <ScreeningsTable 
-              onViewScreening={handleViewScreening}
-            />
+            <ScreeningsTable onViewScreening={handleViewScreening} />
           </TabsContent>
         </Tabs>
-        
-        <AddTenantDialog 
+
+        <AddTenantDialog
           open={isAddDialogOpen}
           onOpenChange={setIsAddDialogOpen}
           tenant={selectedTenant}
         />
-        
-        {selectedApplication && (
-          <ApplicationReview 
-            applicationId={selectedApplication.id}
-            onClose={() => setSelectedApplication(null)}
-          />
-        )}
-        
-        {selectedScreening && (
-          <TenantScreening 
-            tenantId={selectedScreening.tenant_id}
-            onClose={() => setSelectedScreening(null)}
-          />
-        )}
+
+        <TenantDetailSheet
+          tenant={selectedTenant}
+          open={tenantDetailOpen}
+          onOpenChange={(open) => {
+            setTenantDetailOpen(open);
+            if (!open) setSelectedTenant(null);
+          }}
+        />
+
+        <ApplicationDetailSheet
+          application={selectedApplication}
+          open={applicationDetailOpen}
+          onOpenChange={(open) => {
+            setApplicationDetailOpen(open);
+            if (!open) setSelectedApplication(null);
+          }}
+        />
+
+        <ScreeningDetailSheet
+          screening={selectedScreening}
+          open={screeningDetailOpen}
+          onOpenChange={(open) => {
+            setScreeningDetailOpen(open);
+            if (!open) setSelectedScreening(null);
+          }}
+        />
       </PageContent>
     </PageLayout>
   );

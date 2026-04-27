@@ -1,4 +1,4 @@
-// Critical Performance Optimization Utilities for Nigeria Homes
+// Critical Performance Optimization Utilities for DamianixPro
 // Designed to address Grade F performance issues
 
 import { performanceMonitor, PerformanceMetrics } from './performance-monitor';
@@ -39,7 +39,7 @@ export class PerformanceOptimizer {
         priority: 'critical',
         impact: 'high',
         implementation: this.implementCodeSplitting,
-        estimatedImprovement: '40-60% reduction in initial load time'
+        estimatedImprovement: '40-60% reduction in initial load time',
       },
       {
         id: 'lazy-loading',
@@ -49,7 +49,7 @@ export class PerformanceOptimizer {
         priority: 'critical',
         impact: 'high',
         implementation: this.implementLazyLoading,
-        estimatedImprovement: '30-50% faster initial render'
+        estimatedImprovement: '30-50% faster initial render',
       },
       {
         id: 'image-optimization',
@@ -59,7 +59,7 @@ export class PerformanceOptimizer {
         priority: 'high',
         impact: 'high',
         implementation: this.optimizeImages,
-        estimatedImprovement: '50-70% reduction in image load time'
+        estimatedImprovement: '50-70% reduction in image load time',
       },
       {
         id: 'caching-strategy',
@@ -69,7 +69,7 @@ export class PerformanceOptimizer {
         priority: 'critical',
         impact: 'high',
         implementation: this.implementCaching,
-        estimatedImprovement: '60-80% faster repeat visits'
+        estimatedImprovement: '60-80% faster repeat visits',
       },
       {
         id: 'database-optimization',
@@ -79,7 +79,7 @@ export class PerformanceOptimizer {
         priority: 'high',
         impact: 'medium',
         implementation: this.optimizeDatabase,
-        estimatedImprovement: '30-50% faster API responses'
+        estimatedImprovement: '30-50% faster API responses',
       },
       {
         id: 'network-optimization',
@@ -89,14 +89,14 @@ export class PerformanceOptimizer {
         priority: 'high',
         impact: 'high',
         implementation: this.optimizeNetwork,
-        estimatedImprovement: '40-60% faster asset delivery'
-      }
+        estimatedImprovement: '40-60% faster asset delivery',
+      },
     ];
   }
 
   // Get critical optimizations that should be implemented immediately
   getCriticalOptimizations(): PerformanceOptimization[] {
-    return this.optimizations.filter(opt => opt.priority === 'critical');
+    return this.optimizations.filter((opt) => opt.priority === 'critical');
   }
 
   // Get all optimizations sorted by priority and impact
@@ -128,124 +128,128 @@ export class PerformanceOptimizer {
     // Analyze specific performance issues
     if (metrics.pageLoadTime > 8000) {
       criticalIssues.push('Page load time exceeds 8 seconds - critical for Nigerian networks');
-      recommendations.push(...this.optimizations.filter(opt => 
-        opt.category === 'bundle' || opt.category === 'caching'
-      ));
+      recommendations.push(
+        ...this.optimizations.filter(
+          (opt) => opt.category === 'bundle' || opt.category === 'caching'
+        )
+      );
     }
 
     if (metrics.fcp > 4000) {
       criticalIssues.push('First Contentful Paint too slow - users see blank page too long');
-      recommendations.push(...this.optimizations.filter(opt => 
-        opt.category === 'rendering' || opt.category === 'images'
-      ));
+      recommendations.push(
+        ...this.optimizations.filter(
+          (opt) => opt.category === 'rendering' || opt.category === 'images'
+        )
+      );
     }
 
     if (metrics.lcp > 6000) {
       criticalIssues.push('Largest Contentful Paint indicates slow content loading');
-      recommendations.push(...this.optimizations.filter(opt => 
-        opt.category === 'images' || opt.category === 'network'
-      ));
+      recommendations.push(
+        ...this.optimizations.filter(
+          (opt) => opt.category === 'images' || opt.category === 'network'
+        )
+      );
     }
 
     if (metrics.cls > 0.25) {
       criticalIssues.push('High Cumulative Layout Shift - poor visual stability');
-      recommendations.push(...this.optimizations.filter(opt => 
-        opt.category === 'rendering'
-      ));
+      recommendations.push(...this.optimizations.filter((opt) => opt.category === 'rendering'));
     }
 
     // Remove duplicates
-    const uniqueRecommendations = recommendations.filter((rec, index, self) => 
-      index === self.findIndex(r => r.id === rec.id)
+    const uniqueRecommendations = recommendations.filter(
+      (rec, index, self) => index === self.findIndex((r) => r.id === rec.id)
     );
 
     // Estimate improvement
-    const estimatedNewScore = Math.min(100, analysis.score + (uniqueRecommendations.length * 15));
+    const estimatedNewScore = Math.min(100, analysis.score + uniqueRecommendations.length * 15);
 
     return {
       currentScore: analysis.score,
       grade: analysis.grade,
       criticalIssues,
       recommendations: uniqueRecommendations,
-      estimatedNewScore
+      estimatedNewScore,
     };
   }
 
   // Implementation methods for each optimization
   private async implementCodeSplitting(): Promise<void> {
     console.log('🔧 Implementing code splitting...');
-    
+
     // This would typically involve:
     // 1. Splitting routes into separate bundles
     // 2. Using React.lazy() for component-level splitting
     // 3. Implementing dynamic imports for large libraries
-    
+
     // For demo purposes, we'll simulate the optimization
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    await new Promise((resolve) => setTimeout(resolve, 1000));
     console.log('✅ Code splitting implemented');
   }
 
   private async implementLazyLoading(): Promise<void> {
     console.log('🔧 Implementing lazy loading...');
-    
+
     // This would typically involve:
     // 1. Lazy loading images with Intersection Observer
     // 2. Lazy loading components below the fold
     // 3. Implementing virtual scrolling for large lists
-    
-    await new Promise(resolve => setTimeout(resolve, 800));
+
+    await new Promise((resolve) => setTimeout(resolve, 800));
     console.log('✅ Lazy loading implemented');
   }
 
   private async optimizeImages(): Promise<void> {
     console.log('🔧 Optimizing images...');
-    
+
     // This would typically involve:
     // 1. Converting images to WebP format
     // 2. Implementing responsive images
     // 3. Compressing images
     // 4. Using placeholder images
-    
-    await new Promise(resolve => setTimeout(resolve, 1200));
+
+    await new Promise((resolve) => setTimeout(resolve, 1200));
     console.log('✅ Image optimization implemented');
   }
 
   private async implementCaching(): Promise<void> {
     console.log('🔧 Implementing caching strategy...');
-    
+
     // This would typically involve:
     // 1. Service worker for offline caching
     // 2. Browser caching headers
     // 3. API response caching
     // 4. Static asset caching
-    
-    await new Promise(resolve => setTimeout(resolve, 1000));
+
+    await new Promise((resolve) => setTimeout(resolve, 1000));
     console.log('✅ Caching strategy implemented');
   }
 
   private async optimizeDatabase(): Promise<void> {
     console.log('🔧 Optimizing database queries...');
-    
+
     // This would typically involve:
     // 1. Adding database indexes
     // 2. Optimizing slow queries
     // 3. Implementing query caching
     // 4. Database connection pooling
-    
-    await new Promise(resolve => setTimeout(resolve, 1500));
+
+    await new Promise((resolve) => setTimeout(resolve, 1500));
     console.log('✅ Database optimization implemented');
   }
 
   private async optimizeNetwork(): Promise<void> {
     console.log('🔧 Implementing network optimization...');
-    
+
     // This would typically involve:
     // 1. Enabling gzip/brotli compression
     // 2. Setting up CDN
     // 3. Optimizing API endpoints
     // 4. Implementing request batching
-    
-    await new Promise(resolve => setTimeout(resolve, 900));
+
+    await new Promise((resolve) => setTimeout(resolve, 900));
     console.log('✅ Network optimization implemented');
   }
 
@@ -271,14 +275,15 @@ export class PerformanceOptimizer {
       }
     }
 
-    const estimatedImprovement = completed.length > 0 
-      ? `Expected 50-80% performance improvement` 
-      : 'No optimizations completed';
+    const estimatedImprovement =
+      completed.length > 0
+        ? `Expected 50-80% performance improvement`
+        : 'No optimizations completed';
 
     return {
       completed,
       failed,
-      estimatedImprovement
+      estimatedImprovement,
     };
   }
 
@@ -294,7 +299,7 @@ export class PerformanceOptimizer {
       '🇳🇬 Implement progressive loading for property images',
       '🇳🇬 Cache payment gateway responses for faster transactions',
       '🇳🇬 Optimize database queries for high-latency connections',
-      '🇳🇬 Use service workers for offline property browsing'
+      '🇳🇬 Use service workers for offline property browsing',
     ];
   }
 }
@@ -308,27 +313,30 @@ export class QuickPerformanceFixes {
   static async removeUnusedCode(): Promise<void> {
     console.log('🧹 Removing unused code...');
     // This would analyze and remove unused CSS/JS
-    await new Promise(resolve => setTimeout(resolve, 500));
+    await new Promise((resolve) => setTimeout(resolve, 500));
     console.log('✅ Unused code removed');
   }
 
   // Preload critical resources
   static async preloadCriticalResources(): Promise<void> {
     console.log('⚡ Preloading critical resources...');
-    
+
     // Add preload links for critical resources
     const criticalResources = [
       '/fonts/inter.woff2',
       '/api/properties/featured',
-      '/images/hero-bg.webp'
+      '/images/hero-bg.webp',
     ];
 
-    criticalResources.forEach(resource => {
+    criticalResources.forEach((resource) => {
       const link = document.createElement('link');
       link.rel = 'preload';
       link.href = resource;
-      link.as = resource.includes('.woff') ? 'font' : 
-               resource.includes('/api/') ? 'fetch' : 'image';
+      link.as = resource.includes('.woff')
+        ? 'font'
+        : resource.includes('/api/')
+          ? 'fetch'
+          : 'image';
       if (link.as === 'font') link.crossOrigin = 'anonymous';
       document.head.appendChild(link);
     });
@@ -339,26 +347,26 @@ export class QuickPerformanceFixes {
   // Optimize third-party scripts
   static async optimizeThirdPartyScripts(): Promise<void> {
     console.log('🔧 Optimizing third-party scripts...');
-    
+
     // This would:
     // 1. Load third-party scripts asynchronously
     // 2. Use script loading strategies
     // 3. Implement script prioritization
-    
-    await new Promise(resolve => setTimeout(resolve, 300));
+
+    await new Promise((resolve) => setTimeout(resolve, 300));
     console.log('✅ Third-party scripts optimized');
   }
 
   // Run all quick fixes
   static async runAllQuickFixes(): Promise<void> {
     console.log('🚀 Running quick performance fixes...');
-    
+
     await Promise.all([
       this.removeUnusedCode(),
       this.preloadCriticalResources(),
-      this.optimizeThirdPartyScripts()
+      this.optimizeThirdPartyScripts(),
     ]);
-    
+
     console.log('✅ All quick fixes completed');
   }
 }

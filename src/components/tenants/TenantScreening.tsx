@@ -1,10 +1,16 @@
-
 import { useQuery } from '@tanstack/react-query';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
-import { CheckCircle, XCircle, AlertCircle, ArrowRight, Loader2 } from "lucide-react";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from '@/components/ui/sheet';
+import { CheckCircle, XCircle, AlertCircle, ArrowRight, Loader2 } from 'lucide-react';
 import { getScreeningForTenant } from '@/services/tenants/screening';
 
 // Types for the screening results
@@ -49,38 +55,44 @@ export function TenantScreening({ tenantId, tenantName = 'Applicant' }: TenantSc
   };
 
   const getStatusIcon = (verified: boolean) => {
-    return verified ? 
-      <CheckCircle className="h-5 w-5 text-green-500" /> : 
-      <AlertCircle className="h-5 w-5 text-amber-500" />;
+    return verified ? (
+      <CheckCircle className="h-5 w-5 text-green-500" />
+    ) : (
+      <AlertCircle className="h-5 w-5 text-amber-500" />
+    );
   };
 
   const getVerificationTypeLabel = (type: VerificationType) => {
     switch (type) {
-      case 'background': return 'Background Check';
-      case 'credit': return 'Credit Score';
-      case 'criminal': return 'Criminal History';
-      case 'employment': return 'Employment Verification';
-      case 'rental_history': return 'Rental History';
-      default: return type;
+      case 'background':
+        return 'Background Check';
+      case 'credit':
+        return 'Credit Score';
+      case 'criminal':
+        return 'Criminal History';
+      case 'employment':
+        return 'Employment Verification';
+      case 'rental_history':
+        return 'Rental History';
+      default:
+        return type;
     }
   };
 
-  const overallVerificationStatus = screeningResults.every(r => r.verified) 
-    ? "verified" 
+  const overallVerificationStatus = screeningResults.every((r) => r.verified)
+    ? 'verified'
     : screeningResults.length > 0
-      ? "failed" 
-      : "pending";
+      ? 'failed'
+      : 'pending';
 
   if (isLoadingScreening) {
     return (
       <Card>
         <CardHeader>
           <CardTitle>Tenant Screening</CardTitle>
-          <CardDescription>
-            Verify applicant background and credentials
-          </CardDescription>
+          <CardDescription>Verify applicant background and credentials</CardDescription>
         </CardHeader>
-        <CardContent className="flex items-center justify-center h-48">
+        <CardContent className="flex h-48 items-center justify-center">
           <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
         </CardContent>
       </Card>
@@ -92,13 +104,14 @@ export function TenantScreening({ tenantId, tenantName = 'Applicant' }: TenantSc
       <Card>
         <CardHeader>
           <CardTitle>Tenant Screening</CardTitle>
-          <CardDescription>
-            Screening for {tenantName}
-          </CardDescription>
+          <CardDescription>Screening for {tenantName}</CardDescription>
         </CardHeader>
         <CardContent>
           <p className="text-muted-foreground">Screening results are not yet available.</p>
-          <p className="text-sm text-muted-foreground mt-2">Current status: <Badge variant="outline">{screening?.status || 'Not initiated'}</Badge></p>
+          <div className="mt-2 flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
+            <span>Current status:</span>
+            <Badge variant="outline">{screening?.status || 'Not initiated'}</Badge>
+          </div>
         </CardContent>
       </Card>
     );
@@ -109,12 +122,10 @@ export function TenantScreening({ tenantId, tenantName = 'Applicant' }: TenantSc
       <CardHeader className="flex flex-row items-center justify-between">
         <div>
           <CardTitle>Screening Results</CardTitle>
-          <CardDescription>
-            Applicant: {tenantName}
-          </CardDescription>
+          <CardDescription>Applicant: {tenantName}</CardDescription>
         </div>
-        
-        {overallVerificationStatus === "verified" ? (
+
+        {overallVerificationStatus === 'verified' ? (
           <Badge className="bg-green-500">All Verified</Badge>
         ) : screeningResults.length > 0 ? (
           <Badge variant="destructive">Issues Found</Badge>
@@ -129,11 +140,13 @@ export function TenantScreening({ tenantId, tenantName = 'Applicant' }: TenantSc
               <div className="flex items-center gap-2">
                 {getStatusIcon(result.verified)}
                 <span>{getVerificationTypeLabel(result.type)}</span>
-                {result.score && <span className="text-sm text-muted-foreground">({result.score})</span>}
+                {result.score && (
+                  <span className="text-sm text-muted-foreground">({result.score})</span>
+                )}
               </div>
               <div className="flex items-center gap-2">
                 {getStatusBadge(result.status)}
-                
+
                 <Sheet>
                   <SheetTrigger asChild>
                     <Button variant="ghost" size="sm">
@@ -161,11 +174,15 @@ export function TenantScreening({ tenantId, tenantName = 'Applicant' }: TenantSc
                       <div>
                         <h4 className="font-medium">Verification Method</h4>
                         <p className="text-sm text-muted-foreground">
-                          {result.type === 'credit' ? 'TransUnion Credit Check' : 
-                           result.type === 'criminal' ? 'National Criminal Database' :
-                           result.type === 'background' ? 'Background Check Service' :
-                           result.type === 'employment' ? 'Employer Verification' :
-                           'Previous Landlord Contact'}
+                          {result.type === 'credit'
+                            ? 'TransUnion Credit Check'
+                            : result.type === 'criminal'
+                              ? 'National Criminal Database'
+                              : result.type === 'background'
+                                ? 'Background Check Service'
+                                : result.type === 'employment'
+                                  ? 'Employer Verification'
+                                  : 'Previous Landlord Contact'}
                         </p>
                       </div>
                       <div>

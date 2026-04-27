@@ -1,4 +1,3 @@
-
 import {
   AlertDialog,
   AlertDialogAction,
@@ -8,7 +7,7 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
+} from '@/components/ui/alert-dialog';
 
 interface DeleteDocumentDialogProps {
   isOpen: boolean;
@@ -32,7 +31,7 @@ export function DeleteDocumentDialog({
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogCancel>Cancel</AlertDialogCancel>
-          <AlertDialogAction 
+          <AlertDialogAction
             onClick={onConfirm}
             className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
           >

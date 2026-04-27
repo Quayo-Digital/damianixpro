@@ -1,4 +1,4 @@
--- Simple Database Fix for Nigeria Homes App
+-- Simple Database Fix for DamianixPro App
 -- This script fixes the database schema issues without creating users
 
 -- Step 1: Check current database state
@@ -114,4 +114,6 @@ SELECT 'Agent users:' as info, COUNT(*) as count FROM public.user_roles WHERE ro
 SELECT 'Owner users:' as info, COUNT(*) as count FROM public.user_roles WHERE role = 'owner';
 SELECT 'Properties:' as info, COUNT(*) as count FROM public.properties;
 SELECT 'Database schema fixed! You can now create properties.' as status;
+
+
 

@@ -1,4 +1,3 @@
-
 import { Property } from '@/services/property';
 import {
   Table,
@@ -38,7 +37,7 @@ export function PropertyList({ properties, isLoading = false, onEdit }: Property
             {[...Array(5)].map((_, i) => (
               <TableRow key={i}>
                 <TableCell>
-                  <Skeleton className="h-4 w-32 mb-1" />
+                  <Skeleton className="mb-1 h-4 w-32" />
                   <Skeleton className="h-3 w-48" />
                 </TableCell>
                 <TableCell className="hidden md:table-cell">
@@ -63,10 +62,11 @@ export function PropertyList({ properties, isLoading = false, onEdit }: Property
 
   if (properties.length === 0) {
     return (
-      <div className="text-center p-10 border rounded-lg">
-        <h3 className="font-medium text-lg mb-2">No properties found</h3>
-        <p className="text-muted-foreground mb-4">
-          There are no properties matching your filters. Try adjusting your search or add a new property.
+      <div className="rounded-lg border p-10 text-center">
+        <h3 className="mb-2 text-lg font-medium">No properties found</h3>
+        <p className="mb-4 text-muted-foreground">
+          There are no properties matching your filters. Try adjusting your search or add a new
+          property.
         </p>
       </div>
     );
@@ -88,7 +88,7 @@ export function PropertyList({ properties, isLoading = false, onEdit }: Property
   };
 
   return (
-    <div className="rounded-md border overflow-auto">
+    <div className="overflow-auto rounded-md border">
       <Table>
         <TableHeader>
           <TableRow>
@@ -104,11 +104,15 @@ export function PropertyList({ properties, isLoading = false, onEdit }: Property
             <TableRow key={property.id}>
               <TableCell>
                 <div className="font-medium">{property.name}</div>
-                <div className="text-sm text-muted-foreground hidden md:block">{property.address}</div>
+                <div className="hidden text-sm text-muted-foreground md:block">
+                  {property.address}
+                </div>
               </TableCell>
-              <TableCell className="hidden md:table-cell capitalize">{property.type}</TableCell>
+              <TableCell className="hidden capitalize md:table-cell">{property.type}</TableCell>
               <TableCell>
-                {new Intl.NumberFormat('en-NG', { style: 'currency', currency: 'NGN' }).format(Number(property.price))}
+                {new Intl.NumberFormat('en-NG', { style: 'currency', currency: 'NGN' }).format(
+                  Number(property.price)
+                )}
               </TableCell>
               <TableCell>
                 <Badge variant={getStatusVariant(property.status)}>{property.status}</Badge>

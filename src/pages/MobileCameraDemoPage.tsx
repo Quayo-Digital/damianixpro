@@ -9,10 +9,10 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { 
-  Camera, 
-  Home, 
-  FileText, 
+import {
+  Camera,
+  Home,
+  FileText,
   Image as ImageIcon,
   Smartphone,
   Wifi,
@@ -22,7 +22,7 @@ import {
   Clock,
   CheckCircle,
   AlertCircle,
-  Info
+  Info,
 } from 'lucide-react';
 import CameraButton from '@/components/camera/CameraButton';
 import PhotoGallery from '@/components/camera/PhotoGallery';
@@ -37,24 +37,25 @@ export function MobileCameraDemoPage() {
   const { isSupported, capabilities } = useCamera(false);
 
   const handlePropertyPhoto = (photo: CapturedPhoto) => {
-    setPropertyPhotos(prev => [...prev, photo]);
+    setPropertyPhotos((prev) => [...prev, photo]);
   };
 
   const handlePropertyPhotos = (photos: CapturedPhoto[]) => {
-    setPropertyPhotos(prev => [...prev, ...photos]);
+    setPropertyPhotos((prev) => [...prev, ...photos]);
   };
 
   const handleDocumentPhoto = (photo: CapturedPhoto) => {
-    setDocumentPhotos(prev => [...prev, photo]);
+    setDocumentPhotos((prev) => [...prev, photo]);
   };
 
   const handleGeneralPhoto = (photo: CapturedPhoto) => {
-    setGeneralPhotos(prev => [...prev, photo]);
+    setGeneralPhotos((prev) => [...prev, photo]);
   };
 
-  const deletePhoto = (photos: CapturedPhoto[], setPhotos: React.Dispatch<React.SetStateAction<CapturedPhoto[]>>) => 
+  const deletePhoto =
+    (photos: CapturedPhoto[], setPhotos: React.Dispatch<React.SetStateAction<CapturedPhoto[]>>) =>
     (photoId: string) => {
-      setPhotos(photos.filter(photo => photo.id !== photoId));
+      setPhotos(photos.filter((photo) => photo.id !== photoId));
     };
 
   const clearAllPhotos = () => {
@@ -65,17 +66,15 @@ export function MobileCameraDemoPage() {
 
   return (
     <div className="min-h-screen bg-gray-50 p-4">
-      <div className="max-w-6xl mx-auto space-y-6">
+      <div className="mx-auto max-w-6xl space-y-6">
         {/* Header */}
-        <div className="text-center space-y-4">
+        <div className="space-y-4 text-center">
           <div className="flex items-center justify-center gap-3">
-            <div className="p-3 bg-blue-600 rounded-full">
+            <div className="rounded-full bg-blue-600 p-3">
               <Camera className="h-8 w-8 text-white" />
             </div>
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">
-                📱 Mobile Camera Features
-              </h1>
+              <h1 className="text-3xl font-bold text-gray-900">📱 Mobile Camera Features</h1>
               <p className="text-gray-600">
                 Comprehensive camera functionality for Nigerian real estate
               </p>
@@ -108,9 +107,9 @@ export function MobileCameraDemoPage() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-              <div className="text-center p-4 bg-gray-50 rounded-lg">
-                <div className={`text-2xl mb-2 ${isSupported ? 'text-green-600' : 'text-red-600'}`}>
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
+              <div className="rounded-lg bg-gray-50 p-4 text-center">
+                <div className={`mb-2 text-2xl ${isSupported ? 'text-green-600' : 'text-red-600'}`}>
                   {isSupported ? '✅' : '❌'}
                 </div>
                 <p className="font-medium">Camera Access</p>
@@ -119,8 +118,10 @@ export function MobileCameraDemoPage() {
                 </p>
               </div>
 
-              <div className="text-center p-4 bg-gray-50 rounded-lg">
-                <div className={`text-2xl mb-2 ${capabilities?.hasMultipleCameras ? 'text-green-600' : 'text-orange-600'}`}>
+              <div className="rounded-lg bg-gray-50 p-4 text-center">
+                <div
+                  className={`mb-2 text-2xl ${capabilities?.hasMultipleCameras ? 'text-green-600' : 'text-orange-600'}`}
+                >
                   {capabilities?.hasMultipleCameras ? '📷' : '📱'}
                 </div>
                 <p className="font-medium">Multiple Cameras</p>
@@ -129,8 +130,10 @@ export function MobileCameraDemoPage() {
                 </p>
               </div>
 
-              <div className="text-center p-4 bg-gray-50 rounded-lg">
-                <div className={`text-2xl mb-2 ${capabilities?.supportsFlash ? 'text-yellow-600' : 'text-gray-400'}`}>
+              <div className="rounded-lg bg-gray-50 p-4 text-center">
+                <div
+                  className={`mb-2 text-2xl ${capabilities?.supportsFlash ? 'text-yellow-600' : 'text-gray-400'}`}
+                >
                   {capabilities?.supportsFlash ? '⚡' : '🔦'}
                 </div>
                 <p className="font-medium">Flash Support</p>
@@ -139,12 +142,10 @@ export function MobileCameraDemoPage() {
                 </p>
               </div>
 
-              <div className="text-center p-4 bg-gray-50 rounded-lg">
-                <div className="text-2xl mb-2 text-blue-600">🇳🇬</div>
+              <div className="rounded-lg bg-gray-50 p-4 text-center">
+                <div className="mb-2 text-2xl text-blue-600">🇳🇬</div>
                 <p className="font-medium">Nigerian Optimized</p>
-                <p className="text-sm text-muted-foreground">
-                  Network & Device Ready
-                </p>
+                <p className="text-sm text-muted-foreground">Network & Device Ready</p>
               </div>
             </div>
           </CardContent>
@@ -180,17 +181,15 @@ export function MobileCameraDemoPage() {
                     <Home className="h-5 w-5 text-blue-600" />
                     Property Photography
                   </div>
-                  <Badge variant="secondary">
-                    {propertyPhotos.length} photos
-                  </Badge>
+                  <Badge variant="secondary">{propertyPhotos.length} photos</Badge>
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <Alert>
                   <Camera className="h-4 w-4" />
                   <AlertDescription>
-                    Capture high-quality property photos optimized for Nigerian networks. 
-                    Perfect for listings, inspections, and documentation.
+                    Capture high-quality property photos optimized for Nigerian networks. Perfect
+                    for listings, inspections, and documentation.
                   </AlertDescription>
                 </Alert>
 
@@ -201,7 +200,7 @@ export function MobileCameraDemoPage() {
                     size="lg"
                     onPhotoCapture={handlePropertyPhoto}
                   />
-                  
+
                   <CameraButton
                     variant="property"
                     mode="multiple"
@@ -209,7 +208,7 @@ export function MobileCameraDemoPage() {
                     maxPhotos={10}
                     onPhotosCapture={handlePropertyPhotos}
                   >
-                    <Camera className="h-5 w-5 mr-2" />
+                    <Camera className="mr-2 h-5 w-5" />
                     Multiple Photos
                   </CameraButton>
                 </div>
@@ -233,16 +232,14 @@ export function MobileCameraDemoPage() {
                     <FileText className="h-5 w-5 text-green-600" />
                     Document Scanning
                   </div>
-                  <Badge variant="secondary">
-                    {documentPhotos.length} documents
-                  </Badge>
+                  <Badge variant="secondary">{documentPhotos.length} documents</Badge>
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <Alert>
                   <FileText className="h-4 w-4" />
                   <AlertDescription>
-                    Scan important documents like IDs, contracts, certificates, and receipts. 
+                    Scan important documents like IDs, contracts, certificates, and receipts.
                     Optimized for document clarity and Nigerian network conditions.
                   </AlertDescription>
                 </Alert>
@@ -275,17 +272,15 @@ export function MobileCameraDemoPage() {
                     <ImageIcon className="h-5 w-5 text-gray-600" />
                     General Photography
                   </div>
-                  <Badge variant="secondary">
-                    {generalPhotos.length} photos
-                  </Badge>
+                  <Badge variant="secondary">{generalPhotos.length} photos</Badge>
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <Alert>
                   <ImageIcon className="h-4 w-4" />
                   <AlertDescription>
-                    General purpose camera for any photography needs. 
-                    Includes location data and optimized compression.
+                    General purpose camera for any photography needs. Includes location data and
+                    optimized compression.
                   </AlertDescription>
                 </Alert>
 
@@ -310,7 +305,7 @@ export function MobileCameraDemoPage() {
 
           {/* Features Tab */}
           <TabsContent value="features" className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
               {/* Camera Features */}
               <Card>
                 <CardHeader>
@@ -444,19 +439,22 @@ export function MobileCameraDemoPage() {
         {/* Action Buttons */}
         <Card>
           <CardContent className="p-6">
-            <div className="flex flex-col sm:flex-row gap-4 items-center justify-between">
+            <div className="flex flex-col items-center justify-between gap-4 sm:flex-row">
               <div className="text-center sm:text-left">
                 <h3 className="font-semibold">Total Photos Captured</h3>
                 <p className="text-muted-foreground">
-                  Property: {propertyPhotos.length} • Documents: {documentPhotos.length} • General: {generalPhotos.length}
+                  Property: {propertyPhotos.length} • Documents: {documentPhotos.length} • General:{' '}
+                  {generalPhotos.length}
                 </p>
               </div>
-              
+
               <div className="flex gap-2">
                 <Button
                   variant="outline"
                   onClick={clearAllPhotos}
-                  disabled={propertyPhotos.length + documentPhotos.length + generalPhotos.length === 0}
+                  disabled={
+                    propertyPhotos.length + documentPhotos.length + generalPhotos.length === 0
+                  }
                 >
                   Clear All Photos
                 </Button>
@@ -469,8 +467,9 @@ export function MobileCameraDemoPage() {
         <Alert>
           <Info className="h-4 w-4" />
           <AlertDescription>
-            📱 <strong>Nigerian Network Optimization:</strong> All camera features are optimized for 2G/3G/4G networks 
-            with smart compression, adaptive quality, and offline storage capabilities. Perfect for Nigerian mobile users!
+            📱 <strong>Nigerian Network Optimization:</strong> All camera features are optimized for
+            2G/3G/4G networks with smart compression, adaptive quality, and offline storage
+            capabilities. Perfect for Nigerian mobile users!
           </AlertDescription>
         </Alert>
       </div>

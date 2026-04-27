@@ -1,4 +1,9 @@
 import { supabase } from '@/integrations/supabase/client';
+import {
+  enrichRowsWithPropertiesAndTenants,
+  fetchLeaseRows,
+  isLikelyActiveLeaseStatus,
+} from '@/services/leases/enrichLeaseAgreements';
 import { toast } from '@/components/ui/sonner';
 import { format, addDays, differenceInDays, parseISO } from 'date-fns';
 
@@ -37,7 +42,7 @@ export const initiateLeaseAction = async (
     newEndDate?: string;
     renewalTermMonths?: number;
   }
-): Promise<{ success: boolean, actionId?: string, error?: string }> => {
+): Promise<{ success: boolean; actionId?: string; error?: string }> => {
   try {
     // Insert into the lease_actions table
     const { data, error } = await supabase
@@ -53,15 +58,15 @@ export const initiateLeaseAction = async (
         effective_date: effectiveDate,
         new_monthly_rent: additionalData?.newMonthlyRent || null,
         new_end_date: additionalData?.newEndDate || null,
-        renewal_term_months: additionalData?.renewalTermMonths || null
+        renewal_term_months: additionalData?.renewalTermMonths || null,
       })
       .select('id')
       .single();
-    
+
     if (error) throw error;
-    
+
     let toastMessage = '';
-    
+
     switch (actionType) {
       case 'renew':
         toastMessage = 'Lease renewal request submitted successfully';
@@ -73,9 +78,9 @@ export const initiateLeaseAction = async (
         toastMessage = 'Eviction process initiated';
         break;
     }
-    
+
     toast.success(toastMessage);
-    
+
     return { success: true, actionId: data.id };
   } catch (error) {
     console.error(`Error initiating ${actionType}:`, error);
@@ -94,14 +99,14 @@ export const updateLeaseActionStatus = async (
   try {
     const { error } = await supabase
       .from('lease_actions')
-      .update({ 
-        status, 
-        updated_at: new Date().toISOString() 
+      .update({
+        status,
+        updated_at: new Date().toISOString(),
       })
       .eq('id', actionId);
-    
+
     if (error) throw error;
-    
+
     toast.success(`Lease action ${status}`);
     return true;
   } catch (error) {
@@ -115,49 +120,52 @@ export const updateLeaseActionStatus = async (
  * Gets all lease actions for a tenant or property owner
  */
 export const getLeaseActions = async (options: {
-  tenantId?: string,
-  propertyId?: string,
-  leaseId?: string,
-  status?: 'pending' | 'approved' | 'rejected' | 'completed'
+  tenantId?: string;
+  propertyId?: string;
+  leaseId?: string;
+  status?: 'pending' | 'approved' | 'rejected' | 'completed';
 }): Promise<LeaseAction[]> => {
   try {
-    let query = supabase
-      .from('lease_actions')
-      .select(`
-        *,
-        tenants:tenant_id (first_name, last_name),
-        properties:property_id (name)
-      `);
-    
+    let query = supabase.from('lease_actions').select('*');
+
     if (options.tenantId) {
       query = query.eq('tenant_id', options.tenantId);
     }
-    
+
     if (options.propertyId) {
       query = query.eq('property_id', options.propertyId);
     }
-    
+
     if (options.leaseId) {
       query = query.eq('lease_id', options.leaseId);
     }
-    
+
     if (options.status) {
       query = query.eq('status', options.status);
     }
-    
+
     // Order by creation date, newest first
     query = query.order('created_at', { ascending: false });
-    
+
     const { data, error } = await query;
-    
+
     if (error) throw error;
-    
+
+    const rows = data || [];
+    const enriched =
+      rows.length > 0
+        ? await enrichRowsWithPropertiesAndTenants(rows, {
+            propertyColumns: 'id, name',
+            tenantColumns: 'id, first_name, last_name',
+          })
+        : [];
+
     // Type assertion to ensure Supabase returns match our LeaseAction interface
-    return (data || []).map(item => ({
+    return enriched.map((item) => ({
       ...item,
       action_type: item.action_type as LeaseEndOption,
       initiated_by: item.initiated_by as 'tenant' | 'owner' | 'system',
-      status: item.status as 'pending' | 'approved' | 'rejected' | 'completed'
+      status: item.status as 'pending' | 'approved' | 'rejected' | 'completed',
     }));
   } catch (error) {
     console.error('Error getting lease actions:', error);
@@ -170,19 +178,15 @@ export const getLeaseActions = async (options: {
  */
 export const getActiveLease = async (tenantId: string): Promise<any | null> => {
   try {
-    const { data, error } = await supabase
-      .from('lease_agreements')
-      .select(`
-        *,
-        properties:property_id (name, address)
-      `)
-      .eq('tenant_id', tenantId)
-      .eq('status', 'active')
-      .maybeSingle();
-      
-    if (error) throw error;
-    
-    return data || null;
+    const { rows } = await fetchLeaseRows({ tenantId });
+    const active = rows.find((r) => isLikelyActiveLeaseStatus(r.status));
+    if (!active) return null;
+
+    const [enriched] = await enrichRowsWithPropertiesAndTenants([active], {
+      propertyColumns: 'id, name, address',
+      tenantColumns: 'id, first_name, last_name',
+    });
+    return enriched ?? active;
   } catch (error) {
     console.error('Error getting active lease:', error);
     return null;

@@ -71,17 +71,20 @@ class PerformanceTracker {
 
   static getQueryStats() {
     const recentQueries = this.queryTimes.filter(
-      q => Date.now() - q.timestamp < 5 * 60 * 1000 // Last 5 minutes
+      (q) => Date.now() - q.timestamp < 5 * 60 * 1000 // Last 5 minutes
     );
 
-    const tableStats = recentQueries.reduce((acc, query) => {
-      if (!acc[query.table]) {
-        acc[query.table] = { times: [], count: 0 };
-      }
-      acc[query.table].times.push(query.time);
-      acc[query.table].count++;
-      return acc;
-    }, {} as Record<string, { times: number[]; count: number }>);
+    const tableStats = recentQueries.reduce(
+      (acc, query) => {
+        if (!acc[query.table]) {
+          acc[query.table] = { times: [], count: 0 };
+        }
+        acc[query.table].times.push(query.time);
+        acc[query.table].count++;
+        return acc;
+      },
+      {} as Record<string, { times: number[]; count: number }>
+    );
 
     const queryStats = Object.entries(tableStats).map(([table, stats]) => ({
       table,
@@ -89,11 +92,12 @@ class PerformanceTracker {
       count: stats.count,
     }));
 
-    const averageTime = recentQueries.length > 0
-      ? Math.round(recentQueries.reduce((sum, q) => sum + q.time, 0) / recentQueries.length)
-      : 0;
+    const averageTime =
+      recentQueries.length > 0
+        ? Math.round(recentQueries.reduce((sum, q) => sum + q.time, 0) / recentQueries.length)
+        : 0;
 
-    const slowQueries = recentQueries.filter(q => q.time > 1000).length;
+    const slowQueries = recentQueries.filter((q) => q.time > 1000).length;
 
     return {
       averageTime,
@@ -104,9 +108,8 @@ class PerformanceTracker {
   }
 
   static getCacheStats() {
-    const hitRate = this.cacheRequests > 0 
-      ? Math.round((this.cacheHits / this.cacheRequests) * 100)
-      : 0;
+    const hitRate =
+      this.cacheRequests > 0 ? Math.round((this.cacheHits / this.cacheRequests) * 100) : 0;
 
     return {
       hitRate,
@@ -160,14 +163,25 @@ export class RealPerformanceMetricsService {
       };
     } catch (error) {
       console.error('Error fetching performance metrics:', error);
-      
+
       // Return fallback metrics
       return {
         memoryUsage: this.getMemoryUsage(),
         cacheStats: { size: 0, hitRate: 0, totalRequests: 0, cacheHits: 0 },
         queryPerformance: { averageTime: 0, slowQueries: 0, totalQueries: 0, queryStats: [] },
-        imageOptimization: { totalImages: 0, optimizedImages: 0, totalImageSize: 0, optimizedImageSize: 0 },
-        databaseStats: { totalProperties: 0, totalUsers: 0, totalLeases: 0, totalDocuments: 0, activeConnections: 0 },
+        imageOptimization: {
+          totalImages: 0,
+          optimizedImages: 0,
+          totalImageSize: 0,
+          optimizedImageSize: 0,
+        },
+        databaseStats: {
+          totalProperties: 0,
+          totalUsers: 0,
+          totalLeases: 0,
+          totalDocuments: 0,
+          activeConnections: 0,
+        },
       };
     }
   }
@@ -180,12 +194,7 @@ export class RealPerformanceMetricsService {
 
     try {
       // Run multiple queries in parallel for efficiency
-      const [
-        propertiesResult,
-        usersResult,
-        leasesResult,
-        documentsResult,
-      ] = await Promise.all([
+      const [propertiesResult, usersResult, leasesResult, documentsResult] = await Promise.all([
         supabase.from('properties').select('id', { count: 'exact', head: true }),
         supabase.from('users').select('id', { count: 'exact', head: true }),
         supabase.from('leases').select('id', { count: 'exact', head: true }),
@@ -257,10 +266,15 @@ export class RealPerformanceMetricsService {
 
     allImages.forEach((img) => {
       // Estimate size based on dimensions (rough approximation)
-      const size = (img.naturalWidth || img.width || 0) * (img.naturalHeight || img.height || 0) * 0.5; // Rough bytes estimate
+      const size =
+        (img.naturalWidth || img.width || 0) * (img.naturalHeight || img.height || 0) * 0.5; // Rough bytes estimate
       totalImageSize += size;
 
-      if (img.hasAttribute('data-src') || img.hasAttribute('srcset') || img.classList.contains('optimized')) {
+      if (
+        img.hasAttribute('data-src') ||
+        img.hasAttribute('srcset') ||
+        img.classList.contains('optimized')
+      ) {
         optimizedImageSize += size;
       }
     });
@@ -280,9 +294,7 @@ export class RealPerformanceMetricsService {
     const startTime = performance.now();
 
     try {
-      let query = supabase
-        .from('properties')
-        .select(`
+      let query = supabase.from('properties').select(`
           id,
           name,
           status,
@@ -304,19 +316,21 @@ export class RealPerformanceMetricsService {
 
       // Analyze property data
       const totalProperties = data?.length || 0;
-      const propertiesWithImages = data?.filter(p => p.images && p.images.length > 0).length || 0;
-      const recentProperties = data?.filter(p => {
-        const createdAt = new Date(p.created_at);
-        const thirtyDaysAgo = new Date();
-        thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-        return createdAt > thirtyDaysAgo;
-      }).length || 0;
+      const propertiesWithImages = data?.filter((p) => p.images && p.images.length > 0).length || 0;
+      const recentProperties =
+        data?.filter((p) => {
+          const createdAt = new Date(p.created_at);
+          const thirtyDaysAgo = new Date();
+          thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+          return createdAt > thirtyDaysAgo;
+        }).length || 0;
 
       return {
         totalProperties,
         propertiesWithImages,
         recentProperties,
-        imageOptimizationRate: totalProperties > 0 ? Math.round((propertiesWithImages / totalProperties) * 100) : 0,
+        imageOptimizationRate:
+          totalProperties > 0 ? Math.round((propertiesWithImages / totalProperties) * 100) : 0,
         queryTime: Math.round(queryTime),
       };
     } catch (error) {
@@ -353,17 +367,16 @@ export class RealPerformanceMetricsService {
       const oneWeekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
       const oneMonthAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
 
-      const activeToday = data?.filter(u => 
-        u.last_sign_in_at && new Date(u.last_sign_in_at) > oneDayAgo
-      ).length || 0;
+      const activeToday =
+        data?.filter((u) => u.last_sign_in_at && new Date(u.last_sign_in_at) > oneDayAgo).length ||
+        0;
 
-      const activeThisWeek = data?.filter(u => 
-        u.last_sign_in_at && new Date(u.last_sign_in_at) > oneWeekAgo
-      ).length || 0;
+      const activeThisWeek =
+        data?.filter((u) => u.last_sign_in_at && new Date(u.last_sign_in_at) > oneWeekAgo).length ||
+        0;
 
-      const newUsersThisMonth = data?.filter(u => 
-        new Date(u.created_at) > oneMonthAgo
-      ).length || 0;
+      const newUsersThisMonth =
+        data?.filter((u) => new Date(u.created_at) > oneMonthAgo).length || 0;
 
       return {
         totalUsers: data?.length || 0,

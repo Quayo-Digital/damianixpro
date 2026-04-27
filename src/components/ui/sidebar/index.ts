@@ -1,4 +1,3 @@
-
 // Re-export all components from the individual files
 import { useSidebar } from './context';
 import { SidebarProvider } from './sidebar-provider';
@@ -12,14 +11,14 @@ import {
   SidebarInput,
   SidebarRail,
   SidebarSeparator,
-  SidebarTrigger
+  SidebarTrigger,
 } from './components';
 
 import {
   SidebarGroup,
   SidebarGroupLabel,
   SidebarGroupAction,
-  SidebarGroupContent
+  SidebarGroupContent,
 } from './sidebar-group';
 
 import {
@@ -29,14 +28,10 @@ import {
   SidebarMenuAction,
   SidebarMenuBadge,
   SidebarMenuSkeleton,
-  sidebarMenuButtonVariants
+  sidebarMenuButtonVariants,
 } from './sidebar-menu';
 
-import {
-  SidebarMenuSub,
-  SidebarMenuSubItem,
-  SidebarMenuSubButton
-} from './sidebar-menu-sub';
+import { SidebarMenuSub, SidebarMenuSubItem, SidebarMenuSubButton } from './sidebar-menu-sub';
 
 export {
   Sidebar,
@@ -63,5 +58,5 @@ export {
   SidebarSeparator,
   SidebarTrigger,
   useSidebar,
-  sidebarMenuButtonVariants
-}
+  sidebarMenuButtonVariants,
+};

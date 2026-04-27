@@ -3,7 +3,7 @@
  * Create/edit short-let listings
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -13,11 +13,29 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import { createListing, updateListing, getListingById } from '@/services/shortlet/api/listings';
-import { getPropertyById } from '@/services/property/api/queries';
-import { Loader2, Home, MapPin, Users, DollarSign, Wifi, Car, UtensilsCrossed, Waves } from 'lucide-react';
+import { getPropertyById, fetchProperties } from '@/services/property/api/queries';
+import { useAuthSession } from '@/contexts/auth';
+import { PropertyImageUpload } from '@/components/properties/PropertyImageUpload';
+import {
+  Loader2,
+  Home,
+  MapPin,
+  Users,
+  DollarSign,
+  Wifi,
+  Car,
+  UtensilsCrossed,
+  Waves,
+} from 'lucide-react';
 import type { Listing } from '@/services/shortlet/types';
 
 const listingSchema = z.object({
@@ -30,16 +48,18 @@ const listingSchema = z.object({
   security_deposit: z.number().min(0).optional(),
   currency: z.string().default('NGN'),
   instant_book: z.boolean().default(false),
-  amenities: z.object({
-    wifi: z.boolean().optional(),
-    parking: z.boolean().optional(),
-    kitchen: z.boolean().optional(),
-    pool: z.boolean().optional(),
-    air_conditioning: z.boolean().optional(),
-    tv: z.boolean().optional(),
-    washer: z.boolean().optional(),
-    dryer: z.boolean().optional(),
-  }).optional(),
+  amenities: z
+    .object({
+      wifi: z.boolean().optional(),
+      parking: z.boolean().optional(),
+      kitchen: z.boolean().optional(),
+      pool: z.boolean().optional(),
+      air_conditioning: z.boolean().optional(),
+      tv: z.boolean().optional(),
+      washer: z.boolean().optional(),
+      dryer: z.boolean().optional(),
+    })
+    .optional(),
 });
 
 type ListingFormValues = z.infer<typeof listingSchema>;
@@ -51,16 +71,19 @@ interface ShortletListingFormProps {
   onCancel?: () => void;
 }
 
-export function ShortletListingForm({ 
-  propertyId, 
+export function ShortletListingForm({
+  propertyId,
   listingId,
   onSuccess,
-  onCancel 
+  onCancel,
 }: ShortletListingFormProps) {
+  const { user, userRole, isOwner } = useAuthSession();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
   const [isLoadingListing, setIsLoadingListing] = useState(!!listingId);
+  const [isLoadingProperties, setIsLoadingProperties] = useState(false);
   const [properties, setProperties] = useState<any[]>([]);
+  const [imageUrl, setImageUrl] = useState<string | null>(null);
 
   const {
     register,
@@ -86,12 +109,103 @@ export function ShortletListingForm({
         tv: false,
         washer: false,
         dryer: false,
-      }
-    }
+      },
+    },
   });
 
+  const selectedPropertyId = watch('property_id');
   const instantBook = watch('instant_book');
   const amenities = watch('amenities');
+
+  const loadListing = async () => {
+    if (!listingId) return;
+    setIsLoadingListing(true);
+    try {
+      const listing = await getListingById(listingId);
+      if (!listing) {
+        throw new Error('Listing not found');
+      }
+      setValue('property_id', listing.property_id);
+      setValue('title', listing.title);
+      setValue('description', listing.description || '');
+      setValue('capacity', listing.capacity);
+      setValue('base_price', Number(listing.base_price));
+      setValue('cleaning_fee', Number(listing.cleaning_fee || 0));
+      setValue('security_deposit', Number(listing.security_deposit || 0));
+      setValue('currency', listing.currency);
+      setValue('instant_book', listing.instant_book);
+      // Convert amenities array to object format for the form
+      if (listing.amenities && Array.isArray(listing.amenities)) {
+        const amenitiesObject = {
+          wifi: listing.amenities.includes('wifi'),
+          parking: listing.amenities.includes('parking'),
+          kitchen: listing.amenities.includes('kitchen'),
+          pool: listing.amenities.includes('pool'),
+          air_conditioning: listing.amenities.includes('air_conditioning'),
+          tv: listing.amenities.includes('tv'),
+          washer: listing.amenities.includes('washer'),
+          dryer: listing.amenities.includes('dryer'),
+        };
+        setValue('amenities', amenitiesObject);
+      }
+      // Load image if available (check both imageUrl and image_url for compatibility)
+      const listingImageUrl = (listing as any).imageUrl || (listing as any).image_url;
+      if (listingImageUrl) {
+        setImageUrl(listingImageUrl);
+      }
+    } catch (error) {
+      console.error('Error loading listing:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to load listing',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsLoadingListing(false);
+    }
+  };
+
+  const loadProperties = useCallback(async () => {
+    if (!user) {
+      toast({
+        title: 'Error',
+        description: 'You must be logged in to create a short-let listing',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    setIsLoadingProperties(true);
+    try {
+      // Fetch properties based on user role
+      const userProperties = await fetchProperties(userRole === 'owner' ? user.id : undefined);
+
+      // Filter to only show available properties
+      const availableProperties = userProperties.filter(
+        (prop) => prop.status === 'Available' || prop.status === 'Under Maintenance'
+      );
+
+      setProperties(availableProperties);
+
+      if (availableProperties.length === 0) {
+        toast({
+          title: 'No Properties Available',
+          description:
+            'You need to have at least one available property to create a short-let listing.',
+          variant: 'destructive',
+        });
+      }
+    } catch (error) {
+      console.error('Error loading properties:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to load properties. Please try again.',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsLoadingProperties(false);
+    }
+  }, [user, userRole, toast]);
 
   // Load listing if editing
   useEffect(() => {
@@ -107,46 +221,37 @@ export function ShortletListingForm({
     } else {
       setValue('property_id', propertyId);
     }
-  }, [propertyId, setValue]);
+  }, [propertyId, setValue, loadProperties]);
 
-  const loadListing = async () => {
-    if (!listingId) return;
-    setIsLoadingListing(true);
-    try {
-      const listing = await getListingById(listingId);
-      setValue('property_id', listing.property_id);
-      setValue('title', listing.title);
-      setValue('description', listing.description || '');
-      setValue('capacity', listing.capacity);
-      setValue('base_price', Number(listing.base_price));
-      setValue('cleaning_fee', Number(listing.cleaning_fee || 0));
-      setValue('security_deposit', Number(listing.security_deposit || 0));
-      setValue('currency', listing.currency);
-      setValue('instant_book', listing.instant_book);
-      if (listing.amenities) {
-        setValue('amenities', listing.amenities as any);
-      }
-    } catch (error) {
-      console.error('Error loading listing:', error);
-      toast({
-        title: 'Error',
-        description: 'Failed to load listing',
-        variant: 'destructive',
-      });
-    } finally {
-      setIsLoadingListing(false);
-    }
-  };
-
-  const loadProperties = async () => {
-    // This would load user's properties
-    // For now, we'll assume propertyId is provided
-  };
+  // After all hooks — non-owners cannot use this form
+  if (!isOwner()) {
+    return (
+      <Card>
+        <CardContent className="py-12 text-center">
+          <p className="text-muted-foreground">
+            Only property owners can create or edit short-let listings.
+          </p>
+          {onCancel && (
+            <Button onClick={onCancel} className="mt-4" variant="outline">
+              Go Back
+            </Button>
+          )}
+        </CardContent>
+      </Card>
+    );
+  }
 
   const onSubmit = async (data: ListingFormValues) => {
     setIsLoading(true);
     try {
-      const listingData: Partial<Listing> = {
+      // Convert amenities object to array of strings (only include true values)
+      const amenitiesArray = data.amenities
+        ? Object.entries(data.amenities)
+            .filter(([_, value]) => value === true)
+            .map(([key]) => key)
+        : [];
+
+      const listingData: any = {
         property_id: data.property_id,
         title: data.title,
         description: data.description,
@@ -156,8 +261,11 @@ export function ShortletListingForm({
         security_deposit: data.security_deposit,
         currency: data.currency,
         instant_book: data.instant_book,
-        amenities: data.amenities
+        amenities: amenitiesArray, // Convert object to array
       };
+
+      // Note: imageUrl is stored in the property table, not listings table
+      // The imageUrl is already associated with the property
 
       if (listingId) {
         await updateListing(listingId, listingData);
@@ -189,7 +297,7 @@ export function ShortletListingForm({
 
   if (isLoadingListing) {
     return (
-      <div className="flex items-center justify-center h-64">
+      <div className="flex h-64 items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
       </div>
     );
@@ -206,23 +314,66 @@ export function ShortletListingForm({
           {!propertyId && (
             <div className="space-y-2">
               <Label htmlFor="property_id">Property *</Label>
-              <Select onValueChange={(value) => setValue('property_id', value)}>
+              <Select
+                value={selectedPropertyId || ''}
+                onValueChange={(value) => setValue('property_id', value)}
+                disabled={isLoadingProperties}
+              >
                 <SelectTrigger>
-                  <SelectValue placeholder="Select a property" />
+                  <SelectValue
+                    placeholder={
+                      isLoadingProperties ? 'Loading properties...' : 'Select a property'
+                    }
+                  />
                 </SelectTrigger>
                 <SelectContent>
-                  {properties.map((prop) => (
-                    <SelectItem key={prop.id} value={prop.id}>
-                      {prop.name || prop.address}
-                    </SelectItem>
-                  ))}
+                  {isLoadingProperties ? (
+                    <div className="p-2 text-center text-sm text-muted-foreground">
+                      Loading properties...
+                    </div>
+                  ) : properties.length === 0 ? (
+                    <div className="p-2 text-center text-sm text-muted-foreground">
+                      No properties available
+                    </div>
+                  ) : (
+                    properties.map((prop) => (
+                      <SelectItem key={prop.id} value={prop.id}>
+                        {prop.name || prop.address}
+                      </SelectItem>
+                    ))
+                  )}
                 </SelectContent>
               </Select>
               {errors.property_id && (
                 <p className="text-sm text-destructive">{errors.property_id.message}</p>
               )}
+              {!isLoadingProperties && properties.length === 0 && (
+                <p className="text-sm text-muted-foreground">
+                  You need to have at least one available property to create a short-let listing.
+                </p>
+              )}
             </div>
           )}
+
+          {/* Image Upload */}
+          <div className="space-y-2">
+            <Label>Listing Image</Label>
+            <PropertyImageUpload
+              onImageUploaded={(url) => {
+                setImageUrl(url);
+                if (url) {
+                  toast({
+                    title: 'Image uploaded',
+                    description: 'Listing image has been uploaded successfully.',
+                  });
+                }
+              }}
+              initialImageUrl={imageUrl}
+            />
+            <p className="text-xs text-muted-foreground">
+              Upload a high-quality image of your property to attract more guests.
+            </p>
+          </div>
 
           <div className="space-y-2">
             <Label htmlFor="title">Listing Title *</Label>
@@ -231,9 +382,7 @@ export function ShortletListingForm({
               {...register('title')}
               placeholder="e.g., Cozy 2BR Apartment in Lekki"
             />
-            {errors.title && (
-              <p className="text-sm text-destructive">{errors.title.message}</p>
-            )}
+            {errors.title && <p className="text-sm text-destructive">{errors.title.message}</p>}
           </div>
 
           <div className="space-y-2">
@@ -322,7 +471,7 @@ export function ShortletListingForm({
           <CardDescription>Select amenities available at your property</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
             {[
               { key: 'wifi', label: 'WiFi', icon: Wifi },
               { key: 'parking', label: 'Parking', icon: Car },
@@ -336,9 +485,7 @@ export function ShortletListingForm({
               <div key={key} className="flex items-center space-x-2">
                 <Switch
                   checked={amenities?.[key as keyof typeof amenities] || false}
-                  onCheckedChange={(checked) =>
-                    setValue(`amenities.${key}`, checked)
-                  }
+                  onCheckedChange={(checked) => setValue(`amenities.${key}`, checked)}
                 />
                 <Label className="cursor-pointer">{label}</Label>
               </div>
@@ -356,7 +503,7 @@ export function ShortletListingForm({
         <Button type="submit" disabled={isLoading}>
           {isLoading ? (
             <>
-              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
               Saving...
             </>
           ) : listingId ? (
@@ -369,4 +516,3 @@ export function ShortletListingForm({
     </form>
   );
 }
-

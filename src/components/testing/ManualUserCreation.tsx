@@ -3,7 +3,13 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { UserRole } from '@/contexts/auth/types';
@@ -24,7 +30,9 @@ export function ManualUserCreation() {
 
     setIsLoading(true);
     try {
-      console.log(`Creating user via Supabase Auth: ${fullName} (${email}) with role: ${selectedRole}`);
+      console.log(
+        `Creating user via Supabase Auth: ${fullName} (${email}) with role: ${selectedRole}`
+      );
 
       // Use Supabase Auth to create a real user
       const { data, error } = await supabase.auth.signUp({
@@ -33,9 +41,9 @@ export function ManualUserCreation() {
         options: {
           data: {
             full_name: fullName,
-            role: selectedRole
-          }
-        }
+            role: selectedRole,
+          },
+        },
       });
 
       if (error) {
@@ -45,11 +53,11 @@ export function ManualUserCreation() {
 
       if (data.user) {
         console.log('User created successfully via Auth:', data.user.id);
-        
+
         // The handle_new_user trigger should automatically create profile and role
         toast.success(`Successfully created user: ${fullName} with role: ${selectedRole}`);
         toast.info('User created with temporary password: TempPassword123!');
-        
+
         // Clear form
         setFullName('');
         setEmail('');
@@ -57,7 +65,6 @@ export function ManualUserCreation() {
       } else {
         throw new Error('User creation returned no data');
       }
-
     } catch (error: any) {
       console.error('Error creating user:', error);
       toast.error(`Failed to create user: ${error.message}`);
@@ -75,7 +82,7 @@ export function ManualUserCreation() {
         </p>
       </CardHeader>
       <CardContent className="space-y-4">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
           <div>
             <Label htmlFor="fullName">Full Name</Label>
             <Input
@@ -85,7 +92,7 @@ export function ManualUserCreation() {
               onChange={(e) => setFullName(e.target.value)}
             />
           </div>
-          
+
           <div>
             <Label htmlFor="email">Email</Label>
             <Input
@@ -100,7 +107,10 @@ export function ManualUserCreation() {
 
         <div>
           <Label htmlFor="role">Role</Label>
-          <Select value={selectedRole} onValueChange={(value) => setSelectedRole(value as UserRole)}>
+          <Select
+            value={selectedRole}
+            onValueChange={(value) => setSelectedRole(value as UserRole)}
+          >
             <SelectTrigger>
               <SelectValue />
             </SelectTrigger>
@@ -118,9 +128,9 @@ export function ManualUserCreation() {
           {isLoading ? 'Creating User...' : 'Create User Manually'}
         </Button>
 
-        <div className="bg-green-50 border border-green-200 rounded-lg p-4 text-sm">
-          <p className="font-semibold text-green-800 mb-2">✅ How This Works:</p>
-          <ul className="list-disc list-inside text-green-700 space-y-1">
+        <div className="rounded-lg border border-green-200 bg-green-50 p-4 text-sm">
+          <p className="mb-2 font-semibold text-green-800">✅ How This Works:</p>
+          <ul className="list-inside list-disc space-y-1 text-green-700">
             <li>Creates real authenticated users via Supabase Auth</li>
             <li>Users can log in with the temporary password: TempPassword123!</li>
             <li>Automatically creates profile and assigns role via database trigger</li>
@@ -129,9 +139,9 @@ export function ManualUserCreation() {
           </ul>
         </div>
 
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 text-sm">
-          <p className="font-semibold text-blue-800 mb-2">How to use:</p>
-          <ol className="list-decimal list-inside text-blue-700 space-y-1">
+        <div className="rounded-lg border border-blue-200 bg-blue-50 p-4 text-sm">
+          <p className="mb-2 font-semibold text-blue-800">How to use:</p>
+          <ol className="list-inside list-decimal space-y-1 text-blue-700">
             <li>Enter the user's full name and email</li>
             <li>Select their role (e.g., "agent" for Abdul Himma)</li>
             <li>Click "Create User Manually"</li>

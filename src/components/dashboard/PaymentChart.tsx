@@ -1,17 +1,14 @@
-
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid } from 'recharts';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 
-// Sample data for the payment chart
-const data = [
-  { month: 'Jan', collected: 5200000, expected: 6000000 },
-  { month: 'Feb', collected: 5450000, expected: 6000000 },
-  { month: 'Mar', collected: 5800000, expected: 6000000 },
-  { month: 'Apr', collected: 5950000, expected: 6000000 },
-  { month: 'May', collected: 5780000, expected: 6000000 },
-  { month: 'Jun', collected: 5950000, expected: 6000000 },
-];
+const data: { month: string; collected: number; expected: number }[] = [];
 
 // Format numbers to Naira currency (₦)
 const formatToNaira = (value: number) => {
@@ -36,19 +33,25 @@ export function PaymentChart() {
         </Select>
       </CardHeader>
       <CardContent className="h-80">
-        <ResponsiveContainer width="100%" height="100%">
-          <BarChart data={data} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
-            <CartesianGrid strokeDasharray="3 3" vertical={false} />
-            <XAxis dataKey="month" />
-            <YAxis tickFormatter={formatToNaira} />
-            <Tooltip 
-              formatter={(value: number) => [`${formatToNaira(value)}`, '']} 
-              labelFormatter={(label) => `Month: ${label}`}
-            />
-            <Bar dataKey="collected" name="Collected" fill="#4CAF50" radius={[4, 4, 0, 0]} />
-            <Bar dataKey="expected" name="Expected" fill="#E8F5E9" radius={[4, 4, 0, 0]} />
-          </BarChart>
-        </ResponsiveContainer>
+        {data.length === 0 ? (
+          <div className="flex h-full min-h-[200px] items-center justify-center text-center text-muted-foreground">
+            No rental income data yet. Data will appear when payments are recorded.
+          </div>
+        ) : (
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart data={data} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+              <CartesianGrid strokeDasharray="3 3" vertical={false} />
+              <XAxis dataKey="month" />
+              <YAxis tickFormatter={formatToNaira} />
+              <Tooltip
+                formatter={(value: number) => [`${formatToNaira(value)}`, '']}
+                labelFormatter={(label) => `Month: ${label}`}
+              />
+              <Bar dataKey="collected" name="Collected" fill="#4CAF50" radius={[4, 4, 0, 0]} />
+              <Bar dataKey="expected" name="Expected" fill="#E8F5E9" radius={[4, 4, 0, 0]} />
+            </BarChart>
+          </ResponsiveContainer>
+        )}
       </CardContent>
     </Card>
   );

@@ -1,23 +1,24 @@
 // AI-Powered Smart Property Matching Service
 
 import { supabase } from '@/integrations/supabase/client';
-import { UserPreferences, PropertyInteraction, MatchingScore, SmartRecommendation } from '@/types/preferences';
+import {
+  UserPreferences,
+  PropertyInteraction,
+  MatchingScore,
+  SmartRecommendation,
+} from '@/types/preferences';
 
 export class SmartMatchingService {
-  
   /**
    * Calculate compatibility score between user preferences and property
    */
-  static calculateMatchingScore(
-    userPreferences: UserPreferences,
-    property: any
-  ): MatchingScore {
+  static calculateMatchingScore(userPreferences: UserPreferences, property: any): MatchingScore {
     const scores = {
       budget_score: this.calculateBudgetScore(userPreferences, property),
       location_score: this.calculateLocationScore(userPreferences, property),
       amenity_score: this.calculateAmenityScore(userPreferences, property),
       lifestyle_score: this.calculateLifestyleScore(userPreferences, property),
-      behavioral_score: this.calculateBehavioralScore(userPreferences, property)
+      behavioral_score: this.calculateBehavioralScore(userPreferences, property),
     };
 
     // Weighted overall score
@@ -26,11 +27,11 @@ export class SmartMatchingService {
       location_score: 0.25,
       amenity_score: 0.2,
       lifestyle_score: 0.15,
-      behavioral_score: 0.1
+      behavioral_score: 0.1,
     };
 
     const overall_score = Object.entries(scores).reduce(
-      (total, [key, score]) => total + (score * weights[key as keyof typeof weights]),
+      (total, [key, score]) => total + score * weights[key as keyof typeof weights],
       0
     );
 
@@ -44,7 +45,7 @@ export class SmartMatchingService {
       score_breakdown: scores,
       confidence_level,
       reasons,
-      calculated_at: new Date().toISOString()
+      calculated_at: new Date().toISOString(),
     };
   }
 
@@ -62,21 +63,21 @@ export class SmartMatchingService {
 
     // Handle flexibility
     const flexibility_multiplier = {
-      'strict': 0.1,
-      'flexible': 0.3,
-      'very_flexible': 0.5
+      strict: 0.1,
+      flexible: 0.3,
+      very_flexible: 0.5,
     }[budget_flexibility];
 
     // Below minimum budget
     if (propertyPrice < min_budget) {
       const deficit_ratio = (min_budget - propertyPrice) / min_budget;
-      return Math.max(0, 1 - (deficit_ratio / flexibility_multiplier));
+      return Math.max(0, 1 - deficit_ratio / flexibility_multiplier);
     }
 
     // Above maximum budget
     if (propertyPrice > max_budget) {
       const excess_ratio = (propertyPrice - max_budget) / max_budget;
-      return Math.max(0, 1 - (excess_ratio / flexibility_multiplier));
+      return Math.max(0, 1 - excess_ratio / flexibility_multiplier);
     }
 
     return 0;
@@ -90,9 +91,10 @@ export class SmartMatchingService {
 
     // Check preferred areas
     if (preferences.preferred_areas.length > 0) {
-      const areaMatch = preferences.preferred_areas.some(area => 
-        property.location?.toLowerCase().includes(area.toLowerCase()) ||
-        property.address?.toLowerCase().includes(area.toLowerCase())
+      const areaMatch = preferences.preferred_areas.some(
+        (area) =>
+          property.location?.toLowerCase().includes(area.toLowerCase()) ||
+          property.address?.toLowerCase().includes(area.toLowerCase())
       );
       score += areaMatch ? 0.6 : 0;
     }
@@ -120,10 +122,11 @@ export class SmartMatchingService {
 
     Object.entries(amenity_preferences).forEach(([amenity, importance]) => {
       totalWeight += importance;
-      
-      const hasAmenity = propertyAmenities.some((pa: any) => 
-        pa.name?.toLowerCase().includes(amenity.toLowerCase()) ||
-        pa.type?.toLowerCase().includes(amenity.toLowerCase())
+
+      const hasAmenity = propertyAmenities.some(
+        (pa: any) =>
+          pa.name?.toLowerCase().includes(amenity.toLowerCase()) ||
+          pa.type?.toLowerCase().includes(amenity.toLowerCase())
       );
 
       if (hasAmenity) {
@@ -148,8 +151,10 @@ export class SmartMatchingService {
     factors += 0.3;
 
     // Bedroom requirements
-    if (property.bedrooms >= preferences.min_bedrooms && 
-        (!preferences.max_bedrooms || property.bedrooms <= preferences.max_bedrooms)) {
+    if (
+      property.bedrooms >= preferences.min_bedrooms &&
+      (!preferences.max_bedrooms || property.bedrooms <= preferences.max_bedrooms)
+    ) {
       score += 0.2;
     }
     factors += 0.2;
@@ -161,10 +166,11 @@ export class SmartMatchingService {
     factors += 0.1;
 
     // Furnished preference
-    const furnishedMatch = preferences.furnished_preference === 'either' ||
+    const furnishedMatch =
+      preferences.furnished_preference === 'either' ||
       (preferences.furnished_preference === 'furnished' && property.is_furnished) ||
       (preferences.furnished_preference === 'unfurnished' && !property.is_furnished);
-    
+
     if (furnishedMatch) {
       score += 0.2;
     }
@@ -208,7 +214,9 @@ export class SmartMatchingService {
   ): 'low' | 'medium' | 'high' {
     const scoreValues = Object.values(scores);
     const averageScore = scoreValues.reduce((sum, score) => sum + score, 0) / scoreValues.length;
-    const variance = scoreValues.reduce((sum, score) => sum + Math.pow(score - averageScore, 2), 0) / scoreValues.length;
+    const variance =
+      scoreValues.reduce((sum, score) => sum + Math.pow(score - averageScore, 2), 0) /
+      scoreValues.length;
 
     // High confidence: high average score with low variance
     if (averageScore > 0.7 && variance < 0.1) return 'high';
@@ -227,25 +235,25 @@ export class SmartMatchingService {
     const reasons: string[] = [];
 
     if (scores.budget_score > 0.8) {
-      reasons.push("Perfect fit for your budget");
+      reasons.push('Perfect fit for your budget');
     } else if (scores.budget_score > 0.6) {
-      reasons.push("Within your budget range");
+      reasons.push('Within your budget range');
     }
 
     if (scores.location_score > 0.8) {
-      reasons.push("Located in your preferred area");
+      reasons.push('Located in your preferred area');
     } else if (scores.location_score > 0.6) {
-      reasons.push("Good location match");
+      reasons.push('Good location match');
     }
 
     if (scores.amenity_score > 0.8) {
-      reasons.push("Has most of your desired amenities");
+      reasons.push('Has most of your desired amenities');
     } else if (scores.amenity_score > 0.6) {
-      reasons.push("Good amenity match");
+      reasons.push('Good amenity match');
     }
 
     if (scores.lifestyle_score > 0.8) {
-      reasons.push("Matches your lifestyle preferences");
+      reasons.push('Matches your lifestyle preferences');
     }
 
     if (property.bedrooms >= preferences.min_bedrooms) {
@@ -253,10 +261,10 @@ export class SmartMatchingService {
     }
 
     if (preferences.has_pets && property.pet_friendly) {
-      reasons.push("Pet-friendly property");
+      reasons.push('Pet-friendly property');
     }
 
-    return reasons.length > 0 ? reasons : ["Good overall match for your preferences"];
+    return reasons.length > 0 ? reasons : ['Good overall match for your preferences'];
   }
 
   /**
@@ -294,23 +302,23 @@ export class SmartMatchingService {
 
       // Calculate matching scores for all properties
       const scoredProperties = properties
-        .map(property => ({
+        .map((property) => ({
           property,
-          matchingScore: this.calculateMatchingScore(preferences, property)
+          matchingScore: this.calculateMatchingScore(preferences, property),
         }))
-        .filter(item => item.matchingScore.overall_score > 0.3) // Filter low scores
+        .filter((item) => item.matchingScore.overall_score > 0.3) // Filter low scores
         .sort((a, b) => b.matchingScore.overall_score - a.matchingScore.overall_score)
         .slice(0, limit);
 
       // Convert to recommendations
-      const recommendations: SmartRecommendation[] = scoredProperties.map(item => ({
+      const recommendations: SmartRecommendation[] = scoredProperties.map((item) => ({
         id: `rec_${userId}_${item.property.id}_${Date.now()}`,
         user_id: userId,
         property_id: item.property.id,
         matching_score: item.matchingScore,
         recommendation_type: 'daily_picks',
         status: 'pending',
-        created_at: new Date().toISOString()
+        created_at: new Date().toISOString(),
       }));
 
       return recommendations;
@@ -318,7 +326,7 @@ export class SmartMatchingService {
       console.error('Error generating smart recommendations:', {
         userId,
         error: error instanceof Error ? error.message : 'Unknown error',
-        stack: error instanceof Error ? error.stack : undefined
+        stack: error instanceof Error ? error.stack : undefined,
       });
       return [];
     }
@@ -339,12 +347,10 @@ export class SmartMatchingService {
         property_id: propertyId,
         interaction_type: interactionType,
         interaction_data: additionalData,
-        created_at: new Date().toISOString()
+        created_at: new Date().toISOString(),
       };
 
-      await supabase
-        .from('property_interactions')
-        .insert(interaction);
+      await supabase.from('property_interactions').insert(interaction);
 
       // Update user preferences based on interaction
       await this.updatePreferencesFromInteraction(userId, propertyId, interactionType);
@@ -363,7 +369,7 @@ export class SmartMatchingService {
   ): Promise<void> {
     // This would implement machine learning to update preferences
     // For now, we'll do basic preference learning
-    
+
     try {
       const { data: property } = await supabase
         .from('properties')
@@ -385,7 +391,7 @@ export class SmartMatchingService {
 
       // Update interaction arrays
       const updatedPreferences = { ...preferences };
-      
+
       switch (interactionType) {
         case 'view':
           if (!updatedPreferences.viewed_properties.includes(propertyId)) {
@@ -409,11 +415,7 @@ export class SmartMatchingService {
           break;
       }
 
-      await supabase
-        .from('user_preferences')
-        .update(updatedPreferences)
-        .eq('user_id', userId);
-
+      await supabase.from('user_preferences').update(updatedPreferences).eq('user_id', userId);
     } catch (error) {
       console.error('Error updating preferences from interaction:', error);
     }

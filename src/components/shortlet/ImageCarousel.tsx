@@ -27,20 +27,20 @@ export function ImageCarousel({
   autoPlayInterval = 5000,
   showDots = true,
   showArrows = true,
-  aspectRatio = 'video'
+  aspectRatio = 'video',
 }: ImageCarouselProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
 
   // Ensure images is an array of strings
   const validImages = React.useMemo(() => {
     return (images || [])
-      .map(img => {
+      .map((img) => {
         if (typeof img === 'string') return img;
         if (img && typeof img === 'object' && 'url' in img) return String(img.url);
         if (img && typeof img === 'object' && 'src' in img) return String(img.src);
         return String(img || '');
       })
-      .filter(img => img && img.trim() !== '');
+      .filter((img) => img && img.trim() !== '');
   }, [images]);
 
   useEffect(() => {
@@ -54,7 +54,7 @@ export function ImageCarousel({
 
   if (validImages.length === 0) {
     return (
-      <div className={cn('flex items-center justify-center h-64 bg-muted rounded-lg', className)}>
+      <div className={cn('flex h-64 items-center justify-center rounded-lg bg-muted', className)}>
         <p className="text-muted-foreground">No images available</p>
       </div>
     );
@@ -75,7 +75,7 @@ export function ImageCarousel({
   const aspectRatioClass = {
     video: 'aspect-video',
     square: 'aspect-square',
-    auto: 'aspect-auto'
+    auto: 'aspect-auto',
   }[aspectRatio];
 
   return (
@@ -83,14 +83,16 @@ export function ImageCarousel({
       <div className={cn('relative w-full overflow-hidden rounded-lg bg-muted', aspectRatioClass)}>
         {/* Images Container */}
         <div
-          className="flex transition-transform duration-500 ease-in-out h-full"
+          className="flex h-full transition-transform duration-500 ease-in-out"
           style={{ transform: `translateX(-${currentIndex * 100}%)` }}
         >
           {validImages.map((image, index) => (
-            <div key={index} className="min-w-full h-full">
+            <div key={index} className="h-full min-w-full">
               <img
                 src={image}
                 alt={title ? `${String(title)} - Image ${index + 1}` : `Image ${index + 1}`}
+                loading={index === 0 ? 'eager' : 'lazy'}
+                decoding="async"
                 className="h-full w-full object-cover"
                 onError={(e) => {
                   const target = e.target as HTMLImageElement;
@@ -107,7 +109,7 @@ export function ImageCarousel({
             <Button
               variant="ghost"
               size="icon"
-              className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white z-10"
+              className="absolute left-2 top-1/2 z-10 -translate-y-1/2 bg-black/50 text-white hover:bg-black/70"
               onClick={goToPrevious}
             >
               <ChevronLeft className="h-6 w-6" />
@@ -115,7 +117,7 @@ export function ImageCarousel({
             <Button
               variant="ghost"
               size="icon"
-              className="absolute right-2 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white z-10"
+              className="absolute right-2 top-1/2 z-10 -translate-y-1/2 bg-black/50 text-white hover:bg-black/70"
               onClick={goToNext}
             >
               <ChevronRight className="h-6 w-6" />
@@ -125,7 +127,7 @@ export function ImageCarousel({
 
         {/* Image Counter */}
         {validImages.length > 1 && (
-          <div className="absolute top-2 right-2 bg-black/50 text-white px-2 py-1 rounded text-xs z-10">
+          <div className="absolute right-2 top-2 z-10 rounded bg-black/50 px-2 py-1 text-xs text-white">
             {currentIndex + 1} / {validImages.length}
           </div>
         )}
@@ -133,7 +135,7 @@ export function ImageCarousel({
 
       {/* Dots Indicator */}
       {showDots && validImages.length > 1 && (
-        <div className="flex justify-center gap-2 mt-4">
+        <div className="mt-4 flex justify-center gap-2">
           {validImages.map((_, index) => (
             <button
               key={index}
@@ -152,4 +154,3 @@ export function ImageCarousel({
     </div>
   );
 }
-

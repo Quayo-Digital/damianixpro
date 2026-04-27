@@ -5,28 +5,24 @@ import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { 
-  Zap, 
-  Clock, 
-  Download, 
-  Image, 
-  Globe, 
-  Wifi, 
+import {
+  Zap,
+  Clock,
+  Download,
+  Image,
+  Globe,
+  Wifi,
   Gauge,
   CheckCircle2,
   AlertCircle,
   XCircle,
   Activity,
   HardDrive,
-  Monitor
+  Monitor,
 } from 'lucide-react';
 
 // Import performance utilities
-import { 
-  performanceMonitor, 
-  cdnManager, 
-  BundleAnalyzer
-} from '@/utils/performance';
+import { performanceMonitor, cdnManager, BundleAnalyzer } from '@/utils/performance';
 
 // Import optimized components for testing (with fallback)
 // import { OptimizedImage, PropertyImageGallery, OptimizedAvatar } from '@/components/ui/optimized-image';
@@ -73,11 +69,11 @@ export const PerformanceOptimizationTest = () => {
     try {
       // Test 1: Bundle Size Analysis (Simplified)
       setCurrentTest('Analyzing bundle size...');
-      await new Promise(resolve => setTimeout(resolve, 500));
-      
+      await new Promise((resolve) => setTimeout(resolve, 500));
+
       // Use estimated bundle size for now
       const bundleSizeMB = 2.1; // Estimated bundle size
-      
+
       results.push({
         category: 'Bundle Optimization',
         test: 'Total Bundle Size',
@@ -87,15 +83,18 @@ export const PerformanceOptimizationTest = () => {
         threshold: 2,
         unit: 'MB',
         message: `Bundle size is ${bundleSizeMB.toFixed(2)}MB`,
-        recommendation: bundleSizeMB > 2 ? 'Consider code splitting and tree shaking to reduce bundle size' : undefined
+        recommendation:
+          bundleSizeMB > 2
+            ? 'Consider code splitting and tree shaking to reduce bundle size'
+            : undefined,
       });
 
       // Test 2: Service Worker Functionality
       setCurrentTest('Testing service worker...');
-      await new Promise(resolve => setTimeout(resolve, 500));
-      
+      await new Promise((resolve) => setTimeout(resolve, 500));
+
       const swRegistered = 'serviceWorker' in navigator;
-      
+
       results.push({
         category: 'Caching Strategy',
         test: 'Service Worker Support',
@@ -105,16 +104,16 @@ export const PerformanceOptimizationTest = () => {
         threshold: 1,
         unit: 'boolean',
         message: swRegistered ? 'Service worker is supported' : 'Service worker not supported',
-        recommendation: !swRegistered ? 'Service worker not supported in this browser' : undefined
+        recommendation: !swRegistered ? 'Service worker not supported in this browser' : undefined,
       });
 
       // Test 3: Image Optimization
       setCurrentTest('Testing image optimization...');
-      await new Promise(resolve => setTimeout(resolve, 500));
-      
+      await new Promise((resolve) => setTimeout(resolve, 500));
+
       const webpSupported = await testWebPSupport();
       const lazyLoadingSupported = 'loading' in HTMLImageElement.prototype;
-      
+
       results.push({
         category: 'Image Optimization',
         test: 'WebP Support Detection',
@@ -123,8 +122,12 @@ export const PerformanceOptimizationTest = () => {
         value: webpSupported ? 1 : 0,
         threshold: 1,
         unit: 'boolean',
-        message: webpSupported ? 'WebP format is supported' : 'WebP format not supported, using fallback',
-        recommendation: !webpSupported ? 'Consider serving WebP images with fallbacks for better compression' : undefined
+        message: webpSupported
+          ? 'WebP format is supported'
+          : 'WebP format not supported, using fallback',
+        recommendation: !webpSupported
+          ? 'Consider serving WebP images with fallbacks for better compression'
+          : undefined,
       });
 
       results.push({
@@ -135,20 +138,26 @@ export const PerformanceOptimizationTest = () => {
         value: lazyLoadingSupported ? 1 : 0,
         threshold: 1,
         unit: 'boolean',
-        message: lazyLoadingSupported ? 'Native lazy loading is supported' : 'Using JavaScript-based lazy loading',
-        recommendation: !lazyLoadingSupported ? 'Native lazy loading not supported, using intersection observer fallback' : undefined
+        message: lazyLoadingSupported
+          ? 'Native lazy loading is supported'
+          : 'Using JavaScript-based lazy loading',
+        recommendation: !lazyLoadingSupported
+          ? 'Native lazy loading not supported, using intersection observer fallback'
+          : undefined,
       });
 
       // Test 4: Core Web Vitals (Simplified)
       setCurrentTest('Measuring Core Web Vitals...');
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+
       // Use performance API or fallback values
-      const navigation = performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming | undefined;
+      const navigation = performance.getEntriesByType('navigation')[0] as
+        | PerformanceNavigationTiming
+        | undefined;
       const lcp = 800; // Simulated good LCP
       const fid = 15; // Simulated good FID
       const cls = 0.05; // Simulated good CLS
-      
+
       // Largest Contentful Paint (LCP)
       results.push({
         category: 'Core Web Vitals',
@@ -159,7 +168,7 @@ export const PerformanceOptimizationTest = () => {
         threshold: 1200,
         unit: 'ms',
         message: `LCP is ${lcp}ms`,
-        recommendation: lcp > 1200 ? 'Optimize largest content element loading time' : undefined
+        recommendation: lcp > 1200 ? 'Optimize largest content element loading time' : undefined,
       });
 
       // First Input Delay (FID)
@@ -172,7 +181,8 @@ export const PerformanceOptimizationTest = () => {
         threshold: 25,
         unit: 'ms',
         message: `FID is ${fid}ms`,
-        recommendation: fid > 25 ? 'Reduce JavaScript execution time and optimize event handlers' : undefined
+        recommendation:
+          fid > 25 ? 'Reduce JavaScript execution time and optimize event handlers' : undefined,
       });
 
       // Cumulative Layout Shift (CLS)
@@ -185,13 +195,16 @@ export const PerformanceOptimizationTest = () => {
         threshold: 0.1,
         unit: 'score',
         message: `CLS is ${cls.toFixed(3)}`,
-        recommendation: cls > 0.1 ? 'Reduce layout shifts by setting image dimensions and avoiding dynamic content insertion' : undefined
+        recommendation:
+          cls > 0.1
+            ? 'Reduce layout shifts by setting image dimensions and avoiding dynamic content insertion'
+            : undefined,
       });
 
       // Calculate overall score
       const totalScore = results.reduce((sum, result) => sum + result.score, 0);
       const avgScore = Math.round(totalScore / results.length);
-      
+
       console.log('Performance tests completed:', results);
       setTestResults(results);
       setOverallScore(avgScore);
@@ -200,10 +213,9 @@ export const PerformanceOptimizationTest = () => {
       setLiveMetrics({
         LCP: { latest: lcp },
         FID: { latest: fid },
-        CLS: { latest: cls }
+        CLS: { latest: cls },
       });
       setLiveScore(avgScore);
-
     } catch (error) {
       console.error('Performance test failed:', error);
       // Add a fallback result to show something went wrong
@@ -216,7 +228,7 @@ export const PerformanceOptimizationTest = () => {
         threshold: 1,
         unit: 'error',
         message: 'Performance test encountered an error',
-        recommendation: 'Check browser console for detailed error information'
+        recommendation: 'Check browser console for detailed error information',
       });
       setTestResults(results);
       setOverallScore(0);
@@ -231,7 +243,8 @@ export const PerformanceOptimizationTest = () => {
     return new Promise((resolve) => {
       const webP = new Image();
       webP.onload = webP.onerror = () => resolve(webP.height === 2);
-      webP.src = 'data:image/webp;base64,UklGRjoAAABXRUJQVlA4IC4AAACyAgCdASoCAAIALmk0mk0iIiIiIgBoSygABc6WWgAA/veff/0PP8bA//LwYAAA';
+      webP.src =
+        'data:image/webp;base64,UklGRjoAAABXRUJQVlA4IC4AAACyAgCdASoCAAIALmk0mk0iIiIiIgBoSygABc6WWgAA/veff/0PP8bA//LwYAAA';
     });
   };
 
@@ -242,12 +255,15 @@ export const PerformanceOptimizationTest = () => {
     fcp: number;
     loadTime: number;
   }> => {
-    const navigation = performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming | undefined;
+    const navigation = performance.getEntriesByType('navigation')[0] as
+      | PerformanceNavigationTiming
+      | undefined;
     const paintEntries = performance.getEntriesByType('paint');
-    
-    const fcp = paintEntries.find(entry => entry.name === 'first-contentful-paint')?.startTime || 0;
+
+    const fcp =
+      paintEntries.find((entry) => entry.name === 'first-contentful-paint')?.startTime || 0;
     const loadTime = navigation ? navigation.loadEventEnd - navigation.loadEventStart : 0;
-    
+
     // Use fallback values for reliable testing
     return {
       lcp: 800,
@@ -274,10 +290,14 @@ export const PerformanceOptimizationTest = () => {
 
   const getStatusIcon = (status: string) => {
     switch (status) {
-      case 'pass': return <CheckCircle2 className="h-4 w-4 text-green-600" />;
-      case 'warning': return <AlertCircle className="h-4 w-4 text-yellow-600" />;
-      case 'fail': return <XCircle className="h-4 w-4 text-red-600" />;
-      default: return <AlertCircle className="h-4 w-4 text-gray-600" />;
+      case 'pass':
+        return <CheckCircle2 className="h-4 w-4 text-green-600" />;
+      case 'warning':
+        return <AlertCircle className="h-4 w-4 text-yellow-600" />;
+      case 'fail':
+        return <XCircle className="h-4 w-4 text-red-600" />;
+      default:
+        return <AlertCircle className="h-4 w-4 text-gray-600" />;
     }
   };
 
@@ -341,15 +361,16 @@ export const PerformanceOptimizationTest = () => {
                 <CardHeader>
                   <CardTitle className="flex items-center justify-between">
                     Overall Performance Score
-                    <Badge className={getScoreBadge(overallScore)}>
-                      {overallScore}/100
-                    </Badge>
+                    <Badge className={getScoreBadge(overallScore)}>{overallScore}/100</Badge>
                   </CardTitle>
                   <CardDescription>
-                    {overallScore >= 90 ? 'Excellent! Your platform is highly optimized.' :
-                     overallScore >= 75 ? 'Good performance with room for minor improvements.' :
-                     overallScore >= 60 ? 'Moderate performance. Several optimizations recommended.' :
-                     'Poor performance. Immediate optimization required.'}
+                    {overallScore >= 90
+                      ? 'Excellent! Your platform is highly optimized.'
+                      : overallScore >= 75
+                        ? 'Good performance with room for minor improvements.'
+                        : overallScore >= 60
+                          ? 'Moderate performance. Several optimizations recommended.'
+                          : 'Poor performance. Immediate optimization required.'}
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -359,24 +380,35 @@ export const PerformanceOptimizationTest = () => {
 
               {/* Category Overview */}
               <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                {['Bundle Optimization', 'Caching Strategy', 'Image Optimization', 'Core Web Vitals'].map(category => {
-                  const categoryTests = testResults.filter(test => test.category === category);
-                  const avgScore = Math.round(categoryTests.reduce((sum, test) => sum + test.score, 0) / categoryTests.length);
-                  const hasFailures = categoryTests.some(test => test.status === 'fail');
-                  const hasWarnings = categoryTests.some(test => test.status === 'warning');
-                  
+                {[
+                  'Bundle Optimization',
+                  'Caching Strategy',
+                  'Image Optimization',
+                  'Core Web Vitals',
+                ].map((category) => {
+                  const categoryTests = testResults.filter((test) => test.category === category);
+                  const avgScore = Math.round(
+                    categoryTests.reduce((sum, test) => sum + test.score, 0) / categoryTests.length
+                  );
+                  const hasFailures = categoryTests.some((test) => test.status === 'fail');
+                  const hasWarnings = categoryTests.some((test) => test.status === 'warning');
+
                   return (
                     <Card key={category}>
                       <CardHeader className="pb-3">
                         <div className="flex items-center justify-between">
                           <CardTitle className="text-sm">{category}</CardTitle>
-                          {hasFailures ? <XCircle className="h-4 w-4 text-red-600" /> :
-                           hasWarnings ? <AlertCircle className="h-4 w-4 text-yellow-600" /> :
-                           <CheckCircle2 className="h-4 w-4 text-green-600" />}
+                          {hasFailures ? (
+                            <XCircle className="h-4 w-4 text-red-600" />
+                          ) : hasWarnings ? (
+                            <AlertCircle className="h-4 w-4 text-yellow-600" />
+                          ) : (
+                            <CheckCircle2 className="h-4 w-4 text-green-600" />
+                          )}
                         </div>
                       </CardHeader>
                       <CardContent>
-                        <div className="text-2xl font-bold mb-2">{avgScore}/100</div>
+                        <div className="mb-2 text-2xl font-bold">{avgScore}/100</div>
                         <div className="text-sm text-muted-foreground">
                           {categoryTests.length} tests completed
                         </div>
@@ -388,10 +420,10 @@ export const PerformanceOptimizationTest = () => {
             </>
           ) : (
             <Card>
-              <CardContent className="text-center py-8">
-                <Zap className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
-                <h3 className="text-lg font-semibold mb-2">No Performance Tests Run Yet</h3>
-                <p className="text-muted-foreground mb-4">
+              <CardContent className="py-8 text-center">
+                <Zap className="mx-auto mb-4 h-12 w-12 text-muted-foreground" />
+                <h3 className="mb-2 text-lg font-semibold">No Performance Tests Run Yet</h3>
+                <p className="mb-4 text-muted-foreground">
                   Click "Run Performance Tests" to analyze your platform's speed and optimization.
                 </p>
                 <Button onClick={runPerformanceTests}>
@@ -414,12 +446,8 @@ export const PerformanceOptimizationTest = () => {
                       {result.test}
                     </CardTitle>
                     <div className="flex gap-2">
-                      <Badge className={getScoreBadge(result.score)}>
-                        {result.score}/100
-                      </Badge>
-                      <Badge variant="outline">
-                        {result.category}
-                      </Badge>
+                      <Badge className={getScoreBadge(result.score)}>{result.score}/100</Badge>
+                      <Badge variant="outline">{result.category}</Badge>
                     </div>
                   </div>
                 </CardHeader>
@@ -433,7 +461,9 @@ export const PerformanceOptimizationTest = () => {
                     </div>
                     <div className="flex justify-between text-sm">
                       <span>Threshold:</span>
-                      <span>{result.threshold} {result.unit}</span>
+                      <span>
+                        {result.threshold} {result.unit}
+                      </span>
                     </div>
                     <p className="text-sm text-muted-foreground">{result.message}</p>
                     {result.recommendation && (
@@ -448,8 +478,10 @@ export const PerformanceOptimizationTest = () => {
             ))
           ) : (
             <Card>
-              <CardContent className="text-center py-8">
-                <p className="text-muted-foreground">No detailed results available. Run tests first.</p>
+              <CardContent className="py-8 text-center">
+                <p className="text-muted-foreground">
+                  No detailed results available. Run tests first.
+                </p>
               </CardContent>
             </Card>
           )}
@@ -467,7 +499,7 @@ export const PerformanceOptimizationTest = () => {
                   <span>Current Performance Score:</span>
                   <Badge className={getScoreBadge(liveScore)}>{liveScore}/100</Badge>
                 </div>
-                
+
                 {Object.entries(liveMetrics).map(([key, value]) => (
                   <div key={key} className="flex items-center justify-between text-sm">
                     <span className="capitalize">{key.replace(/([A-Z])/g, ' $1')}:</span>
@@ -488,13 +520,14 @@ export const PerformanceOptimizationTest = () => {
                 Image Optimization Demo
               </CardTitle>
               <CardDescription>
-                Demonstration of optimized images with WebP support, lazy loading, and responsive sizing
+                Demonstration of optimized images with WebP support, lazy loading, and responsive
+                sizing
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid gap-4 md:grid-cols-2">
                 <div>
-                  <h4 className="font-medium mb-2">Image Optimization Features:</h4>
+                  <h4 className="mb-2 font-medium">Image Optimization Features:</h4>
                   <div className="space-y-2 text-sm">
                     <div className="flex items-center gap-2">
                       <CheckCircle2 className="h-4 w-4 text-green-600" />
@@ -514,9 +547,9 @@ export const PerformanceOptimizationTest = () => {
                     </div>
                   </div>
                 </div>
-                
+
                 <div>
-                  <h4 className="font-medium mb-2">Performance Benefits:</h4>
+                  <h4 className="mb-2 font-medium">Performance Benefits:</h4>
                   <div className="space-y-2 text-sm">
                     <div className="flex items-center gap-2">
                       <CheckCircle2 className="h-4 w-4 text-blue-600" />
@@ -551,63 +584,68 @@ export const PerformanceOptimizationTest = () => {
             <CardContent className="space-y-4">
               <div className="space-y-3">
                 <div className="flex items-start space-x-3">
-                  <CheckCircle2 className="h-5 w-5 text-green-600 mt-0.5" />
+                  <CheckCircle2 className="mt-0.5 h-5 w-5 text-green-600" />
                   <div>
                     <h4 className="font-medium text-green-900">Bundle Optimization Implemented</h4>
                     <p className="text-sm text-green-700">
-                      Advanced Vite configuration with tree shaking, code splitting, and compression reduces bundle size significantly.
+                      Advanced Vite configuration with tree shaking, code splitting, and compression
+                      reduces bundle size significantly.
                     </p>
                   </div>
                 </div>
-                
+
                 <div className="flex items-start space-x-3">
-                  <CheckCircle2 className="h-5 w-5 text-green-600 mt-0.5" />
+                  <CheckCircle2 className="mt-0.5 h-5 w-5 text-green-600" />
                   <div>
                     <h4 className="font-medium text-green-900">Service Worker Caching</h4>
                     <p className="text-sm text-green-700">
-                      Comprehensive service worker provides offline functionality, asset caching, and improved loading times.
+                      Comprehensive service worker provides offline functionality, asset caching,
+                      and improved loading times.
                     </p>
                   </div>
                 </div>
-                
+
                 <div className="flex items-start space-x-3">
-                  <CheckCircle2 className="h-5 w-5 text-green-600 mt-0.5" />
+                  <CheckCircle2 className="mt-0.5 h-5 w-5 text-green-600" />
                   <div>
                     <h4 className="font-medium text-green-900">Image Optimization System</h4>
                     <p className="text-sm text-green-700">
-                      WebP format support, lazy loading, responsive images, and automatic optimization reduce image load times by 60-80%.
+                      WebP format support, lazy loading, responsive images, and automatic
+                      optimization reduce image load times by 60-80%.
                     </p>
                   </div>
                 </div>
-                
+
                 <div className="flex items-start space-x-3">
-                  <CheckCircle2 className="h-5 w-5 text-green-600 mt-0.5" />
+                  <CheckCircle2 className="mt-0.5 h-5 w-5 text-green-600" />
                   <div>
                     <h4 className="font-medium text-green-900">CDN Integration</h4>
                     <p className="text-sm text-green-700">
-                      CDN configuration with regional optimization for Nigerian users ensures fast asset delivery.
+                      CDN configuration with regional optimization for Nigerian users ensures fast
+                      asset delivery.
                     </p>
                   </div>
                 </div>
-                
+
                 <div className="flex items-start space-x-3">
-                  <CheckCircle2 className="h-5 w-5 text-green-600 mt-0.5" />
+                  <CheckCircle2 className="mt-0.5 h-5 w-5 text-green-600" />
                   <div>
                     <h4 className="font-medium text-green-900">Performance Monitoring</h4>
                     <p className="text-sm text-green-700">
-                      Real-time Core Web Vitals monitoring and performance analytics provide ongoing optimization insights.
+                      Real-time Core Web Vitals monitoring and performance analytics provide ongoing
+                      optimization insights.
                     </p>
                   </div>
                 </div>
               </div>
-              
+
               <Alert>
                 <CheckCircle2 className="h-4 w-4" />
                 <AlertTitle>Performance Optimization Complete</AlertTitle>
                 <AlertDescription>
-                  All major performance optimizations have been implemented. Your platform should now achieve 
-                  90+/100 performance score with significantly improved loading times, reduced bundle size, 
-                  and enhanced user experience.
+                  All major performance optimizations have been implemented. Your platform should
+                  now achieve 90+/100 performance score with significantly improved loading times,
+                  reduced bundle size, and enhanced user experience.
                 </AlertDescription>
               </Alert>
             </CardContent>

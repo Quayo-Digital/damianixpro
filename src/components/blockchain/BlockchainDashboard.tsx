@@ -11,12 +11,12 @@ import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Progress } from '@/components/ui/progress';
-import { 
-  Wallet, 
-  Shield, 
-  Home, 
-  FileText, 
-  TrendingUp, 
+import {
+  Wallet,
+  Shield,
+  Home,
+  FileText,
+  TrendingUp,
   Users,
   Lock,
   CheckCircle,
@@ -28,7 +28,7 @@ import {
   ExternalLink,
   Copy,
   BarChart3,
-  Activity
+  Activity,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
@@ -41,7 +41,7 @@ interface BlockchainDashboardProps {
 
 export const BlockchainDashboard: React.FC<BlockchainDashboardProps> = ({
   className,
-  compact = false
+  compact = false,
 }) => {
   const {
     walletConnection,
@@ -53,120 +53,28 @@ export const BlockchainDashboard: React.FC<BlockchainDashboardProps> = ({
     recentTransactions,
     formatAddress,
     getExplorerUrl,
-    getNetworkConfig
+    getNetworkConfig,
   } = useBlockchain();
 
   const [activeTab, setActiveTab] = useState('overview');
 
-  // Mock data for demonstration
-  const [propertyTokens] = useState<PropertyOnChain[]>([
-    {
-      tokenId: '1',
-      propertyId: 'PROP001',
-      owner: walletConnection?.address || '0x0000000000000000000000000000000000000000',
-      title: '3 Bedroom Apartment in Victoria Island',
-      location: {
-        latitude: 6.4281,
-        longitude: 3.4219,
-        address: 'Victoria Island, Lagos, Nigeria'
-      },
-      metadata: {
-        size: 120,
-        bedrooms: 3,
-        bathrooms: 2,
-        propertyType: 'apartment',
-        yearBuilt: 2020
-      },
-      documents: [
-        {
-          hash: '0xabc123...',
-          type: 'deed',
-          ipfsHash: 'QmXYZ789...'
-        }
-      ],
-      price: '0.5',
-      currency: 'ETH',
-      verified: true,
-      createdAt: '2024-01-15T10:00:00Z',
-      updatedAt: '2024-01-15T10:00:00Z'
-    }
-  ]);
-
-  const [escrowContracts] = useState<EscrowTransaction[]>([
-    {
-      id: 'escrow_1',
-      propertyId: 'PROP001',
-      contractAddress: '0x1234567890123456789012345678901234567890',
-      buyer: walletConnection?.address || '0x0000000000000000000000000000000000000000',
-      seller: '0x9876543210987654321098765432109876543210',
-      amount: '0.5',
-      currency: 'ETH',
-      status: 'funded',
-      conditions: [
-        {
-          id: 'cond_1',
-          description: 'Property inspection completed',
-          type: 'inspection',
-          required: true,
-          completed: true,
-          completedAt: '2024-01-20T14:00:00Z'
-        },
-        {
-          id: 'cond_2',
-          description: 'Financing approved',
-          type: 'financing',
-          required: true,
-          completed: false
-        }
-      ],
-      milestones: [
-        {
-          id: 'mile_1',
-          title: 'Initial Deposit',
-          description: 'Release 10% upon contract signing',
-          percentage: 10,
-          conditions: [],
-          completed: true,
-          completedAt: '2024-01-18T12:00:00Z'
-        },
-        {
-          id: 'mile_2',
-          title: 'Inspection Complete',
-          description: 'Release 40% after successful inspection',
-          percentage: 40,
-          conditions: ['cond_1'],
-          completed: true,
-          completedAt: '2024-01-20T15:00:00Z'
-        }
-      ],
-      createdAt: '2024-01-15T10:00:00Z',
-      updatedAt: '2024-01-20T15:00:00Z'
-    }
-  ]);
-
-  const [blockchainPayments] = useState<BlockchainPayment[]>([
-    {
-      id: 'pay_1',
-      type: 'rent',
-      amount: '0.1',
-      currency: 'ETH',
-      from: walletConnection?.address || '0x0000000000000000000000000000000000000000',
-      to: '0x9876543210987654321098765432109876543210',
-      propertyId: 'PROP001',
-      description: 'Monthly rent payment',
-      status: 'confirmed',
-      transactionHash: '0xdef456...',
-      blockNumber: 12345678,
-      createdAt: '2024-01-01T10:00:00Z',
-      confirmedAt: '2024-01-01T10:05:00Z'
-    }
-  ]);
+  const [propertyTokens] = useState<PropertyOnChain[]>([]);
+  const [escrowContracts] = useState<EscrowTransaction[]>([]);
+  const [blockchainPayments] = useState<BlockchainPayment[]>([]);
 
   // Calculate statistics
-  const totalPropertyValue = propertyTokens.reduce((sum, property) => sum + parseFloat(property.price), 0);
-  const totalEscrowValue = escrowContracts.reduce((sum, escrow) => sum + parseFloat(escrow.amount), 0);
-  const completedTransactions = recentTransactions.filter(tx => tx.status === 'confirmed').length;
-  const activeEscrows = escrowContracts.filter(escrow => ['created', 'funded', 'pending_release'].includes(escrow.status)).length;
+  const totalPropertyValue = propertyTokens.reduce(
+    (sum, property) => sum + parseFloat(property.price),
+    0
+  );
+  const totalEscrowValue = escrowContracts.reduce(
+    (sum, escrow) => sum + parseFloat(escrow.amount),
+    0
+  );
+  const completedTransactions = recentTransactions.filter((tx) => tx.status === 'confirmed').length;
+  const activeEscrows = escrowContracts.filter((escrow) =>
+    ['created', 'funded', 'pending_release'].includes(escrow.status)
+  ).length;
 
   // Copy address to clipboard
   const copyAddress = (address: string) => {
@@ -209,8 +117,8 @@ export const BlockchainDashboard: React.FC<BlockchainDashboardProps> = ({
           <Alert>
             <Lock className="h-4 w-4" />
             <AlertDescription>
-              Blockchain features are available with premium subscriptions. 
-              Upgrade to access wallet connections, smart contracts, property tokenization, and secure escrow services.
+              Blockchain features are available with premium subscriptions. Upgrade to access wallet
+              connections, smart contracts, property tokenization, and secure escrow services.
             </AlertDescription>
           </Alert>
         </CardContent>
@@ -229,7 +137,7 @@ export const BlockchainDashboard: React.FC<BlockchainDashboardProps> = ({
             </div>
             {isConnected && (
               <Badge variant="outline" className="flex items-center space-x-1">
-                <div className="w-2 h-2 bg-green-500 rounded-full" />
+                <div className="h-2 w-2 rounded-full bg-green-500" />
                 <span>Connected</span>
               </Badge>
             )}
@@ -241,7 +149,9 @@ export const BlockchainDashboard: React.FC<BlockchainDashboardProps> = ({
               <div className="grid grid-cols-2 gap-4">
                 <div className="text-center">
                   <div className="text-2xl font-bold">{walletBalance?.slice(0, 6)}</div>
-                  <div className="text-sm text-muted-foreground">{getNetworkConfig().nativeCurrency.symbol}</div>
+                  <div className="text-sm text-muted-foreground">
+                    {getNetworkConfig().nativeCurrency.symbol}
+                  </div>
                 </div>
                 <div className="text-center">
                   <div className="text-2xl font-bold">{recentTransactions.length}</div>
@@ -256,9 +166,7 @@ export const BlockchainDashboard: React.FC<BlockchainDashboardProps> = ({
           ) : (
             <Alert>
               <AlertTriangle className="h-4 w-4" />
-              <AlertDescription>
-                Connect your wallet to access blockchain features
-              </AlertDescription>
+              <AlertDescription>Connect your wallet to access blockchain features</AlertDescription>
             </Alert>
           )}
         </CardContent>
@@ -279,7 +187,7 @@ export const BlockchainDashboard: React.FC<BlockchainDashboardProps> = ({
             {isConnected && (
               <div className="flex items-center space-x-2">
                 <Badge variant="outline" className="flex items-center space-x-1">
-                  <div className="w-2 h-2 bg-green-500 rounded-full" />
+                  <div className="h-2 w-2 rounded-full bg-green-500" />
                   <span>Connected to {getNetworkConfig().name}</span>
                 </Badge>
               </div>
@@ -293,13 +201,15 @@ export const BlockchainDashboard: React.FC<BlockchainDashboardProps> = ({
         {isConnected && (
           <CardContent>
             {/* Statistics Overview */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
               <Card className="p-4">
                 <div className="flex items-center space-x-2">
                   <Wallet className="h-5 w-5 text-blue-500" />
                   <div>
                     <div className="text-2xl font-bold">{walletBalance?.slice(0, 8)}</div>
-                    <div className="text-sm text-muted-foreground">Wallet Balance ({getNetworkConfig().nativeCurrency.symbol})</div>
+                    <div className="text-sm text-muted-foreground">
+                      Wallet Balance ({getNetworkConfig().nativeCurrency.symbol})
+                    </div>
                   </div>
                 </div>
               </Card>
@@ -360,12 +270,21 @@ export const BlockchainDashboard: React.FC<BlockchainDashboardProps> = ({
             <CardContent>
               <div className="space-y-3">
                 {recentTransactions.slice(0, 5).map((tx) => (
-                  <div key={tx.hash} className="flex items-center justify-between p-3 border rounded">
+                  <div
+                    key={tx.hash}
+                    className="flex items-center justify-between rounded border p-3"
+                  >
                     <div className="flex items-center space-x-3">
-                      <div className={cn('w-2 h-2 rounded-full', 
-                        tx.status === 'confirmed' ? 'bg-green-500' : 
-                        tx.status === 'pending' ? 'bg-yellow-500' : 'bg-red-500'
-                      )} />
+                      <div
+                        className={cn(
+                          'h-2 w-2 rounded-full',
+                          tx.status === 'confirmed'
+                            ? 'bg-green-500'
+                            : tx.status === 'pending'
+                              ? 'bg-yellow-500'
+                              : 'bg-red-500'
+                        )}
+                      />
                       <div>
                         <div className="font-medium">Transaction</div>
                         <div className="text-sm text-muted-foreground">
@@ -374,15 +293,17 @@ export const BlockchainDashboard: React.FC<BlockchainDashboardProps> = ({
                       </div>
                     </div>
                     <div className="text-right">
-                      <div className="font-medium">{tx.value} {getNetworkConfig().nativeCurrency.symbol}</div>
-                      <div className="text-sm text-muted-foreground capitalize">{tx.status}</div>
+                      <div className="font-medium">
+                        {tx.value} {getNetworkConfig().nativeCurrency.symbol}
+                      </div>
+                      <div className="text-sm capitalize text-muted-foreground">{tx.status}</div>
                     </div>
                   </div>
                 ))}
-                
+
                 {recentTransactions.length === 0 && (
-                  <div className="text-center py-8 text-muted-foreground">
-                    <Activity className="h-12 w-12 mx-auto mb-2 opacity-50" />
+                  <div className="py-8 text-center text-muted-foreground">
+                    <Activity className="mx-auto mb-2 h-12 w-12 opacity-50" />
                     <p>No recent activity</p>
                   </div>
                 )}
@@ -396,17 +317,17 @@ export const BlockchainDashboard: React.FC<BlockchainDashboardProps> = ({
               <CardTitle>Quick Actions</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
                 <Button variant="outline" className="h-20 flex-col">
-                  <Home className="h-6 w-6 mb-2" />
+                  <Home className="mb-2 h-6 w-6" />
                   <span>Register Property</span>
                 </Button>
                 <Button variant="outline" className="h-20 flex-col">
-                  <Shield className="h-6 w-6 mb-2" />
+                  <Shield className="mb-2 h-6 w-6" />
                   <span>Create Escrow</span>
                 </Button>
                 <Button variant="outline" className="h-20 flex-col">
-                  <DollarSign className="h-6 w-6 mb-2" />
+                  <DollarSign className="mb-2 h-6 w-6" />
                   <span>Send Payment</span>
                 </Button>
               </div>
@@ -426,9 +347,7 @@ export const BlockchainDashboard: React.FC<BlockchainDashboardProps> = ({
                 <Home className="h-5 w-5" />
                 <span>Property Tokens</span>
               </CardTitle>
-              <CardDescription>
-                Your tokenized properties on the blockchain
-              </CardDescription>
+              <CardDescription>Your tokenized properties on the blockchain</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
@@ -436,17 +355,19 @@ export const BlockchainDashboard: React.FC<BlockchainDashboardProps> = ({
                   <Card key={property.tokenId} className="p-4">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center space-x-3">
-                        <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-500 rounded-lg flex items-center justify-center">
+                        <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-gradient-to-r from-blue-500 to-purple-500">
                           <Home className="h-6 w-6 text-white" />
                         </div>
                         <div>
                           <h4 className="font-medium">{property.title}</h4>
-                          <p className="text-sm text-muted-foreground">{property.location.address}</p>
-                          <div className="flex items-center space-x-2 mt-1">
+                          <p className="text-sm text-muted-foreground">
+                            {property.location.address}
+                          </p>
+                          <div className="mt-1 flex items-center space-x-2">
                             <Badge variant="outline">Token #{property.tokenId}</Badge>
                             {property.verified && (
                               <Badge variant="default" className="bg-green-500">
-                                <CheckCircle className="h-3 w-3 mr-1" />
+                                <CheckCircle className="mr-1 h-3 w-3" />
                                 Verified
                               </Badge>
                             )}
@@ -454,7 +375,9 @@ export const BlockchainDashboard: React.FC<BlockchainDashboardProps> = ({
                         </div>
                       </div>
                       <div className="text-right">
-                        <div className="text-lg font-bold">{property.price} {property.currency}</div>
+                        <div className="text-lg font-bold">
+                          {property.price} {property.currency}
+                        </div>
                         <div className="text-sm text-muted-foreground">
                           {property.metadata.bedrooms} bed, {property.metadata.bathrooms} bath
                         </div>
@@ -462,10 +385,10 @@ export const BlockchainDashboard: React.FC<BlockchainDashboardProps> = ({
                     </div>
                   </Card>
                 ))}
-                
+
                 {propertyTokens.length === 0 && (
-                  <div className="text-center py-8 text-muted-foreground">
-                    <Home className="h-12 w-12 mx-auto mb-2 opacity-50" />
+                  <div className="py-8 text-center text-muted-foreground">
+                    <Home className="mx-auto mb-2 h-12 w-12 opacity-50" />
                     <p>No property tokens found</p>
                     <Button variant="outline" className="mt-4">
                       <Home className="mr-2 h-4 w-4" />
@@ -490,26 +413,33 @@ export const BlockchainDashboard: React.FC<BlockchainDashboardProps> = ({
                 <DollarSign className="h-5 w-5" />
                 <span>Payment History</span>
               </CardTitle>
-              <CardDescription>
-                Your blockchain payment transactions
-              </CardDescription>
+              <CardDescription>Your blockchain payment transactions</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-3">
                 {blockchainPayments.map((payment) => (
-                  <div key={payment.id} className="flex items-center justify-between p-3 border rounded">
+                  <div
+                    key={payment.id}
+                    className="flex items-center justify-between rounded border p-3"
+                  >
                     <div className="flex items-center space-x-3">
                       <DollarSign className="h-5 w-5 text-green-500" />
                       <div>
-                        <div className="font-medium capitalize">{payment.type.replace('_', ' ')}</div>
+                        <div className="font-medium capitalize">
+                          {payment.type.replace('_', ' ')}
+                        </div>
                         <div className="text-sm text-muted-foreground">{payment.description}</div>
                         {payment.propertyId && (
-                          <div className="text-xs text-muted-foreground">Property: {payment.propertyId}</div>
+                          <div className="text-xs text-muted-foreground">
+                            Property: {payment.propertyId}
+                          </div>
                         )}
                       </div>
                     </div>
                     <div className="text-right">
-                      <div className="font-medium">{payment.amount} {payment.currency}</div>
+                      <div className="font-medium">
+                        {payment.amount} {payment.currency}
+                      </div>
                       <Badge variant="outline" className={getStatusColor(payment.status)}>
                         {payment.status}
                       </Badge>
@@ -517,7 +447,9 @@ export const BlockchainDashboard: React.FC<BlockchainDashboardProps> = ({
                         <Button
                           variant="ghost"
                           size="sm"
-                          onClick={() => window.open(getExplorerUrl(payment.transactionHash!), '_blank')}
+                          onClick={() =>
+                            window.open(getExplorerUrl(payment.transactionHash!), '_blank')
+                          }
                         >
                           <ExternalLink className="h-3 w-3" />
                         </Button>
@@ -525,10 +457,10 @@ export const BlockchainDashboard: React.FC<BlockchainDashboardProps> = ({
                     </div>
                   </div>
                 ))}
-                
+
                 {blockchainPayments.length === 0 && (
-                  <div className="text-center py-8 text-muted-foreground">
-                    <DollarSign className="h-12 w-12 mx-auto mb-2 opacity-50" />
+                  <div className="py-8 text-center text-muted-foreground">
+                    <DollarSign className="mx-auto mb-2 h-12 w-12 opacity-50" />
                     <p>No payment history</p>
                   </div>
                 )}

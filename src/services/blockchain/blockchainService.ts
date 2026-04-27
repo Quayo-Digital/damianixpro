@@ -17,7 +17,7 @@ import {
   BlockchainError,
   TransactionStatus,
   GasSpeed,
-  WalletType
+  WalletType,
 } from '@/types/blockchain';
 
 class BlockchainService {
@@ -50,13 +50,14 @@ class BlockchainService {
         ethereum: {
           name: 'Ethereum Mainnet',
           chainId: 1,
-          rpcUrl: import.meta.env.VITE_ETHEREUM_RPC_URL || 'https://mainnet.infura.io/v3/YOUR_INFURA_KEY',
+          rpcUrl:
+            import.meta.env.VITE_ETHEREUM_RPC_URL || 'https://mainnet.infura.io/v3/YOUR_INFURA_KEY',
           explorerUrl: 'https://etherscan.io',
           nativeCurrency: {
             name: 'Ether',
             symbol: 'ETH',
-            decimals: 18
-          }
+            decimals: 18,
+          },
         },
         polygon: {
           name: 'Polygon Mainnet',
@@ -66,8 +67,8 @@ class BlockchainService {
           nativeCurrency: {
             name: 'MATIC',
             symbol: 'MATIC',
-            decimals: 18
-          }
+            decimals: 18,
+          },
         },
         bsc: {
           name: 'BNB Smart Chain',
@@ -77,8 +78,8 @@ class BlockchainService {
           nativeCurrency: {
             name: 'BNB',
             symbol: 'BNB',
-            decimals: 18
-          }
+            decimals: 18,
+          },
         },
         arbitrum: {
           name: 'Arbitrum One',
@@ -88,8 +89,8 @@ class BlockchainService {
           nativeCurrency: {
             name: 'Ether',
             symbol: 'ETH',
-            decimals: 18
-          }
+            decimals: 18,
+          },
         },
         optimism: {
           name: 'Optimism',
@@ -99,9 +100,9 @@ class BlockchainService {
           nativeCurrency: {
             name: 'Ether',
             symbol: 'ETH',
-            decimals: 18
-          }
-        }
+            decimals: 18,
+          },
+        },
       },
       contracts: {
         propertyRegistry: {
@@ -109,40 +110,40 @@ class BlockchainService {
           polygon: import.meta.env.VITE_PROPERTY_REGISTRY_POLYGON || '',
           bsc: import.meta.env.VITE_PROPERTY_REGISTRY_BSC || '',
           arbitrum: import.meta.env.VITE_PROPERTY_REGISTRY_ARB || '',
-          optimism: import.meta.env.VITE_PROPERTY_REGISTRY_OP || ''
+          optimism: import.meta.env.VITE_PROPERTY_REGISTRY_OP || '',
         },
         escrow: {
           ethereum: import.meta.env.VITE_ESCROW_ETH || '',
           polygon: import.meta.env.VITE_ESCROW_POLYGON || '',
           bsc: import.meta.env.VITE_ESCROW_BSC || '',
           arbitrum: import.meta.env.VITE_ESCROW_ARB || '',
-          optimism: import.meta.env.VITE_ESCROW_OP || ''
+          optimism: import.meta.env.VITE_ESCROW_OP || '',
         },
         payment: {
           ethereum: import.meta.env.VITE_PAYMENT_ETH || '',
           polygon: import.meta.env.VITE_PAYMENT_POLYGON || '',
           bsc: import.meta.env.VITE_PAYMENT_BSC || '',
           arbitrum: import.meta.env.VITE_PAYMENT_ARB || '',
-          optimism: import.meta.env.VITE_PAYMENT_OP || ''
+          optimism: import.meta.env.VITE_PAYMENT_OP || '',
         },
         identity: {
           ethereum: import.meta.env.VITE_IDENTITY_ETH || '',
           polygon: import.meta.env.VITE_IDENTITY_POLYGON || '',
           bsc: import.meta.env.VITE_IDENTITY_BSC || '',
           arbitrum: import.meta.env.VITE_IDENTITY_ARB || '',
-          optimism: import.meta.env.VITE_IDENTITY_OP || ''
-        }
+          optimism: import.meta.env.VITE_IDENTITY_OP || '',
+        },
       },
       ipfs: {
         gateway: import.meta.env.VITE_IPFS_GATEWAY || 'https://ipfs.io/ipfs/',
-        apiKey: import.meta.env.VITE_IPFS_API_KEY
+        apiKey: import.meta.env.VITE_IPFS_API_KEY,
       },
       defaultNetwork: 'polygon',
       gasSettings: {
         slow: '20',
         standard: '30',
-        fast: '50'
-      }
+        fast: '50',
+      },
     };
   }
 
@@ -150,7 +151,7 @@ class BlockchainService {
     try {
       const networkConfig = this.config.networks[this.currentNetwork];
       this.provider = new ethers.JsonRpcProvider(networkConfig.rpcUrl);
-      
+
       // Test connection
       await this.provider.getNetwork();
       console.log(`Connected to ${networkConfig.name}`);
@@ -161,7 +162,7 @@ class BlockchainService {
         message: 'Failed to initialize blockchain provider',
         details: error,
         network: this.currentNetwork,
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       });
     }
   }
@@ -178,7 +179,7 @@ class BlockchainService {
 
       // Request account access
       const accounts = await window.ethereum.request({
-        method: 'eth_requestAccounts'
+        method: 'eth_requestAccounts',
       });
 
       if (!accounts || accounts.length === 0) {
@@ -187,7 +188,7 @@ class BlockchainService {
 
       // Get chain ID
       const chainId = await window.ethereum.request({
-        method: 'eth_chainId'
+        method: 'eth_chainId',
       });
 
       // Create provider and signer
@@ -203,7 +204,7 @@ class BlockchainService {
         address: accounts[0],
         chainId: parseInt(chainId, 16),
         connected: true,
-        balance: balanceInEth
+        balance: balanceInEth,
       };
 
       // Listen for account changes
@@ -216,7 +217,7 @@ class BlockchainService {
         code: 'WALLET_CONNECTION_FAILED',
         message: 'Failed to connect wallet',
         details: error,
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       });
     }
   }
@@ -224,7 +225,7 @@ class BlockchainService {
   public async disconnectWallet(): Promise<void> {
     this.walletConnection = null;
     this.signer = null;
-    
+
     // Remove event listeners
     if (window.ethereum) {
       window.ethereum.removeListener('accountsChanged', this.handleAccountsChanged);
@@ -272,9 +273,9 @@ class BlockchainService {
     try {
       await window.ethereum.request({
         method: 'wallet_switchEthereumChain',
-        params: [{ chainId: chainIdHex }]
+        params: [{ chainId: chainIdHex }],
       });
-      
+
       this.currentNetwork = network;
       await this.initializeProvider();
     } catch (error: any) {
@@ -289,16 +290,18 @@ class BlockchainService {
 
   private async addNetwork(network: BlockchainNetwork): Promise<void> {
     const networkConfig = this.config.networks[network];
-    
+
     await window.ethereum.request({
       method: 'wallet_addEthereumChain',
-      params: [{
-        chainId: `0x${networkConfig.chainId.toString(16)}`,
-        chainName: networkConfig.name,
-        nativeCurrency: networkConfig.nativeCurrency,
-        rpcUrls: [networkConfig.rpcUrl],
-        blockExplorerUrls: [networkConfig.explorerUrl]
-      }]
+      params: [
+        {
+          chainId: `0x${networkConfig.chainId.toString(16)}`,
+          chainName: networkConfig.name,
+          nativeCurrency: networkConfig.nativeCurrency,
+          rpcUrls: [networkConfig.rpcUrl],
+          blockExplorerUrls: [networkConfig.explorerUrl],
+        },
+      ],
     });
 
     this.currentNetwork = network;
@@ -328,14 +331,14 @@ class BlockchainService {
         value: ethers.parseEther(value),
         gasPrice,
         nonce,
-        data: data || '0x'
+        data: data || '0x',
       };
 
       // Estimate gas
       const gasLimit = await this.provider!.estimateGas(transaction);
       const fullTransaction = {
         ...transaction,
-        gasLimit
+        gasLimit,
       };
 
       const tx = await this.signer.sendTransaction(fullTransaction);
@@ -349,7 +352,7 @@ class BlockchainService {
         gasLimit: gasLimit.toString(),
         nonce,
         data,
-        status: 'pending'
+        status: 'pending',
       };
 
       // Wait for confirmation
@@ -388,31 +391,34 @@ class BlockchainService {
 
     const feeData = await this.provider.getFeeData();
     const baseGasPrice = feeData.gasPrice || ethers.parseUnits('20', 'gwei');
-    
+
     const multipliers = {
       slow: 0.8,
       standard: 1.0,
-      fast: 1.5
+      fast: 1.5,
     };
 
-    return baseGasPrice * BigInt(Math.floor(multipliers[speed] * 100)) / BigInt(100);
+    return (baseGasPrice * BigInt(Math.floor(multipliers[speed] * 100))) / BigInt(100);
   }
 
   // ============================================================================
   // SMART CONTRACT INTERACTIONS
   // ============================================================================
 
-  public async getContract(contractType: string, network?: BlockchainNetwork): Promise<ethers.Contract> {
+  public async getContract(
+    contractType: string,
+    network?: BlockchainNetwork
+  ): Promise<ethers.Contract> {
     const targetNetwork = network || this.currentNetwork;
     const contractAddress = this.getContractAddress(contractType, targetNetwork);
-    
+
     if (!contractAddress) {
       throw new Error(`Contract ${contractType} not deployed on ${targetNetwork}`);
     }
 
     const abi = await this.getContractABI(contractType);
     const provider = this.signer || this.provider;
-    
+
     if (!provider) {
       throw new Error('No provider available');
     }
@@ -434,7 +440,7 @@ class BlockchainService {
         'function transferProperty(uint256 tokenId, address to) external',
         'function getProperty(uint256 tokenId) external view returns (tuple(string propertyId, address owner, string metadataURI, bool verified))',
         'event PropertyRegistered(uint256 indexed tokenId, string propertyId, address indexed owner)',
-        'event PropertyTransferred(uint256 indexed tokenId, address indexed from, address indexed to)'
+        'event PropertyTransferred(uint256 indexed tokenId, address indexed from, address indexed to)',
       ],
       escrow: [
         'function createEscrow(string memory propertyId, address seller, uint256 amount) external returns (address)',
@@ -444,22 +450,22 @@ class BlockchainService {
         'event EscrowCreated(address indexed escrowAddress, string propertyId, address indexed buyer, address indexed seller)',
         'event EscrowFunded(address indexed escrowAddress, uint256 amount)',
         'event EscrowReleased(address indexed escrowAddress, address indexed to)',
-        'event EscrowRefunded(address indexed escrowAddress, address indexed to)'
+        'event EscrowRefunded(address indexed escrowAddress, address indexed to)',
       ],
       payment: [
         'function sendPayment(address to, string memory propertyId, string memory paymentType) external payable',
         'function setupRecurringPayment(address to, uint256 amount, uint256 interval) external',
         'function executeRecurringPayment(uint256 paymentId) external',
         'event PaymentSent(address indexed from, address indexed to, uint256 amount, string propertyId)',
-        'event RecurringPaymentSetup(uint256 indexed paymentId, address indexed payer, address indexed payee)'
+        'event RecurringPaymentSetup(uint256 indexed paymentId, address indexed payer, address indexed payee)',
       ],
       identity: [
         'function registerIdentity(string memory did, bytes32 credentialHash) external',
         'function addCredential(string memory credentialType, bytes32 credentialHash) external',
         'function verifyCredential(address user, string memory credentialType) external view returns (bool)',
         'event IdentityRegistered(address indexed user, string did)',
-        'event CredentialAdded(address indexed user, string credentialType, bytes32 credentialHash)'
-      ]
+        'event CredentialAdded(address indexed user, string credentialType, bytes32 credentialHash)',
+      ],
     };
 
     return abis[contractType] || [];
@@ -469,16 +475,18 @@ class BlockchainService {
   // PROPERTY REGISTRY
   // ============================================================================
 
-  public async registerProperty(property: Omit<PropertyOnChain, 'tokenId' | 'createdAt' | 'updatedAt'>): Promise<string> {
+  public async registerProperty(
+    property: Omit<PropertyOnChain, 'tokenId' | 'createdAt' | 'updatedAt'>
+  ): Promise<string> {
     try {
       const contract = await this.getContract('propertyRegistry');
       const metadataURI = await this.uploadToIPFS(property);
-      
+
       const tx = await contract.registerProperty(property.propertyId, metadataURI);
       const receipt = await this.waitForTransaction(tx.hash);
-      
+
       // Extract token ID from events
-      const event = receipt.logs.find(log => {
+      const event = receipt.logs.find((log) => {
         try {
           const parsed = contract.interface.parseLog(log);
           return parsed?.name === 'PropertyRegistered';
@@ -499,7 +507,7 @@ class BlockchainService {
         message: 'Failed to register property on blockchain',
         details: error,
         network: this.currentNetwork,
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       });
     }
   }
@@ -508,15 +516,15 @@ class BlockchainService {
     try {
       const contract = await this.getContract('propertyRegistry');
       const propertyData = await contract.getProperty(tokenId);
-      
+
       // Fetch metadata from IPFS
       const metadata = await this.fetchFromIPFS(propertyData.metadataURI);
-      
+
       return {
         tokenId,
         ...metadata,
         owner: propertyData.owner,
-        verified: propertyData.verified
+        verified: propertyData.verified,
       };
     } catch (error) {
       throw new BlockchainError({
@@ -524,7 +532,7 @@ class BlockchainService {
         message: 'Failed to fetch property from blockchain',
         details: error,
         network: this.currentNetwork,
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       });
     }
   }
@@ -541,12 +549,12 @@ class BlockchainService {
     try {
       const contract = await this.getContract('escrow');
       const amountWei = ethers.parseEther(amount);
-      
+
       const tx = await contract.createEscrow(propertyId, seller, amountWei);
       const receipt = await this.waitForTransaction(tx.hash);
-      
+
       // Extract escrow address from events
-      const event = receipt.logs.find(log => {
+      const event = receipt.logs.find((log) => {
         try {
           const parsed = contract.interface.parseLog(log);
           return parsed?.name === 'EscrowCreated';
@@ -574,7 +582,7 @@ class BlockchainService {
         conditions: [],
         milestones: [],
         createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
       };
 
       return escrowTransaction;
@@ -584,7 +592,7 @@ class BlockchainService {
         message: 'Failed to create escrow contract',
         details: error,
         network: this.currentNetwork,
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       });
     }
   }
@@ -593,9 +601,9 @@ class BlockchainService {
     try {
       const contract = await this.getContract('escrow');
       const tx = await contract.fundEscrow(escrowAddress, {
-        value: ethers.parseEther(amount)
+        value: ethers.parseEther(amount),
       });
-      
+
       await this.waitForTransaction(tx.hash);
       return tx.hash;
     } catch (error) {
@@ -604,7 +612,7 @@ class BlockchainService {
         message: 'Failed to fund escrow contract',
         details: error,
         network: this.currentNetwork,
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       });
     }
   }
@@ -619,10 +627,10 @@ class BlockchainService {
       // For now, returning a mock IPFS hash
       const jsonData = JSON.stringify(data);
       const hash = `Qm${Date.now()}${Math.random().toString(36).substr(2, 9)}`;
-      
+
       // Store in localStorage for demo purposes
       localStorage.setItem(`ipfs_${hash}`, jsonData);
-      
+
       return `ipfs://${hash}`;
     } catch (error) {
       throw new Error('Failed to upload to IPFS');
@@ -632,13 +640,13 @@ class BlockchainService {
   private async fetchFromIPFS(uri: string): Promise<any> {
     try {
       const hash = uri.replace('ipfs://', '');
-      
+
       // Fetch from localStorage for demo purposes
       const data = localStorage.getItem(`ipfs_${hash}`);
       if (data) {
         return JSON.parse(data);
       }
-      
+
       // In a real implementation, this would fetch from IPFS gateway
       throw new Error('Data not found in IPFS');
     } catch (error) {

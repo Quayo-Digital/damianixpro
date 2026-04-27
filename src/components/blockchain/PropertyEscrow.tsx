@@ -13,13 +13,13 @@ import { Textarea } from '@/components/ui/textarea';
 import { Separator } from '@/components/ui/separator';
 import { Progress } from '@/components/ui/progress';
 import { Checkbox } from '@/components/ui/checkbox';
-import { 
-  Shield, 
-  Lock, 
-  Unlock, 
-  Clock, 
-  CheckCircle, 
-  XCircle, 
+import {
+  Shield,
+  Lock,
+  Unlock,
+  Clock,
+  CheckCircle,
+  XCircle,
   AlertTriangle,
   Home,
   DollarSign,
@@ -28,7 +28,7 @@ import {
   Calendar,
   ExternalLink,
   Copy,
-  Zap
+  Zap,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
@@ -51,55 +51,61 @@ interface EscrowFormData {
   expiryDays: number;
 }
 
-const defaultConditions: Omit<EscrowCondition, 'id' | 'completed' | 'completedBy' | 'completedAt'>[] = [
+const defaultConditions: Omit<
+  EscrowCondition,
+  'id' | 'completed' | 'completedBy' | 'completedAt'
+>[] = [
   {
     description: 'Property inspection completed and approved',
     type: 'inspection',
-    required: true
+    required: true,
   },
   {
     description: 'Financing approval obtained',
     type: 'financing',
-    required: true
+    required: true,
   },
   {
     description: 'Legal documentation verified',
     type: 'legal',
-    required: true
+    required: true,
   },
   {
     description: 'Title search completed',
     type: 'legal',
-    required: true
-  }
+    required: true,
+  },
 ];
 
-const defaultMilestones: Omit<EscrowMilestone, 'id' | 'completed' | 'completedAt' | 'transactionHash'>[] = [
+const defaultMilestones: Omit<
+  EscrowMilestone,
+  'id' | 'completed' | 'completedAt' | 'transactionHash'
+>[] = [
   {
     title: 'Initial Deposit',
     description: 'Release 10% upon contract signing',
     percentage: 10,
-    conditions: []
+    conditions: [],
   },
   {
     title: 'Inspection Complete',
     description: 'Release 40% after successful inspection',
     percentage: 40,
-    conditions: ['inspection']
+    conditions: ['inspection'],
   },
   {
     title: 'Final Payment',
     description: 'Release remaining 50% upon completion',
     percentage: 50,
-    conditions: ['financing', 'legal']
-  }
+    conditions: ['financing', 'legal'],
+  },
 ];
 
 export const PropertyEscrow: React.FC<PropertyEscrowProps> = ({
   propertyId = '',
   propertyTitle = '',
   className,
-  onEscrowCreated
+  onEscrowCreated,
 }) => {
   const {
     walletConnection,
@@ -111,7 +117,7 @@ export const PropertyEscrow: React.FC<PropertyEscrowProps> = ({
     validateAddress,
     getExplorerUrl,
     createEscrowLoading,
-    fundEscrowLoading
+    fundEscrowLoading,
   } = useBlockchain();
 
   const [formData, setFormData] = useState<EscrowFormData>({
@@ -122,14 +128,14 @@ export const PropertyEscrow: React.FC<PropertyEscrowProps> = ({
     conditions: defaultConditions.map((condition, index) => ({
       id: `condition_${index}`,
       ...condition,
-      completed: false
+      completed: false,
     })),
     milestones: defaultMilestones.map((milestone, index) => ({
       id: `milestone_${index}`,
       ...milestone,
-      completed: false
+      completed: false,
     })),
-    expiryDays: 30
+    expiryDays: 30,
   });
 
   const [activeEscrows, setActiveEscrows] = useState<EscrowTransaction[]>([]);
@@ -137,9 +143,9 @@ export const PropertyEscrow: React.FC<PropertyEscrowProps> = ({
 
   // Handle form input changes
   const handleInputChange = (field: keyof EscrowFormData, value: any) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [field]: value
+      [field]: value,
     }));
   };
 
@@ -150,35 +156,38 @@ export const PropertyEscrow: React.FC<PropertyEscrowProps> = ({
       description: '',
       type: 'custom',
       required: false,
-      completed: false
+      completed: false,
     };
-    
-    setFormData(prev => ({
+
+    setFormData((prev) => ({
       ...prev,
-      conditions: [...prev.conditions, newCondition]
+      conditions: [...prev.conditions, newCondition],
     }));
   };
 
   // Update condition
   const updateCondition = (id: string, updates: Partial<EscrowCondition>) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      conditions: prev.conditions.map(condition =>
+      conditions: prev.conditions.map((condition) =>
         condition.id === id ? { ...condition, ...updates } : condition
-      )
+      ),
     }));
   };
 
   // Remove condition
   const removeCondition = (id: string) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      conditions: prev.conditions.filter(condition => condition.id !== id)
+      conditions: prev.conditions.filter((condition) => condition.id !== id),
     }));
   };
 
   // Calculate total escrow percentage
-  const totalPercentage = formData.milestones.reduce((sum, milestone) => sum + milestone.percentage, 0);
+  const totalPercentage = formData.milestones.reduce(
+    (sum, milestone) => sum + milestone.percentage,
+    0
+  );
 
   // Validate form
   const isFormValid = () => {
@@ -189,7 +198,7 @@ export const PropertyEscrow: React.FC<PropertyEscrowProps> = ({
       formData.escrowAmount &&
       parseFloat(formData.escrowAmount) > 0 &&
       totalPercentage === 100 &&
-      formData.conditions.every(condition => condition.description.trim())
+      formData.conditions.every((condition) => condition.description.trim())
     );
   };
 
@@ -204,7 +213,7 @@ export const PropertyEscrow: React.FC<PropertyEscrowProps> = ({
       const escrow = await createEscrow({
         propertyId: formData.propertyId,
         seller: formData.sellerAddress,
-        amount: formData.escrowAmount
+        amount: formData.escrowAmount,
       });
 
       // Add conditions and milestones to the escrow
@@ -212,22 +221,22 @@ export const PropertyEscrow: React.FC<PropertyEscrowProps> = ({
         ...escrow,
         conditions: formData.conditions,
         milestones: formData.milestones,
-        expiresAt: new Date(Date.now() + formData.expiryDays * 24 * 60 * 60 * 1000).toISOString()
+        expiresAt: new Date(Date.now() + formData.expiryDays * 24 * 60 * 60 * 1000).toISOString(),
       };
 
-      setActiveEscrows(prev => [...prev, fullEscrow]);
-      
+      setActiveEscrows((prev) => [...prev, fullEscrow]);
+
       if (onEscrowCreated) {
         onEscrowCreated(fullEscrow);
       }
 
       toast.success('Escrow contract created successfully!');
-      
+
       // Reset form
-      setFormData(prev => ({
+      setFormData((prev) => ({
         ...prev,
         sellerAddress: '',
-        escrowAmount: ''
+        escrowAmount: '',
       }));
     } catch (error) {
       console.error('Failed to create escrow:', error);
@@ -239,16 +248,12 @@ export const PropertyEscrow: React.FC<PropertyEscrowProps> = ({
     try {
       await fundEscrow({
         escrowAddress: escrow.contractAddress,
-        amount: escrow.amount
+        amount: escrow.amount,
       });
 
       // Update escrow status
-      setActiveEscrows(prev =>
-        prev.map(e =>
-          e.id === escrow.id
-            ? { ...e, status: 'funded' }
-            : e
-        )
+      setActiveEscrows((prev) =>
+        prev.map((e) => (e.id === escrow.id ? { ...e, status: 'funded' } : e))
       );
 
       toast.success('Escrow funded successfully!');
@@ -320,8 +325,8 @@ export const PropertyEscrow: React.FC<PropertyEscrowProps> = ({
           <Alert>
             <Lock className="h-4 w-4" />
             <AlertDescription>
-              Blockchain escrow features are available with premium subscriptions. 
-              Upgrade to access secure smart contract escrow services.
+              Blockchain escrow features are available with premium subscriptions. Upgrade to access
+              secure smart contract escrow services.
             </AlertDescription>
           </Alert>
         </CardContent>
@@ -368,7 +373,7 @@ export const PropertyEscrow: React.FC<PropertyEscrowProps> = ({
         </CardHeader>
         <CardContent className="space-y-6">
           {/* Property Information */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             <div className="space-y-2">
               <Label htmlFor="property-id">Property ID</Label>
               <Input
@@ -390,7 +395,7 @@ export const PropertyEscrow: React.FC<PropertyEscrowProps> = ({
           </div>
 
           {/* Transaction Details */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             <div className="space-y-2">
               <Label htmlFor="seller-address">Seller Wallet Address</Label>
               <Input
@@ -399,7 +404,9 @@ export const PropertyEscrow: React.FC<PropertyEscrowProps> = ({
                 value={formData.sellerAddress}
                 onChange={(e) => handleInputChange('sellerAddress', e.target.value)}
                 className={cn(
-                  formData.sellerAddress && !validateAddress(formData.sellerAddress) && 'border-red-500'
+                  formData.sellerAddress &&
+                    !validateAddress(formData.sellerAddress) &&
+                    'border-red-500'
                 )}
               />
               {formData.sellerAddress && !validateAddress(formData.sellerAddress) && (
@@ -429,13 +436,13 @@ export const PropertyEscrow: React.FC<PropertyEscrowProps> = ({
                 Add Custom Condition
               </Button>
             </div>
-            
+
             <div className="space-y-3">
               {formData.conditions.map((condition) => (
-                <div key={condition.id} className="flex items-center space-x-3 p-3 border rounded">
+                <div key={condition.id} className="flex items-center space-x-3 rounded border p-3">
                   <Checkbox
                     checked={condition.required}
-                    onCheckedChange={(checked) => 
+                    onCheckedChange={(checked) =>
                       updateCondition(condition.id, { required: checked as boolean })
                     }
                   />
@@ -444,7 +451,7 @@ export const PropertyEscrow: React.FC<PropertyEscrowProps> = ({
                       <Input
                         placeholder="Enter custom condition"
                         value={condition.description}
-                        onChange={(e) => 
+                        onChange={(e) =>
                           updateCondition(condition.id, { description: e.target.value })
                         }
                       />
@@ -456,11 +463,7 @@ export const PropertyEscrow: React.FC<PropertyEscrowProps> = ({
                     {condition.required ? 'Required' : 'Optional'}
                   </Badge>
                   {condition.type === 'custom' && (
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => removeCondition(condition.id)}
-                    >
+                    <Button variant="ghost" size="sm" onClick={() => removeCondition(condition.id)}>
                       <XCircle className="h-4 w-4" />
                     </Button>
                   )}
@@ -474,10 +477,10 @@ export const PropertyEscrow: React.FC<PropertyEscrowProps> = ({
           {/* Release Milestones */}
           <div className="space-y-4">
             <h4 className="text-sm font-medium">Release Milestones</h4>
-            
+
             <div className="space-y-3">
               {formData.milestones.map((milestone, index) => (
-                <div key={milestone.id} className="p-3 border rounded space-y-2">
+                <div key={milestone.id} className="space-y-2 rounded border p-3">
                   <div className="flex items-center justify-between">
                     <h5 className="font-medium">{milestone.title}</h5>
                     <Badge variant="outline">{milestone.percentage}%</Badge>
@@ -492,7 +495,7 @@ export const PropertyEscrow: React.FC<PropertyEscrowProps> = ({
               ))}
             </div>
 
-            <div className="flex items-center justify-between p-3 bg-muted rounded">
+            <div className="flex items-center justify-between rounded bg-muted p-3">
               <span className="font-medium">Total Release Percentage</span>
               <Badge variant={totalPercentage === 100 ? 'default' : 'destructive'}>
                 {totalPercentage}%
@@ -500,7 +503,7 @@ export const PropertyEscrow: React.FC<PropertyEscrowProps> = ({
             </div>
           </div>
 
-          <Button 
+          <Button
             onClick={handleCreateEscrow}
             disabled={!isFormValid() || createEscrowLoading}
             className="w-full"
@@ -528,9 +531,7 @@ export const PropertyEscrow: React.FC<PropertyEscrowProps> = ({
               <FileText className="h-5 w-5" />
               <span>Active Escrows</span>
             </CardTitle>
-            <CardDescription>
-              Manage your active property escrow contracts
-            </CardDescription>
+            <CardDescription>Manage your active property escrow contracts</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
@@ -540,7 +541,9 @@ export const PropertyEscrow: React.FC<PropertyEscrowProps> = ({
                     {/* Escrow Header */}
                     <div className="flex items-center justify-between">
                       <div className="flex items-center space-x-3">
-                        <div className={cn('w-3 h-3 rounded-full', getStatusColor(escrow.status))} />
+                        <div
+                          className={cn('h-3 w-3 rounded-full', getStatusColor(escrow.status))}
+                        />
                         <div>
                           <h4 className="font-medium">Property: {escrow.propertyId}</h4>
                           <p className="text-sm text-muted-foreground">
@@ -549,7 +552,9 @@ export const PropertyEscrow: React.FC<PropertyEscrowProps> = ({
                         </div>
                       </div>
                       <div className="text-right">
-                        <div className="font-medium">{escrow.amount} {escrow.currency}</div>
+                        <div className="font-medium">
+                          {escrow.amount} {escrow.currency}
+                        </div>
                         <Badge variant="outline" className="capitalize">
                           {getStatusIcon(escrow.status)}
                           <span className="ml-1">{escrow.status.replace('_', ' ')}</span>
@@ -558,7 +563,7 @@ export const PropertyEscrow: React.FC<PropertyEscrowProps> = ({
                     </div>
 
                     {/* Escrow Details */}
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                    <div className="grid grid-cols-1 gap-4 text-sm md:grid-cols-3">
                       <div>
                         <span className="font-medium">Buyer:</span>
                         <div className="flex items-center space-x-1">
@@ -596,11 +601,16 @@ export const PropertyEscrow: React.FC<PropertyEscrowProps> = ({
                       <div className="flex items-center justify-between">
                         <span className="text-sm font-medium">Conditions Progress</span>
                         <span className="text-sm text-muted-foreground">
-                          {escrow.conditions.filter(c => c.completed).length} / {escrow.conditions.length}
+                          {escrow.conditions.filter((c) => c.completed).length} /{' '}
+                          {escrow.conditions.length}
                         </span>
                       </div>
-                      <Progress 
-                        value={(escrow.conditions.filter(c => c.completed).length / escrow.conditions.length) * 100} 
+                      <Progress
+                        value={
+                          (escrow.conditions.filter((c) => c.completed).length /
+                            escrow.conditions.length) *
+                          100
+                        }
                         className="h-2"
                       />
                     </div>
@@ -626,11 +636,13 @@ export const PropertyEscrow: React.FC<PropertyEscrowProps> = ({
                           )}
                         </Button>
                       )}
-                      
+
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => window.open(getExplorerUrl(escrow.contractAddress, 'address'), '_blank')}
+                        onClick={() =>
+                          window.open(getExplorerUrl(escrow.contractAddress, 'address'), '_blank')
+                        }
                       >
                         <ExternalLink className="mr-2 h-4 w-4" />
                         View Contract

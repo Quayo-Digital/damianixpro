@@ -1,41 +1,81 @@
-
-import React from 'react';
-import { useParams, Link } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
+import React, { useState, useEffect } from 'react';
+import { useParams, Link, useNavigate } from 'react-router-dom';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { PageLayout } from '@/components/layout/PageLayout';
 import { PageContent } from '@/components/layout/PageContent';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
-import { PropertyGallery } from '@/components/properties/PropertyGallery';
+import { PropertyVirtualTourViewer } from '@/components/properties/PropertyVirtualTourViewer';
 import { PropertyInformation } from '@/components/properties/PropertyInformation';
 import { PropertyDetailsCard } from '@/components/properties/PropertyDetailsCard';
 import { PropertyTabs } from '@/components/properties/PropertyTabs';
+import { EditPropertyDialog } from '@/components/properties/EditPropertyDialog';
 import { getPropertyById } from '@/services/property';
 import { Property } from '@/services/property/types';
+import { useAuthSession } from '@/contexts/auth';
+import { PageLoader } from '@/components/ui/PageLoader';
+import { PropertyAnnouncementsManager } from '@/components/resident/PropertyAnnouncementsManager';
+import { fetchUnitsForProperty } from '@/services/property/unitsApi';
 
 const PropertyDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
+  const { userRole, isLoading: authLoading } = useAuthSession();
+  const queryClient = useQueryClient();
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
 
-  const { data: property, isLoading, isError, error } = useQuery<Property, Error>({
+  // Redirect tenants away from property management pages
+  useEffect(() => {
+    if (!authLoading && userRole === 'tenant') {
+      // Tenants should use public property pages, not management pages
+      if (id) {
+        navigate(`/public/properties/${id}`, { replace: true });
+      } else {
+        navigate('/tenant/dashboard', { replace: true });
+      }
+    }
+  }, [userRole, authLoading, navigate, id]);
+
+  const {
+    data: property,
+    isLoading,
+    isError,
+    error,
+  } = useQuery<Property, Error>({
     queryKey: ['property', id],
     queryFn: () => {
-      if (!id) throw new Error("Property ID is not available");
+      if (!id) throw new Error('Property ID is not available');
       return getPropertyById(id);
     },
-    enabled: !!id,
+    enabled: !!id && !authLoading && userRole !== 'tenant',
     retry: false,
   });
 
-  if (isLoading) {
-    return (
-      <PageLayout>
-        <PageContent title="Loading...">
-          <p>Loading property details...</p>
-        </PageContent>
-      </PageLayout>
-    );
+  const { data: unitRows = [] } = useQuery({
+    queryKey: ['property-units', id],
+    queryFn: () => fetchUnitsForProperty(id!),
+    enabled: !!id && !authLoading && userRole !== 'tenant',
+  });
+
+  const unitsCount = unitRows.length;
+  const occupiedCount = unitRows.filter((u) => u.status === 'occupied').length;
+  const occupancyRate = unitsCount > 0 ? Math.round((occupiedCount / unitsCount) * 100) : 0;
+
+  // Show loader while checking auth
+  if (authLoading) {
+    return <PageLoader />;
   }
-  
+
+  // Don't render if tenant (will be redirected)
+  if (userRole === 'tenant') {
+    return <PageLoader />;
+  }
+
+  // Show loader while loading property
+  if (isLoading) {
+    return <PageLoader />;
+  }
+
   if (isError) {
     return (
       <PageLayout>
@@ -70,10 +110,7 @@ const PropertyDetail: React.FC = () => {
 
   return (
     <PageLayout>
-      <PageContent 
-        title={property.name}
-        description={property.location}
-      >
+      <PageContent title={property.name} description={property.location}>
         <div className="mb-6">
           <Button asChild variant="outline">
             <Link to="/properties">
@@ -83,41 +120,56 @@ const PropertyDetail: React.FC = () => {
           </Button>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
           <div className="lg:col-span-2">
-            <PropertyGallery images={property.images || (property.imageUrl ? [property.imageUrl] : [])} />
-            {property.tourUrl && (
-              <div className="mt-6">
-                <h3 className="text-2xl font-semibold mb-4">3D Virtual Tour</h3>
-                <div className="aspect-video bg-muted rounded-lg overflow-hidden">
-                  <iframe
-                    src={property.tourUrl}
-                    title="3D Virtual Tour"
-                    allowFullScreen
-                    className="w-full h-full border-0"
-                  ></iframe>
-                </div>
-              </div>
-            )}
-            <PropertyInformation 
+            <div className="mb-6">
+              <h3 className="mb-4 text-2xl font-semibold">Property View</h3>
+              <PropertyVirtualTourViewer
+                images={property.images || (property.imageUrl ? [property.imageUrl] : [])}
+                tourUrl={property.tourUrl}
+                propertyName={property.name}
+              />
+            </div>
+            <PropertyInformation
               description={property.description || ''}
-              features={property.features || []} 
+              features={property.features || []}
             />
+            {property.transaction_type === 'LEASE' && (
+              <PropertyUnitsManager propertyId={property.id} propertyName={property.name} />
+            )}
           </div>
 
           <div>
-            <PropertyDetailsCard 
+            <PropertyDetailsCard
               status={property.status || 'Unknown'}
               rent={property.price || ''}
               size={property.squareFeet || ''}
               bedrooms={property.bedrooms ? Number(property.bedrooms) : 0}
               bathrooms={property.bathrooms ? Number(property.bathrooms) : 0}
-              units={0} // Default value, update if you have this data
-              occupancyRate={0} // Default value, update if you have this data
+              units={unitsCount}
+              occupancyRate={occupancyRate}
+              propertyId={property.id}
+              propertyOwnerId={property.owner_id}
+              onManageProperty={() => setIsEditDialogOpen(true)}
             />
+            <PropertyAnnouncementsManager propertyId={property.id} />
             <PropertyTabs />
           </div>
         </div>
+
+        {property && (
+          <EditPropertyDialog
+            open={isEditDialogOpen}
+            onOpenChange={setIsEditDialogOpen}
+            property={property}
+            onPropertyUpdated={() => {
+              if (id) {
+                queryClient.invalidateQueries({ queryKey: ['property', id] });
+                queryClient.invalidateQueries({ queryKey: ['property-units', id] });
+              }
+            }}
+          />
+        )}
       </PageContent>
     </PageLayout>
   );

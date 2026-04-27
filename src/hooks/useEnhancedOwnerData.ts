@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/contexts/auth';
+import { useAuthSession } from '@/contexts/auth';
 import { toast } from 'sonner';
 
 interface OwnerProperty {
@@ -9,6 +9,8 @@ interface OwnerProperty {
   title: string;
   type: 'apartment' | 'house' | 'duplex' | 'commercial' | 'land';
   status: 'occupied' | 'vacant' | 'maintenance' | 'marketing' | 'sold';
+  /** Human-readable listing state for modals (e.g. "Available"); `status` stays normalized for stats/filters */
+  display_status?: string;
   address: string;
   city: string;
   state: string;
@@ -30,6 +32,8 @@ interface OwnerProperty {
   next_maintenance_due?: string;
   property_manager?: string;
   insurance_expiry?: string;
+  /** Cover image from property form / storage (shortlet_details.form_meta.imageUrl) */
+  image_url?: string;
   created_at: string;
   updated_at: string;
 }
@@ -64,7 +68,15 @@ interface OwnerFinance {
   owner_id: string;
   property_id?: string;
   transaction_type: 'income' | 'expense';
-  category: 'rent' | 'maintenance' | 'insurance' | 'taxes' | 'utilities' | 'management_fees' | 'mortgage' | 'other';
+  category:
+    | 'rent'
+    | 'maintenance'
+    | 'insurance'
+    | 'taxes'
+    | 'utilities'
+    | 'management_fees'
+    | 'mortgage'
+    | 'other';
   amount: number;
   description: string;
   transaction_date: string;
@@ -161,14 +173,160 @@ interface OwnerPerformanceMetrics {
   }>;
 }
 
+/** Same source as `mapSupabaseToProperty`: `properties.shortlet_details.form_meta`. */
+function readOwnerPropertyFormMeta(prop: Record<string, unknown>): Record<string, unknown> {
+  const sd = prop.shortlet_details;
+  if (!sd || typeof sd !== 'object') return {};
+  const fm = (sd as { form_meta?: unknown }).form_meta;
+  return fm && typeof fm === 'object' ? { ...(fm as Record<string, unknown>) } : {};
+}
+
+function parseOwnerNum(v: unknown): number {
+  if (v === undefined || v === null || v === '') return 0;
+  const n = typeof v === 'number' ? v : parseFloat(String(v).replace(/,/g, ''));
+  return Number.isFinite(n) ? n : 0;
+}
+
+function mapDbStatusToOwner(raw: unknown): {
+  status: OwnerProperty['status'];
+  display_status: string;
+} {
+  const s = String(raw ?? 'Available').trim();
+  const u = s.toUpperCase().replace(/\s+/g, '_');
+  if (['RENTED', 'OCCUPIED', 'LEASED'].includes(u)) {
+    return { status: 'occupied', display_status: 'Rented' };
+  }
+  if (u === 'SOLD') return { status: 'sold', display_status: 'Sold' };
+  if (u === 'UNDER_MAINTENANCE') {
+    return { status: 'maintenance', display_status: 'Under Maintenance' };
+  }
+  if (u === 'UNDER_CONTRACT') {
+    return { status: 'marketing', display_status: 'Under Contract' };
+  }
+  if (['AVAILABLE', 'VACANT', 'ACTIVE'].includes(u) || s === 'Available') {
+    return { status: 'vacant', display_status: 'Available' };
+  }
+  return { status: 'vacant', display_status: s || 'Available' };
+}
+
+function mapMetaTypeToOwnerType(
+  meta: Record<string, unknown>,
+  prop: Record<string, unknown>
+): OwnerProperty['type'] {
+  const t = String(meta.type || prop.type || '').toLowerCase();
+  const cat = String(meta.property_category || prop.property_category || '').toUpperCase();
+  if (cat.includes('COMMERCIAL') || t.includes('commercial')) return 'commercial';
+  if (cat === 'LAND' || t === 'land') return 'land';
+  if (t === 'duplex') return 'duplex';
+  if (t === 'house') return 'house';
+  if (t === 'apartment') return 'apartment';
+  if (t === 'residential' || cat.includes('RESIDENTIAL')) return 'house';
+  return 'apartment';
+}
+
+function cityStateFromPropertyRow(
+  meta: Record<string, unknown>,
+  prop: Record<string, unknown>
+): { city: string; state: string } {
+  const c = String(prop.city || '').trim();
+  const st = String(prop.state || '').trim();
+  if (c && st) return { city: c, state: st };
+  const loc = String(meta.location || prop.location || '').trim();
+  if (loc) {
+    const parts = loc
+      .split(',')
+      .map((p) => p.trim())
+      .filter(Boolean);
+    if (parts.length >= 2) return { city: parts[0], state: parts.slice(1).join(', ') };
+    return { city: loc, state: loc };
+  }
+  return { city: '—', state: '—' };
+}
+
+/** Maps a raw `properties` row (+ form_meta JSON) to owner dashboard shape. */
+function mapPropertyRowToOwnerProperty(
+  prop: Record<string, unknown>,
+  ownerId: string
+): OwnerProperty {
+  const meta = readOwnerPropertyFormMeta(prop);
+  const tx = String(meta.transaction_type || prop.transaction_type || 'LEASE').toUpperCase();
+
+  const leaseAnnual =
+    parseOwnerNum(meta.lease_price) ||
+    parseOwnerNum(prop.lease_price) ||
+    (tx === 'LEASE' ? parseOwnerNum(meta.price) : 0);
+  const salePrice = parseOwnerNum(meta.sale_price);
+  const genericPrice = parseOwnerNum(meta.price);
+  const marketValue = parseOwnerNum(meta.market_value);
+
+  const purchase_price = tx === 'SALE' ? salePrice || genericPrice : salePrice;
+
+  const current_value =
+    marketValue ||
+    salePrice ||
+    (tx === 'LEASE' && leaseAnnual > 0 ? leaseAnnual : 0) ||
+    genericPrice ||
+    parseOwnerNum(prop.market_value) ||
+    parseOwnerNum(prop.sale_price) ||
+    parseOwnerNum(prop.price);
+
+  const monthly_rent =
+    leaseAnnual > 0 ? leaseAnnual / 12 : parseOwnerNum(prop.rent_amount || prop.monthly_rent);
+  const annual_rent = leaseAnnual > 0 ? leaseAnnual : monthly_rent * 12;
+
+  const { status, display_status } = mapDbStatusToOwner(prop.status);
+
+  const br = parseInt(String(meta.bedrooms ?? prop.bedrooms ?? 0), 10);
+  const bt = parseInt(String(meta.bathrooms ?? prop.bathrooms ?? 0), 10);
+  const sq = parseInt(String(meta.squareFeet ?? prop.squareFeet ?? prop.area_sqm ?? 0), 10);
+
+  const img =
+    (typeof meta.imageUrl === 'string' && meta.imageUrl) ||
+    (typeof meta.image_url === 'string' && meta.image_url) ||
+    undefined;
+
+  const roiFromYield =
+    current_value > 0 && annual_rent > 0 ? (annual_rent / current_value) * 100 : 0;
+
+  return {
+    id: String(prop.id),
+    owner_id: ownerId,
+    title: String(prop.name || prop.title || 'Property'),
+    type: mapMetaTypeToOwnerType(meta, prop),
+    status,
+    display_status,
+    address: String(prop.address || ''),
+    ...cityStateFromPropertyRow(meta, prop),
+    bedrooms: Number.isFinite(br) && br > 0 ? br : 1,
+    bathrooms: Number.isFinite(bt) && bt > 0 ? bt : 1,
+    area_sqm: Number.isFinite(sq) && sq > 0 ? sq : 100,
+    purchase_price,
+    current_value,
+    monthly_rent,
+    annual_rent,
+    occupancy_rate: parseOwnerNum(prop.occupancy_rate),
+    tenant_count: parseOwnerNum(prop.tenant_count),
+    maintenance_cost_ytd: parseOwnerNum(prop.maintenance_cost_ytd),
+    total_revenue_ytd: parseOwnerNum(prop.total_revenue_ytd),
+    net_income_ytd: parseOwnerNum(prop.net_income_ytd),
+    roi_percentage: parseOwnerNum(prop.roi_percentage) || roiFromYield,
+    days_vacant_ytd: parseOwnerNum(prop.days_vacant_ytd),
+    created_at: String(prop.created_at || new Date().toISOString()),
+    updated_at: String(prop.updated_at || new Date().toISOString()),
+    image_url: img,
+  };
+}
+
 export const useEnhancedOwnerData = () => {
-  const { user } = useAuth();
+  const { user } = useAuthSession();
   const [ownerProfile, setOwnerProfile] = useState<any>(null);
   const [properties, setProperties] = useState<OwnerProperty[]>([]);
   const [tenants, setTenants] = useState<OwnerTenant[]>([]);
   const [finances, setFinances] = useState<OwnerFinance[]>([]);
   const [stats, setStats] = useState<OwnerStats | null>(null);
-  const [performanceMetrics, setPerformanceMetrics] = useState<OwnerPerformanceMetrics | null>(null);
+  const [performanceMetrics, setPerformanceMetrics] = useState<OwnerPerformanceMetrics | null>(
+    null
+  );
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -192,7 +350,7 @@ export const useEnhancedOwnerData = () => {
     average_roi: 18.5,
     verified: true,
     created_at: '2020-01-15T10:00:00Z',
-    updated_at: '2024-08-08T11:55:00Z'
+    updated_at: '2024-08-08T11:55:00Z',
   });
 
   const getMockProperties = (): OwnerProperty[] => [
@@ -224,7 +382,7 @@ export const useEnhancedOwnerData = () => {
       property_manager: 'Lagos Property Management',
       insurance_expiry: '2025-03-30T00:00:00Z',
       created_at: '2020-01-15T10:00:00Z',
-      updated_at: '2024-08-08T11:55:00Z'
+      updated_at: '2024-08-08T11:55:00Z',
     },
     {
       id: 'prop-2',
@@ -253,7 +411,7 @@ export const useEnhancedOwnerData = () => {
       property_manager: 'VI Property Services',
       insurance_expiry: '2025-01-15T00:00:00Z',
       created_at: '2021-03-10T10:00:00Z',
-      updated_at: '2024-08-08T11:55:00Z'
+      updated_at: '2024-08-08T11:55:00Z',
     },
     {
       id: 'prop-3',
@@ -283,8 +441,8 @@ export const useEnhancedOwnerData = () => {
       property_manager: 'Elite Property Management',
       insurance_expiry: '2025-06-30T00:00:00Z',
       created_at: '2019-08-20T10:00:00Z',
-      updated_at: '2024-08-08T11:55:00Z'
-    }
+      updated_at: '2024-08-08T11:55:00Z',
+    },
   ];
 
   const getMockTenants = (): OwnerTenant[] => [
@@ -310,7 +468,7 @@ export const useEnhancedOwnerData = () => {
       complaints: 0,
       property_title: 'Luxury 4-Bedroom Duplex - Lekki Phase 1',
       created_at: '2023-01-01T10:00:00Z',
-      updated_at: '2024-08-08T11:55:00Z'
+      updated_at: '2024-08-08T11:55:00Z',
     },
     {
       id: 'tenant-2',
@@ -334,8 +492,8 @@ export const useEnhancedOwnerData = () => {
       complaints: 0,
       property_title: 'Modern 3-Bedroom Apartment - Victoria Island',
       created_at: '2024-02-01T10:00:00Z',
-      updated_at: '2024-08-08T11:55:00Z'
-    }
+      updated_at: '2024-08-08T11:55:00Z',
+    },
   ];
 
   const calculateStats = (
@@ -344,41 +502,51 @@ export const useEnhancedOwnerData = () => {
     financesData: OwnerFinance[]
   ): OwnerStats => {
     const totalProperties = propertiesData.length;
-    const occupiedProperties = propertiesData.filter(p => p.status === 'occupied').length;
-    const vacantProperties = propertiesData.filter(p => p.status === 'vacant').length;
+    const occupiedProperties = propertiesData.filter((p) => p.status === 'occupied').length;
+    const vacantProperties = propertiesData.filter((p) => p.status === 'vacant').length;
     const totalTenants = tenantsData.length;
     const occupancyRate = totalProperties > 0 ? (occupiedProperties / totalProperties) * 100 : 0;
 
     const totalPortfolioValue = propertiesData.reduce((sum, p) => sum + p.current_value, 0);
-    const monthlyRentIncome = propertiesData.reduce((sum, p) => sum + (p.status === 'occupied' ? p.monthly_rent : 0), 0);
+    const monthlyRentIncome = propertiesData.reduce(
+      (sum, p) => sum + (p.status === 'occupied' ? p.monthly_rent : 0),
+      0
+    );
     const annualRentIncome = propertiesData.reduce((sum, p) => sum + p.annual_rent, 0);
 
     const totalExpensesYTD = financesData
-      .filter(f => f.transaction_type === 'expense')
+      .filter((f) => f.transaction_type === 'expense')
       .reduce((sum, f) => sum + f.amount, 0);
 
     const totalIncomeYTD = financesData
-      .filter(f => f.transaction_type === 'income')
+      .filter((f) => f.transaction_type === 'income')
       .reduce((sum, f) => sum + f.amount, 0);
 
     const netIncomeYTD = totalIncomeYTD - totalExpensesYTD;
 
-    const averageROI = propertiesData.length > 0 
-      ? propertiesData.reduce((sum, p) => sum + p.roi_percentage, 0) / propertiesData.length 
-      : 0;
+    const averageROI =
+      propertiesData.length > 0
+        ? propertiesData.reduce((sum, p) => sum + p.roi_percentage, 0) / propertiesData.length
+        : 0;
 
-    const averageTenantSatisfaction = tenantsData.length > 0
-      ? tenantsData
-          .filter(t => t.satisfaction_rating)
-          .reduce((sum, t) => sum + (t.satisfaction_rating || 0), 0) / 
-        tenantsData.filter(t => t.satisfaction_rating).length
-      : 0;
+    const averageTenantSatisfaction =
+      tenantsData.length > 0
+        ? tenantsData
+            .filter((t) => t.satisfaction_rating)
+            .reduce((sum, t) => sum + (t.satisfaction_rating || 0), 0) /
+          tenantsData.filter((t) => t.satisfaction_rating).length
+        : 0;
 
-    const portfolioAppreciation = propertiesData.length > 0
-      ? propertiesData.reduce((sum, p) => sum + ((p.current_value - p.purchase_price) / p.purchase_price * 100), 0) / propertiesData.length
-      : 0;
+    const withPurchaseBase = propertiesData.filter((p) => p.purchase_price > 0);
+    const portfolioAppreciation =
+      withPurchaseBase.length > 0
+        ? withPurchaseBase.reduce(
+            (sum, p) => sum + ((p.current_value - p.purchase_price) / p.purchase_price) * 100,
+            0
+          ) / withPurchaseBase.length
+        : 0;
 
-    const cashFlow = monthlyRentIncome - (totalExpensesYTD / 8);
+    const cashFlow = monthlyRentIncome - totalExpensesYTD / 8;
 
     const totalDepositsHeld = tenantsData.reduce((sum, t) => sum + t.deposit_amount, 0);
 
@@ -399,7 +567,7 @@ export const useEnhancedOwnerData = () => {
       averageTenantSatisfaction,
       portfolioAppreciation,
       cashFlow,
-      totalDepositsHeld
+      totalDepositsHeld,
     };
   };
 
@@ -410,19 +578,20 @@ export const useEnhancedOwnerData = () => {
   ): OwnerPerformanceMetrics => {
     // Calculate real achievements based on actual data
     const achievements = [];
-    
+
     // Portfolio value achievement
-    if (currentStats.totalPortfolioValue >= 100000000) { // ₦100M+
+    if (currentStats.totalPortfolioValue >= 100000000) {
+      // ₦100M+
       achievements.push({
         id: '1',
         title: 'Portfolio Milestone',
         description: `Reached ₦${(currentStats.totalPortfolioValue / 1000000).toFixed(0)}M portfolio value`,
         icon: '🏆',
         earnedDate: new Date().toISOString().split('T')[0],
-        type: 'portfolio_growth' as const
+        type: 'portfolio_growth' as const,
       });
     }
-    
+
     // High occupancy achievement
     if (currentStats.occupancyRate >= 90) {
       achievements.push({
@@ -431,10 +600,10 @@ export const useEnhancedOwnerData = () => {
         description: `Maintained ${currentStats.occupancyRate}% occupancy rate`,
         icon: '📈',
         earnedDate: new Date().toISOString().split('T')[0],
-        type: 'operational' as const
+        type: 'operational' as const,
       });
     }
-    
+
     // Property owner achievement (for having properties)
     if (propertiesData.length > 0) {
       achievements.push({
@@ -443,10 +612,10 @@ export const useEnhancedOwnerData = () => {
         description: `Managing ${propertiesData.length} propert${propertiesData.length === 1 ? 'y' : 'ies'}`,
         icon: '🏠',
         earnedDate: new Date().toISOString().split('T')[0],
-        type: 'portfolio_growth' as const
+        type: 'portfolio_growth' as const,
       });
     }
-    
+
     // ROI achievement
     if (currentStats.averageROI > 10) {
       achievements.push({
@@ -455,7 +624,7 @@ export const useEnhancedOwnerData = () => {
         description: `Achieving ${currentStats.averageROI.toFixed(1)}% average ROI`,
         icon: '💰',
         earnedDate: new Date().toISOString().split('T')[0],
-        type: 'financial' as const
+        type: 'financial' as const,
       });
     }
 
@@ -464,89 +633,176 @@ export const useEnhancedOwnerData = () => {
         totalValue: currentStats.totalPortfolioValue,
         monthlyIncome: currentStats.monthlyRentIncome,
         annualIncome: currentStats.annualRentIncome,
-        netWorth: currentStats.totalPortfolioValue - (currentStats.totalPortfolioValue * 0.3),
-        portfolioGrowth: currentStats.portfolioAppreciation
+        netWorth: currentStats.totalPortfolioValue - currentStats.totalPortfolioValue * 0.3,
+        portfolioGrowth: currentStats.portfolioAppreciation,
       },
       financialPerformance: {
         grossRentYield: (currentStats.annualRentIncome / currentStats.totalPortfolioValue) * 100,
         netRentYield: (currentStats.netIncomeYTD / currentStats.totalPortfolioValue) * 100,
         capitalGrowth: currentStats.portfolioAppreciation,
         totalReturn: currentStats.averageROI,
-        cashOnCashReturn: (currentStats.cashFlow * 12 / (currentStats.totalPortfolioValue * 0.3)) * 100,
-        operatingExpenseRatio: (currentStats.totalExpensesYTD / currentStats.annualRentIncome) * 100
+        cashOnCashReturn:
+          ((currentStats.cashFlow * 12) / (currentStats.totalPortfolioValue * 0.3)) * 100,
+        operatingExpenseRatio:
+          (currentStats.totalExpensesYTD / currentStats.annualRentIncome) * 100,
       },
       propertyMetrics: {
         averageOccupancyRate: currentStats.occupancyRate,
-        averageRentPerSqm: propertiesData.length > 0 
-          ? propertiesData.reduce((sum, p) => sum + (p.monthly_rent / p.area_sqm), 0) / propertiesData.length 
-          : 0,
+        averageRentPerSqm:
+          propertiesData.length > 0
+            ? propertiesData.reduce((sum, p) => sum + p.monthly_rent / p.area_sqm, 0) /
+              propertiesData.length
+            : 0,
         maintenanceCostRatio: (currentStats.totalExpensesYTD / currentStats.annualRentIncome) * 100,
-        tenantTurnoverRate: tenantsData.length > 0 ? 
-          Math.round((tenantsData.filter(t => t.lease_status === 'terminated').length / tenantsData.length) * 100) : 0,
-        averageTenancyLength: tenantsData.length > 0 ? 
-          Math.round(tenantsData.reduce((sum, t) => {
-            const startDate = new Date(t.lease_start);
-            const endDate = t.lease_status === 'active' ? new Date() : new Date(t.lease_end);
-            return sum + ((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24 * 30));
-          }, 0) / tenantsData.length) : 0,
-        propertyAppreciationRate: currentStats.portfolioAppreciation
+        tenantTurnoverRate:
+          tenantsData.length > 0
+            ? Math.round(
+                (tenantsData.filter((t) => t.lease_status === 'terminated').length /
+                  tenantsData.length) *
+                  100
+              )
+            : 0,
+        averageTenancyLength:
+          tenantsData.length > 0
+            ? Math.round(
+                tenantsData.reduce((sum, t) => {
+                  const startDate = new Date(t.lease_start);
+                  const endDate = t.lease_status === 'active' ? new Date() : new Date(t.lease_end);
+                  return (
+                    sum + (endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24 * 30)
+                  );
+                }, 0) / tenantsData.length
+              )
+            : 0,
+        propertyAppreciationRate: currentStats.portfolioAppreciation,
       },
       tenantMetrics: {
         totalTenants: currentStats.totalTenants,
-        onTimePaymentRate: tenantsData.length > 0 ? 
-          Math.round((tenantsData.filter(t => t.payment_status === 'current').length / tenantsData.length) * 100) : 0,
+        onTimePaymentRate:
+          tenantsData.length > 0
+            ? Math.round(
+                (tenantsData.filter((t) => t.payment_status === 'current').length /
+                  tenantsData.length) *
+                  100
+              )
+            : 0,
         averageTenantSatisfaction: currentStats.averageTenantSatisfaction,
-        tenantRetentionRate: tenantsData.length > 0 ? 
-          Math.round((tenantsData.filter(t => t.lease_status === 'active').length / tenantsData.length) * 100) : 0,
-        averageRentIncrease: propertiesData.length > 0 ? 
-          Math.round((propertiesData.reduce((sum, p) => sum + (p.annual_rent * 0.08), 0) / propertiesData.length) * 100) / 100 : 0,
-        collectionEfficiency: tenantsData.length > 0 ? 
-          Math.round((tenantsData.filter(t => t.payment_status !== 'overdue').length / tenantsData.length) * 100) : 0
+        tenantRetentionRate:
+          tenantsData.length > 0
+            ? Math.round(
+                (tenantsData.filter((t) => t.lease_status === 'active').length /
+                  tenantsData.length) *
+                  100
+              )
+            : 0,
+        averageRentIncrease:
+          propertiesData.length > 0
+            ? Math.round(
+                (propertiesData.reduce((sum, p) => sum + p.annual_rent * 0.08, 0) /
+                  propertiesData.length) *
+                  100
+              ) / 100
+            : 0,
+        collectionEfficiency:
+          tenantsData.length > 0
+            ? Math.round(
+                (tenantsData.filter((t) => t.payment_status !== 'overdue').length /
+                  tenantsData.length) *
+                  100
+              )
+            : 0,
       },
       marketIntelligence: {
         portfolioVsMarket: currentStats.averageROI > 0 ? currentStats.averageROI - 8.0 : 0, // Compare to 8% market average
-        rentGrowthVsMarket: propertiesData.length > 0 ? 
-          (propertiesData.reduce((sum, p) => sum + ((p.monthly_rent * 12 / p.purchase_price) * 100), 0) / propertiesData.length) - 6.0 : 0,
+        rentGrowthVsMarket:
+          propertiesData.length > 0
+            ? propertiesData.reduce(
+                (sum, p) => sum + ((p.monthly_rent * 12) / p.purchase_price) * 100,
+                0
+              ) /
+                propertiesData.length -
+              6.0
+            : 0,
         occupancyVsMarket: currentStats.occupancyRate - 85, // Compare to 85% market average
-        marketTrends: propertiesData.length > 0 ? 
-          [...new Set(propertiesData.map(p => p.city))].map(city => {
-            const cityProperties = propertiesData.filter(p => p.city === city);
-            const avgRent = cityProperties.reduce((sum, p) => sum + (p.monthly_rent / p.area_sqm), 0) / cityProperties.length;
-            const avgOccupancy = cityProperties.reduce((sum, p) => sum + p.occupancy_rate, 0) / cityProperties.length;
-            return {
-              area: city,
-              averageRent: Math.round(avgRent),
-              rentGrowth: Math.round((avgRent / 8000) * 100) / 10, // Estimate based on rent levels
-              occupancyRate: Math.round(avgOccupancy),
-              marketActivity: avgOccupancy > 90 ? 'high' as const : avgOccupancy > 75 ? 'medium' as const : 'low' as const
-            };
-          }) : [
-            {
-              area: 'Lagos',
-              averageRent: 0,
-              rentGrowth: 0,
-              occupancyRate: 0,
-              marketActivity: 'low' as const
-            }
-          ]
+        marketTrends:
+          propertiesData.length > 0
+            ? [...new Set(propertiesData.map((p) => p.city))].map((city) => {
+                const cityProperties = propertiesData.filter((p) => p.city === city);
+                const avgRent =
+                  cityProperties.reduce((sum, p) => sum + p.monthly_rent / p.area_sqm, 0) /
+                  cityProperties.length;
+                const avgOccupancy =
+                  cityProperties.reduce((sum, p) => sum + p.occupancy_rate, 0) /
+                  cityProperties.length;
+                return {
+                  area: city,
+                  averageRent: Math.round(avgRent),
+                  rentGrowth: Math.round((avgRent / 8000) * 100) / 10, // Estimate based on rent levels
+                  occupancyRate: Math.round(avgOccupancy),
+                  marketActivity:
+                    avgOccupancy > 90
+                      ? ('high' as const)
+                      : avgOccupancy > 75
+                        ? ('medium' as const)
+                        : ('low' as const),
+                };
+              })
+            : [
+                {
+                  area: 'Lagos',
+                  averageRent: 0,
+                  rentGrowth: 0,
+                  occupancyRate: 0,
+                  marketActivity: 'low' as const,
+                },
+              ],
       },
       riskAnalysis: {
-        concentrationRisk: propertiesData.length > 0 ? 
-          Math.min(100, Math.round((1 / propertiesData.length) * 100)) : 100, // Higher risk with fewer properties
-        tenantCreditRisk: tenantsData.length > 0 ? 
-          Math.round((tenantsData.filter(t => t.payment_status === 'overdue').length / tenantsData.length) * 100) : 0,
-        maintenanceRisk: propertiesData.length > 0 ? 
-          Math.round((propertiesData.reduce((sum, p) => sum + (p.maintenance_cost_ytd / p.annual_rent), 0) / propertiesData.length) * 100) : 0,
-        marketRisk: currentStats.occupancyRate < 80 ? 40 : currentStats.occupancyRate < 90 ? 25 : 15,
+        concentrationRisk:
+          propertiesData.length > 0
+            ? Math.min(100, Math.round((1 / propertiesData.length) * 100))
+            : 100, // Higher risk with fewer properties
+        tenantCreditRisk:
+          tenantsData.length > 0
+            ? Math.round(
+                (tenantsData.filter((t) => t.payment_status === 'overdue').length /
+                  tenantsData.length) *
+                  100
+              )
+            : 0,
+        maintenanceRisk:
+          propertiesData.length > 0
+            ? Math.round(
+                (propertiesData.reduce(
+                  (sum, p) => sum + p.maintenance_cost_ytd / p.annual_rent,
+                  0
+                ) /
+                  propertiesData.length) *
+                  100
+              )
+            : 0,
+        marketRisk:
+          currentStats.occupancyRate < 80 ? 40 : currentStats.occupancyRate < 90 ? 25 : 15,
         liquidityRisk: propertiesData.length <= 1 ? 50 : propertiesData.length <= 3 ? 30 : 20,
-        overallRiskScore: Math.round((
-          (propertiesData.length > 0 ? Math.min(100, Math.round((1 / propertiesData.length) * 100)) : 100) * 0.3 +
-          (tenantsData.length > 0 ? Math.round((tenantsData.filter(t => t.payment_status === 'overdue').length / tenantsData.length) * 100) : 0) * 0.2 +
-          (currentStats.occupancyRate < 80 ? 40 : currentStats.occupancyRate < 90 ? 25 : 15) * 0.3 +
-          (propertiesData.length <= 1 ? 50 : propertiesData.length <= 3 ? 30 : 20) * 0.2
-        ))
+        overallRiskScore: Math.round(
+          (propertiesData.length > 0
+            ? Math.min(100, Math.round((1 / propertiesData.length) * 100))
+            : 100) *
+            0.3 +
+            (tenantsData.length > 0
+              ? Math.round(
+                  (tenantsData.filter((t) => t.payment_status === 'overdue').length /
+                    tenantsData.length) *
+                    100
+                )
+              : 0) *
+              0.2 +
+            (currentStats.occupancyRate < 80 ? 40 : currentStats.occupancyRate < 90 ? 25 : 15) *
+              0.3 +
+            (propertiesData.length <= 1 ? 50 : propertiesData.length <= 3 ? 30 : 20) * 0.2
+        ),
       },
-      achievements
+      achievements,
     };
   };
 
@@ -561,14 +817,14 @@ export const useEnhancedOwnerData = () => {
         setIsLoading(true);
         setError(null);
 
-        // Fetch real user profile data
+        // Fetch real user profile data (maybeSingle avoids 406 when profile doesn't exist yet)
         const { data: profileData, error: profileError } = await supabase
           .from('profiles')
           .select('*')
           .eq('id', user.id)
-          .single();
+          .maybeSingle();
 
-        if (profileError && profileError.code !== 'PGRST116') {
+        if (profileError) {
           console.warn('Error fetching profile:', profileError);
         }
 
@@ -584,13 +840,14 @@ export const useEnhancedOwnerData = () => {
 
         // Create personalized profile using real user data
         // Try multiple name sources for better user experience
-        const userName = profileData?.full_name || 
-                        profileData?.name || 
-                        user.user_metadata?.full_name || 
-                        user.user_metadata?.name || 
-                        user.email?.split('@')[0] || 
-                        'Property Owner';
-        
+        const userName =
+          profileData?.full_name ||
+          profileData?.name ||
+          user.user_metadata?.full_name ||
+          user.user_metadata?.name ||
+          user.email?.split('@')[0] ||
+          'Property Owner';
+
         const realProfile = {
           id: user.id,
           user_id: user.id,
@@ -601,7 +858,10 @@ export const useEnhancedOwnerData = () => {
           business_registration: profileData?.business_registration || '',
           tax_id: profileData?.tax_id || '',
           investment_strategy: 'Buy and Hold',
-          portfolio_size: propertiesData?.length > 0 ? `Small (${propertiesData.length} properties)` : 'Getting Started',
+          portfolio_size:
+            propertiesData?.length > 0
+              ? `Small (${propertiesData.length} properties)`
+              : 'Getting Started',
           years_investing: 1,
           preferred_locations: ['Lagos'],
           total_properties: propertiesData?.length || 0,
@@ -610,61 +870,45 @@ export const useEnhancedOwnerData = () => {
           average_roi: 0,
           verified: false,
           created_at: profileData?.created_at || new Date().toISOString(),
-          updated_at: profileData?.updated_at || new Date().toISOString()
+          updated_at: profileData?.updated_at || new Date().toISOString(),
         };
 
-        // Transform real properties data if available
-        const realProperties = propertiesData?.map(prop => ({
-          id: prop.id,
-          owner_id: user.id,
-          title: prop.name || prop.title || 'Property',
-          type: (prop.type || 'apartment') as const,
-          status: (prop.status || 'available') as const,
-          address: prop.address || prop.location || '',
-          city: prop.city || 'Lagos',
-          state: prop.state || 'Lagos',
-          bedrooms: parseInt(String(prop.bedrooms)) || 1,
-          bathrooms: parseInt(String(prop.bathrooms)) || 1,
-          area_sqm: parseInt(String(prop.squareFeet || prop.area_sqm)) || 100,
-          purchase_price: parseFloat(String(prop.price || prop.purchase_price)) || 0,
-          current_value: parseFloat(String(prop.price || prop.current_value)) || 0,
-          monthly_rent: parseFloat(String(prop.rent_amount || prop.monthly_rent)) || 0,
-          annual_rent: (parseFloat(String(prop.rent_amount || prop.monthly_rent)) || 0) * 12,
-          occupancy_rate: prop.occupancy_rate || 0,
-          tenant_count: prop.tenant_count || 0,
-          maintenance_cost_ytd: prop.maintenance_cost_ytd || 0,
-          total_revenue_ytd: prop.total_revenue_ytd || 0,
-          net_income_ytd: prop.net_income_ytd || 0,
-          roi_percentage: prop.roi_percentage || 0,
-          days_vacant_ytd: prop.days_vacant_ytd || 0,
-          created_at: prop.created_at,
-          updated_at: prop.updated_at
-        })) || [];
+        // Transform real properties: merge DB columns + shortlet_details.form_meta (same as edit form / mapSupabaseToProperty)
+        const realProperties =
+          propertiesData?.map((prop) =>
+            mapPropertyRowToOwnerProperty(prop as Record<string, unknown>, user.id)
+          ) || [];
 
         // Always use real profile data
         setOwnerProfile(realProfile);
-        
+
         // Always use real properties data (empty array if no properties)
         setProperties(realProperties);
         setTenants([]); // No tenant data available yet
         setFinances([]); // No finance data available yet
-        
+
         console.log('Real properties loaded:', realProperties.length, realProperties);
 
         // Calculate statistics and performance metrics using real data
         const dataToUse = {
           properties: realProperties,
           tenants: [],
-          finances: []
+          finances: [],
         };
 
-        const calculatedStats = calculateStats(dataToUse.properties, dataToUse.tenants, dataToUse.finances);
+        const calculatedStats = calculateStats(
+          dataToUse.properties,
+          dataToUse.tenants,
+          dataToUse.finances
+        );
         setStats(calculatedStats);
-        setPerformanceMetrics(calculatePerformanceMetrics(dataToUse.properties, dataToUse.tenants, calculatedStats));
+        setPerformanceMetrics(
+          calculatePerformanceMetrics(dataToUse.properties, dataToUse.tenants, calculatedStats)
+        );
       } catch (error) {
         console.error('Error fetching owner data:', error);
         setError(error as Error);
-        
+
         // Fallback to empty data on error, not mock data
         setOwnerProfile({
           id: user.id,
@@ -685,7 +929,7 @@ export const useEnhancedOwnerData = () => {
           average_roi: 0,
           verified: false,
           created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
+          updated_at: new Date().toISOString(),
         });
         setProperties([]);
         setTenants([]);
@@ -696,13 +940,13 @@ export const useEnhancedOwnerData = () => {
           monthlyIncome: 0,
           netIncome: 0,
           occupancyRate: 0,
-          averageRoi: 0
+          averageRoi: 0,
         });
         setPerformanceMetrics({
           monthlyRevenue: [],
           occupancyTrends: [],
           expenseBreakdown: [],
-          roiComparison: []
+          roiComparison: [],
         });
       } finally {
         setIsLoading(false);
@@ -725,7 +969,6 @@ export const useEnhancedOwnerData = () => {
     }
   };
 
-
   const updateProperty = async (propertyId: string, updates: any) => {
     try {
       const { data, error } = await supabase
@@ -737,7 +980,7 @@ export const useEnhancedOwnerData = () => {
         .single();
 
       if (error) throw error;
-      
+
       toast.success('Property updated successfully!');
       refreshData();
       return data;
@@ -764,7 +1007,7 @@ export const useEnhancedOwnerData = () => {
           email: tenantData.email || '',
           phone: tenantData.phone || '',
           status: 'active',
-          created_at: new Date().toISOString()
+          created_at: new Date().toISOString(),
         })
         .select('id')
         .single();
@@ -773,26 +1016,24 @@ export const useEnhancedOwnerData = () => {
 
       // If property information is provided, create property-tenant relationship
       if (tenantData.propertyId && tenant) {
-        const { error: propertyTenantError } = await supabase
-          .from('property_tenants')
-          .insert({
-            property_id: tenantData.propertyId,
-            tenant_id: tenant.id,
-            rent_amount: tenantData.rentAmount ? parseFloat(tenantData.rentAmount) : null,
-            deposit_amount: tenantData.depositAmount ? parseFloat(tenantData.depositAmount) : null,
-            start_date: tenantData.startDate || new Date().toISOString().split('T')[0],
-            end_date: tenantData.endDate || null,
-            status: 'active'
-          });
+        const { error: propertyTenantError } = await supabase.from('property_tenants').insert({
+          property_id: tenantData.propertyId,
+          tenant_id: tenant.id,
+          rent_amount: tenantData.rentAmount ? parseFloat(tenantData.rentAmount) : null,
+          deposit_amount: tenantData.depositAmount ? parseFloat(tenantData.depositAmount) : null,
+          start_date: tenantData.startDate || new Date().toISOString().split('T')[0],
+          end_date: tenantData.endDate || null,
+          status: 'active',
+        });
 
         if (propertyTenantError) throw propertyTenantError;
       }
 
       toast.success('Tenant added successfully!');
-      
+
       // Refresh data to show the new tenant
       await refreshData();
-      
+
       return tenant;
     } catch (error) {
       console.error('Error adding tenant:', error);
@@ -817,7 +1058,7 @@ export const useEnhancedOwnerData = () => {
           email: updates.email,
           phone: updates.phone,
           status: updates.status || 'active',
-          updated_at: new Date().toISOString()
+          updated_at: new Date().toISOString(),
         })
         .eq('id', tenantId)
         .select()
@@ -835,7 +1076,7 @@ export const useEnhancedOwnerData = () => {
             deposit_amount: updates.depositAmount ? parseFloat(updates.depositAmount) : undefined,
             start_date: updates.startDate,
             end_date: updates.endDate,
-            status: updates.status || 'active'
+            status: updates.status || 'active',
           })
           .eq('tenant_id', tenantId);
 
@@ -843,10 +1084,10 @@ export const useEnhancedOwnerData = () => {
       }
 
       toast.success('Tenant updated successfully!');
-      
+
       // Refresh data to show the updated tenant
       await refreshData();
-      
+
       return tenant;
     } catch (error) {
       console.error('Error updating tenant:', error);
@@ -867,7 +1108,7 @@ export const useEnhancedOwnerData = () => {
     refreshData,
     updateProperty,
     addTenant,
-    updateTenant
+    updateTenant,
   };
 };
 

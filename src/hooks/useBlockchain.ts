@@ -3,7 +3,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuthSession } from '@/contexts/AuthContext';
 import { useSubscription } from '@/hooks/useSubscription';
 import BlockchainService from '@/services/blockchain/blockchainService';
 import { toast } from 'sonner';
@@ -19,7 +19,7 @@ import {
   BlockchainError,
   WalletType,
   GasSpeed,
-  TransactionStatus
+  TransactionStatus,
 } from '@/types/blockchain';
 
 interface UseBlockchainOptions {
@@ -29,15 +29,11 @@ interface UseBlockchainOptions {
 }
 
 export const useBlockchain = (options: UseBlockchainOptions = {}) => {
-  const { user } = useAuth();
+  const { user } = useAuthSession();
   const { hasFeatureAccess } = useSubscription();
   const queryClient = useQueryClient();
-  
-  const {
-    autoConnect = false,
-    preferredNetwork = 'polygon',
-    enableNotifications = true
-  } = options;
+
+  const { autoConnect = false, preferredNetwork = 'polygon', enableNotifications = true } = options;
 
   // State management
   const [isConnecting, setIsConnecting] = useState(false);
@@ -69,25 +65,25 @@ export const useBlockchain = (options: UseBlockchainOptions = {}) => {
     onSuccess: (connection) => {
       setWalletConnection(connection);
       setCurrentNetwork(getNetworkFromChainId(connection.chainId));
-      
+
       if (enableNotifications) {
         toast.success(`Wallet connected: ${blockchainService.formatAddress(connection.address)}`);
       }
-      
+
       // Invalidate related queries
       queryClient.invalidateQueries({ queryKey: ['blockchain-balance'] });
       queryClient.invalidateQueries({ queryKey: ['blockchain-transactions'] });
     },
     onError: (error: BlockchainError) => {
       console.error('Wallet connection failed:', error);
-      
+
       if (enableNotifications) {
         toast.error(`Failed to connect wallet: ${error.message}`);
       }
     },
     onSettled: () => {
       setIsConnecting(false);
-    }
+    },
   });
 
   const disconnectWallet = useCallback(async () => {
@@ -95,17 +91,17 @@ export const useBlockchain = (options: UseBlockchainOptions = {}) => {
       await blockchainService.disconnectWallet();
       setWalletConnection(null);
       setRecentTransactions([]);
-      
+
       if (enableNotifications) {
         toast.success('Wallet disconnected');
       }
-      
+
       // Clear related queries
       queryClient.removeQueries({ queryKey: ['blockchain-balance'] });
       queryClient.removeQueries({ queryKey: ['blockchain-transactions'] });
     } catch (error) {
       console.error('Failed to disconnect wallet:', error);
-      
+
       if (enableNotifications) {
         toast.error('Failed to disconnect wallet');
       }
@@ -119,11 +115,11 @@ export const useBlockchain = (options: UseBlockchainOptions = {}) => {
     },
     onSuccess: (network) => {
       setCurrentNetwork(network);
-      
+
       if (enableNotifications) {
         toast.success(`Switched to ${network} network`);
       }
-      
+
       // Refresh wallet connection info
       const connection = blockchainService.getWalletConnection();
       if (connection) {
@@ -132,11 +128,11 @@ export const useBlockchain = (options: UseBlockchainOptions = {}) => {
     },
     onError: (error: BlockchainError) => {
       console.error('Network switch failed:', error);
-      
+
       if (enableNotifications) {
         toast.error(`Failed to switch network: ${error.message}`);
       }
-    }
+    },
   });
 
   // ============================================================================
@@ -161,29 +157,29 @@ export const useBlockchain = (options: UseBlockchainOptions = {}) => {
         params.data,
         params.gasSpeed
       );
-      
+
       return transaction;
     },
     onSuccess: (transaction) => {
-      setRecentTransactions(prev => [transaction, ...prev.slice(0, 9)]);
-      
+      setRecentTransactions((prev) => [transaction, ...prev.slice(0, 9)]);
+
       if (enableNotifications) {
         toast.success(`Transaction sent: ${blockchainService.formatAddress(transaction.hash)}`);
       }
-      
+
       // Refresh balance
       queryClient.invalidateQueries({ queryKey: ['blockchain-balance'] });
     },
     onError: (error: BlockchainError) => {
       console.error('Transaction failed:', error);
-      
+
       if (enableNotifications) {
         toast.error(`Transaction failed: ${error.message}`);
       }
     },
     onSettled: () => {
       setIsTransacting(false);
-    }
+    },
   });
 
   // ============================================================================
@@ -203,30 +199,30 @@ export const useBlockchain = (options: UseBlockchainOptions = {}) => {
       if (enableNotifications) {
         toast.success(`Property registered on blockchain: Token ID ${tokenId}`);
       }
-      
+
       // Invalidate properties queries
       queryClient.invalidateQueries({ queryKey: ['blockchain-properties'] });
     },
     onError: (error: BlockchainError) => {
       console.error('Property registration failed:', error);
-      
+
       if (enableNotifications) {
         toast.error(`Failed to register property: ${error.message}`);
       }
-    }
+    },
   });
 
   const { data: userProperties, isLoading: propertiesLoading } = useQuery({
     queryKey: ['blockchain-properties', walletConnection?.address],
     queryFn: async () => {
       if (!walletConnection?.address) return [];
-      
+
       // In a real implementation, this would query the blockchain for user's properties
       // For now, returning mock data
       return [];
     },
     enabled: !!walletConnection?.address && canUseBlockchain.allowed,
-    staleTime: 5 * 60 * 1000 // 5 minutes
+    staleTime: 5 * 60 * 1000, // 5 minutes
   });
 
   // ============================================================================
@@ -234,11 +230,7 @@ export const useBlockchain = (options: UseBlockchainOptions = {}) => {
   // ============================================================================
 
   const createEscrow = useMutation({
-    mutationFn: async (params: {
-      propertyId: string;
-      seller: string;
-      amount: string;
-    }) => {
+    mutationFn: async (params: { propertyId: string; seller: string; amount: string }) => {
       if (!walletConnection?.connected) {
         throw new Error('Wallet not connected');
       }
@@ -248,58 +240,52 @@ export const useBlockchain = (options: UseBlockchainOptions = {}) => {
         params.seller,
         params.amount
       );
-      
+
       return escrow;
     },
     onSuccess: (escrow) => {
       if (enableNotifications) {
         toast.success(`Escrow created: ${blockchainService.formatAddress(escrow.contractAddress)}`);
       }
-      
+
       // Invalidate escrows queries
       queryClient.invalidateQueries({ queryKey: ['blockchain-escrows'] });
     },
     onError: (error: BlockchainError) => {
       console.error('Escrow creation failed:', error);
-      
+
       if (enableNotifications) {
         toast.error(`Failed to create escrow: ${error.message}`);
       }
-    }
+    },
   });
 
   const fundEscrow = useMutation({
-    mutationFn: async (params: {
-      escrowAddress: string;
-      amount: string;
-    }) => {
+    mutationFn: async (params: { escrowAddress: string; amount: string }) => {
       if (!walletConnection?.connected) {
         throw new Error('Wallet not connected');
       }
 
-      const txHash = await blockchainService.fundEscrow(
-        params.escrowAddress,
-        params.amount
-      );
-      
+      const txHash = await blockchainService.fundEscrow(params.escrowAddress, params.amount);
+
       return txHash;
     },
     onSuccess: (txHash) => {
       if (enableNotifications) {
         toast.success(`Escrow funded: ${blockchainService.formatAddress(txHash)}`);
       }
-      
+
       // Refresh balance and escrows
       queryClient.invalidateQueries({ queryKey: ['blockchain-balance'] });
       queryClient.invalidateQueries({ queryKey: ['blockchain-escrows'] });
     },
     onError: (error: BlockchainError) => {
       console.error('Escrow funding failed:', error);
-      
+
       if (enableNotifications) {
         toast.error(`Failed to fund escrow: ${error.message}`);
       }
-    }
+    },
   });
 
   // ============================================================================
@@ -314,20 +300,20 @@ export const useBlockchain = (options: UseBlockchainOptions = {}) => {
     },
     enabled: !!walletConnection?.address,
     refetchInterval: 30000, // Refresh every 30 seconds
-    staleTime: 10000 // 10 seconds
+    staleTime: 10000, // 10 seconds
   });
 
   const { data: transactionHistory, isLoading: historyLoading } = useQuery({
     queryKey: ['blockchain-transactions', walletConnection?.address, currentNetwork],
     queryFn: async () => {
       if (!walletConnection?.address) return [];
-      
+
       // In a real implementation, this would fetch transaction history from blockchain
       // For now, returning recent transactions from state
       return recentTransactions;
     },
     enabled: !!walletConnection?.address,
-    staleTime: 2 * 60 * 1000 // 2 minutes
+    staleTime: 2 * 60 * 1000, // 2 minutes
   });
 
   // ============================================================================
@@ -340,9 +326,9 @@ export const useBlockchain = (options: UseBlockchainOptions = {}) => {
       137: 'polygon',
       56: 'bsc',
       42161: 'arbitrum',
-      10: 'optimism'
+      10: 'optimism',
     };
-    
+
     return networks[chainId] || 'polygon';
   };
 
@@ -350,9 +336,12 @@ export const useBlockchain = (options: UseBlockchainOptions = {}) => {
     return blockchainService.formatAddress(address);
   }, []);
 
-  const getExplorerUrl = useCallback((hash: string, type: 'tx' | 'address' = 'tx') => {
-    return blockchainService.getExplorerUrl(hash, type);
-  }, [currentNetwork]);
+  const getExplorerUrl = useCallback(
+    (hash: string, type: 'tx' | 'address' = 'tx') => {
+      return blockchainService.getExplorerUrl(hash, type);
+    },
+    [currentNetwork]
+  );
 
   const validateAddress = useCallback((address: string): boolean => {
     try {
@@ -362,38 +351,40 @@ export const useBlockchain = (options: UseBlockchainOptions = {}) => {
     }
   }, []);
 
-  const estimateGasCost = useCallback(async (
-    to: string,
-    value: string,
-    data?: string
-  ): Promise<string> => {
-    try {
-      if (!walletConnection?.connected) {
-        throw new Error('Wallet not connected');
-      }
+  const estimateGasCost = useCallback(
+    async (to: string, value: string, data?: string): Promise<string> => {
+      try {
+        if (!walletConnection?.connected) {
+          throw new Error('Wallet not connected');
+        }
 
-      // In a real implementation, this would estimate gas costs
-      // For now, returning a mock estimate
-      return '0.001';
-    } catch (error) {
-      console.error('Gas estimation failed:', error);
-      return '0.001';
-    }
-  }, [walletConnection]);
+        // In a real implementation, this would estimate gas costs
+        // For now, returning a mock estimate
+        return '0.001';
+      } catch (error) {
+        console.error('Gas estimation failed:', error);
+        return '0.001';
+      }
+    },
+    [walletConnection]
+  );
 
   // ============================================================================
   // SUBSCRIPTION AND FEATURE GATING
   // ============================================================================
 
-  const checkFeatureAccess = useCallback((feature: string): boolean => {
-    if (!canUseBlockchain.allowed) {
-      if (enableNotifications) {
-        toast.error('Blockchain features require a premium subscription');
+  const checkFeatureAccess = useCallback(
+    (feature: string): boolean => {
+      if (!canUseBlockchain.allowed) {
+        if (enableNotifications) {
+          toast.error('Blockchain features require a premium subscription');
+        }
+        return false;
       }
-      return false;
-    }
-    return true;
-  }, [canUseBlockchain, enableNotifications]);
+      return true;
+    },
+    [canUseBlockchain, enableNotifications]
+  );
 
   // ============================================================================
   // AUTO-CONNECT ON MOUNT
@@ -481,6 +472,6 @@ export const useBlockchain = (options: UseBlockchainOptions = {}) => {
     sendTransactionError: sendTransaction.error,
     registerPropertyError: registerProperty.error,
     createEscrowError: createEscrow.error,
-    fundEscrowError: fundEscrow.error
+    fundEscrowError: fundEscrow.error,
   };
 };

@@ -1,5 +1,4 @@
-
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from '@/integrations/supabase/client';
 
 // Checks if any user has the "super_admin" role in user_roles
 export async function checkSuperAdminExists(): Promise<boolean> {

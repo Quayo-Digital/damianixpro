@@ -27,7 +27,7 @@ export function checkAvailability(input: AvailabilityCheckInput): AvailabilityRe
     checkin_date,
     checkout_date,
     existing_bookings = [],
-    existing_availabilities = []
+    existing_availabilities = [],
   } = input;
 
   const checkin = new Date(checkin_date);
@@ -38,7 +38,7 @@ export function checkAvailability(input: AvailabilityCheckInput): AvailabilityRe
     return {
       available: false,
       conflicts: [],
-      blocked_dates: []
+      blocked_dates: [],
     };
   }
 
@@ -48,7 +48,7 @@ export function checkAvailability(input: AvailabilityCheckInput): AvailabilityRe
     if (!availability.available) {
       const blockStart = new Date(availability.start_date);
       const blockEnd = new Date(availability.end_date);
-      
+
       // Check if booking dates overlap with blocked dates
       if (
         (checkin >= blockStart && checkin <= blockEnd) ||
@@ -81,7 +81,7 @@ export function checkAvailability(input: AvailabilityCheckInput): AvailabilityRe
           booking_id: booking.id,
           checkin_date: booking.checkin_date,
           checkout_date: booking.checkout_date,
-          status: booking.status as any
+          status: booking.status as any,
         });
       }
     }
@@ -90,7 +90,7 @@ export function checkAvailability(input: AvailabilityCheckInput): AvailabilityRe
   return {
     available: conflicts.length === 0 && blocked_dates.length === 0,
     conflicts: conflicts.length > 0 ? conflicts : undefined,
-    blocked_dates: blocked_dates.length > 0 ? blocked_dates : undefined
+    blocked_dates: blocked_dates.length > 0 ? blocked_dates : undefined,
   };
 }
 
@@ -101,13 +101,13 @@ export function generateDateRange(start_date: string, end_date: string): string[
   const dates: string[] = [];
   const start = new Date(start_date);
   const end = new Date(end_date);
-  
+
   const current = new Date(start);
   while (current <= end) {
     dates.push(current.toISOString().split('T')[0]);
     current.setDate(current.getDate() + 1);
   }
-  
+
   return dates;
 }
 
@@ -126,7 +126,7 @@ export function isDateAvailable(
     if (!availability.available) {
       const blockStart = new Date(availability.start_date);
       const blockEnd = new Date(availability.end_date);
-      
+
       if (checkDate >= blockStart && checkDate <= blockEnd) {
         return false;
       }
@@ -142,7 +142,7 @@ export function isDateAvailable(
     ) {
       const bookingCheckin = new Date(booking.checkin_date);
       const bookingCheckout = new Date(booking.checkout_date);
-      
+
       if (checkDate >= bookingCheckin && checkDate < bookingCheckout) {
         return false;
       }
@@ -151,4 +151,3 @@ export function isDateAvailable(
 
   return true;
 }
-

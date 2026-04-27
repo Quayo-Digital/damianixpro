@@ -96,7 +96,7 @@ export class AdvancedAIMLSystem {
     this.models.set('propertyPricing', {
       type: 'regression',
       accuracy: 0.87,
-      features: ['location', 'size', 'amenities', 'marketTrend', 'economicFactors']
+      features: ['location', 'size', 'amenities', 'marketTrend', 'economicFactors'],
     });
 
     this.models.set('marketTrend', {
@@ -107,7 +107,7 @@ export class AdvancedAIMLSystem {
     this.models.set('userBehavior', {
       type: 'classification',
       accuracy: 0.79,
-      features: ['searchHistory', 'demographics', 'interactions']
+      features: ['searchHistory', 'demographics', 'interactions'],
     });
   }
 
@@ -127,23 +127,24 @@ export class AdvancedAIMLSystem {
     const sizeScore = (propertyData.size || 100) * 50000;
     const bedroomBonus = (propertyData.bedrooms || 2) * 2000000;
     const bathroomBonus = (propertyData.bathrooms || 1) * 1000000;
-    predictedPrice += (sizeScore + bedroomBonus + bathroomBonus) * 0.40;
+    predictedPrice += (sizeScore + bedroomBonus + bathroomBonus) * 0.4;
 
     // Market trend (15% weight)
     const marketTrend = this.getMarketTrend(propertyData.city);
-    const trendMultiplier = marketTrend === 'rising' ? 1.1 : marketTrend === 'declining' ? 0.9 : 1.0;
+    const trendMultiplier =
+      marketTrend === 'rising' ? 1.1 : marketTrend === 'declining' ? 0.9 : 1.0;
     predictedPrice *= trendMultiplier;
 
     // Amenities (10% weight)
     const amenitiesScore = this.calculateAmenitiesScore(propertyData.amenities || []);
-    predictedPrice += amenitiesScore * 0.10;
+    predictedPrice += amenitiesScore * 0.1;
 
     // Apply Nigerian economic factors
     predictedPrice = this.applyEconomicFactors(predictedPrice, nigerianFactors);
 
     const priceRange = {
       min: predictedPrice * 0.85,
-      max: predictedPrice * 1.15
+      max: predictedPrice * 1.15,
     };
 
     const factors: PriceFactor[] = [
@@ -151,26 +152,26 @@ export class AdvancedAIMLSystem {
         factor: 'Location Premium',
         impact: locationScore > 30000000 ? 25 : 15,
         weight: 0.35,
-        description: `${propertyData.city} location impact on property value`
+        description: `${propertyData.city} location impact on property value`,
       },
       {
         factor: 'Property Size',
         impact: 20,
-        weight: 0.40,
-        description: 'Size and room configuration impact'
+        weight: 0.4,
+        description: 'Size and room configuration impact',
       },
       {
         factor: 'Market Trend',
         impact: marketTrend === 'rising' ? 10 : marketTrend === 'declining' ? -10 : 0,
         weight: 0.15,
-        description: `Current ${marketTrend} market trend in ${propertyData.city}`
+        description: `Current ${marketTrend} market trend in ${propertyData.city}`,
       },
       {
         factor: 'Amenities',
         impact: amenitiesScore > 5000000 ? 15 : 8,
-        weight: 0.10,
-        description: 'Premium amenities and facilities'
-      }
+        weight: 0.1,
+        description: 'Premium amenities and facilities',
+      },
     ];
 
     return {
@@ -179,33 +180,43 @@ export class AdvancedAIMLSystem {
       factors,
       marketTrend: marketTrend as 'rising' | 'stable' | 'declining',
       timeToSell: this.calculateTimeToSell(propertyData, predictedPrice),
-      investmentScore: this.calculateInvestmentScore(propertyData, predictedPrice, nigerianFactors)
+      investmentScore: this.calculateInvestmentScore(propertyData, predictedPrice, nigerianFactors),
     };
   }
 
   // Market Prediction with Enhanced Multi-City Support
-  async predictMarketTrend(city: string, timeframe: '3months' | '6months' | '1year' | '2years'): Promise<MarketPrediction> {
+  async predictMarketTrend(
+    city: string,
+    timeframe: '3months' | '6months' | '1year' | '2years'
+  ): Promise<MarketPrediction> {
     const nigerianFactors = this.getNigerianMarketFactors(city);
     const historicalData = this.getHistoricalData(city);
 
     let priceGrowth = 0;
-    let confidence = 0.80;
+    let confidence = 0.8;
 
     switch (timeframe) {
       case '3months':
-        priceGrowth = historicalData.quarterlyGrowth * (1 + nigerianFactors.economicIndicators.gdpGrowth);
+        priceGrowth =
+          historicalData.quarterlyGrowth * (1 + nigerianFactors.economicIndicators.gdpGrowth);
         confidence = 0.85;
         break;
       case '6months':
-        priceGrowth = historicalData.halfYearlyGrowth * (1 + nigerianFactors.economicIndicators.gdpGrowth * 0.8);
-        confidence = 0.80;
+        priceGrowth =
+          historicalData.halfYearlyGrowth *
+          (1 + nigerianFactors.economicIndicators.gdpGrowth * 0.8);
+        confidence = 0.8;
         break;
       case '1year':
-        priceGrowth = historicalData.yearlyGrowth * (1 + nigerianFactors.economicIndicators.gdpGrowth * 0.6);
+        priceGrowth =
+          historicalData.yearlyGrowth * (1 + nigerianFactors.economicIndicators.gdpGrowth * 0.6);
         confidence = 0.75;
         break;
       case '2years':
-        priceGrowth = historicalData.yearlyGrowth * 1.8 * (1 + nigerianFactors.economicIndicators.gdpGrowth * 0.4);
+        priceGrowth =
+          historicalData.yearlyGrowth *
+          1.8 *
+          (1 + nigerianFactors.economicIndicators.gdpGrowth * 0.4);
         confidence = 0.65;
         break;
     }
@@ -231,7 +242,7 @@ export class AdvancedAIMLSystem {
       demandForecast,
       supplyForecast,
       riskFactors,
-      opportunities
+      opportunities,
     };
   }
 
@@ -239,17 +250,25 @@ export class AdvancedAIMLSystem {
   async predictUserBehavior(userData: any): Promise<UserBehaviorPrediction> {
     const features = this.extractUserFeatures(userData);
 
-    const purchaseLikelihood = Math.min(0.95, Math.max(0.05, 
-      0.3 + (features.income / 10000000) * 0.4 + features.searchActivity * 0.3
-    ));
+    const purchaseLikelihood = Math.min(
+      0.95,
+      Math.max(0.05, 0.3 + (features.income / 10000000) * 0.4 + features.searchActivity * 0.3)
+    );
 
-    const rentLikelihood = Math.min(0.95, Math.max(0.05,
-      0.6 - (features.income / 10000000) * 0.2 + features.urgency * 0.3
-    ));
+    const rentLikelihood = Math.min(
+      0.95,
+      Math.max(0.05, 0.6 - (features.income / 10000000) * 0.2 + features.urgency * 0.3)
+    );
 
-    const investmentLikelihood = Math.min(0.95, Math.max(0.05,
-      (features.income / 20000000) * 0.5 + features.propertyExperience * 0.3 + features.riskTolerance * 0.2
-    ));
+    const investmentLikelihood = Math.min(
+      0.95,
+      Math.max(
+        0.05,
+        (features.income / 20000000) * 0.5 +
+          features.propertyExperience * 0.3 +
+          features.riskTolerance * 0.2
+      )
+    );
 
     return {
       userId: userData.id,
@@ -258,7 +277,7 @@ export class AdvancedAIMLSystem {
       investmentLikelihood,
       preferredPropertyTypes: this.predictPreferredTypes(features),
       budgetRange: this.predictBudgetRange(features),
-      confidence: 0.78
+      confidence: 0.78,
     };
   }
 
@@ -278,7 +297,8 @@ export class AdvancedAIMLSystem {
     score += marketTrend.priceGrowth * 100;
 
     // Infrastructure factor (20%)
-    const avgInfrastructure = Object.values(nigerianFactors.infrastructureScore).reduce((a, b) => a + b, 0) / 4;
+    const avgInfrastructure =
+      Object.values(nigerianFactors.infrastructureScore).reduce((a, b) => a + b, 0) / 4;
     score += (avgInfrastructure - 5) * 5;
 
     // Economic stability factor (15%)
@@ -299,21 +319,21 @@ export class AdvancedAIMLSystem {
       {
         factor: 'Location Premium',
         score: propertyData.city === 'lagos' ? 90 : propertyData.city === 'abuja' ? 80 : 70,
-        weight: 0.30,
-        description: `${propertyData.city} market strength and growth potential`
+        weight: 0.3,
+        description: `${propertyData.city} market strength and growth potential`,
       },
       {
         factor: 'Market Growth',
         score: Math.min(100, marketTrend.priceGrowth * 500),
         weight: 0.25,
-        description: 'Projected market appreciation over next year'
+        description: 'Projected market appreciation over next year',
       },
       {
         factor: 'Infrastructure',
         score: (avgInfrastructure / 10) * 100,
-        weight: 0.20,
-        description: 'Quality of local infrastructure and utilities'
-      }
+        weight: 0.2,
+        description: 'Quality of local infrastructure and utilities',
+      },
     ];
 
     return {
@@ -322,7 +342,7 @@ export class AdvancedAIMLSystem {
       roiProjection,
       riskLevel,
       factors,
-      recommendation: this.generateInvestmentRecommendation(finalScore, riskLevel, roiProjection)
+      recommendation: this.generateInvestmentRecommendation(finalScore, riskLevel, roiProjection),
     };
   }
 
@@ -335,7 +355,7 @@ export class AdvancedAIMLSystem {
       bathrooms: propertyData.bathrooms || 1,
       age: propertyData.age || 5,
       amenities: propertyData.amenities || [],
-      propertyType: propertyData.type || 'apartment'
+      propertyType: propertyData.type || 'apartment',
     };
   }
 
@@ -345,15 +365,15 @@ export class AdvancedAIMLSystem {
         inflationRate: 0.18,
         gdpGrowth: 0.032,
         oilPrices: 85.2,
-        exchangeRate: 760
+        exchangeRate: 760,
       },
       infrastructureScore: {
         powerSupply: 6.5,
         roadAccess: 7.0,
         internetConnectivity: 7.5,
-        waterSupply: 6.8
+        waterSupply: 6.8,
       },
-      securityIndex: 6.2
+      securityIndex: 6.2,
     };
 
     switch (city.toLowerCase()) {
@@ -375,26 +395,27 @@ export class AdvancedAIMLSystem {
 
   private calculateLocationScore(city: string, area: string): number {
     const cityMultipliers = {
-      'lagos': 1.0,
-      'abuja': 0.85,
-      'port harcourt': 0.70,
-      'kano': 0.45,
-      'ibadan': 0.55
+      lagos: 1.0,
+      abuja: 0.85,
+      'port harcourt': 0.7,
+      kano: 0.45,
+      ibadan: 0.55,
     };
 
     const baseScore = 25000000;
-    const cityMultiplier = cityMultipliers[city.toLowerCase() as keyof typeof cityMultipliers] || 0.5;
-    
+    const cityMultiplier =
+      cityMultipliers[city.toLowerCase() as keyof typeof cityMultipliers] || 0.5;
+
     return baseScore * cityMultiplier;
   }
 
   private getMarketTrend(city: string): string {
     const trends = {
-      'lagos': 'rising',
-      'abuja': 'stable',
+      lagos: 'rising',
+      abuja: 'stable',
       'port harcourt': 'rising',
-      'kano': 'stable',
-      'ibadan': 'rising'
+      kano: 'stable',
+      ibadan: 'rising',
     };
 
     return trends[city.toLowerCase() as keyof typeof trends] || 'stable';
@@ -402,14 +423,14 @@ export class AdvancedAIMLSystem {
 
   private calculateAmenitiesScore(amenities: string[]): number {
     const amenityValues = {
-      'swimming_pool': 3000000,
-      'gym': 1500000,
-      'security': 2000000,
-      'parking': 1000000,
-      'generator': 2500000,
-      'water_treatment': 1800000,
-      'elevator': 1200000,
-      'garden': 800000
+      swimming_pool: 3000000,
+      gym: 1500000,
+      security: 2000000,
+      parking: 1000000,
+      generator: 2500000,
+      water_treatment: 1800000,
+      elevator: 1200000,
+      garden: 800000,
     };
 
     return amenities.reduce((total, amenity) => {
@@ -421,7 +442,7 @@ export class AdvancedAIMLSystem {
     let adjustedPrice = price;
 
     if (factors.economicIndicators.inflationRate > 0.15) {
-      adjustedPrice *= (1 + factors.economicIndicators.inflationRate * 0.5);
+      adjustedPrice *= 1 + factors.economicIndicators.inflationRate * 0.5;
     }
 
     if (factors.economicIndicators.oilPrices > 80) {
@@ -454,14 +475,19 @@ export class AdvancedAIMLSystem {
     return Math.max(30, baseDays);
   }
 
-  private calculateInvestmentScore(propertyData: any, predictedPrice: number, factors: NigerianMarketFactors): number {
+  private calculateInvestmentScore(
+    propertyData: any,
+    predictedPrice: number,
+    factors: NigerianMarketFactors
+  ): number {
     let score = 50;
 
     if (propertyData.city === 'lagos') score += 20;
     else if (propertyData.city === 'abuja') score += 15;
     else if (propertyData.city === 'port harcourt') score += 10;
 
-    const avgInfrastructure = Object.values(factors.infrastructureScore).reduce((a, b) => a + b, 0) / 4;
+    const avgInfrastructure =
+      Object.values(factors.infrastructureScore).reduce((a, b) => a + b, 0) / 4;
     score += (avgInfrastructure - 5) * 5;
 
     if (factors.economicIndicators.inflationRate < 0.12) score += 10;
@@ -476,43 +502,49 @@ export class AdvancedAIMLSystem {
 
   private getHistoricalData(city: string) {
     const cityData: Record<string, any> = {
-      'lagos': {
-        quarterlyGrowth: 0.035,    // 3.5% quarterly - Commercial capital
-        halfYearlyGrowth: 0.07,    // 7% half-yearly
-        yearlyGrowth: 0.14,        // 14% yearly - High demand
+      lagos: {
+        quarterlyGrowth: 0.035, // 3.5% quarterly - Commercial capital
+        halfYearlyGrowth: 0.07, // 7% half-yearly
+        yearlyGrowth: 0.14, // 14% yearly - High demand
         marketVolatility: 0.15,
         averagePrice: 35000000,
-        priceAppreciation: 0.16
+        priceAppreciation: 0.16,
       },
-      'abuja': {
-        quarterlyGrowth: 0.028,    // 2.8% quarterly - Government stability
-        halfYearlyGrowth: 0.055,   // 5.5% half-yearly
-        yearlyGrowth: 0.11,        // 11% yearly - Steady growth
+      abuja: {
+        quarterlyGrowth: 0.028, // 2.8% quarterly - Government stability
+        halfYearlyGrowth: 0.055, // 5.5% half-yearly
+        yearlyGrowth: 0.11, // 11% yearly - Steady growth
         marketVolatility: 0.12,
         averagePrice: 28000000,
-        priceAppreciation: 0.12
+        priceAppreciation: 0.12,
       },
       'port harcourt': {
-        quarterlyGrowth: 0.025,    // 2.5% quarterly - Oil dependency
-        halfYearlyGrowth: 0.05,    // 5% half-yearly
-        yearlyGrowth: 0.10,        // 10% yearly - Oil sector driven
-        marketVolatility: 0.20,    // Higher volatility due to oil prices
+        quarterlyGrowth: 0.025, // 2.5% quarterly - Oil dependency
+        halfYearlyGrowth: 0.05, // 5% half-yearly
+        yearlyGrowth: 0.1, // 10% yearly - Oil sector driven
+        marketVolatility: 0.2, // Higher volatility due to oil prices
         averagePrice: 22000000,
-        priceAppreciation: 0.09
-      }
+        priceAppreciation: 0.09,
+      },
     };
 
-    return cityData[city.toLowerCase()] || {
-      quarterlyGrowth: 0.02,
-      halfYearlyGrowth: 0.04,
-      yearlyGrowth: 0.08,
-      marketVolatility: 0.18,
-      averagePrice: 20000000,
-      priceAppreciation: 0.07
-    };
+    return (
+      cityData[city.toLowerCase()] || {
+        quarterlyGrowth: 0.02,
+        halfYearlyGrowth: 0.04,
+        yearlyGrowth: 0.08,
+        marketVolatility: 0.18,
+        averagePrice: 20000000,
+        priceAppreciation: 0.07,
+      }
+    );
   }
 
-  private calculateDemandForecast(city: string, timeframe: string, factors: NigerianMarketFactors): number {
+  private calculateDemandForecast(
+    city: string,
+    timeframe: string,
+    factors: NigerianMarketFactors
+  ): number {
     let baseDemand = 70;
     baseDemand += factors.economicIndicators.gdpGrowth * 100;
     const avgInfra = Object.values(factors.infrastructureScore).reduce((a, b) => a + b, 0) / 4;
@@ -522,8 +554,12 @@ export class AdvancedAIMLSystem {
     return Math.min(100, Math.max(0, baseDemand));
   }
 
-  private calculateSupplyForecast(city: string, timeframe: string, factors: NigerianMarketFactors): number {
-    let baseSupply = 60;
+  private calculateSupplyForecast(
+    city: string,
+    timeframe: string,
+    factors: NigerianMarketFactors
+  ): number {
+    const baseSupply = 60;
     return Math.min(100, Math.max(0, baseSupply));
   }
 
@@ -557,11 +593,15 @@ export class AdvancedAIMLSystem {
 
   private getMarketPrice(city: string, propertyType: string): number {
     const prices = {
-      'lagos': { 'apartment': 35000000, 'house': 55000000, 'duplex': 75000000 },
-      'abuja': { 'apartment': 28000000, 'house': 45000000, 'duplex': 60000000 },
-      'port harcourt': { 'apartment': 22000000, 'house': 35000000, 'duplex': 48000000 }
+      lagos: { apartment: 35000000, house: 55000000, duplex: 75000000 },
+      abuja: { apartment: 28000000, house: 45000000, duplex: 60000000 },
+      'port harcourt': { apartment: 22000000, house: 35000000, duplex: 48000000 },
     };
-    return prices[city.toLowerCase() as keyof typeof prices]?.[propertyType as keyof typeof prices['lagos']] || 25000000;
+    return (
+      prices[city.toLowerCase() as keyof typeof prices]?.[
+        propertyType as keyof (typeof prices)['lagos']
+      ] || 25000000
+    );
   }
 
   // Model Training and Metrics
@@ -570,7 +610,7 @@ export class AdvancedAIMLSystem {
     const metrics: MLModelMetrics[] = [];
 
     // Simulate training process
-    await new Promise(resolve => setTimeout(resolve, 2000));
+    await new Promise((resolve) => setTimeout(resolve, 2000));
 
     for (const [modelName, model] of this.models.entries()) {
       metrics.push({
@@ -580,7 +620,7 @@ export class AdvancedAIMLSystem {
         f1Score: model.accuracy + (Math.random() * 0.02 - 0.01),
         lastTrained: new Date(),
         dataPoints: trainingData.length,
-        modelVersion: `v${Date.now()}`
+        modelVersion: `v${Date.now()}`,
       });
     }
 
@@ -599,7 +639,7 @@ export class AdvancedAIMLSystem {
         f1Score: model.accuracy - 0.015,
         lastTrained: this.lastUpdate,
         dataPoints: 10000 + Math.floor(Math.random() * 5000),
-        modelVersion: 'v1.0.0'
+        modelVersion: 'v1.0.0',
       });
     }
     return metrics;
@@ -616,61 +656,73 @@ export const useAdvancedAIML = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const predictPropertyPrice = useCallback(async (propertyData: any) => {
-    setLoading(true);
-    setError(null);
-    try {
-      const prediction = await aiSystem.predictPropertyPrice(propertyData);
-      return prediction;
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Prediction failed');
-      throw err;
-    } finally {
-      setLoading(false);
-    }
-  }, [aiSystem]);
+  const predictPropertyPrice = useCallback(
+    async (propertyData: any) => {
+      setLoading(true);
+      setError(null);
+      try {
+        const prediction = await aiSystem.predictPropertyPrice(propertyData);
+        return prediction;
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Prediction failed');
+        throw err;
+      } finally {
+        setLoading(false);
+      }
+    },
+    [aiSystem]
+  );
 
-  const predictMarketTrend = useCallback(async (city: string, timeframe: '3months' | '6months' | '1year' | '2years') => {
-    setLoading(true);
-    setError(null);
-    try {
-      const prediction = await aiSystem.predictMarketTrend(city, timeframe);
-      return prediction;
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Market prediction failed');
-      throw err;
-    } finally {
-      setLoading(false);
-    }
-  }, [aiSystem]);
+  const predictMarketTrend = useCallback(
+    async (city: string, timeframe: '3months' | '6months' | '1year' | '2years') => {
+      setLoading(true);
+      setError(null);
+      try {
+        const prediction = await aiSystem.predictMarketTrend(city, timeframe);
+        return prediction;
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Market prediction failed');
+        throw err;
+      } finally {
+        setLoading(false);
+      }
+    },
+    [aiSystem]
+  );
 
-  const generateRecommendations = useCallback(async (context: any) => {
-    setLoading(true);
-    setError(null);
-    try {
-      const recommendations = await aiSystem.generateRecommendations(context);
-      return recommendations;
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Recommendation generation failed');
-      throw err;
-    } finally {
-      setLoading(false);
-    }
-  }, [aiSystem]);
+  const generateRecommendations = useCallback(
+    async (context: any) => {
+      setLoading(true);
+      setError(null);
+      try {
+        const recommendations = await aiSystem.generateRecommendations(context);
+        return recommendations;
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Recommendation generation failed');
+        throw err;
+      } finally {
+        setLoading(false);
+      }
+    },
+    [aiSystem]
+  );
 
-  const trainModels = useCallback(async (trainingData: any[]) => {
-    setLoading(true);
-    setError(null);
-    try {
-      const metrics = await aiSystem.trainModels(trainingData);
-      return metrics;
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Model training failed');
-      throw err;
-    } finally {
-      setLoading(false);
-    }
-  }, [aiSystem]);
+  const trainModels = useCallback(
+    async (trainingData: any[]) => {
+      setLoading(true);
+      setError(null);
+      try {
+        const metrics = await aiSystem.trainModels(trainingData);
+        return metrics;
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Model training failed');
+        throw err;
+      } finally {
+        setLoading(false);
+      }
+    },
+    [aiSystem]
+  );
 
   const getModelMetrics = useCallback(() => {
     return aiSystem.getModelMetrics();
@@ -688,6 +740,6 @@ export const useAdvancedAIML = () => {
     getModelMetrics,
     isTraining,
     loading,
-    error
+    error,
   };
 };

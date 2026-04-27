@@ -3,13 +3,25 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import { Progress } from '@/components/ui/progress';
-import { 
-  Home, 
-  MapPin, 
+import {
+  Home,
+  MapPin,
   DollarSign,
   TrendingUp,
   TrendingDown,
@@ -26,18 +38,25 @@ import {
   Building,
   Bed,
   Bath,
-  Square
+  Square,
 } from 'lucide-react';
 import { OwnerProperty } from '@/hooks/useEnhancedOwnerData';
+import { EditPropertyDialog } from '@/components/properties/EditPropertyDialog';
+import { Property } from '@/services/property/types';
+import { getPropertyById } from '@/services/property/api/queries';
+import { useToast } from '@/hooks/use-toast';
+import { PropertyImageUpload } from '@/components/properties/PropertyImageUpload';
 
 interface OwnerPropertyPortfolioProps {
   properties: OwnerProperty[];
   onAddProperty?: (propertyData: Partial<OwnerProperty>) => void;
+  onPropertyUpdated?: () => void;
 }
 
 const OwnerPropertyPortfolio: React.FC<OwnerPropertyPortfolioProps> = ({
   properties,
-  onAddProperty
+  onAddProperty,
+  onPropertyUpdated,
 }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
@@ -45,6 +64,11 @@ const OwnerPropertyPortfolio: React.FC<OwnerPropertyPortfolioProps> = ({
   const [selectedProperty, setSelectedProperty] = useState<OwnerProperty | null>(null);
   const [isAddPropertyOpen, setIsAddPropertyOpen] = useState(false);
   const [newPropertyData, setNewPropertyData] = useState<Partial<OwnerProperty>>({});
+  const [propertyImageUrl, setPropertyImageUrl] = useState<string | null>(null);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [propertyToEdit, setPropertyToEdit] = useState<Property | null>(null);
+  const [isLoadingProperty, setIsLoadingProperty] = useState(false);
+  const { toast } = useToast();
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-NG', {
@@ -66,9 +90,9 @@ const OwnerPropertyPortfolio: React.FC<OwnerPropertyPortfolioProps> = ({
       case 'marketing':
         return 'bg-blue-100 text-blue-800';
       case 'sold':
-        return 'bg-gray-100 text-gray-800';
+        return 'bg-muted text-foreground';
       default:
-        return 'bg-gray-100 text-gray-800';
+        return 'bg-muted text-foreground';
     }
   };
 
@@ -83,9 +107,9 @@ const OwnerPropertyPortfolio: React.FC<OwnerPropertyPortfolioProps> = ({
       case 'marketing':
         return <TrendingUp className="h-4 w-4 text-blue-600" />;
       case 'sold':
-        return <CheckCircle className="h-4 w-4 text-gray-600" />;
+        return <CheckCircle className="h-4 w-4 text-muted-foreground" />;
       default:
-        return <Home className="h-4 w-4 text-gray-600" />;
+        return <Home className="h-4 w-4 text-muted-foreground" />;
     }
   };
 
@@ -95,14 +119,50 @@ const OwnerPropertyPortfolio: React.FC<OwnerPropertyPortfolioProps> = ({
     return 'text-red-600';
   };
 
-  const filteredProperties = properties.filter(property => {
-    const matchesSearch = property.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         property.address.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         property.city.toLowerCase().includes(searchTerm.toLowerCase());
-    
+  const handleEditProperty = async (property: OwnerProperty) => {
+    setIsLoadingProperty(true);
+    try {
+      // Fetch the full property data from database
+      const fullProperty = await getPropertyById(property.id);
+      if (fullProperty) {
+        setPropertyToEdit(fullProperty);
+        setIsEditDialogOpen(true);
+      } else {
+        toast({
+          title: 'Error',
+          description: 'Property not found. Please try again.',
+          variant: 'destructive',
+        });
+      }
+    } catch (error) {
+      console.error('Error fetching property for edit:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to load property details. Please try again.',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsLoadingProperty(false);
+    }
+  };
+
+  const handlePropertyUpdated = () => {
+    setIsEditDialogOpen(false);
+    setPropertyToEdit(null);
+    if (onPropertyUpdated) {
+      onPropertyUpdated();
+    }
+  };
+
+  const filteredProperties = properties.filter((property) => {
+    const matchesSearch =
+      property.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      property.address.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      property.city.toLowerCase().includes(searchTerm.toLowerCase());
+
     const matchesStatus = statusFilter === 'all' || property.status === statusFilter;
     const matchesType = typeFilter === 'all' || property.type === typeFilter;
-    
+
     return matchesSearch && matchesStatus && matchesType;
   });
 
@@ -135,11 +195,14 @@ const OwnerPropertyPortfolio: React.FC<OwnerPropertyPortfolioProps> = ({
           status: newPropertyData.status || 'available',
           location: newPropertyData.city || newPropertyData.state || null,
           transaction_type: newPropertyData.listing_type === 'sale' ? 'SALE' : 'LEASE',
-          is_negotiable: newPropertyData.negotiable === 'yes'
+          is_negotiable: newPropertyData.negotiable === 'yes',
+          // Image URL
+          imageUrl: propertyImageUrl || null,
         };
 
         await onAddProperty(propertyData);
         setNewPropertyData({});
+        setPropertyImageUrl(null);
         setIsAddPropertyOpen(false);
       } catch (error) {
         console.error('Error in handleAddProperty:', error);
@@ -150,73 +213,69 @@ const OwnerPropertyPortfolio: React.FC<OwnerPropertyPortfolioProps> = ({
   return (
     <div className="space-y-6">
       {/* Header and Filters */}
-      <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center space-y-4 lg:space-y-0">
+      <div className="flex flex-col items-start justify-between space-y-4 lg:flex-row lg:items-center lg:space-y-0">
         <div>
-          <h2 className="text-2xl font-bold text-gray-900">Property Portfolio</h2>
-          <p className="text-gray-600">Manage and monitor your property investments</p>
+          <h2 className="text-2xl font-bold text-foreground">Property Portfolio</h2>
+          <p className="text-muted-foreground">Manage and monitor your property investments</p>
         </div>
-        
+
         {onAddProperty && (
-          <Dialog open={isAddPropertyOpen} onOpenChange={setIsAddPropertyOpen}>
+          <Dialog
+            open={isAddPropertyOpen}
+            onOpenChange={(open) => {
+              setIsAddPropertyOpen(open);
+              if (!open) {
+                // Reset form when dialog closes
+                setNewPropertyData({});
+                setPropertyImageUrl(null);
+              }
+            }}
+          >
             <DialogTrigger asChild>
               <Button className="flex items-center space-x-2">
                 <Plus className="h-4 w-4" />
                 <span>Add New Property</span>
               </Button>
             </DialogTrigger>
-            <DialogContent className="max-w-6xl max-h-[95vh] overflow-y-auto">
+            <DialogContent className="max-h-[95vh] max-w-6xl overflow-y-auto">
               <DialogHeader>
                 <DialogTitle>Add New Property</DialogTitle>
               </DialogHeader>
               <div className="space-y-6">
-                {/* Property Images */}
+                {/* Property Image Upload */}
                 <div>
-                  <Label>Property Images</Label>
-                  <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
-                    <input
-                      type="file"
-                      multiple
-                      accept="image/*"
-                      className="hidden"
-                      id="property-images"
-                      onChange={(e) => {
-                        const files = Array.from(e.target.files || []);
-                        setNewPropertyData({...newPropertyData, images: files});
-                      }}
-                    />
-                    <label htmlFor="property-images" className="cursor-pointer">
-                      <div className="flex flex-col items-center">
-                        <svg className="w-12 h-12 text-gray-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
-                        </svg>
-                        <p className="text-gray-600">Click to upload property images</p>
-                        <p className="text-sm text-gray-400">PNG, JPG, GIF up to 10MB each</p>
-                      </div>
-                    </label>
-                  </div>
-                  {newPropertyData.images && newPropertyData.images.length > 0 && (
-                    <div className="mt-2 text-sm text-gray-600">
-                      {newPropertyData.images.length} image(s) selected
-                    </div>
-                  )}
+                  <PropertyImageUpload
+                    onImageUploaded={(url) => {
+                      setPropertyImageUrl(url);
+                      setNewPropertyData({ ...newPropertyData, imageUrl: url || undefined });
+                    }}
+                    initialImageUrl={propertyImageUrl}
+                  />
                 </div>
 
                 {/* Basic Information */}
                 <div>
-                  <h3 className="text-lg font-semibold mb-4">Basic Information</h3>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <h3 className="mb-4 text-lg font-semibold">Basic Information</h3>
+                  <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                     <div>
                       <Label htmlFor="title">Property Title *</Label>
                       <Input
                         id="title"
                         value={newPropertyData.title || ''}
-                        onChange={(e) => setNewPropertyData({...newPropertyData, title: e.target.value})}
+                        onChange={(e) =>
+                          setNewPropertyData({ ...newPropertyData, title: e.target.value })
+                        }
                         placeholder="Enter property title"
                       />
                     </div>
                     <div>
                       <Label htmlFor="type">Property Type *</Label>
-                      <Select value={newPropertyData.type || ''} onValueChange={(value) => setNewPropertyData({...newPropertyData, type: value as any})}>
+                      <Select
+                        value={newPropertyData.type || ''}
+                        onValueChange={(value) =>
+                          setNewPropertyData({ ...newPropertyData, type: value as any })
+                        }
+                      >
                         <SelectTrigger>
                           <SelectValue placeholder="Select type" />
                         </SelectTrigger>
@@ -238,7 +297,9 @@ const OwnerPropertyPortfolio: React.FC<OwnerPropertyPortfolioProps> = ({
                       <Input
                         id="address"
                         value={newPropertyData.address || ''}
-                        onChange={(e) => setNewPropertyData({...newPropertyData, address: e.target.value})}
+                        onChange={(e) =>
+                          setNewPropertyData({ ...newPropertyData, address: e.target.value })
+                        }
                         placeholder="Enter full property address"
                       />
                     </div>
@@ -247,13 +308,20 @@ const OwnerPropertyPortfolio: React.FC<OwnerPropertyPortfolioProps> = ({
                       <Input
                         id="city"
                         value={newPropertyData.city || ''}
-                        onChange={(e) => setNewPropertyData({...newPropertyData, city: e.target.value})}
+                        onChange={(e) =>
+                          setNewPropertyData({ ...newPropertyData, city: e.target.value })
+                        }
                         placeholder="Lagos"
                       />
                     </div>
                     <div>
                       <Label htmlFor="state">State</Label>
-                      <Select value={newPropertyData.state || ''} onValueChange={(value) => setNewPropertyData({...newPropertyData, state: value})}>
+                      <Select
+                        value={newPropertyData.state || ''}
+                        onValueChange={(value) =>
+                          setNewPropertyData({ ...newPropertyData, state: value })
+                        }
+                      >
                         <SelectTrigger>
                           <SelectValue placeholder="Select state" />
                         </SelectTrigger>
@@ -276,28 +344,52 @@ const OwnerPropertyPortfolio: React.FC<OwnerPropertyPortfolioProps> = ({
 
                 {/* Property Details */}
                 <div>
-                  <h3 className="text-lg font-semibold mb-4">Property Details</h3>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <h3 className="mb-4 text-lg font-semibold">Property Details</h3>
+                  <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
                     {newPropertyData.type !== 'land' && (
                       <>
                         <div>
-                          <Label htmlFor="bedrooms">Bedrooms {newPropertyData.type !== 'commercial' && newPropertyData.type !== 'warehouse' && newPropertyData.type !== 'office' ? '*' : ''}</Label>
+                          <Label htmlFor="bedrooms">
+                            Bedrooms{' '}
+                            {newPropertyData.type !== 'commercial' &&
+                            newPropertyData.type !== 'warehouse' &&
+                            newPropertyData.type !== 'office'
+                              ? '*'
+                              : ''}
+                          </Label>
                           <Input
                             id="bedrooms"
                             type="number"
                             value={newPropertyData.bedrooms || ''}
-                            onChange={(e) => setNewPropertyData({...newPropertyData, bedrooms: parseInt(e.target.value)})}
+                            onChange={(e) =>
+                              setNewPropertyData({
+                                ...newPropertyData,
+                                bedrooms: parseInt(e.target.value),
+                              })
+                            }
                             placeholder="3"
                             min="0"
                           />
                         </div>
                         <div>
-                          <Label htmlFor="bathrooms">Bathrooms {newPropertyData.type !== 'commercial' && newPropertyData.type !== 'warehouse' && newPropertyData.type !== 'office' ? '*' : ''}</Label>
+                          <Label htmlFor="bathrooms">
+                            Bathrooms{' '}
+                            {newPropertyData.type !== 'commercial' &&
+                            newPropertyData.type !== 'warehouse' &&
+                            newPropertyData.type !== 'office'
+                              ? '*'
+                              : ''}
+                          </Label>
                           <Input
                             id="bathrooms"
                             type="number"
                             value={newPropertyData.bathrooms || ''}
-                            onChange={(e) => setNewPropertyData({...newPropertyData, bathrooms: parseInt(e.target.value)})}
+                            onChange={(e) =>
+                              setNewPropertyData({
+                                ...newPropertyData,
+                                bathrooms: parseInt(e.target.value),
+                              })
+                            }
                             placeholder="2"
                             min="0"
                           />
@@ -312,7 +404,12 @@ const OwnerPropertyPortfolio: React.FC<OwnerPropertyPortfolioProps> = ({
                         id="area_sqm"
                         type="number"
                         value={newPropertyData.area_sqm || ''}
-                        onChange={(e) => setNewPropertyData({...newPropertyData, area_sqm: parseInt(e.target.value)})}
+                        onChange={(e) =>
+                          setNewPropertyData({
+                            ...newPropertyData,
+                            area_sqm: parseInt(e.target.value),
+                          })
+                        }
                         placeholder={newPropertyData.type === 'land' ? '1000' : '150'}
                       />
                     </div>
@@ -323,7 +420,12 @@ const OwnerPropertyPortfolio: React.FC<OwnerPropertyPortfolioProps> = ({
                           id="parking_spaces"
                           type="number"
                           value={newPropertyData.parking_spaces || ''}
-                          onChange={(e) => setNewPropertyData({...newPropertyData, parking_spaces: parseInt(e.target.value)})}
+                          onChange={(e) =>
+                            setNewPropertyData({
+                              ...newPropertyData,
+                              parking_spaces: parseInt(e.target.value),
+                            })
+                          }
                           placeholder="2"
                           min="0"
                         />
@@ -336,7 +438,12 @@ const OwnerPropertyPortfolio: React.FC<OwnerPropertyPortfolioProps> = ({
                           id="year_built"
                           type="number"
                           value={newPropertyData.year_built || ''}
-                          onChange={(e) => setNewPropertyData({...newPropertyData, year_built: parseInt(e.target.value)})}
+                          onChange={(e) =>
+                            setNewPropertyData({
+                              ...newPropertyData,
+                              year_built: parseInt(e.target.value),
+                            })
+                          }
                           placeholder="2020"
                           min="1900"
                           max={new Date().getFullYear()}
@@ -345,7 +452,12 @@ const OwnerPropertyPortfolio: React.FC<OwnerPropertyPortfolioProps> = ({
                     )}
                     <div>
                       <Label htmlFor="status">Status</Label>
-                      <Select value={newPropertyData.status || 'available'} onValueChange={(value) => setNewPropertyData({...newPropertyData, status: value})}>
+                      <Select
+                        value={newPropertyData.status || 'available'}
+                        onValueChange={(value) =>
+                          setNewPropertyData({ ...newPropertyData, status: value })
+                        }
+                      >
                         <SelectTrigger>
                           <SelectValue />
                         </SelectTrigger>
@@ -362,11 +474,16 @@ const OwnerPropertyPortfolio: React.FC<OwnerPropertyPortfolioProps> = ({
 
                 {/* Property Purpose */}
                 <div>
-                  <h3 className="text-lg font-semibold mb-4">Property Purpose</h3>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <h3 className="mb-4 text-lg font-semibold">Property Purpose</h3>
+                  <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                     <div>
                       <Label htmlFor="listing_type">Listing Type *</Label>
-                      <Select value={newPropertyData.listing_type || ''} onValueChange={(value) => setNewPropertyData({...newPropertyData, listing_type: value})}>
+                      <Select
+                        value={newPropertyData.listing_type || ''}
+                        onValueChange={(value) =>
+                          setNewPropertyData({ ...newPropertyData, listing_type: value })
+                        }
+                      >
                         <SelectTrigger>
                           <SelectValue placeholder="Select listing type" />
                         </SelectTrigger>
@@ -379,7 +496,12 @@ const OwnerPropertyPortfolio: React.FC<OwnerPropertyPortfolioProps> = ({
                     </div>
                     <div>
                       <Label htmlFor="availability_status">Availability</Label>
-                      <Select value={newPropertyData.availability_status || 'available'} onValueChange={(value) => setNewPropertyData({...newPropertyData, availability_status: value})}>
+                      <Select
+                        value={newPropertyData.availability_status || 'available'}
+                        onValueChange={(value) =>
+                          setNewPropertyData({ ...newPropertyData, availability_status: value })
+                        }
+                      >
                         <SelectTrigger>
                           <SelectValue />
                         </SelectTrigger>
@@ -397,26 +519,37 @@ const OwnerPropertyPortfolio: React.FC<OwnerPropertyPortfolioProps> = ({
 
                 {/* Financial Information */}
                 <div>
-                  <h3 className="text-lg font-semibold mb-4">Financial Information</h3>
-                  
+                  <h3 className="mb-4 text-lg font-semibold">Financial Information</h3>
+
                   {/* Sale Information */}
-                  {(newPropertyData.listing_type === 'sale' || newPropertyData.listing_type === 'both') && (
-                    <div className="mb-6 p-4 bg-blue-50 rounded-lg">
-                      <h4 className="font-medium mb-3 text-blue-900">Sale Information</h4>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {(newPropertyData.listing_type === 'sale' ||
+                    newPropertyData.listing_type === 'both') && (
+                    <div className="mb-6 rounded-lg bg-blue-50 p-4">
+                      <h4 className="mb-3 font-medium text-blue-900">Sale Information</h4>
+                      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                         <div>
                           <Label htmlFor="sale_price">Sale Price (₦) *</Label>
                           <Input
                             id="sale_price"
                             type="number"
                             value={newPropertyData.sale_price || ''}
-                            onChange={(e) => setNewPropertyData({...newPropertyData, sale_price: parseInt(e.target.value)})}
+                            onChange={(e) =>
+                              setNewPropertyData({
+                                ...newPropertyData,
+                                sale_price: parseInt(e.target.value),
+                              })
+                            }
                             placeholder="50000000"
                           />
                         </div>
                         <div>
                           <Label htmlFor="negotiable">Price Negotiable</Label>
-                          <Select value={newPropertyData.negotiable || 'yes'} onValueChange={(value) => setNewPropertyData({...newPropertyData, negotiable: value})}>
+                          <Select
+                            value={newPropertyData.negotiable || 'yes'}
+                            onValueChange={(value) =>
+                              setNewPropertyData({ ...newPropertyData, negotiable: value })
+                            }
+                          >
                             <SelectTrigger>
                               <SelectValue />
                             </SelectTrigger>
@@ -431,17 +564,23 @@ const OwnerPropertyPortfolio: React.FC<OwnerPropertyPortfolioProps> = ({
                   )}
 
                   {/* Rental Information */}
-                  {(newPropertyData.listing_type === 'rent' || newPropertyData.listing_type === 'both') && (
-                    <div className="mb-6 p-4 bg-green-50 rounded-lg">
-                      <h4 className="font-medium mb-3 text-green-900">Rental Information</h4>
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  {(newPropertyData.listing_type === 'rent' ||
+                    newPropertyData.listing_type === 'both') && (
+                    <div className="mb-6 rounded-lg bg-green-50 p-4">
+                      <h4 className="mb-3 font-medium text-green-900">Rental Information</h4>
+                      <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
                         <div>
-                          <Label htmlFor="monthly_rent">Monthly Rent (₦) *</Label>
+                          <Label htmlFor="monthly_rent">Annual Rent (₦) *</Label>
                           <Input
                             id="monthly_rent"
                             type="number"
                             value={newPropertyData.monthly_rent || ''}
-                            onChange={(e) => setNewPropertyData({...newPropertyData, monthly_rent: parseInt(e.target.value)})}
+                            onChange={(e) =>
+                              setNewPropertyData({
+                                ...newPropertyData,
+                                monthly_rent: parseInt(e.target.value),
+                              })
+                            }
                             placeholder="1500000"
                           />
                         </div>
@@ -451,7 +590,12 @@ const OwnerPropertyPortfolio: React.FC<OwnerPropertyPortfolioProps> = ({
                             id="security_deposit"
                             type="number"
                             value={newPropertyData.security_deposit || ''}
-                            onChange={(e) => setNewPropertyData({...newPropertyData, security_deposit: parseInt(e.target.value)})}
+                            onChange={(e) =>
+                              setNewPropertyData({
+                                ...newPropertyData,
+                                security_deposit: parseInt(e.target.value),
+                              })
+                            }
                             placeholder="3000000"
                           />
                         </div>
@@ -461,7 +605,12 @@ const OwnerPropertyPortfolio: React.FC<OwnerPropertyPortfolioProps> = ({
                             id="service_charge"
                             type="number"
                             value={newPropertyData.service_charge || ''}
-                            onChange={(e) => setNewPropertyData({...newPropertyData, service_charge: parseInt(e.target.value)})}
+                            onChange={(e) =>
+                              setNewPropertyData({
+                                ...newPropertyData,
+                                service_charge: parseInt(e.target.value),
+                              })
+                            }
                             placeholder="200000"
                           />
                         </div>
@@ -469,39 +618,71 @@ const OwnerPropertyPortfolio: React.FC<OwnerPropertyPortfolioProps> = ({
                     </div>
                   )}
 
-                  {/* Investment Information */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <Label htmlFor="purchase_price">Original Purchase Price (₦)</Label>
-                      <Input
-                        id="purchase_price"
-                        type="number"
-                        value={newPropertyData.purchase_price || ''}
-                        onChange={(e) => setNewPropertyData({...newPropertyData, purchase_price: parseInt(e.target.value)})}
-                        placeholder="45000000"
-                      />
+                  {/* Investment Information - Only for Sale properties */}
+                  {(newPropertyData.listing_type === 'sale' ||
+                    newPropertyData.listing_type === 'both') && (
+                    <div className="mb-6 rounded-lg bg-purple-50 p-4">
+                      <h4 className="mb-3 font-medium text-purple-900">Investment Information</h4>
+                      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                        <div>
+                          <Label htmlFor="purchase_price">Original Purchase Price (₦)</Label>
+                          <Input
+                            id="purchase_price"
+                            type="number"
+                            value={newPropertyData.purchase_price || ''}
+                            onChange={(e) =>
+                              setNewPropertyData({
+                                ...newPropertyData,
+                                purchase_price: parseInt(e.target.value),
+                              })
+                            }
+                            placeholder="45000000"
+                          />
+                          <p className="mt-1 text-xs text-muted-foreground">
+                            The price you originally paid for this property. Used for ROI
+                            calculations.
+                          </p>
+                        </div>
+                        <div>
+                          <Label htmlFor="current_value">Current Market Value (₦)</Label>
+                          <Input
+                            id="current_value"
+                            type="number"
+                            value={newPropertyData.current_value || ''}
+                            onChange={(e) =>
+                              setNewPropertyData({
+                                ...newPropertyData,
+                                current_value: parseInt(e.target.value),
+                              })
+                            }
+                            placeholder="60000000"
+                          />
+                          <p className="mt-1 text-xs text-muted-foreground">
+                            The current appraised market value. Shows property appreciation.
+                          </p>
+                        </div>
+                      </div>
                     </div>
-                    <div>
-                      <Label htmlFor="current_value">Current Market Value (₦)</Label>
-                      <Input
-                        id="current_value"
-                        type="number"
-                        value={newPropertyData.current_value || ''}
-                        onChange={(e) => setNewPropertyData({...newPropertyData, current_value: parseInt(e.target.value)})}
-                        placeholder="60000000"
-                      />
-                    </div>
-                  </div>
+                  )}
                 </div>
 
                 {/* Amenities */}
                 <div>
-                  <h3 className="text-lg font-semibold mb-4">Amenities</h3>
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                  <h3 className="mb-4 text-lg font-semibold">Amenities</h3>
+                  <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
                     {[
-                      'Air Conditioning', 'Swimming Pool', 'Gym/Fitness Center', 'Security',
-                      'Generator', 'Water Supply', 'Internet/WiFi', 'Parking',
-                      'Garden/Landscaping', 'Elevator', 'Balcony/Terrace', 'Furnished'
+                      'Air Conditioning',
+                      'Swimming Pool',
+                      'Gym/Fitness Center',
+                      'Security',
+                      'Generator',
+                      'Water Supply',
+                      'Internet/WiFi',
+                      'Parking',
+                      'Garden/Landscaping',
+                      'Elevator',
+                      'Balcony/Terrace',
+                      'Furnished',
                     ].map((amenity) => (
                       <label key={amenity} className="flex items-center space-x-2">
                         <input
@@ -510,9 +691,15 @@ const OwnerPropertyPortfolio: React.FC<OwnerPropertyPortfolioProps> = ({
                           onChange={(e) => {
                             const amenities = newPropertyData.amenities || [];
                             if (e.target.checked) {
-                              setNewPropertyData({...newPropertyData, amenities: [...amenities, amenity]});
+                              setNewPropertyData({
+                                ...newPropertyData,
+                                amenities: [...amenities, amenity],
+                              });
                             } else {
-                              setNewPropertyData({...newPropertyData, amenities: amenities.filter(a => a !== amenity)});
+                              setNewPropertyData({
+                                ...newPropertyData,
+                                amenities: amenities.filter((a) => a !== amenity),
+                              });
                             }
                           }}
                           className="rounded"
@@ -528,19 +715,24 @@ const OwnerPropertyPortfolio: React.FC<OwnerPropertyPortfolioProps> = ({
                   <Label htmlFor="description">Property Description</Label>
                   <textarea
                     id="description"
-                    className="w-full min-h-[120px] p-3 border border-gray-300 rounded-md resize-vertical"
+                    className="resize-vertical min-h-[120px] w-full rounded-md border border-border p-3"
                     value={newPropertyData.description || ''}
-                    onChange={(e) => setNewPropertyData({...newPropertyData, description: e.target.value})}
+                    onChange={(e) =>
+                      setNewPropertyData({ ...newPropertyData, description: e.target.value })
+                    }
                     placeholder="Describe the property, its unique features, neighborhood, and any additional information..."
                   />
                 </div>
               </div>
-              
-              <div className="flex justify-end space-x-2 mt-6 pt-4 border-t">
+
+              <div className="mt-6 flex justify-end space-x-2 border-t pt-4">
                 <Button variant="outline" onClick={() => setIsAddPropertyOpen(false)}>
                   Cancel
                 </Button>
-                <Button onClick={handleAddProperty} disabled={!newPropertyData.title || !newPropertyData.address}>
+                <Button
+                  onClick={handleAddProperty}
+                  disabled={!newPropertyData.title || !newPropertyData.address}
+                >
                   Add Property
                 </Button>
               </div>
@@ -550,13 +742,13 @@ const OwnerPropertyPortfolio: React.FC<OwnerPropertyPortfolioProps> = ({
       </div>
 
       {/* Portfolio Summary */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600">Total Properties</p>
-                <p className="text-2xl font-bold text-gray-900">{properties.length}</p>
+                <p className="text-sm font-medium text-muted-foreground">Total Properties</p>
+                <p className="text-2xl font-bold text-foreground">{properties.length}</p>
               </div>
               <Building className="h-8 w-8 text-blue-600" />
             </div>
@@ -566,9 +758,9 @@ const OwnerPropertyPortfolio: React.FC<OwnerPropertyPortfolioProps> = ({
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600">Occupied</p>
+                <p className="text-sm font-medium text-muted-foreground">Occupied</p>
                 <p className="text-2xl font-bold text-green-600">
-                  {properties.filter(p => p.status === 'occupied').length}
+                  {properties.filter((p) => p.status === 'occupied').length}
                 </p>
               </div>
               <CheckCircle className="h-8 w-8 text-green-600" />
@@ -579,9 +771,9 @@ const OwnerPropertyPortfolio: React.FC<OwnerPropertyPortfolioProps> = ({
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600">Vacant</p>
+                <p className="text-sm font-medium text-muted-foreground">Vacant</p>
                 <p className="text-2xl font-bold text-yellow-600">
-                  {properties.filter(p => p.status === 'vacant').length}
+                  {properties.filter((p) => p.status === 'vacant').length}
                 </p>
               </div>
               <AlertTriangle className="h-8 w-8 text-yellow-600" />
@@ -592,11 +784,14 @@ const OwnerPropertyPortfolio: React.FC<OwnerPropertyPortfolioProps> = ({
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600">Avg ROI</p>
+                <p className="text-sm font-medium text-muted-foreground">Avg ROI</p>
                 <p className="text-2xl font-bold text-purple-600">
-                  {properties.length > 0 
-                    ? (properties.reduce((sum, p) => sum + p.roi_percentage, 0) / properties.length).toFixed(1)
-                    : '0.0'}%
+                  {properties.length > 0
+                    ? (
+                        properties.reduce((sum, p) => sum + p.roi_percentage, 0) / properties.length
+                      ).toFixed(1)
+                    : '0.0'}
+                  %
                 </p>
               </div>
               <TrendingUp className="h-8 w-8 text-purple-600" />
@@ -608,10 +803,10 @@ const OwnerPropertyPortfolio: React.FC<OwnerPropertyPortfolioProps> = ({
       {/* Filters */}
       <Card>
         <CardContent className="p-4">
-          <div className="flex flex-col lg:flex-row space-y-4 lg:space-y-0 lg:space-x-4">
+          <div className="flex flex-col space-y-4 lg:flex-row lg:space-x-4 lg:space-y-0">
             <div className="flex-1">
               <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 transform text-muted-foreground" />
                 <Input
                   placeholder="Search properties by title, address, or city..."
                   value={searchTerm}
@@ -651,74 +846,73 @@ const OwnerPropertyPortfolio: React.FC<OwnerPropertyPortfolioProps> = ({
       </Card>
 
       {/* Properties Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2 xl:grid-cols-3">
         {filteredProperties.map((property) => (
-          <Card key={property.id} className="hover:shadow-lg transition-shadow">
+          <Card key={property.id} className="transition-shadow hover:shadow-lg">
             <CardHeader className="pb-3">
               <div className="flex items-start justify-between">
                 <div className="flex-1">
                   <CardTitle className="text-lg">{property.title}</CardTitle>
-                  <div className="flex items-center space-x-2 mt-1">
+                  <div className="mt-1 flex items-center space-x-2">
                     <Badge className={getStatusColor(property.status)}>
-                      {property.status.toUpperCase()}
+                      {(property.display_status || property.status).toUpperCase()}
                     </Badge>
-                    <Badge variant="outline">
-                      {property.type.toUpperCase()}
-                    </Badge>
+                    <Badge variant="outline">{property.type.toUpperCase()}</Badge>
                   </div>
                 </div>
-                <div className="flex items-center space-x-1">
-                  {getStatusIcon(property.status)}
-                </div>
+                <div className="flex items-center space-x-1">{getStatusIcon(property.status)}</div>
               </div>
             </CardHeader>
             <CardContent className="space-y-3">
               <div className="space-y-2 text-sm">
                 <div className="flex items-center space-x-2">
-                  <MapPin className="h-4 w-4 text-gray-500" />
-                  <span className="text-gray-600">{property.address}</span>
+                  <MapPin className="h-4 w-4 text-muted-foreground" />
+                  <span className="text-muted-foreground">{property.address}</span>
                 </div>
                 <div className="flex items-center space-x-4">
                   <div className="flex items-center space-x-1">
-                    <Bed className="h-4 w-4 text-gray-500" />
-                    <span className="text-gray-600">{property.bedrooms}</span>
+                    <Bed className="h-4 w-4 text-muted-foreground" />
+                    <span className="text-muted-foreground">{property.bedrooms}</span>
                   </div>
                   <div className="flex items-center space-x-1">
-                    <Bath className="h-4 w-4 text-gray-500" />
-                    <span className="text-gray-600">{property.bathrooms}</span>
+                    <Bath className="h-4 w-4 text-muted-foreground" />
+                    <span className="text-muted-foreground">{property.bathrooms}</span>
                   </div>
                   <div className="flex items-center space-x-1">
-                    <Square className="h-4 w-4 text-gray-500" />
-                    <span className="text-gray-600">{property.area_sqm}m²</span>
+                    <Square className="h-4 w-4 text-muted-foreground" />
+                    <span className="text-muted-foreground">{property.area_sqm}m²</span>
                   </div>
                 </div>
               </div>
 
               <div className="grid grid-cols-2 gap-4 text-sm">
                 <div>
-                  <p className="text-gray-500">Current Value</p>
+                  <p className="text-muted-foreground">Current Value</p>
                   <p className="font-semibold">{formatCurrency(property.current_value)}</p>
                 </div>
                 <div>
-                  <p className="text-gray-500">Monthly Rent</p>
-                  <p className="font-semibold">{formatCurrency(property.monthly_rent)}</p>
+                  <p className="text-muted-foreground">Annual Rent</p>
+                  <p className="font-semibold">{formatCurrency(property.annual_rent || 0)}</p>
                 </div>
               </div>
 
               <div className="space-y-2">
-                <div className="flex justify-between items-center">
-                  <span className="text-sm text-gray-600">ROI</span>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-muted-foreground">ROI</span>
                   <span className={`text-sm font-bold ${getROIColor(property.roi_percentage)}`}>
                     {property.roi_percentage.toFixed(1)}%
                   </span>
                 </div>
-                <Progress value={Math.min(property.roi_percentage, 25) / 25 * 100} className="h-2" />
+                <Progress
+                  value={(Math.min(property.roi_percentage, 25) / 25) * 100}
+                  className="h-2"
+                />
               </div>
 
               {property.status === 'occupied' && (
                 <div className="flex items-center space-x-2 text-sm">
                   <Users className="h-4 w-4 text-green-500" />
-                  <span className="text-gray-600">
+                  <span className="text-muted-foreground">
                     {property.tenant_count} tenant{property.tenant_count !== 1 ? 's' : ''}
                   </span>
                 </div>
@@ -727,7 +921,7 @@ const OwnerPropertyPortfolio: React.FC<OwnerPropertyPortfolioProps> = ({
               {property.status === 'vacant' && property.days_vacant_ytd > 0 && (
                 <div className="flex items-center space-x-2 text-sm">
                   <Calendar className="h-4 w-4 text-yellow-500" />
-                  <span className="text-gray-600">
+                  <span className="text-muted-foreground">
                     Vacant for {property.days_vacant_ytd} days
                   </span>
                 </div>
@@ -740,11 +934,16 @@ const OwnerPropertyPortfolio: React.FC<OwnerPropertyPortfolioProps> = ({
                   onClick={() => setSelectedProperty(property)}
                   className="flex-1"
                 >
-                  <Eye className="h-4 w-4 mr-1" />
+                  <Eye className="mr-1 h-4 w-4" />
                   View Details
                 </Button>
-                <Button size="sm" variant="outline">
-                  <Edit className="h-4 w-4 mr-1" />
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => handleEditProperty(property)}
+                  disabled={isLoadingProperty}
+                >
+                  <Edit className="mr-1 h-4 w-4" />
                   Edit
                 </Button>
               </div>
@@ -756,16 +955,16 @@ const OwnerPropertyPortfolio: React.FC<OwnerPropertyPortfolioProps> = ({
       {filteredProperties.length === 0 && (
         <Card>
           <CardContent className="p-12 text-center">
-            <Home className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-lg font-medium text-gray-900 mb-2">No properties found</h3>
-            <p className="text-gray-600 mb-4">
+            <Home className="mx-auto mb-4 h-12 w-12 text-muted-foreground" />
+            <h3 className="mb-2 text-lg font-medium text-foreground">No properties found</h3>
+            <p className="mb-4 text-muted-foreground">
               {searchTerm || statusFilter !== 'all' || typeFilter !== 'all'
                 ? 'Try adjusting your filters to see more properties.'
                 : 'Start by adding your first property to begin building your portfolio.'}
             </p>
             {onAddProperty && (
               <Button onClick={() => setIsAddPropertyOpen(true)}>
-                <Plus className="h-4 w-4 mr-2" />
+                <Plus className="mr-2 h-4 w-4" />
                 Add Your First Property
               </Button>
             )}
@@ -786,42 +985,52 @@ const OwnerPropertyPortfolio: React.FC<OwnerPropertyPortfolioProps> = ({
             <div className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <Label className="text-sm font-medium text-gray-500">Status</Label>
+                  <Label className="text-sm font-medium text-muted-foreground">Status</Label>
                   <Badge className={`${getStatusColor(selectedProperty.status)} mt-1`}>
-                    {selectedProperty.status.toUpperCase()}
+                    {(selectedProperty.display_status || selectedProperty.status).toUpperCase()}
                   </Badge>
                 </div>
                 <div>
-                  <Label className="text-sm font-medium text-gray-500">Type</Label>
+                  <Label className="text-sm font-medium text-muted-foreground">Type</Label>
                   <Badge variant="outline" className="mt-1">
-                    {selectedProperty.type.toUpperCase()}
+                    {selectedProperty.type.replace(/_/g, ' ').toUpperCase()}
                   </Badge>
                 </div>
               </div>
-              
+
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <Label className="text-sm font-medium text-gray-500">Address</Label>
+                  <Label className="text-sm font-medium text-muted-foreground">Address</Label>
                   <p className="text-sm">{selectedProperty.address}</p>
                 </div>
                 <div>
-                  <Label className="text-sm font-medium text-gray-500">City, State</Label>
-                  <p className="text-sm">{selectedProperty.city}, {selectedProperty.state}</p>
+                  <Label className="text-sm font-medium text-muted-foreground">City, State</Label>
+                  <p className="text-sm">
+                    {selectedProperty.city}, {selectedProperty.state}
+                  </p>
                 </div>
               </div>
 
               <div className="grid grid-cols-3 gap-4">
                 <div>
-                  <Label className="text-sm font-medium text-gray-500">Purchase Price</Label>
-                  <p className="text-sm font-bold">{formatCurrency(selectedProperty.purchase_price)}</p>
+                  <Label className="text-sm font-medium text-muted-foreground">
+                    Purchase Price
+                  </Label>
+                  <p className="text-sm font-bold">
+                    {formatCurrency(selectedProperty.purchase_price)}
+                  </p>
                 </div>
                 <div>
-                  <Label className="text-sm font-medium text-gray-500">Current Value</Label>
-                  <p className="text-sm font-bold">{formatCurrency(selectedProperty.current_value)}</p>
+                  <Label className="text-sm font-medium text-muted-foreground">Current Value</Label>
+                  <p className="text-sm font-bold">
+                    {formatCurrency(selectedProperty.current_value)}
+                  </p>
                 </div>
                 <div>
-                  <Label className="text-sm font-medium text-gray-500">ROI</Label>
-                  <p className={`text-sm font-bold ${getROIColor(selectedProperty.roi_percentage)}`}>
+                  <Label className="text-sm font-medium text-muted-foreground">ROI</Label>
+                  <p
+                    className={`text-sm font-bold ${getROIColor(selectedProperty.roi_percentage)}`}
+                  >
                     {selectedProperty.roi_percentage.toFixed(1)}%
                   </p>
                 </div>
@@ -831,14 +1040,29 @@ const OwnerPropertyPortfolio: React.FC<OwnerPropertyPortfolioProps> = ({
                 <Button variant="outline" onClick={() => setSelectedProperty(null)}>
                   Close
                 </Button>
-                <Button>
-                  <Edit className="h-4 w-4 mr-2" />
+                <Button onClick={() => handleEditProperty(selectedProperty)}>
+                  <Edit className="mr-2 h-4 w-4" />
                   Edit Property
                 </Button>
               </div>
             </div>
           </DialogContent>
         </Dialog>
+      )}
+
+      {/* Edit Property Dialog */}
+      {propertyToEdit && (
+        <EditPropertyDialog
+          open={isEditDialogOpen}
+          onOpenChange={(open) => {
+            setIsEditDialogOpen(open);
+            if (!open) {
+              setPropertyToEdit(null);
+            }
+          }}
+          property={propertyToEdit}
+          onPropertyUpdated={handlePropertyUpdated}
+        />
       )}
     </div>
   );

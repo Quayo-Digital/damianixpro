@@ -1,7 +1,6 @@
-
-import * as React from "react"
-import { Input } from "@/components/ui/input"
-import { cn } from "@/lib/utils"
+import * as React from 'react';
+import { Input } from '@/components/ui/input';
+import { cn } from '@/lib/utils';
 
 const SidebarInput = React.forwardRef<
   React.ElementRef<typeof Input>,
@@ -12,13 +11,13 @@ const SidebarInput = React.forwardRef<
       ref={ref}
       data-sidebar="input"
       className={cn(
-        "h-8 w-full bg-background shadow-none focus-visible:ring-2 focus-visible:ring-sidebar-ring",
+        'h-8 w-full bg-background shadow-none focus-visible:ring-2 focus-visible:ring-sidebar-ring',
         className
       )}
       {...props}
     />
-  )
-})
-SidebarInput.displayName = "SidebarInput"
+  );
+});
+SidebarInput.displayName = 'SidebarInput';
 
-export { SidebarInput }
+export { SidebarInput };

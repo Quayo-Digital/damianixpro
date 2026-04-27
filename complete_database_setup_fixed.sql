@@ -1,4 +1,4 @@
--- Complete Database Setup for Nigeria Homes (Fixed Version)
+-- Complete Database Setup for DamianixPro (Fixed Version)
 -- This script creates all tables expected by the application
 -- Handles existing types and tables gracefully
 

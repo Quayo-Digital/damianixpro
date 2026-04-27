@@ -1,7 +1,6 @@
-
 import { PageLayout } from '@/components/layout/PageLayout';
 import { PageContent } from '@/components/layout/PageContent';
-import { Card } from "@/components/ui/card";
+import { Card } from '@/components/ui/card';
 import { PersonalInfoForm } from '@/components/profile/PersonalInfoForm';
 import { AccountInfo } from '@/components/profile/AccountInfo';
 

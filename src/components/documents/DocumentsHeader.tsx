@@ -1,6 +1,5 @@
-
-import { Button } from "@/components/ui/button";
-import { UploadCloud } from "lucide-react";
+import { Button } from '@/components/ui/button';
+import { UploadCloud } from 'lucide-react';
 
 interface DocumentsHeaderProps {
   onUpload?: () => void;
@@ -9,14 +8,17 @@ interface DocumentsHeaderProps {
   showUploadButton?: boolean;
 }
 
-export function DocumentsHeader({ onUpload, title = "Documents", description = "Manage and organize your property documents", showUploadButton = true }: DocumentsHeaderProps) {
+export function DocumentsHeader({
+  onUpload,
+  title = 'Documents',
+  description = 'Manage and organize your property documents',
+  showUploadButton = true,
+}: DocumentsHeaderProps) {
   return (
-    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+    <div className="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
       <div>
         <h1 className="text-3xl font-bold tracking-tight">{title}</h1>
-        <p className="text-muted-foreground mt-1">
-          {description}
-        </p>
+        <p className="mt-1 text-muted-foreground">{description}</p>
       </div>
       {showUploadButton && onUpload && (
         <Button onClick={onUpload}>

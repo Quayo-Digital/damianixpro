@@ -5,10 +5,10 @@ import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { 
-  Smartphone, 
-  Tablet, 
-  Monitor, 
+import {
+  Smartphone,
+  Tablet,
+  Monitor,
   CheckCircle2,
   AlertCircle,
   XCircle,
@@ -17,17 +17,17 @@ import {
   Touch,
   Eye,
   Navigation,
-  Gauge
+  Gauge,
 } from 'lucide-react';
 
 // Import mobile utilities and components for testing
-import { 
-  useDeviceDetection, 
-  DeviceDetection, 
-  ViewportUtils, 
+import {
+  useDeviceDetection,
+  DeviceDetection,
+  ViewportUtils,
   TouchUtils,
   BREAKPOINTS,
-  NIGERIAN_DEVICES 
+  NIGERIAN_DEVICES,
 } from '@/utils/mobile';
 
 import {
@@ -36,7 +36,7 @@ import {
   MobileSelect,
   MobilePropertyCard,
   MobileSearchBar,
-  MobileQuantitySelector
+  MobileQuantitySelector,
 } from '@/components/ui/mobile-components';
 
 import { useSwipeGestures, useSwipeableCarousel } from '@/hooks/useSwipeGestures';
@@ -78,7 +78,7 @@ export const MobileResponsivenessTest = () => {
     bedrooms: 3,
     bathrooms: 2,
     image: '/api/placeholder/400/300/property',
-    type: 'Apartment'
+    type: 'Apartment',
   };
 
   // Sample select options
@@ -102,7 +102,7 @@ export const MobileResponsivenessTest = () => {
     try {
       // Test 1: Device Detection
       setCurrentTest('Testing device detection...');
-      await new Promise(resolve => setTimeout(resolve, 500));
+      await new Promise((resolve) => setTimeout(resolve, 500));
 
       const deviceDetectionScore = deviceInfo.isTouchDevice ? 100 : 80;
       results.push({
@@ -110,103 +110,109 @@ export const MobileResponsivenessTest = () => {
         test: 'Touch Device Detection',
         status: deviceInfo.isTouchDevice ? 'pass' : 'warning',
         score: deviceDetectionScore,
-        message: deviceInfo.isTouchDevice ? 
-          `Touch device detected: ${deviceInfo.deviceType}` : 
-          'Non-touch device detected'
+        message: deviceInfo.isTouchDevice
+          ? `Touch device detected: ${deviceInfo.deviceType}`
+          : 'Non-touch device detected',
       });
 
       // Test 2: Viewport Responsiveness
       setCurrentTest('Testing viewport responsiveness...');
-      await new Promise(resolve => setTimeout(resolve, 500));
+      await new Promise((resolve) => setTimeout(resolve, 500));
 
       const viewport = ViewportUtils.getViewportSize();
-      const isResponsive = viewport.width >= BREAKPOINTS.mobile && viewport.width <= BREAKPOINTS.wide;
-      
+      const isResponsive =
+        viewport.width >= BREAKPOINTS.mobile && viewport.width <= BREAKPOINTS.wide;
+
       results.push({
         category: 'Viewport',
         test: 'Responsive Viewport',
         status: isResponsive ? 'pass' : 'warning',
         score: isResponsive ? 100 : 70,
-        message: `Viewport: ${viewport.width}x${viewport.height}px`
+        message: `Viewport: ${viewport.width}x${viewport.height}px`,
       });
 
       // Test 3: Touch Target Compliance
       setCurrentTest('Testing touch target sizes...');
-      await new Promise(resolve => setTimeout(resolve, 500));
+      await new Promise((resolve) => setTimeout(resolve, 500));
 
       // Test touch targets on page
       const buttons = document.querySelectorAll('button');
       let compliantTargets = 0;
-      let totalTargets = buttons.length;
+      const totalTargets = buttons.length;
 
-      buttons.forEach(button => {
+      buttons.forEach((button) => {
         if (TouchUtils.isTouchTargetCompliant(button)) {
           compliantTargets++;
         }
       });
 
-      const touchTargetScore = totalTargets > 0 ? Math.round((compliantTargets / totalTargets) * 100) : 100;
-      
+      const touchTargetScore =
+        totalTargets > 0 ? Math.round((compliantTargets / totalTargets) * 100) : 100;
+
       results.push({
         category: 'Touch Targets',
         test: 'Touch Target Compliance',
         status: touchTargetScore >= 90 ? 'pass' : touchTargetScore >= 70 ? 'warning' : 'fail',
         score: touchTargetScore,
         message: `${compliantTargets}/${totalTargets} buttons meet 44px minimum`,
-        recommendation: touchTargetScore < 90 ? 'Ensure all interactive elements are at least 44px in height and width' : undefined
+        recommendation:
+          touchTargetScore < 90
+            ? 'Ensure all interactive elements are at least 44px in height and width'
+            : undefined,
       });
 
       // Test 4: Mobile Performance
       setCurrentTest('Testing mobile performance...');
-      await new Promise(resolve => setTimeout(resolve, 500));
+      await new Promise((resolve) => setTimeout(resolve, 500));
 
       const pixelRatio = DeviceDetection.getPixelRatio();
       const performanceScore = pixelRatio <= 2 ? 100 : pixelRatio <= 3 ? 80 : 60;
-      
+
       results.push({
         category: 'Performance',
         test: 'Device Pixel Ratio',
         status: performanceScore >= 80 ? 'pass' : 'warning',
         score: performanceScore,
         message: `Device pixel ratio: ${pixelRatio}x`,
-        recommendation: performanceScore < 80 ? 'Consider optimizing for high-DPI displays' : undefined
+        recommendation:
+          performanceScore < 80 ? 'Consider optimizing for high-DPI displays' : undefined,
       });
 
       // Test 5: Orientation Support
       setCurrentTest('Testing orientation support...');
-      await new Promise(resolve => setTimeout(resolve, 500));
+      await new Promise((resolve) => setTimeout(resolve, 500));
 
       const isLandscape = DeviceDetection.isLandscape();
       const orientationScore = 100; // Always pass as we support both orientations
-      
+
       results.push({
         category: 'Orientation',
         test: 'Orientation Detection',
         status: 'pass',
         score: orientationScore,
-        message: `Current orientation: ${isLandscape ? 'landscape' : 'portrait'}`
+        message: `Current orientation: ${isLandscape ? 'landscape' : 'portrait'}`,
       });
 
       // Test 6: Safe Area Support
       setCurrentTest('Testing safe area support...');
-      await new Promise(resolve => setTimeout(resolve, 500));
+      await new Promise((resolve) => setTimeout(resolve, 500));
 
       const safeAreaInsets = DeviceDetection.getSafeAreaInsets();
       const hasSafeArea = safeAreaInsets.top > 0 || safeAreaInsets.bottom > 0;
-      
+
       results.push({
         category: 'Safe Area',
         test: 'Safe Area Insets',
         status: 'pass',
         score: 100,
-        message: hasSafeArea ? 
-          `Safe area detected: top=${safeAreaInsets.top}px, bottom=${safeAreaInsets.bottom}px` :
-          'No safe area insets detected'
+        message: hasSafeArea
+          ? `Safe area detected: top=${safeAreaInsets.top}px, bottom=${safeAreaInsets.bottom}px`
+          : 'No safe area insets detected',
       });
 
       // Test 7: Nigerian Device Compatibility
       setCurrentTest('Testing Nigerian device compatibility...');
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      await new Promise((resolve) => setTimeout(resolve, 1000));
 
       // Test against common Nigerian device sizes
       Object.entries(NIGERIAN_DEVICES).forEach(([key, device]) => {
@@ -215,7 +221,7 @@ export const MobileResponsivenessTest = () => {
 
         // Check if current viewport matches this device
         const isCurrentDevice = Math.abs(viewport.width - device.width) < 20;
-        
+
         if (isCurrentDevice) {
           // Test specific issues for this device size
           if (device.width <= 360 && viewport.width <= 360) {
@@ -229,8 +235,9 @@ export const MobileResponsivenessTest = () => {
 
           if (device.width >= 768) {
             // Tablet specific tests
-            const singleColumnLayout = document.querySelectorAll('.grid-cols-1').length > 
-                                     document.querySelectorAll('.md\\:grid-cols-2, .lg\\:grid-cols-3').length;
+            const singleColumnLayout =
+              document.querySelectorAll('.grid-cols-1').length >
+              document.querySelectorAll('.md\\:grid-cols-2, .lg\\:grid-cols-3').length;
             if (singleColumnLayout) {
               issues.push('Layout could utilize tablet screen space better');
               score -= 15;
@@ -243,7 +250,7 @@ export const MobileResponsivenessTest = () => {
           width: device.width,
           height: device.height,
           score,
-          issues
+          issues,
         });
       });
 
@@ -257,32 +264,32 @@ export const MobileResponsivenessTest = () => {
         status: avgDeviceScore >= 90 ? 'pass' : avgDeviceScore >= 70 ? 'warning' : 'fail',
         score: avgDeviceScore,
         message: `Average compatibility score: ${avgDeviceScore}/100`,
-        recommendation: avgDeviceScore < 90 ? 'Optimize layout for popular Nigerian devices' : undefined
+        recommendation:
+          avgDeviceScore < 90 ? 'Optimize layout for popular Nigerian devices' : undefined,
       });
 
       // Test 8: Gesture Support
       setCurrentTest('Testing gesture support...');
-      await new Promise(resolve => setTimeout(resolve, 500));
+      await new Promise((resolve) => setTimeout(resolve, 500));
 
       const hasGestureSupport = 'ontouchstart' in window;
       const gestureScore = hasGestureSupport ? 100 : 60;
-      
+
       results.push({
         category: 'Gestures',
         test: 'Touch Gesture Support',
         status: hasGestureSupport ? 'pass' : 'warning',
         score: gestureScore,
-        message: hasGestureSupport ? 'Touch gestures supported' : 'Limited gesture support'
+        message: hasGestureSupport ? 'Touch gestures supported' : 'Limited gesture support',
       });
 
       // Calculate overall score
       const totalScore = results.reduce((sum, result) => sum + result.score, 0);
       const avgScore = Math.round(totalScore / results.length);
-      
+
       setTestResults(results);
       setDeviceResults(deviceTests);
       setOverallScore(avgScore);
-
     } catch (error) {
       console.error('Mobile responsiveness test failed:', error);
       results.push({
@@ -290,7 +297,7 @@ export const MobileResponsivenessTest = () => {
         test: 'Test Execution',
         status: 'fail',
         score: 0,
-        message: 'Mobile test encountered an error'
+        message: 'Mobile test encountered an error',
       });
       setTestResults(results);
       setOverallScore(0);
@@ -316,10 +323,14 @@ export const MobileResponsivenessTest = () => {
 
   const getStatusIcon = (status: string) => {
     switch (status) {
-      case 'pass': return <CheckCircle2 className="h-4 w-4 text-green-600" />;
-      case 'warning': return <AlertCircle className="h-4 w-4 text-yellow-600" />;
-      case 'fail': return <XCircle className="h-4 w-4 text-red-600" />;
-      default: return <AlertCircle className="h-4 w-4 text-gray-600" />;
+      case 'pass':
+        return <CheckCircle2 className="h-4 w-4 text-green-600" />;
+      case 'warning':
+        return <AlertCircle className="h-4 w-4 text-yellow-600" />;
+      case 'fail':
+        return <XCircle className="h-4 w-4 text-red-600" />;
+      default:
+        return <AlertCircle className="h-4 w-4 text-gray-600" />;
     }
   };
 
@@ -330,7 +341,8 @@ export const MobileResponsivenessTest = () => {
         <div>
           <h2 className="text-2xl font-bold">Mobile Responsiveness Testing</h2>
           <p className="text-muted-foreground">
-            Comprehensive testing for mobile optimization, touch targets, and Nigerian device compatibility
+            Comprehensive testing for mobile optimization, touch targets, and Nigerian device
+            compatibility
           </p>
         </div>
         <div className="flex items-center space-x-4">
@@ -371,9 +383,13 @@ export const MobileResponsivenessTest = () => {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            {deviceInfo.isMobile ? <Smartphone className="h-5 w-5" /> :
-             deviceInfo.isTablet ? <Tablet className="h-5 w-5" /> :
-             <Monitor className="h-5 w-5" />}
+            {deviceInfo.isMobile ? (
+              <Smartphone className="h-5 w-5" />
+            ) : deviceInfo.isTablet ? (
+              <Tablet className="h-5 w-5" />
+            ) : (
+              <Monitor className="h-5 w-5" />
+            )}
             Current Device Information
           </CardTitle>
         </CardHeader>
@@ -415,15 +431,16 @@ export const MobileResponsivenessTest = () => {
                 <CardHeader>
                   <CardTitle className="flex items-center justify-between">
                     Mobile Responsiveness Score
-                    <Badge className={getScoreBadge(overallScore)}>
-                      {overallScore}/100
-                    </Badge>
+                    <Badge className={getScoreBadge(overallScore)}>{overallScore}/100</Badge>
                   </CardTitle>
                   <CardDescription>
-                    {overallScore >= 90 ? 'Excellent! Your platform is highly optimized for mobile devices.' :
-                     overallScore >= 75 ? 'Good mobile optimization with minor improvements needed.' :
-                     overallScore >= 60 ? 'Moderate mobile support. Several optimizations recommended.' :
-                     'Poor mobile experience. Immediate optimization required.'}
+                    {overallScore >= 90
+                      ? 'Excellent! Your platform is highly optimized for mobile devices.'
+                      : overallScore >= 75
+                        ? 'Good mobile optimization with minor improvements needed.'
+                        : overallScore >= 60
+                          ? 'Moderate mobile support. Several optimizations recommended.'
+                          : 'Poor mobile experience. Immediate optimization required.'}
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -433,25 +450,41 @@ export const MobileResponsivenessTest = () => {
 
               {/* Category Overview */}
               <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                {['Device Detection', 'Viewport', 'Touch Targets', 'Performance', 'Device Compatibility', 'Gestures'].map(category => {
-                  const categoryTests = testResults.filter(test => test.category === category);
-                  const avgScore = categoryTests.length > 0 ? 
-                    Math.round(categoryTests.reduce((sum, test) => sum + test.score, 0) / categoryTests.length) : 0;
-                  const hasFailures = categoryTests.some(test => test.status === 'fail');
-                  const hasWarnings = categoryTests.some(test => test.status === 'warning');
-                  
+                {[
+                  'Device Detection',
+                  'Viewport',
+                  'Touch Targets',
+                  'Performance',
+                  'Device Compatibility',
+                  'Gestures',
+                ].map((category) => {
+                  const categoryTests = testResults.filter((test) => test.category === category);
+                  const avgScore =
+                    categoryTests.length > 0
+                      ? Math.round(
+                          categoryTests.reduce((sum, test) => sum + test.score, 0) /
+                            categoryTests.length
+                        )
+                      : 0;
+                  const hasFailures = categoryTests.some((test) => test.status === 'fail');
+                  const hasWarnings = categoryTests.some((test) => test.status === 'warning');
+
                   return (
                     <Card key={category}>
                       <CardHeader className="pb-3">
                         <div className="flex items-center justify-between">
                           <CardTitle className="text-sm">{category}</CardTitle>
-                          {hasFailures ? <XCircle className="h-4 w-4 text-red-600" /> :
-                           hasWarnings ? <AlertCircle className="h-4 w-4 text-yellow-600" /> :
-                           <CheckCircle2 className="h-4 w-4 text-green-600" />}
+                          {hasFailures ? (
+                            <XCircle className="h-4 w-4 text-red-600" />
+                          ) : hasWarnings ? (
+                            <AlertCircle className="h-4 w-4 text-yellow-600" />
+                          ) : (
+                            <CheckCircle2 className="h-4 w-4 text-green-600" />
+                          )}
                         </div>
                       </CardHeader>
                       <CardContent>
-                        <div className="text-2xl font-bold mb-2">{avgScore}/100</div>
+                        <div className="mb-2 text-2xl font-bold">{avgScore}/100</div>
                         <div className="text-sm text-muted-foreground">
                           {categoryTests.length} tests completed
                         </div>
@@ -463,10 +496,10 @@ export const MobileResponsivenessTest = () => {
             </>
           ) : (
             <Card>
-              <CardContent className="text-center py-8">
-                <Smartphone className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
-                <h3 className="text-lg font-semibold mb-2">No Mobile Tests Run Yet</h3>
-                <p className="text-muted-foreground mb-4">
+              <CardContent className="py-8 text-center">
+                <Smartphone className="mx-auto mb-4 h-12 w-12 text-muted-foreground" />
+                <h3 className="mb-2 text-lg font-semibold">No Mobile Tests Run Yet</h3>
+                <p className="mb-4 text-muted-foreground">
                   Click "Run Mobile Tests" to analyze your platform's mobile responsiveness.
                 </p>
                 <Button onClick={runMobileTests}>
@@ -489,12 +522,8 @@ export const MobileResponsivenessTest = () => {
                       {result.test}
                     </CardTitle>
                     <div className="flex gap-2">
-                      <Badge className={getScoreBadge(result.score)}>
-                        {result.score}/100
-                      </Badge>
-                      <Badge variant="outline">
-                        {result.category}
-                      </Badge>
+                      <Badge className={getScoreBadge(result.score)}>{result.score}/100</Badge>
+                      <Badge variant="outline">{result.category}</Badge>
                     </div>
                   </div>
                 </CardHeader>
@@ -513,8 +542,10 @@ export const MobileResponsivenessTest = () => {
             ))
           ) : (
             <Card>
-              <CardContent className="text-center py-8">
-                <p className="text-muted-foreground">No detailed results available. Run tests first.</p>
+              <CardContent className="py-8 text-center">
+                <p className="text-muted-foreground">
+                  No detailed results available. Run tests first.
+                </p>
               </CardContent>
             </Card>
           )}
@@ -531,9 +562,7 @@ export const MobileResponsivenessTest = () => {
                         <Smartphone className="h-5 w-5" />
                         {device.deviceName}
                       </CardTitle>
-                      <Badge className={getScoreBadge(device.score)}>
-                        {device.score}/100
-                      </Badge>
+                      <Badge className={getScoreBadge(device.score)}>{device.score}/100</Badge>
                     </div>
                     <CardDescription>
                       {device.width}x{device.height}px
@@ -542,10 +571,12 @@ export const MobileResponsivenessTest = () => {
                   <CardContent>
                     {device.issues.length > 0 ? (
                       <div>
-                        <h4 className="font-medium text-yellow-600 mb-2">Potential Issues:</h4>
-                        <ul className="list-disc list-inside space-y-1">
+                        <h4 className="mb-2 font-medium text-yellow-600">Potential Issues:</h4>
+                        <ul className="list-inside list-disc space-y-1">
                           {device.issues.map((issue, i) => (
-                            <li key={i} className="text-sm text-yellow-600">{issue}</li>
+                            <li key={i} className="text-sm text-yellow-600">
+                              {issue}
+                            </li>
                           ))}
                         </ul>
                       </div>
@@ -558,8 +589,10 @@ export const MobileResponsivenessTest = () => {
             </div>
           ) : (
             <Card>
-              <CardContent className="text-center py-8">
-                <p className="text-muted-foreground">No device test results available. Run tests first.</p>
+              <CardContent className="py-8 text-center">
+                <p className="text-muted-foreground">
+                  No device test results available. Run tests first.
+                </p>
               </CardContent>
             </Card>
           )}
@@ -571,13 +604,14 @@ export const MobileResponsivenessTest = () => {
             <CardHeader>
               <CardTitle>Mobile-Optimized Components Demo</CardTitle>
               <CardDescription>
-                Interactive demonstration of mobile-optimized UI components with proper touch targets
+                Interactive demonstration of mobile-optimized UI components with proper touch
+                targets
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
               {/* Mobile Buttons */}
               <div>
-                <h4 className="font-medium mb-3">Mobile Buttons (44px+ touch targets)</h4>
+                <h4 className="mb-3 font-medium">Mobile Buttons (44px+ touch targets)</h4>
                 <div className="flex flex-wrap gap-3">
                   <MobileButton size="sm">Small</MobileButton>
                   <MobileButton size="md">Medium</MobileButton>
@@ -588,15 +622,15 @@ export const MobileResponsivenessTest = () => {
 
               {/* Mobile Inputs */}
               <div>
-                <h4 className="font-medium mb-3">Mobile-Optimized Inputs</h4>
-                <div className="space-y-4 max-w-md">
-                  <MobileInput 
-                    label="Property Name" 
+                <h4 className="mb-3 font-medium">Mobile-Optimized Inputs</h4>
+                <div className="max-w-md space-y-4">
+                  <MobileInput
+                    label="Property Name"
                     placeholder="Enter property name"
                     helpText="16px font size prevents zoom on iOS"
                   />
-                  <MobileInput 
-                    label="Price" 
+                  <MobileInput
+                    label="Price"
                     placeholder="0"
                     currency={true}
                     helpText="Currency input with Naira symbol"
@@ -611,9 +645,9 @@ export const MobileResponsivenessTest = () => {
 
               {/* Mobile Property Card */}
               <div>
-                <h4 className="font-medium mb-3">Mobile Property Card</h4>
+                <h4 className="mb-3 font-medium">Mobile Property Card</h4>
                 <div className="max-w-sm">
-                  <MobilePropertyCard 
+                  <MobilePropertyCard
                     property={sampleProperty}
                     onFavorite={(id) => console.log('Favorited:', id)}
                     onShare={(id) => console.log('Shared:', id)}
@@ -624,7 +658,7 @@ export const MobileResponsivenessTest = () => {
 
               {/* Mobile Search Bar */}
               <div>
-                <h4 className="font-medium mb-3">Mobile Search Bar</h4>
+                <h4 className="mb-3 font-medium">Mobile Search Bar</h4>
                 <MobileSearchBar
                   placeholder="Search properties in Lagos..."
                   showFilter={true}
@@ -634,7 +668,7 @@ export const MobileResponsivenessTest = () => {
 
               {/* Mobile Quantity Selector */}
               <div>
-                <h4 className="font-medium mb-3">Mobile Quantity Selector</h4>
+                <h4 className="mb-3 font-medium">Mobile Quantity Selector</h4>
                 <MobileQuantitySelector
                   label="Bedrooms"
                   value={3}
@@ -674,7 +708,7 @@ export const MobileResponsivenessTest = () => {
                     <span className="text-sm">Swipe gesture support</span>
                   </div>
                 </div>
-                
+
                 <div className="space-y-3">
                   <div className="flex items-center gap-2">
                     <CheckCircle2 className="h-4 w-4 text-green-600" />
@@ -694,13 +728,14 @@ export const MobileResponsivenessTest = () => {
                   </div>
                 </div>
               </div>
-              
+
               <Alert>
                 <CheckCircle2 className="h-4 w-4" />
                 <AlertTitle>Mobile Responsiveness Implementation Complete</AlertTitle>
                 <AlertDescription>
-                  Your platform now includes comprehensive mobile optimizations tailored for the Nigerian market,
-                  with proper touch targets, gesture support, and device-specific optimizations for popular smartphones and tablets.
+                  Your platform now includes comprehensive mobile optimizations tailored for the
+                  Nigerian market, with proper touch targets, gesture support, and device-specific
+                  optimizations for popular smartphones and tablets.
                 </AlertDescription>
               </Alert>
             </CardContent>

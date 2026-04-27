@@ -1,6 +1,6 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/contexts/auth';
+import { useAuthSession } from '@/contexts/auth';
 import { Property } from '@/services/property/types';
 import { mapSupabaseToProperty } from '@/services/property/utils';
 
@@ -9,7 +9,7 @@ import { mapSupabaseToProperty } from '@/services/property/utils';
  * Fixes the critical security issue where agents could see all properties
  */
 export const usePropertiesWithRoleFiltering = () => {
-  const { user, userRole } = useAuth();
+  const { user, userRole } = useAuthSession();
   const queryClient = useQueryClient();
 
   const queryKey = ['properties-filtered', userRole, user?.id];
@@ -21,10 +21,7 @@ export const usePropertiesWithRoleFiltering = () => {
     }
 
     try {
-      let query = supabase
-        .from('properties')
-        .select('*')
-        .order('created_at', { ascending: false });
+      let query = supabase.from('properties').select('*').order('created_at', { ascending: false });
 
       // Apply role-based filtering
       switch (userRole) {
@@ -35,8 +32,8 @@ export const usePropertiesWithRoleFiltering = () => {
           break;
 
         case 'agent':
-          // ✅ CRITICAL FIX: Agents see only properties they're assigned to
-          query = query.eq('assigned_agent_id', user.id);
+          // Agents see only properties they're assigned to (agent_id in schema)
+          query = query.eq('agent_id', user.id);
           console.log('Fetching properties assigned to agent:', user.id);
           break;
 
@@ -59,9 +56,9 @@ export const usePropertiesWithRoleFiltering = () => {
           return [];
 
         case 'manager':
-          // Managers see properties they're managing
-          query = query.eq('manager_id', user.id);
-          console.log('Fetching properties managed by:', user.id);
+          // Property managers: properties where user is agent or owner
+          query = query.or(`agent_id.eq.${user.id},owner_id.eq.${user.id}`);
+          console.log('Fetching properties for manager:', user.id);
           break;
 
         default:
@@ -71,24 +68,27 @@ export const usePropertiesWithRoleFiltering = () => {
       }
 
       const { data, error } = await query;
-      
+
       if (error) {
         console.error('Error fetching properties:', error);
         throw error;
       }
-      
+
       const properties: Property[] = data?.map(mapSupabaseToProperty) || [];
-      
+
       console.log(`Fetched ${properties.length} properties for role: ${userRole}`);
       return properties;
-      
     } catch (error) {
       console.error('Error in fetchPropertiesForRole:', error);
       return [];
     }
   };
 
-  const { data: properties = [], isLoading, error } = useQuery<Property[]>({
+  const {
+    data: properties = [],
+    isLoading,
+    error,
+  } = useQuery<Property[]>({
     queryKey,
     queryFn: fetchPropertiesForRole,
     enabled: !!user && !!userRole,
@@ -98,13 +98,13 @@ export const usePropertiesWithRoleFiltering = () => {
     queryClient.invalidateQueries({ queryKey });
   };
 
-  return { 
-    properties, 
-    isLoading, 
-    error, 
+  return {
+    properties,
+    isLoading,
+    error,
     refreshProperties,
     userRole,
-    filteredCount: properties.length
+    filteredCount: properties.length,
   };
 };
 
@@ -113,7 +113,7 @@ export const usePropertiesWithRoleFiltering = () => {
  * Ensures agents only see their assigned properties
  */
 export const useAgentProperties = () => {
-  const { user, userRole } = useAuth();
+  const { user, userRole } = useAuthSession();
   const queryClient = useQueryClient();
 
   const queryKey = ['agent-properties', user?.id];
@@ -126,30 +126,33 @@ export const useAgentProperties = () => {
 
     try {
       console.log('Fetching properties specifically assigned to agent:', user.id);
-      
+
       const { data, error } = await supabase
         .from('properties')
         .select('*')
         .eq('assigned_agent_id', user.id)
         .order('created_at', { ascending: false });
-      
+
       if (error) {
         console.error('Error fetching agent properties:', error);
         throw error;
       }
-      
+
       const properties: Property[] = data?.map(mapSupabaseToProperty) || [];
-      
+
       console.log(`Agent ${user.id} has access to ${properties.length} assigned properties`);
       return properties;
-      
     } catch (error) {
       console.error('Error in fetchAgentProperties:', error);
       return [];
     }
   };
 
-  const { data: properties = [], isLoading, error } = useQuery<Property[]>({
+  const {
+    data: properties = [],
+    isLoading,
+    error,
+  } = useQuery<Property[]>({
     queryKey,
     queryFn: fetchAgentProperties,
     enabled: !!user && userRole === 'agent',
@@ -159,11 +162,11 @@ export const useAgentProperties = () => {
     queryClient.invalidateQueries({ queryKey });
   };
 
-  return { 
-    properties, 
-    isLoading, 
-    error, 
+  return {
+    properties,
+    isLoading,
+    error,
     refreshProperties,
-    assignedCount: properties.length
+    assignedCount: properties.length,
   };
 };

@@ -4,6 +4,7 @@
  */
 
 import { supabase } from '@/integrations/supabase/client';
+import { logger } from '@/utils/logger';
 
 export interface KYCData {
   user_id: string;
@@ -42,10 +43,10 @@ export async function submitKYC(kycData: KYCData): Promise<{
           account_name: kycData.account_name,
           id_document_url: kycData.id_document_url,
           proof_of_address_url: kycData.proof_of_address_url,
-          submitted_at: new Date().toISOString()
+          submitted_at: new Date().toISOString(),
         },
         kyc_status: 'pending',
-        updated_at: new Date().toISOString()
+        updated_at: new Date().toISOString(),
       })
       .eq('id', kycData.user_id);
 
@@ -53,10 +54,10 @@ export async function submitKYC(kycData: KYCData): Promise<{
 
     return { success: true };
   } catch (error) {
-    console.error('KYC submission error:', error);
+    logger.error('KYC submission error', error);
     return {
       success: false,
-      error: error instanceof Error ? error.message : 'KYC submission failed'
+      error: error instanceof Error ? error.message : 'KYC submission failed',
     };
   }
 }
@@ -78,10 +79,10 @@ export async function getKYCStatus(userId: string): Promise<KYCStatus | null> {
 
   return {
     verified: data.kyc_status === 'verified',
-    verification_level: data.kyc_status === 'verified' ? 'full' : 
-                        data.kyc_status === 'pending' ? 'basic' : 'none',
+    verification_level:
+      data.kyc_status === 'verified' ? 'full' : data.kyc_status === 'pending' ? 'basic' : 'none',
     verified_at: data.kyc_verified_at,
-    verified_by: data.kyc_verified_by
+    verified_by: data.kyc_verified_by,
   };
 }
 
@@ -97,12 +98,11 @@ export async function canRequestPayout(userId: string): Promise<{
   if (!kycStatus || !kycStatus.verified) {
     return {
       can_request: false,
-      reason: 'KYC verification required before requesting payouts'
+      reason: 'KYC verification required before requesting payouts',
     };
   }
 
   return {
-    can_request: true
+    can_request: true,
   };
 }
-

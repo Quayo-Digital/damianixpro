@@ -1,4 +1,4 @@
--- Get User IDs for Nigeria Homes App Fix
+-- Get User IDs for DamianixPro App Fix
 -- Run this first to get the actual user IDs
 
 -- Step 1: Check if the test users exist

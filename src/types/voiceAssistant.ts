@@ -1,4 +1,4 @@
-// Voice Assistant Types for Nigeria Homes Platform
+// Voice Assistant Types for DamianixPro Platform
 // Created: 2025-08-01
 // Description: TypeScript types for voice assistant integration and hands-free property management
 
@@ -15,7 +15,7 @@ export interface VoiceCommand {
   success: boolean;
 }
 
-export type VoiceIntent = 
+export type VoiceIntent =
   | 'view_properties'
   | 'view_tenants'
   | 'add_property'
@@ -41,7 +41,7 @@ export interface VoiceEntity {
   end_index?: number;
 }
 
-export type VoiceEntityType = 
+export type VoiceEntityType =
   | 'property_name'
   | 'tenant_name'
   | 'date'
@@ -74,7 +74,7 @@ export interface VoiceAction {
   };
 }
 
-export type VoiceActionType = 
+export type VoiceActionType =
   | 'navigate'
   | 'create_record'
   | 'update_record'
@@ -273,7 +273,7 @@ export interface VoiceError {
   recoverable: boolean;
 }
 
-export type VoiceErrorCode = 
+export type VoiceErrorCode =
   | 'MICROPHONE_ACCESS_DENIED'
   | 'SPEECH_RECOGNITION_NOT_SUPPORTED'
   | 'NETWORK_ERROR'

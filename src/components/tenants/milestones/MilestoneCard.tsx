@@ -1,4 +1,3 @@
-
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -17,10 +16,12 @@ export function MilestoneCard({ milestone, onSendNotification }: MilestoneCardPr
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
           <div>
-            <CardTitle className="text-lg flex items-center">
+            <CardTitle className="flex items-center text-lg">
               {getMilestoneTypeIcon(milestone.milestone_type)}
               <span className="ml-2">
-                {milestone.milestone_type.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                {milestone.milestone_type
+                  .replace(/_/g, ' ')
+                  .replace(/\b\w/g, (l) => l.toUpperCase())}
               </span>
             </CardTitle>
             <CardDescription>
@@ -32,7 +33,7 @@ export function MilestoneCard({ milestone, onSendNotification }: MilestoneCardPr
           </Badge>
         </div>
       </CardHeader>
-      
+
       <CardContent>
         <div className="space-y-4">
           <div>
@@ -41,13 +42,10 @@ export function MilestoneCard({ milestone, onSendNotification }: MilestoneCardPr
               {format(parseISO(milestone.date), 'PPP')} ({getDaysLabel(milestone.date)})
             </p>
           </div>
-          
+
           <div className="flex justify-end">
             {!milestone.notification_sent && milestone.status !== 'completed' ? (
-              <Button 
-                size="sm" 
-                onClick={() => onSendNotification(milestone.id)}
-              >
+              <Button size="sm" onClick={() => onSendNotification(milestone.id)}>
                 Send Notification
               </Button>
             ) : milestone.notification_sent ? (

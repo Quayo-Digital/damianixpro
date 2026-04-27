@@ -1,7 +1,6 @@
-
 import React, { useState } from 'react';
 import { AspectRatio } from '@/components/ui/aspect-ratio';
-import { 
+import {
   Carousel,
   CarouselContent,
   CarouselItem,
@@ -18,7 +17,7 @@ export function PropertyGallery({ images }: PropertyGalleryProps) {
 
   if (images.length === 0) {
     return (
-      <div className="bg-muted flex items-center justify-center rounded-lg h-[400px]">
+      <div className="flex h-[400px] items-center justify-center rounded-lg bg-muted">
         <span className="text-muted-foreground">No images available</span>
       </div>
     );
@@ -26,18 +25,19 @@ export function PropertyGallery({ images }: PropertyGalleryProps) {
 
   return (
     <div className="space-y-4">
-      <AspectRatio ratio={16 / 9} className="bg-muted overflow-hidden rounded-lg">
+      <AspectRatio ratio={16 / 9} className="overflow-hidden rounded-lg bg-muted">
         <img
           src={images[activeImage]}
           alt="Property main image"
-          className="object-cover w-full h-full"
+          decoding="async"
+          className="h-full w-full object-cover"
         />
       </AspectRatio>
 
       {images.length > 1 && (
         <Carousel
           opts={{
-            align: "start",
+            align: 'start',
             loop: true,
           }}
           className="w-full"
@@ -45,17 +45,19 @@ export function PropertyGallery({ images }: PropertyGalleryProps) {
           <CarouselContent>
             {images.map((image, index) => (
               <CarouselItem key={index} className="basis-1/4 md:basis-1/5 lg:basis-1/6">
-                <div 
-                  className={`cursor-pointer rounded-md overflow-hidden border-2 ${
+                <div
+                  className={`cursor-pointer overflow-hidden rounded-md border-2 ${
                     activeImage === index ? 'border-brand-primary' : 'border-transparent'
                   }`}
                   onClick={() => setActiveImage(index)}
                 >
                   <AspectRatio ratio={1}>
-                    <img 
-                      src={image} 
-                      alt={`Property thumbnail ${index + 1}`} 
-                      className="object-cover w-full h-full"
+                    <img
+                      src={image}
+                      alt={`Property thumbnail ${index + 1}`}
+                      loading="lazy"
+                      decoding="async"
+                      className="h-full w-full object-cover"
                     />
                   </AspectRatio>
                 </div>

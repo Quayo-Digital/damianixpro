@@ -1,21 +1,21 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Progress } from '@/components/ui/progress';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { 
-  CreditCard, 
-  Calendar, 
-  TrendingUp, 
-  AlertTriangle, 
+import {
+  CreditCard,
+  Calendar,
+  TrendingUp,
+  AlertTriangle,
   Download,
   Settings,
   Crown,
   Zap,
   Building2,
-  Star
+  Star,
 } from 'lucide-react';
 import { useSubscription } from '@/hooks/useSubscription';
 import { formatCurrency, formatDate } from '@/lib/utils';
@@ -27,31 +27,45 @@ const tierIcons = {
   starter: Zap,
   professional: Crown,
   enterprise: Building2,
-  white_label: Building2
+  white_label: Building2,
 };
 
 export const SubscriptionDashboard: React.FC = () => {
   const [activeTab, setActiveTab] = useState('overview');
-  
+
   const {
     currentSubscription,
     subscriptionPlans,
     invoices,
-    usageData,
     analytics,
     updateSubscription,
     cancelSubscription,
     reactivateSubscription,
-    isLoading
+    isLoading,
   } = useSubscription();
+
+  const usageData = useMemo(() => {
+    const period = currentSubscription?.usage_tracking?.current_period;
+    if (!period) return null;
+    return {
+      properties: period.properties_used,
+      tenants: period.tenants_managed,
+      documents_per_month: period.documents_processed,
+      ai_recommendations_per_month: period.ai_recommendations_generated,
+      maintenance_alerts: period.maintenance_alerts_sent,
+      storage_gb: period.storage_used_gb,
+      api_calls_per_month: period.api_calls_made,
+      team_members: 0,
+    } as Record<string, number>;
+  }, [currentSubscription]);
 
   const handleCancelSubscription = async () => {
     if (!currentSubscription) return;
-    
+
     const confirmed = window.confirm(
       'Are you sure you want to cancel your subscription? You will lose access to premium features at the end of your current billing period.'
     );
-    
+
     if (confirmed) {
       try {
         await cancelSubscription.mutateAsync(currentSubscription.id);
@@ -64,7 +78,7 @@ export const SubscriptionDashboard: React.FC = () => {
 
   const handleReactivateSubscription = async () => {
     if (!currentSubscription) return;
-    
+
     try {
       await reactivateSubscription.mutateAsync(currentSubscription.id);
       toast.success('Subscription reactivated successfully');
@@ -75,7 +89,7 @@ export const SubscriptionDashboard: React.FC = () => {
 
   const getCurrentPlan = () => {
     if (!currentSubscription || !subscriptionPlans) return null;
-    return subscriptionPlans.find(plan => plan.id === currentSubscription.plan_id);
+    return subscriptionPlans.find((plan) => plan.id === currentSubscription.plan_id);
   };
 
   const getUsagePercentage = (used: number, limit: number | string) => {
@@ -94,10 +108,10 @@ export const SubscriptionDashboard: React.FC = () => {
     return (
       <div className="space-y-6">
         <div className="animate-pulse">
-          <div className="h-8 bg-gray-200 rounded w-1/4 mb-4"></div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="mb-4 h-8 w-1/4 rounded bg-gray-200"></div>
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
             {[...Array(3)].map((_, i) => (
-              <div key={i} className="h-32 bg-gray-200 rounded"></div>
+              <div key={i} className="h-32 rounded bg-gray-200"></div>
             ))}
           </div>
         </div>
@@ -113,13 +127,13 @@ export const SubscriptionDashboard: React.FC = () => {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold text-gray-900">Subscription Management</h1>
-          <p className="text-gray-600 mt-1">Manage your subscription, usage, and billing</p>
+          <p className="mt-1 text-gray-600">Manage your subscription, usage, and billing</p>
         </div>
-        
+
         {currentSubscription && (
           <div className="flex items-center space-x-2">
             <TierIcon className="h-6 w-6 text-blue-600" />
-            <Badge variant="outline" className="text-lg px-3 py-1">
+            <Badge variant="outline" className="px-3 py-1 text-lg">
               {currentPlan?.name || 'Unknown Plan'}
             </Badge>
           </div>
@@ -136,18 +150,22 @@ export const SubscriptionDashboard: React.FC = () => {
 
         <TabsContent value="overview" className="space-y-6">
           {/* Current Subscription Status */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">Current Plan</CardTitle>
                 <Crown className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">
-                  {currentPlan?.name || 'No Active Plan'}
-                </div>
+                <div className="text-2xl font-bold">{currentPlan?.name || 'No Active Plan'}</div>
                 <p className="text-xs text-muted-foreground">
-                  {currentSubscription?.status === 'active' ? 'Active' : 'Inactive'}
+                  {currentSubscription?.status === 'active'
+                    ? 'Active'
+                    : currentSubscription?.status === 'trialing'
+                      ? currentSubscription.trial_end
+                        ? `Trial — ends ${formatDate(currentSubscription.trial_end)}`
+                        : 'Trial'
+                      : 'Inactive'}
                 </p>
               </CardContent>
             </Card>
@@ -159,10 +177,9 @@ export const SubscriptionDashboard: React.FC = () => {
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">
-                  {currentSubscription?.current_period_end 
+                  {currentSubscription?.current_period_end
                     ? formatDate(currentSubscription.current_period_end)
-                    : 'N/A'
-                  }
+                    : 'N/A'}
                 </div>
                 <p className="text-xs text-muted-foreground">
                   {currentSubscription?.billing_cycle || 'No billing cycle'}
@@ -177,10 +194,9 @@ export const SubscriptionDashboard: React.FC = () => {
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">
-                  {currentPlan?.pricing?.monthly 
+                  {currentPlan?.pricing?.monthly
                     ? formatCurrency(currentPlan.pricing.monthly, 'NGN')
-                    : 'Free'
-                  }
+                    : 'Free'}
                 </div>
                 <p className="text-xs text-muted-foreground">
                   {currentSubscription?.billing_cycle === 'yearly' ? 'Billed yearly' : 'Per month'}
@@ -194,7 +210,8 @@ export const SubscriptionDashboard: React.FC = () => {
             <Alert variant="destructive">
               <AlertTriangle className="h-4 w-4" />
               <AlertDescription>
-                Your subscription payment is past due. Please update your payment method to avoid service interruption.
+                Your subscription payment is past due. Please update your payment method to avoid
+                service interruption.
               </AlertDescription>
             </Alert>
           )}
@@ -204,11 +221,11 @@ export const SubscriptionDashboard: React.FC = () => {
               <AlertTriangle className="h-4 w-4" />
               <AlertDescription className="flex items-center justify-between">
                 <span>
-                  Your subscription will be cancelled at the end of the current billing period 
-                  ({formatDate(currentSubscription.current_period_end)}).
+                  Your subscription will be cancelled at the end of the current billing period (
+                  {formatDate(currentSubscription.current_period_end)}).
                 </span>
-                <Button 
-                  variant="outline" 
+                <Button
+                  variant="outline"
                   size="sm"
                   onClick={handleReactivateSubscription}
                   disabled={reactivateSubscription.isPending}
@@ -227,22 +244,22 @@ export const SubscriptionDashboard: React.FC = () => {
             </CardHeader>
             <CardContent className="flex flex-wrap gap-3">
               <Button variant="outline" onClick={() => setActiveTab('plans')}>
-                <Crown className="h-4 w-4 mr-2" />
+                <Crown className="mr-2 h-4 w-4" />
                 Upgrade Plan
               </Button>
-              
+
               <Button variant="outline" onClick={() => setActiveTab('billing')}>
-                <CreditCard className="h-4 w-4 mr-2" />
+                <CreditCard className="mr-2 h-4 w-4" />
                 View Billing
               </Button>
-              
+
               {currentSubscription && !currentSubscription.cancel_at_period_end && (
-                <Button 
-                  variant="outline" 
+                <Button
+                  variant="outline"
                   onClick={handleCancelSubscription}
                   disabled={cancelSubscription.isPending}
                 >
-                  <Settings className="h-4 w-4 mr-2" />
+                  <Settings className="mr-2 h-4 w-4" />
                   Cancel Subscription
                 </Button>
               )}
@@ -259,36 +276,41 @@ export const SubscriptionDashboard: React.FC = () => {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
-              {usageData && currentPlan && Object.entries(currentPlan.limits).map(([key, limit]) => {
-                const used = usageData[key] || 0;
-                const percentage = getUsagePercentage(used, limit);
-                const status = getUsageStatus(percentage);
-                
-                return (
-                  <div key={key} className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm font-medium capitalize">
-                        {key.replace(/_/g, ' ')}
-                      </span>
-                      <span className="text-sm text-gray-600">
-                        {used} / {limit === 'unlimited' ? '∞' : limit}
-                      </span>
+              {usageData &&
+                currentPlan &&
+                Object.entries(currentPlan.limits).map(([key, limit]) => {
+                  const used = usageData[key] || 0;
+                  const percentage = getUsagePercentage(used, limit);
+                  const status = getUsageStatus(percentage);
+
+                  return (
+                    <div key={key} className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm font-medium capitalize">
+                          {key.replace(/_/g, ' ')}
+                        </span>
+                        <span className="text-sm text-gray-600">
+                          {used} / {limit === 'unlimited' ? '∞' : limit}
+                        </span>
+                      </div>
+                      <Progress
+                        value={percentage}
+                        className={`h-2 ${
+                          status === 'destructive'
+                            ? 'bg-red-100'
+                            : status === 'warning'
+                              ? 'bg-yellow-100'
+                              : 'bg-green-100'
+                        }`}
+                      />
+                      {percentage >= 90 && limit !== 'unlimited' && (
+                        <p className="text-xs text-red-600">
+                          You're approaching your limit. Consider upgrading your plan.
+                        </p>
+                      )}
                     </div>
-                    <Progress 
-                      value={percentage} 
-                      className={`h-2 ${
-                        status === 'destructive' ? 'bg-red-100' :
-                        status === 'warning' ? 'bg-yellow-100' : 'bg-green-100'
-                      }`}
-                    />
-                    {percentage >= 90 && limit !== 'unlimited' && (
-                      <p className="text-xs text-red-600">
-                        You're approaching your limit. Consider upgrading your plan.
-                      </p>
-                    )}
-                  </div>
-                );
-              })}
+                  );
+                })}
             </CardContent>
           </Card>
 
@@ -300,7 +322,7 @@ export const SubscriptionDashboard: React.FC = () => {
                 <CardDescription>Your usage patterns over time</CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
                   <div className="text-center">
                     <div className="text-2xl font-bold text-blue-600">
                       {analytics.total_properties || 0}
@@ -335,34 +357,30 @@ export const SubscriptionDashboard: React.FC = () => {
               {invoices && invoices.length > 0 ? (
                 <div className="space-y-4">
                   {invoices.map((invoice) => (
-                    <div 
+                    <div
                       key={invoice.id}
-                      className="flex items-center justify-between p-4 border rounded-lg"
+                      className="flex items-center justify-between rounded-lg border p-4"
                     >
                       <div className="flex items-center space-x-4">
                         <div>
                           <p className="font-medium">{invoice.invoice_number}</p>
-                          <p className="text-sm text-gray-600">
-                            {formatDate(invoice.created_at)}
-                          </p>
+                          <p className="text-sm text-gray-600">{formatDate(invoice.created_at)}</p>
                         </div>
                       </div>
-                      
+
                       <div className="flex items-center space-x-4">
                         <div className="text-right">
                           <p className="font-medium">
                             {formatCurrency(invoice.amount_due, invoice.currency)}
                           </p>
-                          <Badge 
-                            variant={invoice.status === 'paid' ? 'default' : 'secondary'}
-                          >
+                          <Badge variant={invoice.status === 'paid' ? 'default' : 'secondary'}>
                             {invoice.status}
                           </Badge>
                         </div>
-                        
+
                         {invoice.pdf_url && (
                           <Button variant="outline" size="sm">
-                            <Download className="h-4 w-4 mr-2" />
+                            <Download className="mr-2 h-4 w-4" />
                             Download
                           </Button>
                         )}
@@ -371,9 +389,7 @@ export const SubscriptionDashboard: React.FC = () => {
                   ))}
                 </div>
               ) : (
-                <p className="text-center text-gray-600 py-8">
-                  No invoices found
-                </p>
+                <p className="py-8 text-center text-gray-600">No invoices found</p>
               )}
             </CardContent>
           </Card>

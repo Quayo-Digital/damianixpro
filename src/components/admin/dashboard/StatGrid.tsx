@@ -1,9 +1,8 @@
-
-import { StatCard } from "@/components/dashboard/StatCard";
-import { Users, Home, Wallet, PieChart } from "lucide-react";
-import { Trend } from "@/hooks/useAdminDashboardData";
-import { useIsMobile } from "@/hooks/use-mobile";
-import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
+import { StatCard } from '@/components/dashboard/StatCard';
+import { Users, Home, Wallet, PieChart } from 'lucide-react';
+import { Trend } from '@/hooks/useAdminDashboardData';
+import { useIsMobile } from '@/hooks/use-mobile';
+import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 
 interface StatGridProps {
   isLoading: boolean;
@@ -32,33 +31,33 @@ export function StatGrid({
 
   const statCards = [
     {
-      title: "Total Users",
+      title: 'Total Users',
       value: isLoading ? '...' : totalUsers.toString(),
       icon: <Users className="h-4 w-4" />,
       trend: userTrend,
-      description: "vs. last 30 days"
+      description: 'vs. last 30 days',
     },
     {
-      title: "Listed Properties",
+      title: 'Listed Properties',
       value: isLoading ? '...' : totalProperties.toString(),
       icon: <Home className="h-4 w-4" />,
       trend: propertiesTrend,
-      description: "vs. last 30 days"
+      description: 'vs. last 30 days',
     },
     {
-      title: "Platform Revenue",
+      title: 'Platform Revenue',
       value: isLoading ? '...' : `₦${(totalRevenue / 1000000).toFixed(2)}M`,
       icon: <Wallet className="h-4 w-4" />,
       trend: revenueTrend,
-      description: "vs. last 30 days"
+      description: 'vs. last 30 days',
     },
     {
-      title: "Support Tickets",
+      title: 'Support Tickets',
       value: isLoading ? '...' : supportTickets.toString(),
       icon: <PieChart className="h-4 w-4" />,
       trend: ticketsTrend,
-      description: "vs. last 30 days"
-    }
+      description: 'vs. last 30 days',
+    },
   ];
 
   if (isMobile) {

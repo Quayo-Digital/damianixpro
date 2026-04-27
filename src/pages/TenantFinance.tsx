@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { PageContent } from '@/components/layout/PageContent';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -9,24 +8,20 @@ const TenantFinance = () => {
   const [activeTab, setActiveTab] = useState('payments');
 
   return (
-    <PageContent 
-      title="Financial Management" 
+    <PageContent
+      title="Financial Management"
       description="Track your payments and financial information"
     >
-      <Tabs 
-        value={activeTab} 
-        onValueChange={setActiveTab} 
-        className="w-full"
-      >
-        <TabsList className="grid w-full max-w-md grid-cols-2 mb-8">
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+        <TabsList className="mb-8 grid w-full max-w-md grid-cols-2">
           <TabsTrigger value="payments">Payments</TabsTrigger>
           <TabsTrigger value="overview">Financial Overview</TabsTrigger>
         </TabsList>
-        
+
         <TabsContent value="payments">
           <TenantPayments />
         </TabsContent>
-        
+
         <TabsContent value="overview">
           <FinancialOverview />
         </TabsContent>

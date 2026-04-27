@@ -3,7 +3,7 @@ import React from 'react';
 // Minimal debug component to isolate the "can't convert item to string" error
 export const DebugMobile = () => {
   console.log('DebugMobile component rendering...');
-  
+
   try {
     return (
       <div className="p-4">

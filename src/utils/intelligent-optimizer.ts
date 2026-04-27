@@ -84,7 +84,7 @@ class IntelligentPerformanceOptimizer {
     portHarcourt: { fcp: 3.5, lcp: 5.0, fid: 200, cls: 0.15 },
     kano: { fcp: 4.0, lcp: 5.5, fid: 250, cls: 0.15 },
     ibadan: { fcp: 3.5, lcp: 5.0, fid: 200, cls: 0.15 },
-    default: { fcp: 4.5, lcp: 6.0, fid: 300, cls: 0.2 }
+    default: { fcp: 4.5, lcp: 6.0, fid: 300, cls: 0.2 },
   };
 
   // Network-specific optimization strategies
@@ -94,22 +94,22 @@ class IntelligentPerformanceOptimizer {
       compressionLevel: 0.6,
       lazyLoadThreshold: 200, // px
       prefetchDisabled: true,
-      minifyLevel: 'aggressive'
+      minifyLevel: 'aggressive',
     },
     '3g': {
       maxImageSize: 150, // KB
       compressionLevel: 0.75,
       lazyLoadThreshold: 400, // px
       prefetchDisabled: false,
-      minifyLevel: 'standard'
+      minifyLevel: 'standard',
     },
     '4g': {
       maxImageSize: 300, // KB
       compressionLevel: 0.85,
       lazyLoadThreshold: 600, // px
       prefetchDisabled: false,
-      minifyLevel: 'light'
-    }
+      minifyLevel: 'light',
+    },
   };
 
   async analyzePerformance(): Promise<AnalysisReport> {
@@ -125,7 +125,7 @@ class IntelligentPerformanceOptimizer {
       insights,
       recommendedActions: actions,
       nigerianMarketAnalysis: nigerianAnalysis,
-      businessImpact
+      businessImpact,
     };
 
     // Store for historical analysis
@@ -133,7 +133,7 @@ class IntelligentPerformanceOptimizer {
       timestamp: new Date(),
       metrics: currentMetrics,
       location: currentMetrics.location || 'unknown',
-      networkType: currentMetrics.networkType || 'unknown'
+      networkType: currentMetrics.networkType || 'unknown',
     });
 
     return report;
@@ -156,12 +156,13 @@ class IntelligentPerformanceOptimizer {
         nigerianSpecific: true,
         networkType: metrics.networkType,
         timeframe: 'Immediate (1-2 days)',
-        priority: 1
+        priority: 1,
       });
     }
 
     // Network-Specific Optimizations
-    if (metrics.networkType === '2g' && metrics.dataUsage > 2000000) { // 2MB
+    if (metrics.networkType === '2g' && metrics.dataUsage > 2000000) {
+      // 2MB
       insights.push({
         id: 'data-usage-2g',
         category: 'high',
@@ -174,7 +175,7 @@ class IntelligentPerformanceOptimizer {
         nigerianSpecific: true,
         networkType: '2g',
         timeframe: 'Short-term (1 week)',
-        priority: 2
+        priority: 2,
       });
     }
 
@@ -192,7 +193,7 @@ class IntelligentPerformanceOptimizer {
         nigerianSpecific: true,
         location: metrics.location,
         timeframe: 'Medium-term (2-3 weeks)',
-        priority: 3
+        priority: 3,
       });
     }
 
@@ -209,14 +210,16 @@ class IntelligentPerformanceOptimizer {
         estimatedImprovement: 40,
         nigerianSpecific: true,
         timeframe: 'Short-term (1 week)',
-        priority: 2
+        priority: 2,
       });
     }
 
     return insights.sort((a, b) => a.priority - b.priority);
   }
 
-  private async generateOptimizationActions(insights: PerformanceInsight[]): Promise<OptimizationAction[]> {
+  private async generateOptimizationActions(
+    insights: PerformanceInsight[]
+  ): Promise<OptimizationAction[]> {
     const actions: OptimizationAction[] = [];
 
     // Critical Resource Optimization
@@ -246,7 +249,7 @@ class IntelligentPerformanceOptimizer {
       testable: true,
       riskLevel: 'low',
       expectedImprovement: 30,
-      nigerianOptimized: true
+      nigerianOptimized: true,
     });
 
     // Nigerian CDN Deployment
@@ -271,7 +274,7 @@ class IntelligentPerformanceOptimizer {
       testable: true,
       riskLevel: 'medium',
       expectedImprovement: 45,
-      nigerianOptimized: true
+      nigerianOptimized: true,
     });
 
     // Network-Adaptive Loading
@@ -296,14 +299,14 @@ class IntelligentPerformanceOptimizer {
       testable: true,
       riskLevel: 'low',
       expectedImprovement: 35,
-      nigerianOptimized: true
+      nigerianOptimized: true,
     });
 
     // Payment Gateway Optimization
     actions.push({
       id: 'payment-optimization',
       name: 'Payment Gateway Optimization',
-      description: 'Optimize Paystack and Flutterwave integration for Nigerian users',
+      description: 'Optimize Flutterwave integration for Nigerian users',
       category: 'ux',
       implementation: async () => {
         try {
@@ -321,13 +324,15 @@ class IntelligentPerformanceOptimizer {
       testable: true,
       riskLevel: 'medium',
       expectedImprovement: 25,
-      nigerianOptimized: true
+      nigerianOptimized: true,
     });
 
     return actions.sort((a, b) => b.expectedImprovement - a.expectedImprovement);
   }
 
-  private async analyzeNigerianMarket(metrics: any): Promise<AnalysisReport['nigerianMarketAnalysis']> {
+  private async analyzeNigerianMarket(
+    metrics: any
+  ): Promise<AnalysisReport['nigerianMarketAnalysis']> {
     // Mock Nigerian market analysis based on real patterns
     return {
       topCities: [
@@ -335,60 +340,63 @@ class IntelligentPerformanceOptimizer {
           city: 'Lagos',
           users: 450,
           avgPerformance: 78,
-          issues: ['High traffic congestion affecting mobile networks', 'Peak hour performance degradation'],
-          recommendations: ['Deploy Lagos edge servers', 'Implement traffic-aware optimization']
+          issues: [
+            'High traffic congestion affecting mobile networks',
+            'Peak hour performance degradation',
+          ],
+          recommendations: ['Deploy Lagos edge servers', 'Implement traffic-aware optimization'],
         },
         {
           city: 'Abuja',
           users: 230,
           avgPerformance: 82,
           issues: ['Government network restrictions', 'Limited 4G coverage'],
-          recommendations: ['Optimize for 3G networks', 'Implement government compliance features']
+          recommendations: ['Optimize for 3G networks', 'Implement government compliance features'],
         },
         {
           city: 'Port Harcourt',
           users: 180,
           avgPerformance: 74,
           issues: ['Industrial network interference', 'Higher latency to CDN'],
-          recommendations: ['Deploy regional edge server', 'Optimize for industrial environments']
+          recommendations: ['Deploy regional edge server', 'Optimize for industrial environments'],
         },
         {
           city: 'Kano',
           users: 150,
           avgPerformance: 69,
           issues: ['Limited infrastructure', 'Higher 2G usage'],
-          recommendations: ['Ultra-light mode implementation', 'Offline-first features']
+          recommendations: ['Ultra-light mode implementation', 'Offline-first features'],
         },
         {
           city: 'Ibadan',
           users: 120,
           avgPerformance: 76,
           issues: ['University network congestion', 'Peak student usage'],
-          recommendations: ['Academic hour optimization', 'Student-friendly data plans']
-        }
+          recommendations: ['Academic hour optimization', 'Student-friendly data plans'],
+        },
       ],
       networkAnalysis: {
         '2g': {
           users: 180,
           avgLoadTime: 8.5,
-          issues: ['Extremely slow loading', 'High data costs', 'Frequent timeouts']
+          issues: ['Extremely slow loading', 'High data costs', 'Frequent timeouts'],
         },
         '3g': {
           users: 680,
           avgLoadTime: 4.2,
-          issues: ['Moderate loading times', 'Inconsistent speeds', 'Peak hour congestion']
+          issues: ['Moderate loading times', 'Inconsistent speeds', 'Peak hour congestion'],
         },
         '4g': {
           users: 270,
           avgLoadTime: 2.1,
-          issues: ['Limited coverage', 'Premium pricing', 'Battery drain']
-        }
+          issues: ['Limited coverage', 'Premium pricing', 'Battery drain'],
+        },
       },
       dataUsageAnalysis: {
         avgPerSession: 2.8, // MB
         costImpact: 'High - Average ₦15 per session for Nigerian users',
-        optimizationPotential: 45 // % reduction possible
-      }
+        optimizationPotential: 45, // % reduction possible
+      },
     };
   }
 
@@ -397,7 +405,7 @@ class IntelligentPerformanceOptimizer {
       conversionRate: metrics.conversionRate || 2.3,
       bounceRate: metrics.bounceRate || 45.6,
       userSatisfaction: metrics.userSatisfaction || 7.2,
-      revenueImpact: 'Potential ₦2.4M monthly increase with 30% performance improvement'
+      revenueImpact: 'Potential ₦2.4M monthly increase with 30% performance improvement',
     };
   }
 
@@ -406,8 +414,8 @@ class IntelligentPerformanceOptimizer {
     const weights = {
       performance: 0.35,
       dataUsage: 0.25,
-      networkAdaptability: 0.20,
-      userExperience: 0.20
+      networkAdaptability: 0.2,
+      userExperience: 0.2,
     };
 
     const performanceScore = Math.max(0, 100 - (metrics.fcp - 1000) / 50);
@@ -417,9 +425,9 @@ class IntelligentPerformanceOptimizer {
 
     return Math.round(
       performanceScore * weights.performance +
-      dataUsageScore * weights.dataUsage +
-      networkScore * weights.networkAdaptability +
-      uxScore * weights.userExperience
+        dataUsageScore * weights.dataUsage +
+        networkScore * weights.networkAdaptability +
+        uxScore * weights.userExperience
     );
   }
 
@@ -470,16 +478,16 @@ class IntelligentPerformanceOptimizer {
   }
 
   async executeOptimization(actionId: string): Promise<boolean> {
-    const action = (await this.generateOptimizationActions([])).find(a => a.id === actionId);
+    const action = (await this.generateOptimizationActions([])).find((a) => a.id === actionId);
     if (!action) return false;
 
     const result = await action.implementation();
-    
+
     this.optimizationHistory.push({
       action,
       timestamp: new Date(),
       result,
-      improvement: result ? action.expectedImprovement : 0
+      improvement: result ? action.expectedImprovement : 0,
     });
 
     return result;
@@ -504,20 +512,25 @@ class IntelligentPerformanceOptimizer {
     const actions = await this.generateOptimizationActions(insights);
 
     const timeframeFilters = {
-      immediate: (action: OptimizationAction) => action.riskLevel === 'low' && action.expectedImprovement > 20,
-      short: (action: OptimizationAction) => action.riskLevel !== 'high' && action.expectedImprovement > 15,
+      immediate: (action: OptimizationAction) =>
+        action.riskLevel === 'low' && action.expectedImprovement > 20,
+      short: (action: OptimizationAction) =>
+        action.riskLevel !== 'high' && action.expectedImprovement > 15,
       medium: (action: OptimizationAction) => action.expectedImprovement > 10,
-      long: () => true
+      long: () => true,
     };
 
     const filteredActions = actions.filter(timeframeFilters[timeframe]);
-    const totalImprovement = filteredActions.reduce((sum, action) => sum + action.expectedImprovement, 0);
+    const totalImprovement = filteredActions.reduce(
+      (sum, action) => sum + action.expectedImprovement,
+      0
+    );
 
     return {
       actions: filteredActions,
       estimatedImprovement: Math.min(totalImprovement, 100),
       timeline: this.getTimelineDescription(timeframe),
-      riskAssessment: this.assessRisk(filteredActions)
+      riskAssessment: this.assessRisk(filteredActions),
     };
   }
 
@@ -526,15 +539,15 @@ class IntelligentPerformanceOptimizer {
       immediate: '1-3 days',
       short: '1-2 weeks',
       medium: '2-4 weeks',
-      long: '1-3 months'
+      long: '1-3 months',
     };
     return timelines[timeframe as keyof typeof timelines] || 'Unknown';
   }
 
   private assessRisk(actions: OptimizationAction[]): string {
-    const riskLevels = actions.map(a => a.riskLevel);
-    const highRisk = riskLevels.filter(r => r === 'high').length;
-    const mediumRisk = riskLevels.filter(r => r === 'medium').length;
+    const riskLevels = actions.map((a) => a.riskLevel);
+    const highRisk = riskLevels.filter((r) => r === 'high').length;
+    const mediumRisk = riskLevels.filter((r) => r === 'medium').length;
 
     if (highRisk > 0) return 'High - Requires careful testing and rollback plans';
     if (mediumRisk > 2) return 'Medium - Moderate risk with good testing coverage';
@@ -588,6 +601,6 @@ export const useIntelligentOptimizer = () => {
     analyzePerformance,
     executeOptimization,
     generatePlan,
-    optimizationHistory: intelligentOptimizer.getOptimizationHistory()
+    optimizationHistory: intelligentOptimizer.getOptimizationHistory(),
   };
 };

@@ -1,5 +1,5 @@
-
 import React from 'react';
+import { ContextualGuide } from '@/components/ui/ContextualGuide';
 
 interface PageContentProps {
   title: string;
@@ -11,13 +11,14 @@ interface PageContentProps {
 export function PageContent({ title, description, children, actions }: PageContentProps) {
   return (
     <div className="space-y-6">
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+      <div className="page-header-shell flex flex-col items-start justify-between gap-4 md:flex-row md:items-center">
         <div>
-          <h1 className="text-3xl font-bold">{title}</h1>
+          <h1 className="premium-title text-3xl">{title}</h1>
           {description && <p className="text-muted-foreground">{description}</p>}
         </div>
-        {actions && <div className="flex-shrink-0 w-full md:w-auto">{actions}</div>}
+        {actions && <div className="w-full flex-shrink-0 md:w-auto">{actions}</div>}
       </div>
+      <ContextualGuide />
       {children}
     </div>
   );

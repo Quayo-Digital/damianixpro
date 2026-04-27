@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { Milestone } from '@/components/tenants/milestones/types';
 
@@ -36,5 +35,5 @@ export const checkAndSyncMilestones = async (): Promise<void> => {
   console.log('Checking and syncing milestones...');
   // In a real app, this would trigger a backend process, like a Supabase Edge Function.
   // For now, this is a placeholder to simulate the check.
-  await new Promise(resolve => setTimeout(resolve, 1000));
+  await new Promise((resolve) => setTimeout(resolve, 1000));
 };

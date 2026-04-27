@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { PageLayout } from '@/components/layout/PageLayout';
 import { PageContent } from '@/components/layout/PageContent';
@@ -7,8 +6,14 @@ import { Plus } from 'lucide-react';
 import { GenerateReportDialog } from '@/components/reports/GenerateReportDialog';
 import { FinancialSummaryReport } from '@/components/reports/FinancialSummaryReport';
 import { RentRollReport } from '@/components/reports/RentRollReport';
+import { OccupancyReport } from '@/components/reports/OccupancyReport';
+import { MaintenanceCostsReport } from '@/components/reports/MaintenanceCostsReport';
 import { DateRange } from 'react-day-picker';
-import { RentRoll } from '@/components/reports/types';
+import {
+  MaintenanceCostsReportData,
+  OccupancyReportData,
+  RentRoll,
+} from '@/components/reports/types';
 
 interface AccountingSummary {
   totalRevenue: number;
@@ -34,9 +39,9 @@ const Reports = () => {
   const renderReport = () => {
     if (!reportData || !reportType || !reportDateRange?.from || !reportDateRange?.to) {
       return (
-        <div className="border rounded-md p-8 text-center text-muted-foreground">
+        <div className="rounded-md border p-8 text-center text-muted-foreground">
           <p>Your generated reports will appear here.</p>
-          <p className="text-sm mt-2">Click "Generate Report" to get started.</p>
+          <p className="mt-2 text-sm">Click "Generate Report" to get started.</p>
         </div>
       );
     }
@@ -46,23 +51,24 @@ const Reports = () => {
     };
 
     switch (reportType) {
-      case 'financial_summary':
+      case 'financial_report':
         return (
-          <FinancialSummaryReport
-            summary={reportData as AccountingSummary}
-            {...reportProps}
-          />
+          <FinancialSummaryReport summary={reportData as AccountingSummary} {...reportProps} />
         );
       case 'rent_roll':
+        return <RentRollReport data={reportData as RentRoll} {...reportProps} />;
+      case 'occupancy_report':
+        return <OccupancyReport data={reportData as OccupancyReportData} {...reportProps} />;
+      case 'maintenance_costs':
         return (
-          <RentRollReport
-            data={reportData as RentRoll}
+          <MaintenanceCostsReport
+            data={reportData as MaintenanceCostsReportData}
             {...reportProps}
           />
         );
       default:
         return (
-          <div className="border rounded-md p-8 text-center text-muted-foreground">
+          <div className="rounded-md border p-8 text-center text-muted-foreground">
             <p>Report type "{reportType}" generated, but no view is available.</p>
           </div>
         );

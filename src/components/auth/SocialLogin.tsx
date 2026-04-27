@@ -1,6 +1,5 @@
-
 import React from 'react';
-import { Button } from "@/components/ui/button";
+import { Button } from '@/components/ui/button';
 
 interface SocialLoginProps {
   onGoogleSignIn: () => void;
@@ -12,9 +11,7 @@ export const SocialLoginDivider = () => (
       <span className="w-full border-t border-gray-300" />
     </div>
     <div className="relative flex justify-center text-xs uppercase">
-      <span className="bg-background px-2 text-muted-foreground">
-        Or continue with
-      </span>
+      <span className="bg-background px-2 text-muted-foreground">Or continue with</span>
     </div>
   </div>
 );
@@ -45,12 +42,7 @@ const SocialLogin: React.FC<SocialLoginProps> = ({ onGoogleSignIn }) => {
   return (
     <>
       <SocialLoginDivider />
-      <Button 
-        type="button" 
-        className="w-full" 
-        variant="outline"
-        onClick={onGoogleSignIn}
-      >
+      <Button type="button" className="w-full" variant="outline" onClick={onGoogleSignIn}>
         <GoogleIcon />
         Google
       </Button>

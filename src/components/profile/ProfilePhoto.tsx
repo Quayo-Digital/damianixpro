@@ -1,11 +1,10 @@
-
 import { useState, useRef, ChangeEvent, useEffect } from 'react';
 import { Camera, Trash2 } from 'lucide-react';
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button";
-import { useToast } from "@/components/ui/use-toast";
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Button } from '@/components/ui/button';
+import { useToast } from '@/components/ui/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuthSession } from '@/contexts/AuthContext';
 
 interface ProfilePhotoProps {
   name: string;
@@ -14,14 +13,14 @@ interface ProfilePhotoProps {
   setProfileImage: (url: string) => void;
 }
 
-export const ProfilePhoto = ({ 
-  name, 
-  previewImage, 
-  setPreviewImage, 
-  setProfileImage 
+export const ProfilePhoto = ({
+  name,
+  previewImage,
+  setPreviewImage,
+  setProfileImage,
 }: ProfilePhotoProps) => {
   const { toast } = useToast();
-  const { user } = useAuth();
+  const { user } = useAuthSession();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Get initials for avatar fallback
@@ -29,7 +28,7 @@ export const ProfilePhoto = ({
     if (name) {
       return name
         .split(' ')
-        .map(name => name[0])
+        .map((name) => name[0])
         .join('')
         .toUpperCase()
         .substring(0, 2);
@@ -40,13 +39,13 @@ export const ProfilePhoto = ({
   const handleFileChange = async (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    
+
     // Check file size (max 5MB)
     if (file.size > 5 * 1024 * 1024) {
       toast({
-        title: "File too large",
-        description: "Profile image must be less than 5MB.",
-        variant: "destructive",
+        title: 'File too large',
+        description: 'Profile image must be less than 5MB.',
+        variant: 'destructive',
       });
       return;
     }
@@ -54,10 +53,10 @@ export const ProfilePhoto = ({
     // Create a preview URL
     const imageUrl = URL.createObjectURL(file);
     setPreviewImage(imageUrl);
-    
+
     // Update profile state with the new image
     setProfileImage(imageUrl);
-    
+
     // If authenticated, save the avatar URL to the user's profile in Supabase
     if (user) {
       try {
@@ -65,13 +64,13 @@ export const ProfilePhoto = ({
           .from('profiles')
           .update({ avatar_url: imageUrl })
           .eq('id', user.id);
-        
+
         if (error) {
           console.error('Error updating profile image:', error);
           toast({
-            title: "Error saving image",
-            description: "There was a problem saving your profile photo.",
-            variant: "destructive",
+            title: 'Error saving image',
+            description: 'There was a problem saving your profile photo.',
+            variant: 'destructive',
           });
           return;
         }
@@ -79,31 +78,31 @@ export const ProfilePhoto = ({
         console.error('Unexpected error updating profile:', error);
       }
     }
-    
+
     toast({
-      title: "Image uploaded",
-      description: "Your profile photo has been updated.",
+      title: 'Image uploaded',
+      description: 'Your profile photo has been updated.',
     });
   };
 
   const triggerFileInput = () => {
     fileInputRef.current?.click();
   };
-  
+
   const handleDeletePhoto = async () => {
     // Release the object URL to avoid memory leaks
     if (previewImage) {
       URL.revokeObjectURL(previewImage);
     }
-    
+
     // Reset the preview image and profile image
     setPreviewImage(null);
-    
+
     // Reset the file input to allow re-uploading the same file
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
-    
+
     // If authenticated, remove the avatar URL from the user's profile in Supabase
     if (user) {
       try {
@@ -111,13 +110,13 @@ export const ProfilePhoto = ({
           .from('profiles')
           .update({ avatar_url: null })
           .eq('id', user.id);
-        
+
         if (error) {
           console.error('Error removing profile image:', error);
           toast({
-            title: "Error removing image",
-            description: "There was a problem removing your profile photo.",
-            variant: "destructive",
+            title: 'Error removing image',
+            description: 'There was a problem removing your profile photo.',
+            variant: 'destructive',
           });
           return;
         }
@@ -125,10 +124,10 @@ export const ProfilePhoto = ({
         console.error('Unexpected error updating profile:', error);
       }
     }
-    
+
     toast({
-      title: "Photo removed",
-      description: "Your profile photo has been removed.",
+      title: 'Photo removed',
+      description: 'Your profile photo has been removed.',
     });
   };
 
@@ -142,12 +141,12 @@ export const ProfilePhoto = ({
             .select('avatar_url')
             .eq('id', user.id)
             .single();
-          
+
           if (error) {
             console.error('Error fetching profile image:', error);
             return;
           }
-          
+
           if (data?.avatar_url) {
             setPreviewImage(data.avatar_url);
             setProfileImage(data.avatar_url);
@@ -157,23 +156,25 @@ export const ProfilePhoto = ({
         }
       }
     };
-    
+
     fetchProfileImage();
   }, [user, previewImage, setPreviewImage, setProfileImage]);
 
   return (
-    <div className="flex flex-col items-center md:flex-row md:items-start md:space-x-6 mb-6">
+    <div className="mb-6 flex flex-col items-center md:flex-row md:items-start md:space-x-6">
       <Avatar className="h-24 w-24">
         {previewImage ? (
           <AvatarImage src={previewImage} alt="Profile" />
         ) : (
-          <AvatarFallback className="text-2xl bg-brand-light text-brand-primary">{getInitials()}</AvatarFallback>
+          <AvatarFallback className="bg-brand-light text-2xl text-brand-primary">
+            {getInitials()}
+          </AvatarFallback>
         )}
       </Avatar>
-      <div className="mt-4 md:mt-0 flex flex-col gap-2">
-        <Button 
-          variant="outline" 
-          size="sm" 
+      <div className="mt-4 flex flex-col gap-2 md:mt-0">
+        <Button
+          variant="outline"
+          size="sm"
           onClick={triggerFileInput}
           className="flex items-center gap-2"
         >
@@ -188,11 +189,11 @@ export const ProfilePhoto = ({
           onChange={handleFileChange}
         />
         {previewImage && (
-          <Button 
-            variant="outline" 
-            size="sm" 
+          <Button
+            variant="outline"
+            size="sm"
             onClick={handleDeletePhoto}
-            className="flex items-center gap-2 text-destructive hover:text-destructive/90 hover:bg-destructive/10"
+            className="flex items-center gap-2 text-destructive hover:bg-destructive/10 hover:text-destructive/90"
           >
             <Trash2 size={16} />
             Delete Photo

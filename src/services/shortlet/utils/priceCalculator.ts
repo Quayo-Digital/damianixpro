@@ -22,7 +22,7 @@ export function calculatePriceBreakdown(input: PriceCalculationInput): PriceBrea
     checkin_date,
     checkout_date,
     guests_count,
-    service_fee_percent = 10 // Default 10% platform commission
+    service_fee_percent = 10, // Default 10% platform commission
   } = input;
 
   // Calculate number of nights
@@ -52,7 +52,7 @@ export function calculatePriceBreakdown(input: PriceCalculationInput): PriceBrea
     security_deposit,
     service_fee,
     total,
-    currency: 'NGN'
+    currency: 'NGN',
   };
 }
 
@@ -71,7 +71,9 @@ export function calculateRefundAmount(
 
   const checkin = new Date(checkin_date);
   const cancellation = new Date(cancellation_date);
-  const days_before = Math.ceil((checkin.getTime() - cancellation.getTime()) / (1000 * 60 * 60 * 24));
+  const days_before = Math.ceil(
+    (checkin.getTime() - cancellation.getTime()) / (1000 * 60 * 60 * 24)
+  );
 
   // Full refund
   if (days_before >= cancellation_policy.full_refund_before_days) {
@@ -103,4 +105,3 @@ export function calculatePayoutAmount(
   const commission = total_amount * (commission_percent / 100);
   return total_amount - commission;
 }
-

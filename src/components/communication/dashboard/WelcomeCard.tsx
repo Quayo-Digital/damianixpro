@@ -1,4 +1,3 @@
-
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { format } from 'date-fns';
@@ -27,7 +26,7 @@ export function WelcomeCard({
     if (!dateString || dateString === 'N/A' || dateString === 'Loading...') {
       return 'N/A';
     }
-    
+
     try {
       const date = new Date(dateString);
       if (isNaN(date.getTime())) {
@@ -46,22 +45,22 @@ export function WelcomeCard({
         <CardDescription>{property}</CardDescription>
       </CardHeader>
       <CardContent>
-        <div className="flex flex-col md:flex-row gap-4 md:items-center md:justify-between">
+        <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <div>
-            <p className="text-sm text-muted-foreground mb-1">Lease Period</p>
+            <p className="mb-1 text-sm text-muted-foreground">Lease Period</p>
             <p className="font-medium">
               {formatDate(leaseStart)} - {formatDate(leaseEnd)}
             </p>
           </div>
-          
-          <div className="bg-secondary/50 px-4 py-3 rounded-lg">
-            <p className="text-sm text-muted-foreground mb-1">Next Payment Due</p>
+
+          <div className="rounded-lg bg-secondary/50 px-4 py-3">
+            <p className="mb-1 text-sm text-muted-foreground">Next Payment Due</p>
             <div className="flex items-baseline gap-2">
               <p className="font-medium">{formatDate(nextPayment)}</p>
               <p className="font-bold">₦{paymentAmount?.toLocaleString() || '0'}</p>
             </div>
           </div>
-          
+
           <Button onClick={onMakePayment}>Make Payment</Button>
         </div>
       </CardContent>

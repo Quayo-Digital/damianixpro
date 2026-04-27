@@ -1,12 +1,4 @@
-
-import {
-  Cell,
-  Pie,
-  PieChart,
-  ResponsiveContainer,
-  Tooltip,
-  Legend,
-} from 'recharts';
+import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip, Legend } from 'recharts';
 
 interface PieChartProps {
   data: { name: string; value: number }[];
@@ -15,14 +7,7 @@ interface PieChartProps {
 export const PieChartComponent = ({ data }: PieChartProps) => {
   const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042'];
 
-  const renderCustomizedLabel = ({
-    cx,
-    cy,
-    midAngle,
-    innerRadius,
-    outerRadius,
-    percent,
-  }: any) => {
+  const renderCustomizedLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent }: any) => {
     const RADIAN = Math.PI / 180;
     const radius = innerRadius + (outerRadius - innerRadius) * 0.5;
     const x = cx + radius * Math.cos(-midAngle * RADIAN);
@@ -43,11 +28,11 @@ export const PieChartComponent = ({ data }: PieChartProps) => {
   };
 
   // Only render with valid data
-  const validData = data.filter(item => item.value > 0);
+  const validData = data.filter((item) => item.value > 0);
 
   if (validData.length === 0) {
     return (
-      <div className="flex items-center justify-center h-full">
+      <div className="flex h-full items-center justify-center">
         <p className="text-muted-foreground">No data available</p>
       </div>
     );
@@ -73,8 +58,19 @@ export const PieChartComponent = ({ data }: PieChartProps) => {
         <Tooltip
           formatter={(value: number) => [`₦${value.toLocaleString()}`, undefined]}
           labelStyle={{ fontWeight: 'bold' }}
+          contentStyle={{
+            borderRadius: '12px',
+            border: '1px solid rgba(255,255,255,0.6)',
+            background: 'rgba(255,255,255,0.88)',
+            backdropFilter: 'blur(10px)',
+            boxShadow: '0 16px 36px rgba(16,24,40,0.16)',
+          }}
         />
-        <Legend />
+        <Legend
+          wrapperStyle={{ fontSize: '12px', fontWeight: 600 }}
+          iconType="circle"
+          iconSize={8}
+        />
       </PieChart>
     </ResponsiveContainer>
   );

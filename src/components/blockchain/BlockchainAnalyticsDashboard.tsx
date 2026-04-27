@@ -10,7 +10,13 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { Progress } from '@/components/ui/progress';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import {
@@ -28,7 +34,7 @@ import {
   RefreshCw,
   Eye,
   Sparkles,
-  Info
+  Info,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -38,10 +44,10 @@ interface BlockchainAnalyticsDashboardProps {
   userId?: string;
 }
 
-export function BlockchainAnalyticsDashboard({ 
-  className, 
+export function BlockchainAnalyticsDashboard({
+  className,
   compact = false,
-  userId 
+  userId,
 }: BlockchainAnalyticsDashboardProps) {
   const { walletAddress, isConnected } = useBlockchain();
   const {
@@ -67,12 +73,12 @@ export function BlockchainAnalyticsDashboard({
     updateTimeframe,
     updateNetwork,
     refreshAll,
-    aiAnalysis
+    aiAnalysis,
   } = useBlockchainAnalytics({
     userId,
     walletAddress: walletAddress || undefined,
     enableRealTime: true,
-    autoRefresh: true
+    autoRefresh: true,
   });
 
   const [activeTab, setActiveTab] = useState('overview');
@@ -83,7 +89,7 @@ export function BlockchainAnalyticsDashboard({
       style: 'currency',
       currency: 'USD',
       minimumFractionDigits: 0,
-      maximumFractionDigits: 0
+      maximumFractionDigits: 0,
     }).format(value);
   };
 
@@ -97,21 +103,23 @@ export function BlockchainAnalyticsDashboard({
     const isPositive = value >= 0;
     return {
       icon: isPositive ? TrendingUp : TrendingDown,
-      color: isPositive ? 'text-green-600' : 'text-red-600'
+      color: isPositive ? 'text-green-600' : 'text-red-600',
     };
   };
 
   // Memoized calculations
-  const topInsights = useMemo(() => 
-    insights
-      .filter(insight => insight.confidence > 70)
-      .sort((a, b) => b.confidence - a.confidence)
-      .slice(0, 3)
-  , [insights]);
+  const topInsights = useMemo(
+    () =>
+      insights
+        .filter((insight) => insight.confidence > 70)
+        .sort((a, b) => b.confidence - a.confidence)
+        .slice(0, 3),
+    [insights]
+  );
 
   if (!canUseAnalytics) {
     return (
-      <FeatureGate 
+      <FeatureGate
         feature="blockchain_analytics"
         fallback={
           <Card className={className}>
@@ -128,7 +136,8 @@ export function BlockchainAnalyticsDashboard({
               <Alert>
                 <Sparkles className="h-4 w-4" />
                 <AlertDescription>
-                  Upgrade to access real-time blockchain analytics, AI-powered insights, and investment recommendations.
+                  Upgrade to access real-time blockchain analytics, AI-powered insights, and
+                  investment recommendations.
                 </AlertDescription>
               </Alert>
             </CardContent>
@@ -140,27 +149,22 @@ export function BlockchainAnalyticsDashboard({
 
   if (compact) {
     return (
-      <Card className={cn("border-purple-200", className)}>
+      <Card className={cn('border-purple-200', className)}>
         <CardHeader className="pb-3">
           <div className="flex items-center justify-between">
-            <CardTitle className="text-lg flex items-center space-x-2">
+            <CardTitle className="flex items-center space-x-2 text-lg">
               <Brain className="h-5 w-5 text-purple-600" />
               <span>AI Analytics</span>
             </CardTitle>
             <div className="flex items-center space-x-2">
               {analyticsConnected && (
-                <Badge variant="outline" className="text-green-600 border-green-200">
-                  <Activity className="h-3 w-3 mr-1" />
+                <Badge variant="outline" className="border-green-200 text-green-600">
+                  <Activity className="mr-1 h-3 w-3" />
                   Live
                 </Badge>
               )}
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={refreshAll}
-                disabled={isLoading}
-              >
-                <RefreshCw className={cn("h-4 w-4", isLoading && "animate-spin")} />
+              <Button variant="ghost" size="sm" onClick={refreshAll} disabled={isLoading}>
+                <RefreshCw className={cn('h-4 w-4', isLoading && 'animate-spin')} />
               </Button>
             </div>
           </div>
@@ -170,16 +174,17 @@ export function BlockchainAnalyticsDashboard({
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1">
               <p className="text-sm text-muted-foreground">Portfolio Value</p>
-              <p className="text-lg font-semibold">
-                {formatCurrency(analyticsSummary.totalValue)}
-              </p>
-              <p className={cn(
-                "text-sm flex items-center",
-                getTrendInfo(analyticsSummary.totalChangePercentage).color
-              )}>
-                {getTrendInfo(analyticsSummary.totalChangePercentage).icon && (
-                  React.createElement(getTrendInfo(analyticsSummary.totalChangePercentage).icon, { className: "h-3 w-3 mr-1" })
+              <p className="text-lg font-semibold">{formatCurrency(analyticsSummary.totalValue)}</p>
+              <p
+                className={cn(
+                  'flex items-center text-sm',
+                  getTrendInfo(analyticsSummary.totalChangePercentage).color
                 )}
+              >
+                {getTrendInfo(analyticsSummary.totalChangePercentage).icon &&
+                  React.createElement(getTrendInfo(analyticsSummary.totalChangePercentage).icon, {
+                    className: 'h-3 w-3 mr-1',
+                  })}
                 {formatPercentage(analyticsSummary.totalChangePercentage)}
               </p>
             </div>
@@ -194,13 +199,13 @@ export function BlockchainAnalyticsDashboard({
 
           {/* Top Insight */}
           {topInsights[0] && (
-            <div className="p-3 bg-blue-50 rounded-lg border border-blue-200">
+            <div className="rounded-lg border border-blue-200 bg-blue-50 p-3">
               <div className="flex items-start space-x-2">
-                <Brain className="h-4 w-4 text-blue-600 mt-0.5" />
-                <div className="flex-1 min-w-0">
+                <Brain className="mt-0.5 h-4 w-4 text-blue-600" />
+                <div className="min-w-0 flex-1">
                   <p className="text-sm font-medium text-blue-900">{topInsights[0].title}</p>
-                  <p className="text-xs text-blue-700 mt-1">{topInsights[0].description}</p>
-                  <div className="flex items-center space-x-2 mt-2">
+                  <p className="mt-1 text-xs text-blue-700">{topInsights[0].description}</p>
+                  <div className="mt-2 flex items-center space-x-2">
                     <Badge variant="secondary" className="text-xs">
                       {topInsights[0].confidence}% confidence
                     </Badge>
@@ -222,7 +227,7 @@ export function BlockchainAnalyticsDashboard({
               disabled={!canUseAIInsights || aiAnalysis.isPending}
               className="flex-1"
             >
-              <Brain className="h-3 w-3 mr-1" />
+              <Brain className="mr-1 h-3 w-3" />
               AI Analysis
             </Button>
             <Button
@@ -231,7 +236,7 @@ export function BlockchainAnalyticsDashboard({
               onClick={() => setActiveTab('overview')}
               className="flex-1"
             >
-              <Eye className="h-3 w-3 mr-1" />
+              <Eye className="mr-1 h-3 w-3" />
               View Full
             </Button>
           </div>
@@ -241,11 +246,11 @@ export function BlockchainAnalyticsDashboard({
   }
 
   return (
-    <div className={cn("space-y-6", className)}>
+    <div className={cn('space-y-6', className)}>
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold flex items-center space-x-2">
+          <h2 className="flex items-center space-x-2 text-2xl font-bold">
             <Brain className="h-6 w-6 text-purple-600" />
             <span>Blockchain Analytics</span>
           </h2>
@@ -279,12 +284,8 @@ export function BlockchainAnalyticsDashboard({
               <SelectItem value="optimism">Optimism</SelectItem>
             </SelectContent>
           </Select>
-          <Button
-            variant="outline"
-            onClick={refreshAll}
-            disabled={isLoading}
-          >
-            <RefreshCw className={cn("h-4 w-4 mr-2", isLoading && "animate-spin")} />
+          <Button variant="outline" onClick={refreshAll} disabled={isLoading}>
+            <RefreshCw className={cn('mr-2 h-4 w-4', isLoading && 'animate-spin')} />
             Refresh
           </Button>
         </div>
@@ -293,26 +294,23 @@ export function BlockchainAnalyticsDashboard({
       {/* Status Indicators */}
       <div className="flex items-center space-x-4">
         <div className="flex items-center space-x-2">
-          <div className={cn(
-            "w-2 h-2 rounded-full",
-            isConnected ? "bg-green-500" : "bg-red-500"
-          )} />
-          <span className="text-sm">
-            Wallet {isConnected ? 'Connected' : 'Disconnected'}
-          </span>
+          <div
+            className={cn('h-2 w-2 rounded-full', isConnected ? 'bg-green-500' : 'bg-red-500')}
+          />
+          <span className="text-sm">Wallet {isConnected ? 'Connected' : 'Disconnected'}</span>
         </div>
         <div className="flex items-center space-x-2">
-          <div className={cn(
-            "w-2 h-2 rounded-full",
-            analyticsConnected ? "bg-green-500" : "bg-yellow-500"
-          )} />
-          <span className="text-sm">
-            Analytics {analyticsConnected ? 'Live' : 'Offline'}
-          </span>
+          <div
+            className={cn(
+              'h-2 w-2 rounded-full',
+              analyticsConnected ? 'bg-green-500' : 'bg-yellow-500'
+            )}
+          />
+          <span className="text-sm">Analytics {analyticsConnected ? 'Live' : 'Offline'}</span>
         </div>
         {canUseRealTime && (
-          <Badge variant="outline" className="text-green-600 border-green-200">
-            <Zap className="h-3 w-3 mr-1" />
+          <Badge variant="outline" className="border-green-200 text-green-600">
+            <Zap className="mr-1 h-3 w-3" />
             Real-time Updates
           </Badge>
         )}
@@ -341,7 +339,7 @@ export function BlockchainAnalyticsDashboard({
         {/* Overview Tab */}
         <TabsContent value="overview" className="space-y-6">
           {/* Key Metrics */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
             <Card>
               <CardContent className="p-4">
                 <div className="flex items-center justify-between">
@@ -350,13 +348,17 @@ export function BlockchainAnalyticsDashboard({
                     <p className="text-2xl font-bold">
                       {formatCurrency(analyticsSummary.totalValue)}
                     </p>
-                    <p className={cn(
-                      "text-sm flex items-center mt-1",
-                      getTrendInfo(analyticsSummary.totalChangePercentage).color
-                    )}>
-                      {getTrendInfo(analyticsSummary.totalChangePercentage).icon && (
-                        React.createElement(getTrendInfo(analyticsSummary.totalChangePercentage).icon, { className: "h-3 w-3 mr-1" })
+                    <p
+                      className={cn(
+                        'mt-1 flex items-center text-sm',
+                        getTrendInfo(analyticsSummary.totalChangePercentage).color
                       )}
+                    >
+                      {getTrendInfo(analyticsSummary.totalChangePercentage).icon &&
+                        React.createElement(
+                          getTrendInfo(analyticsSummary.totalChangePercentage).icon,
+                          { className: 'h-3 w-3 mr-1' }
+                        )}
                       {formatPercentage(analyticsSummary.totalChangePercentage)}
                     </p>
                   </div>
@@ -373,9 +375,7 @@ export function BlockchainAnalyticsDashboard({
                     <p className="text-2xl font-bold">
                       {formatCurrency(analyticsSummary.marketCap)}
                     </p>
-                    <p className="text-sm text-muted-foreground mt-1">
-                      Total market value
-                    </p>
+                    <p className="mt-1 text-sm text-muted-foreground">Total market value</p>
                   </div>
                   <Globe className="h-8 w-8 text-muted-foreground" />
                 </div>
@@ -390,9 +390,7 @@ export function BlockchainAnalyticsDashboard({
                     <p className="text-2xl font-bold">
                       {formatCurrency(analyticsSummary.volume24h)}
                     </p>
-                    <p className="text-sm text-muted-foreground mt-1">
-                      Trading activity
-                    </p>
+                    <p className="mt-1 text-sm text-muted-foreground">Trading activity</p>
                   </div>
                   <BarChart3 className="h-8 w-8 text-muted-foreground" />
                 </div>
@@ -404,10 +402,8 @@ export function BlockchainAnalyticsDashboard({
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm text-muted-foreground">Sentiment</p>
-                    <p className="text-2xl font-bold capitalize">
-                      {analyticsSummary.sentiment}
-                    </p>
-                    <div className="flex items-center space-x-2 mt-1">
+                    <p className="text-2xl font-bold capitalize">{analyticsSummary.sentiment}</p>
+                    <div className="mt-1 flex items-center space-x-2">
                       <Progress value={analyticsSummary.sentimentScore} className="flex-1" />
                       <span className="text-sm">{analyticsSummary.sentimentScore}/100</span>
                     </div>
@@ -424,7 +420,7 @@ export function BlockchainAnalyticsDashboard({
               <CardTitle>Performance Overview</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
                     <span className="text-sm font-medium">Performance Score</span>
@@ -441,10 +437,7 @@ export function BlockchainAnalyticsDashboard({
                       {analyticsSummary.riskScore}/100
                     </span>
                   </div>
-                  <Progress 
-                    value={analyticsSummary.riskScore} 
-                    className="[&>div]:bg-yellow-500"
-                  />
+                  <Progress value={analyticsSummary.riskScore} className="[&>div]:bg-yellow-500" />
                 </div>
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
@@ -453,7 +446,7 @@ export function BlockchainAnalyticsDashboard({
                       {analyticsSummary.diversificationScore}/100
                     </span>
                   </div>
-                  <Progress 
+                  <Progress
                     value={analyticsSummary.diversificationScore}
                     className="[&>div]:bg-blue-500"
                   />
@@ -472,7 +465,7 @@ export function BlockchainAnalyticsDashboard({
                 onClick={generateMarketAnalysis}
                 disabled={!canUseAIInsights || aiAnalysis.isPending}
               >
-                <Brain className="h-4 w-4 mr-2" />
+                <Brain className="mr-2 h-4 w-4" />
                 Generate Analysis
               </Button>
               <Button
@@ -480,7 +473,7 @@ export function BlockchainAnalyticsDashboard({
                 onClick={optimizePortfolio}
                 disabled={!canUseAIInsights || !walletAddress || aiAnalysis.isPending}
               >
-                <Target className="h-4 w-4 mr-2" />
+                <Target className="mr-2 h-4 w-4" />
                 Optimize Portfolio
               </Button>
             </div>
@@ -491,14 +484,16 @@ export function BlockchainAnalyticsDashboard({
               <Card key={insight.id}>
                 <CardContent className="p-4">
                   <div className="flex items-start space-x-3">
-                    <div className={cn(
-                      "p-2 rounded-full",
-                      insight.type === 'bullish' && "bg-green-100 text-green-600",
-                      insight.type === 'bearish' && "bg-red-100 text-red-600",
-                      insight.type === 'opportunity' && "bg-blue-100 text-blue-600",
-                      insight.type === 'warning' && "bg-yellow-100 text-yellow-600",
-                      insight.type === 'neutral' && "bg-gray-100 text-gray-600"
-                    )}>
+                    <div
+                      className={cn(
+                        'rounded-full p-2',
+                        insight.type === 'bullish' && 'bg-green-100 text-green-600',
+                        insight.type === 'bearish' && 'bg-red-100 text-red-600',
+                        insight.type === 'opportunity' && 'bg-blue-100 text-blue-600',
+                        insight.type === 'warning' && 'bg-yellow-100 text-yellow-600',
+                        insight.type === 'neutral' && 'bg-gray-100 text-gray-600'
+                      )}
+                    >
                       {insight.type === 'bullish' && <TrendingUp className="h-4 w-4" />}
                       {insight.type === 'bearish' && <TrendingDown className="h-4 w-4" />}
                       {insight.type === 'opportunity' && <Target className="h-4 w-4" />}
@@ -506,29 +501,30 @@ export function BlockchainAnalyticsDashboard({
                       {insight.type === 'neutral' && <Brain className="h-4 w-4" />}
                     </div>
                     <div className="flex-1">
-                      <div className="flex items-center justify-between mb-2">
+                      <div className="mb-2 flex items-center justify-between">
                         <h4 className="font-semibold">{insight.title}</h4>
                         <div className="flex items-center space-x-2">
-                          <Badge variant="outline">
-                            {insight.confidence}% confidence
-                          </Badge>
-                          <Badge variant={
-                            insight.impact === 'high' ? 'destructive' :
-                            insight.impact === 'medium' ? 'default' : 'secondary'
-                          }>
+                          <Badge variant="outline">{insight.confidence}% confidence</Badge>
+                          <Badge
+                            variant={
+                              insight.impact === 'high'
+                                ? 'destructive'
+                                : insight.impact === 'medium'
+                                  ? 'default'
+                                  : 'secondary'
+                            }
+                          >
                             {insight.impact} impact
                           </Badge>
                           {insight.aiGenerated && (
-                            <Badge variant="outline" className="text-purple-600 border-purple-200">
-                              <Sparkles className="h-3 w-3 mr-1" />
+                            <Badge variant="outline" className="border-purple-200 text-purple-600">
+                              <Sparkles className="mr-1 h-3 w-3" />
                               AI
                             </Badge>
                           )}
                         </div>
                       </div>
-                      <p className="text-sm text-muted-foreground">
-                        {insight.description}
-                      </p>
+                      <p className="text-sm text-muted-foreground">{insight.description}</p>
                     </div>
                   </div>
                 </CardContent>
@@ -538,16 +534,16 @@ export function BlockchainAnalyticsDashboard({
             {insights.length === 0 && (
               <Card>
                 <CardContent className="p-8 text-center">
-                  <Brain className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                  <h3 className="text-lg font-semibold mb-2">No Insights Available</h3>
-                  <p className="text-muted-foreground mb-4">
+                  <Brain className="mx-auto mb-4 h-12 w-12 text-muted-foreground" />
+                  <h3 className="mb-2 text-lg font-semibold">No Insights Available</h3>
+                  <p className="mb-4 text-muted-foreground">
                     Generate AI-powered insights to get personalized investment recommendations.
                   </p>
                   <Button
                     onClick={generateMarketAnalysis}
                     disabled={!canUseAIInsights || aiAnalysis.isPending}
                   >
-                    <Brain className="h-4 w-4 mr-2" />
+                    <Brain className="mr-2 h-4 w-4" />
                     Generate Insights
                   </Button>
                 </CardContent>
@@ -564,7 +560,7 @@ export function BlockchainAnalyticsDashboard({
               onClick={detectOpportunities}
               disabled={!canUseAIInsights || aiAnalysis.isPending}
             >
-              <Target className="h-4 w-4 mr-2" />
+              <Target className="mr-2 h-4 w-4" />
               Detect Opportunities
             </Button>
           </div>
@@ -573,10 +569,10 @@ export function BlockchainAnalyticsDashboard({
             {opportunities.map((opportunity) => (
               <Card key={opportunity.id}>
                 <CardContent className="p-4">
-                  <div className="flex items-start justify-between mb-3">
+                  <div className="mb-3 flex items-start justify-between">
                     <div>
                       <h4 className="font-semibold">{opportunity.title}</h4>
-                      <p className="text-sm text-muted-foreground mt-1">
+                      <p className="mt-1 text-sm text-muted-foreground">
                         {opportunity.description}
                       </p>
                     </div>
@@ -584,25 +580,24 @@ export function BlockchainAnalyticsDashboard({
                       <div className="text-lg font-bold text-green-600">
                         +{opportunity.potentialReturn.toFixed(1)}%
                       </div>
-                      <div className="text-xs text-muted-foreground">
-                        Potential Return
-                      </div>
+                      <div className="text-xs text-muted-foreground">Potential Return</div>
                     </div>
                   </div>
 
-                  <div className="flex items-center space-x-4 mb-3">
-                    <Badge variant={
-                      opportunity.riskLevel === 'low' ? 'secondary' :
-                      opportunity.riskLevel === 'medium' ? 'default' : 'destructive'
-                    }>
+                  <div className="mb-3 flex items-center space-x-4">
+                    <Badge
+                      variant={
+                        opportunity.riskLevel === 'low'
+                          ? 'secondary'
+                          : opportunity.riskLevel === 'medium'
+                            ? 'default'
+                            : 'destructive'
+                      }
+                    >
                       {opportunity.riskLevel} risk
                     </Badge>
-                    <Badge variant="outline">
-                      {opportunity.confidence}% confidence
-                    </Badge>
-                    <Badge variant="outline">
-                      {opportunity.timeframe}
-                    </Badge>
+                    <Badge variant="outline">{opportunity.confidence}% confidence</Badge>
+                    <Badge variant="outline">{opportunity.timeframe}</Badge>
                     <Badge variant="outline" className="capitalize">
                       {opportunity.opportunityType}
                     </Badge>
@@ -611,7 +606,9 @@ export function BlockchainAnalyticsDashboard({
                   <div className="grid grid-cols-2 gap-4">
                     <div>
                       <div className="text-sm font-medium">Required Investment</div>
-                      <div className="text-lg">{formatCurrency(opportunity.requiredInvestment)}</div>
+                      <div className="text-lg">
+                        {formatCurrency(opportunity.requiredInvestment)}
+                      </div>
                     </div>
                     <div>
                       <div className="text-sm font-medium">Timeframe</div>
@@ -625,16 +622,16 @@ export function BlockchainAnalyticsDashboard({
             {opportunities.length === 0 && (
               <Card>
                 <CardContent className="p-8 text-center">
-                  <Target className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                  <h3 className="text-lg font-semibold mb-2">No Opportunities Found</h3>
-                  <p className="text-muted-foreground mb-4">
+                  <Target className="mx-auto mb-4 h-12 w-12 text-muted-foreground" />
+                  <h3 className="mb-2 text-lg font-semibold">No Opportunities Found</h3>
+                  <p className="mb-4 text-muted-foreground">
                     Use AI to detect investment opportunities based on market analysis.
                   </p>
                   <Button
                     onClick={detectOpportunities}
                     disabled={!canUseAIInsights || aiAnalysis.isPending}
                   >
-                    <Target className="h-4 w-4 mr-2" />
+                    <Target className="mr-2 h-4 w-4" />
                     Detect Opportunities
                   </Button>
                 </CardContent>
@@ -647,11 +644,8 @@ export function BlockchainAnalyticsDashboard({
         <TabsContent value="risks" className="space-y-6">
           <div className="flex items-center justify-between">
             <h3 className="text-lg font-semibold">Risk Analysis</h3>
-            <Button
-              onClick={assessRisks}
-              disabled={!canUseAIInsights || aiAnalysis.isPending}
-            >
-              <Shield className="h-4 w-4 mr-2" />
+            <Button onClick={assessRisks} disabled={!canUseAIInsights || aiAnalysis.isPending}>
+              <Shield className="mr-2 h-4 w-4" />
               Assess Risks
             </Button>
           </div>
@@ -661,38 +655,42 @@ export function BlockchainAnalyticsDashboard({
               <Card key={risk.id}>
                 <CardContent className="p-4">
                   <div className="flex items-start space-x-3">
-                    <div className={cn(
-                      "p-2 rounded-full",
-                      risk.severity === 'low' && "bg-green-100 text-green-600",
-                      risk.severity === 'medium' && "bg-yellow-100 text-yellow-600",
-                      risk.severity === 'high' && "bg-orange-100 text-orange-600",
-                      risk.severity === 'critical' && "bg-red-100 text-red-600"
-                    )}>
+                    <div
+                      className={cn(
+                        'rounded-full p-2',
+                        risk.severity === 'low' && 'bg-green-100 text-green-600',
+                        risk.severity === 'medium' && 'bg-yellow-100 text-yellow-600',
+                        risk.severity === 'high' && 'bg-orange-100 text-orange-600',
+                        risk.severity === 'critical' && 'bg-red-100 text-red-600'
+                      )}
+                    >
                       <AlertTriangle className="h-4 w-4" />
                     </div>
                     <div className="flex-1">
-                      <div className="flex items-center justify-between mb-2">
+                      <div className="mb-2 flex items-center justify-between">
                         <h4 className="font-semibold">{risk.title}</h4>
                         <div className="flex items-center space-x-2">
-                          <Badge variant={
-                            risk.severity === 'critical' ? 'destructive' :
-                            risk.severity === 'high' ? 'destructive' :
-                            risk.severity === 'medium' ? 'default' : 'secondary'
-                          }>
+                          <Badge
+                            variant={
+                              risk.severity === 'critical'
+                                ? 'destructive'
+                                : risk.severity === 'high'
+                                  ? 'destructive'
+                                  : risk.severity === 'medium'
+                                    ? 'default'
+                                    : 'secondary'
+                            }
+                          >
                             {risk.severity} severity
                           </Badge>
-                          <Badge variant="outline">
-                            {risk.probability}% probability
-                          </Badge>
+                          <Badge variant="outline">{risk.probability}% probability</Badge>
                         </div>
                       </div>
-                      <p className="text-sm text-muted-foreground mb-3">
-                        {risk.description}
-                      </p>
+                      <p className="mb-3 text-sm text-muted-foreground">{risk.description}</p>
                       {risk.mitigation.length > 0 && (
                         <div>
-                          <div className="text-sm font-medium mb-2">Mitigation Strategies:</div>
-                          <ul className="text-sm text-muted-foreground space-y-1">
+                          <div className="mb-2 text-sm font-medium">Mitigation Strategies:</div>
+                          <ul className="space-y-1 text-sm text-muted-foreground">
                             {risk.mitigation.map((strategy, index) => (
                               <li key={index} className="flex items-start">
                                 <span className="mr-2">•</span>
@@ -711,16 +709,16 @@ export function BlockchainAnalyticsDashboard({
             {risks.length === 0 && (
               <Card>
                 <CardContent className="p-8 text-center">
-                  <Shield className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                  <h3 className="text-lg font-semibold mb-2">No Risks Identified</h3>
-                  <p className="text-muted-foreground mb-4">
+                  <Shield className="mx-auto mb-4 h-12 w-12 text-muted-foreground" />
+                  <h3 className="mb-2 text-lg font-semibold">No Risks Identified</h3>
+                  <p className="mb-4 text-muted-foreground">
                     Run AI risk assessment to identify potential threats to your investments.
                   </p>
                   <Button
                     onClick={assessRisks}
                     disabled={!canUseAIInsights || aiAnalysis.isPending}
                   >
-                    <Shield className="h-4 w-4 mr-2" />
+                    <Shield className="mr-2 h-4 w-4" />
                     Assess Risks
                   </Button>
                 </CardContent>
@@ -733,8 +731,8 @@ export function BlockchainAnalyticsDashboard({
         <TabsContent value="predictions" className="space-y-6">
           <div className="flex items-center justify-between">
             <h3 className="text-lg font-semibold">Market Predictions</h3>
-            <Badge variant="outline" className="text-purple-600 border-purple-200">
-              <Sparkles className="h-3 w-3 mr-1" />
+            <Badge variant="outline" className="border-purple-200 text-purple-600">
+              <Sparkles className="mr-1 h-3 w-3" />
               AI-Powered
             </Badge>
           </div>

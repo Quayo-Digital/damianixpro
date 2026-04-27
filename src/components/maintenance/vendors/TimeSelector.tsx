@@ -1,8 +1,7 @@
-
-import { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Clock } from "lucide-react";
+import { useState } from 'react';
+import { Button } from '@/components/ui/button';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Clock } from 'lucide-react';
 
 interface TimeSelectorProps {
   value: string;
@@ -13,7 +12,7 @@ export function TimeSelector({ value, onChange }: TimeSelectorProps) {
   // Create time options at 30 minute intervals
   const timeOptions = [];
   for (let hour = 8; hour < 18; hour++) {
-    const hourString = hour.toString().padStart(2, "0");
+    const hourString = hour.toString().padStart(2, '0');
     timeOptions.push(`${hourString}:00`);
     timeOptions.push(`${hourString}:30`);
   }
@@ -21,10 +20,7 @@ export function TimeSelector({ value, onChange }: TimeSelectorProps) {
   return (
     <Popover>
       <PopoverTrigger asChild>
-        <Button
-          variant="outline"
-          className="w-full justify-start text-left font-normal"
-        >
+        <Button variant="outline" className="w-full justify-start text-left font-normal">
           <Clock className="mr-2 h-4 w-4" />
           {value}
         </Button>

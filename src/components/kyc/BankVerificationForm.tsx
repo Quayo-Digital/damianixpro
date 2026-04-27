@@ -5,42 +5,51 @@ import { z } from 'zod';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Card, CardContent } from '@/components/ui/card';
 import { Building, Shield, AlertCircle, Search } from 'lucide-react';
 import { useNigerianApis } from '@/hooks/useNigerianApis';
 import { BankAccountVerificationRequest } from '@/types/nigerianApis';
+import { logger } from '@/utils/logger';
 
 const bankSchema = z.object({
-  account_number: z.string()
+  account_number: z
+    .string()
     .min(10, 'Account number must be 10 digits')
     .max(10, 'Account number must be 10 digits')
     .regex(/^\d{10}$/, 'Account number must contain only numbers'),
   bank_code: z.string().min(3, 'Please select a bank'),
-  account_name: z.string().optional()
+  account_name: z.string().optional(),
 });
 
 type BankFormData = z.infer<typeof bankSchema>;
 
 export const BankVerificationForm: React.FC = () => {
-  const { 
-    verifyBankAccount, 
-    isBankVerifying, 
+  const {
+    verifyBankAccount,
+    isBankVerifying,
     canPerformVerification,
+    getVerificationUnavailableReason,
     nigerianBanks,
-    isLoadingBanks
+    isLoadingBanks,
   } = useNigerianApis();
-  
+
   const {
     register,
     handleSubmit,
     formState: { errors },
     reset,
     setValue,
-    watch
+    watch,
   } = useForm<BankFormData>({
-    resolver: zodResolver(bankSchema)
+    resolver: zodResolver(bankSchema),
   });
 
   const selectedBankCode = watch('bank_code');
@@ -51,13 +60,13 @@ export const BankVerificationForm: React.FC = () => {
       const request: BankAccountVerificationRequest = {
         account_number: data.account_number,
         bank_code: data.bank_code,
-        account_name: data.account_name
+        account_name: data.account_name,
       };
 
       await verifyBankAccount(request);
       reset();
     } catch (error) {
-      console.error('Bank verification failed:', error);
+      logger.error('Bank verification failed', error);
     }
   };
 
@@ -65,9 +74,7 @@ export const BankVerificationForm: React.FC = () => {
     return (
       <Alert>
         <AlertCircle className="h-4 w-4" />
-        <AlertDescription>
-          Bank account verification service is currently unavailable. Please check your subscription or try again later.
-        </AlertDescription>
+        <AlertDescription>{getVerificationUnavailableReason('bank_account')}</AlertDescription>
       </Alert>
     );
   }
@@ -84,7 +91,8 @@ export const BankVerificationForm: React.FC = () => {
           <Alert>
             <Shield className="h-4 w-4" />
             <AlertDescription>
-              Verify your bank account details to ensure accurate payment processing and enhance trust with tenants and partners.
+              Verify your bank account details to ensure accurate payment processing and enhance
+              trust with tenants and partners.
             </AlertDescription>
           </Alert>
 
@@ -92,7 +100,7 @@ export const BankVerificationForm: React.FC = () => {
             <div className="space-y-2">
               <Label htmlFor="bank_code">Bank *</Label>
               {isLoadingBanks ? (
-                <div className="h-10 bg-gray-200 rounded animate-pulse"></div>
+                <div className="h-10 animate-pulse rounded bg-gray-200"></div>
               ) : (
                 <Select
                   value={selectedBankCode}
@@ -131,9 +139,7 @@ export const BankVerificationForm: React.FC = () => {
               {errors.account_number && (
                 <p className="text-sm text-red-600">{errors.account_number.message}</p>
               )}
-              <p className="text-xs text-gray-500">
-                Your 10-digit NUBAN account number
-              </p>
+              <p className="text-xs text-gray-500">Your 10-digit NUBAN account number</p>
             </div>
 
             <div className="space-y-2">
@@ -153,12 +159,12 @@ export const BankVerificationForm: React.FC = () => {
               </p>
             </div>
 
-            <div className="bg-blue-50 p-3 rounded-lg">
+            <div className="rounded-lg bg-blue-50 p-3">
               <div className="flex items-start space-x-2">
-                <Search className="h-4 w-4 text-blue-600 mt-0.5" />
+                <Search className="mt-0.5 h-4 w-4 text-blue-600" />
                 <div className="text-sm text-blue-800">
                   <p className="font-medium">Verification Process:</p>
-                  <ul className="mt-1 space-y-1 list-disc list-inside">
+                  <ul className="mt-1 list-inside list-disc space-y-1">
                     <li>Account number format validation</li>
                     <li>Bank code verification</li>
                     <li>Account name lookup</li>
@@ -168,26 +174,22 @@ export const BankVerificationForm: React.FC = () => {
               </div>
             </div>
 
-            <Button 
-              type="submit" 
-              disabled={isBankVerifying || isLoadingBanks}
-              className="w-full"
-            >
+            <Button type="submit" disabled={isBankVerifying || isLoadingBanks} className="w-full">
               {isBankVerifying ? (
                 <div className="flex items-center space-x-2">
-                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                  <div className="h-4 w-4 animate-spin rounded-full border-b-2 border-primary-foreground"></div>
                   <span>Verifying Account...</span>
                 </div>
               ) : (
                 <>
-                  <Shield className="h-4 w-4 mr-2" />
+                  <Shield className="mr-2 h-4 w-4" />
                   Verify Bank Account
                 </>
               )}
             </Button>
           </form>
 
-          <div className="text-xs text-gray-500 space-y-1">
+          <div className="space-y-1 text-xs text-gray-500">
             <p>• Bank verification typically takes 5-15 seconds</p>
             <p>• Only account name is returned, not balance information</p>
             <p>• Verification helps prevent payment errors</p>

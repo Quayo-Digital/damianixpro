@@ -1,98 +1,119 @@
-
+import { useCallback, useMemo } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { logger } from '@/utils/logger';
+import { getAuthNetworkFailureMessage } from '@/utils/authNetworkErrors';
+import {
+  formatSupabaseAuthSignInError,
+  formatSupabaseAuthSignUpError,
+} from '@/utils/supabaseErrors';
 
 export const useBasicAuthOperations = () => {
-  const signIn = async (email: string, password: string) => {
+  const signIn = useCallback(async (email: string, password: string) => {
+    logger.debug('Signing in with email', { email });
+    let result;
     try {
-      console.log("Signing in with email:", email);
-      const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-      
-      if (error) {
-        console.error("Sign in error:", error);
-        toast.error(error.message || "Failed to sign in");
-        throw error;
-      }
-      
-      if (data && data.user) {
-        console.log("Sign in successful, user ID:", data.user.id);
-        toast.success("Signed in successfully");
-      }
-      
-      return data;
+      result = await supabase.auth.signInWithPassword({ email, password });
     } catch (error) {
-      console.error("Sign in exception:", error);
+      logger.error('Sign in exception', error);
+      const networkHint = getAuthNetworkFailureMessage(error);
+      toast.error(networkHint || 'Sign-in failed. Please try again.');
       throw error;
     }
-  };
 
-  const signOut = async () => {
-    console.log("Signing out user");
+    const { data, error } = result;
+    if (error) {
+      logger.warn('Sign in rejected', {
+        status: (error as { status?: number })?.status,
+        code: (error as { code?: string })?.code,
+        message: (error as { message?: string })?.message,
+      });
+      toast.error(formatSupabaseAuthSignInError(error));
+      throw error;
+    }
+
+    if (data?.user) {
+      logger.debug('Sign in successful', { userId: data.user.id });
+      toast.success('Signed in successfully');
+    }
+
+    return data;
+  }, []);
+
+  const signOut = useCallback(async () => {
+    logger.debug('Signing out user');
     try {
       const { error } = await supabase.auth.signOut();
       if (error) {
-        console.error("Sign out error:", error);
-        toast.error(error.message || "Failed to sign out");
+        logger.error('Sign out error', error);
+        toast.error(error.message || 'Failed to sign out');
         throw error;
       }
-      toast.success("Signed out successfully");
+      toast.success('Signed out successfully');
     } catch (error) {
-      console.error("Sign out exception:", error);
-      toast.error("An error occurred while signing out");
+      logger.error('Sign out exception', error);
+      const networkHint = getAuthNetworkFailureMessage(error);
+      toast.error(networkHint || 'An error occurred while signing out');
       throw error;
     }
-  };
+  }, []);
 
-  const signUp = async (email: string, password: string, metadata: any = {}) => {
-    console.log("Registering with email and role:", email, metadata.role);
-    
+  const signUp = useCallback(async (email: string, password: string, metadata: any = {}) => {
+    logger.debug('Registering with email and role', { email, role: metadata.role });
+
     try {
-      // Get the current origin for redirect URL
       const redirectUrl = `${window.location.origin}/dashboard`;
-      
+
       const { error, data } = await supabase.auth.signUp({
         email,
         password,
         options: {
           emailRedirectTo: redirectUrl,
-          data: metadata
-        }
+          data: metadata,
+        },
       });
-      
+
       if (error) {
-        console.error("Sign up error:", error);
-        toast.error(error.message || "Failed to sign up");
+        logger.warn('Sign up rejected', {
+          status: (error as { status?: number })?.status,
+          code: (error as { code?: string })?.code,
+          message: (error as { message?: string })?.message,
+        });
+        toast.error(formatSupabaseAuthSignUpError(error));
         throw error;
       }
-      
+
       if (data.user) {
-        console.log("Signup successful, user ID:", data.user.id);
-        
-        // Check if email confirmation is required
+        logger.debug('Signup successful', { userId: data.user.id });
+
         if (!data.session && data.user && !data.user.email_confirmed_at) {
-          toast.success("Please check your email to confirm your account");
+          toast.success('Please check your email to confirm your account');
         } else {
-          toast.success("Account created successfully");
+          toast.success('Account created successfully');
         }
-        
+
         return data;
       }
     } catch (error) {
-      console.error("Sign up exception:", error);
-      
-      // Handle specific network errors
-      if (error instanceof TypeError && error.message.includes('fetch')) {
-        toast.error("Network error: Please check your internet connection");
-      } else {
-        toast.error("An error occurred during signup");
+      const networkHint = getAuthNetworkFailureMessage(error);
+      if (networkHint) {
+        logger.error('Sign up exception', error);
+        toast.error(networkHint, { duration: 12_000 });
+        throw error;
       }
+
+      logger.warn('Sign up exception', error);
+      toast.error(formatSupabaseAuthSignUpError(error));
       throw error;
     }
-  };
+  }, []);
 
-  return {
-    signIn,
-    signOut,
-    signUp
-  };
+  return useMemo(
+    () => ({
+      signIn,
+      signOut,
+      signUp,
+    }),
+    [signIn, signOut, signUp]
+  );
 };

@@ -10,20 +10,20 @@ export interface RealWorldMetrics {
   fid: number; // First Input Delay
   cls: number; // Cumulative Layout Shift
   ttfb: number; // Time to First Byte
-  
+
   // Nigerian-specific metrics
   networkType: string; // 2G, 3G, 4G, 5G
   connectionSpeed: number; // Mbps
   dataUsage: number; // MB per session
   deviceMemory: number; // GB
   location: string; // Nigerian city
-  
+
   // Business metrics
   pageLoadTime: number;
   timeToInteractive: number;
   bounceRate: number;
   conversionRate: number;
-  
+
   // Timestamp and session info
   timestamp: Date;
   sessionId: string;
@@ -57,6 +57,8 @@ export class RealWorldPerformanceMonitor {
   private alerts: PerformanceAlert[] = [];
   private isMonitoring = false;
   private observers: Map<string, PerformanceObserver> = new Map();
+  /** Throttle noisy console logging in development (same metric repeats every interval). */
+  private lastConsoleAlertAt = new Map<string, number>();
 
   // Nigerian market-specific thresholds
   private readonly NIGERIAN_THRESHOLDS = {
@@ -67,9 +69,10 @@ export class RealWorldPerformanceMonitor {
     ttfb: { good: 800, poor: 1800 },
     pageLoadTime: { good: 3000, poor: 8000 },
     timeToInteractive: { good: 4000, poor: 10000 },
-    dataUsage: { good: 2, poor: 10 }, // MB per session
+    // Dev sessions easily exceed 10 MB; keep “poor” high enough to avoid constant false positives.
+    dataUsage: { good: 5, poor: 80 }, // MB per session (estimated from resource timings)
     bounceRate: { good: 40, poor: 70 }, // Percentage
-    conversionRate: { good: 3, poor: 1 } // Percentage
+    conversionRate: { good: 3, poor: 1 }, // Percentage
   };
 
   private constructor() {
@@ -157,13 +160,13 @@ export class RealWorldPerformanceMonitor {
   private setupNetworkMonitoring(): void {
     if ('connection' in navigator) {
       const connection = (navigator as any).connection;
-      
+
       const updateNetworkInfo = () => {
         this.recordNetworkMetrics({
           effectiveType: connection.effectiveType || 'unknown',
           downlink: connection.downlink || 0,
           rtt: connection.rtt || 0,
-          saveData: connection.saveData || false
+          saveData: connection.saveData || false,
         });
       };
 
@@ -175,19 +178,19 @@ export class RealWorldPerformanceMonitor {
   // Track user interactions for Nigerian UX patterns
   private setupUserInteractionTracking(): void {
     let interactionCount = 0;
-    let sessionStart = Date.now();
+    const sessionStart = Date.now();
 
     // Track clicks, taps, and form interactions
-    ['click', 'touchstart', 'input', 'change'].forEach(eventType => {
+    ['click', 'touchstart', 'input', 'change'].forEach((eventType) => {
       document.addEventListener(eventType, () => {
         interactionCount++;
-        
+
         // Record interaction patterns every 10 interactions
         if (interactionCount % 10 === 0) {
           this.recordUserEngagement({
             interactions: interactionCount,
             sessionDuration: Date.now() - sessionStart,
-            engagementRate: interactionCount / ((Date.now() - sessionStart) / 1000 / 60) // interactions per minute
+            engagementRate: interactionCount / ((Date.now() - sessionStart) / 1000 / 60), // interactions per minute
           });
         }
       });
@@ -200,7 +203,7 @@ export class RealWorldPerformanceMonitor {
         this.recordSessionMetrics({
           duration: sessionDuration,
           interactions: interactionCount,
-          bounced: sessionDuration < 30000 && interactionCount < 2 // Less than 30 seconds and minimal interaction
+          bounced: sessionDuration < 30000 && interactionCount < 2, // Less than 30 seconds and minimal interaction
         });
       }
     });
@@ -208,7 +211,7 @@ export class RealWorldPerformanceMonitor {
 
   // Track data usage for Nigerian cost-conscious users
   private setupDataUsageTracking(): void {
-    let initialDataUsage = 0;
+    const initialDataUsage = 0;
     let currentDataUsage = 0;
 
     // Estimate data usage based on resource loading
@@ -264,7 +267,7 @@ export class RealWorldPerformanceMonitor {
       const metrics: Partial<RealWorldMetrics> = {
         timestamp: new Date(),
         sessionId: this.generateSessionId(),
-        userAgent: navigator.userAgent
+        userAgent: navigator.userAgent,
       };
 
       // Get navigation timing
@@ -300,7 +303,6 @@ export class RealWorldPerformanceMonitor {
 
       // Send to analytics service (in production)
       this.sendToAnalytics(metrics);
-
     } catch (error) {
       console.error('Failed to collect comprehensive metrics:', error);
     }
@@ -309,7 +311,7 @@ export class RealWorldPerformanceMonitor {
   // Record individual metric
   private recordMetric(name: string, value: number): void {
     const timestamp = new Date();
-    
+
     // Update latest metrics
     const latestMetric = this.metrics[this.metrics.length - 1];
     if (latestMetric && Date.now() - latestMetric.timestamp.getTime() < 60000) {
@@ -320,7 +322,7 @@ export class RealWorldPerformanceMonitor {
       const newMetric: Partial<RealWorldMetrics> = {
         timestamp,
         sessionId: this.generateSessionId(),
-        [name]: value
+        [name]: value,
       };
       this.metrics.push(newMetric as RealWorldMetrics);
     }
@@ -330,7 +332,7 @@ export class RealWorldPerformanceMonitor {
   private recordNetworkMetrics(networkInfo: any): void {
     const timestamp = new Date();
     console.log('Network change detected:', networkInfo);
-    
+
     // Alert if network degrades to 2G in Nigeria
     if (networkInfo.effectiveType === '2g' || networkInfo.effectiveType === 'slow-2g') {
       this.createAlert({
@@ -340,7 +342,7 @@ export class RealWorldPerformanceMonitor {
         threshold: 1,
         location: 'Nigeria',
         message: 'User on slow 2G connection - optimize for minimal data usage',
-        actionRequired: true
+        actionRequired: true,
       });
     }
   }
@@ -348,9 +350,10 @@ export class RealWorldPerformanceMonitor {
   // Record user engagement metrics
   private recordUserEngagement(engagement: any): void {
     console.log('User engagement:', engagement);
-    
+
     // Alert if engagement is very low (potential UX issue)
-    if (engagement.engagementRate < 0.5) { // Less than 0.5 interactions per minute
+    if (engagement.engagementRate < 0.5) {
+      // Less than 0.5 interactions per minute
       this.createAlert({
         type: 'warning',
         metric: 'engagementRate',
@@ -358,7 +361,7 @@ export class RealWorldPerformanceMonitor {
         threshold: 0.5,
         location: 'Nigeria',
         message: 'Low user engagement detected - check UX for Nigerian users',
-        actionRequired: true
+        actionRequired: true,
       });
     }
   }
@@ -366,7 +369,7 @@ export class RealWorldPerformanceMonitor {
   // Record session metrics
   private recordSessionMetrics(session: any): void {
     console.log('Session metrics:', session);
-    
+
     if (session.bounced) {
       this.recordMetric('bounceRate', 1);
     }
@@ -375,8 +378,8 @@ export class RealWorldPerformanceMonitor {
   // Check for performance alerts
   private checkPerformanceAlerts(): void {
     const recentMetrics = this.metrics.slice(-10); // Last 10 metrics
-    
-    recentMetrics.forEach(metric => {
+
+    recentMetrics.forEach((metric) => {
       Object.entries(this.NIGERIAN_THRESHOLDS).forEach(([key, threshold]) => {
         const value = (metric as any)[key];
         if (value !== undefined) {
@@ -388,7 +391,7 @@ export class RealWorldPerformanceMonitor {
               threshold: threshold.poor,
               location: metric.location || 'Nigeria',
               message: `${key} performance is critical: ${value} > ${threshold.poor}`,
-              actionRequired: true
+              actionRequired: true,
             });
           } else if (value > threshold.good) {
             this.createAlert({
@@ -398,7 +401,7 @@ export class RealWorldPerformanceMonitor {
               threshold: threshold.good,
               location: metric.location || 'Nigeria',
               message: `${key} performance needs attention: ${value} > ${threshold.good}`,
-              actionRequired: false
+              actionRequired: false,
             });
           }
         }
@@ -411,21 +414,29 @@ export class RealWorldPerformanceMonitor {
     const alert: PerformanceAlert = {
       id: this.generateAlertId(),
       timestamp: new Date(),
-      ...alertData
+      ...alertData,
     };
 
     this.alerts.push(alert);
-    
+
     // Keep only last 100 alerts
     if (this.alerts.length > 100) {
       this.alerts = this.alerts.slice(-100);
     }
 
-    // Log critical alerts
-    if (alert.type === 'critical') {
-      console.error('CRITICAL PERFORMANCE ALERT:', alert);
-    } else if (alert.type === 'warning') {
-      console.warn('Performance warning:', alert);
+    // Log alerts (throttled in dev — `checkPerformanceAlerts` runs often and would flood the console)
+    const logKey = `${alert.type}:${alert.metric}`;
+    const now = Date.now();
+    const last = this.lastConsoleAlertAt.get(logKey) ?? 0;
+    const devThrottleMs = import.meta.env.DEV ? 120_000 : 0;
+    const shouldLog = now - last >= devThrottleMs;
+    if (shouldLog) {
+      this.lastConsoleAlertAt.set(logKey, now);
+      if (alert.type === 'critical') {
+        console.error('CRITICAL PERFORMANCE ALERT:', alert);
+      } else if (alert.type === 'warning') {
+        console.warn('Performance warning:', alert);
+      }
     }
   }
 
@@ -440,12 +451,12 @@ export class RealWorldPerformanceMonitor {
   private sendToAnalytics(metrics: any): void {
     // In production, this would send to your analytics service
     // console.log('Sending to analytics:', metrics);
-    
+
     // Example: Send to Google Analytics, Mixpanel, or custom analytics
     if (typeof window !== 'undefined' && (window as any).gtag) {
       (window as any).gtag('event', 'performance_metric', {
         custom_map: { metric_name: 'performance_data' },
-        performance_data: JSON.stringify(metrics)
+        performance_data: JSON.stringify(metrics),
       });
     }
   }
@@ -465,19 +476,21 @@ export class RealWorldPerformanceMonitor {
   // Get current metrics
   getCurrentMetrics(): any {
     const recentMetrics = this.metrics.slice(-1)[0];
-    return recentMetrics || {
-      fcp: 2000,
-      lcp: 3000,
-      fid: 100,
-      cls: 0.1,
-      ttfb: 500,
-      networkType: '3g',
-      location: 'Lagos',
-      dataUsage: 2000000,
-      conversionRate: 2.3,
-      bounceRate: 45.6,
-      userSatisfaction: 7.2
-    };
+    return (
+      recentMetrics || {
+        fcp: 2000,
+        lcp: 3000,
+        fid: 100,
+        cls: 0.1,
+        ttfb: 500,
+        networkType: '3g',
+        location: 'Lagos',
+        dataUsage: 2000000,
+        conversionRate: 2.3,
+        bounceRate: 45.6,
+        userSatisfaction: 7.2,
+      }
+    );
   }
 
   // Get performance summary
@@ -494,13 +507,13 @@ export class RealWorldPerformanceMonitor {
         overall: 0,
         coreWebVitals: {},
         nigerianOptimization: {},
-        alerts: this.alerts.slice(-5)
+        alerts: this.alerts.slice(-5),
       };
     }
 
     // Calculate averages
     const avgMetrics = this.calculateAverages(recentMetrics);
-    
+
     // Score each metric (0-100)
     const scores = {
       fcp: this.scoreMetric('fcp', avgMetrics.fcp),
@@ -509,10 +522,12 @@ export class RealWorldPerformanceMonitor {
       cls: this.scoreMetric('cls', avgMetrics.cls),
       ttfb: this.scoreMetric('ttfb', avgMetrics.ttfb),
       pageLoadTime: this.scoreMetric('pageLoadTime', avgMetrics.pageLoadTime),
-      dataUsage: this.scoreMetric('dataUsage', avgMetrics.dataUsage)
+      dataUsage: this.scoreMetric('dataUsage', avgMetrics.dataUsage),
     };
 
-    const overall = Object.values(scores).reduce((sum, score) => sum + (score || 0), 0) / Object.keys(scores).length;
+    const overall =
+      Object.values(scores).reduce((sum, score) => sum + (score || 0), 0) /
+      Object.keys(scores).length;
 
     return {
       overall: Math.round(overall),
@@ -520,14 +535,14 @@ export class RealWorldPerformanceMonitor {
         fcp: scores.fcp || 0,
         lcp: scores.lcp || 0,
         fid: scores.fid || 0,
-        cls: scores.cls || 0
+        cls: scores.cls || 0,
       },
       nigerianOptimization: {
         pageLoadTime: scores.pageLoadTime || 0,
         dataUsage: scores.dataUsage || 0,
-        ttfb: scores.ttfb || 0
+        ttfb: scores.ttfb || 0,
       },
-      alerts: this.alerts.slice(-5)
+      alerts: this.alerts.slice(-5),
     };
   }
 
@@ -538,20 +553,18 @@ export class RealWorldPerformanceMonitor {
       '1h': 60 * 60 * 1000,
       '24h': 24 * 60 * 60 * 1000,
       '7d': 7 * 24 * 60 * 60 * 1000,
-      '30d': 30 * 24 * 60 * 60 * 1000
+      '30d': 30 * 24 * 60 * 60 * 1000,
     }[period];
 
-    const relevantMetrics = this.metrics.filter(
-      m => now - m.timestamp.getTime() < periodMs
-    );
+    const relevantMetrics = this.metrics.filter((m) => now - m.timestamp.getTime() < periodMs);
 
     const trends: PerformanceTrend[] = [];
     const metricKeys = ['fcp', 'lcp', 'pageLoadTime', 'dataUsage'];
 
-    metricKeys.forEach(key => {
+    metricKeys.forEach((key) => {
       const values = relevantMetrics
-        .map(m => ({ timestamp: m.timestamp, value: (m as any)[key] }))
-        .filter(v => v.value !== undefined)
+        .map((m) => ({ timestamp: m.timestamp, value: (m as any)[key] }))
+        .filter((v) => v.value !== undefined)
         .sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime());
 
       if (values.length > 1) {
@@ -564,7 +577,7 @@ export class RealWorldPerformanceMonitor {
           period,
           values,
           trend: changePercent < -5 ? 'improving' : changePercent > 5 ? 'degrading' : 'stable',
-          changePercent: Math.round(changePercent)
+          changePercent: Math.round(changePercent),
         });
       }
     });
@@ -574,9 +587,7 @@ export class RealWorldPerformanceMonitor {
 
   // Get alerts
   getAlerts(type?: 'critical' | 'warning' | 'info'): PerformanceAlert[] {
-    return type 
-      ? this.alerts.filter(a => a.type === type)
-      : this.alerts;
+    return type ? this.alerts.filter((a) => a.type === type) : this.alerts;
   }
 
   // Helper methods
@@ -584,7 +595,7 @@ export class RealWorldPerformanceMonitor {
     const sums: Record<string, number> = {};
     const counts: Record<string, number> = {};
 
-    metrics.forEach(metric => {
+    metrics.forEach((metric) => {
       Object.entries(metric).forEach(([key, value]) => {
         if (typeof value === 'number') {
           sums[key] = (sums[key] || 0) + value;
@@ -594,7 +605,7 @@ export class RealWorldPerformanceMonitor {
     });
 
     const averages: Record<string, number> = {};
-    Object.keys(sums).forEach(key => {
+    Object.keys(sums).forEach((key) => {
       averages[key] = sums[key] / counts[key];
     });
 
@@ -607,7 +618,7 @@ export class RealWorldPerformanceMonitor {
 
     if (value <= threshold.good) return 100;
     if (value >= threshold.poor) return 0;
-    
+
     // Linear interpolation between good and poor
     const range = threshold.poor - threshold.good;
     const position = value - threshold.good;
@@ -617,7 +628,7 @@ export class RealWorldPerformanceMonitor {
   // Stop monitoring
   stopMonitoring(): void {
     this.isMonitoring = false;
-    this.observers.forEach(observer => observer.disconnect());
+    this.observers.forEach((observer) => observer.disconnect());
     this.observers.clear();
   }
 }
@@ -643,7 +654,7 @@ export const useRealWorldPerformance = () => {
     summary,
     trends,
     alerts: realWorldMonitor.getAlerts(),
-    criticalAlerts: realWorldMonitor.getAlerts('critical')
+    criticalAlerts: realWorldMonitor.getAlerts('critical'),
   };
 };
 

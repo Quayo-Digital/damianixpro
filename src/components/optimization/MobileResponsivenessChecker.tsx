@@ -4,16 +4,16 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { 
-  Smartphone, 
-  Tablet, 
-  Monitor, 
-  CheckCircle, 
-  AlertTriangle, 
+import {
+  Smartphone,
+  Tablet,
+  Monitor,
+  CheckCircle,
+  AlertTriangle,
   XCircle,
   Eye,
   Zap,
-  Users
+  Users,
 } from 'lucide-react';
 
 interface ResponsivenessTest {
@@ -45,7 +45,7 @@ export const MobileResponsivenessChecker: React.FC = () => {
     { name: 'iPad Mini', width: 768, height: 1024, type: 'tablet' },
     { name: 'iPad Pro', width: 1024, height: 1366, type: 'tablet' },
     { name: 'Desktop 1080p', width: 1920, height: 1080, type: 'desktop' },
-    { name: 'Desktop 1440p', width: 2560, height: 1440, type: 'desktop' }
+    { name: 'Desktop 1440p', width: 2560, height: 1440, type: 'desktop' },
   ];
 
   const runResponsivenessTest = async () => {
@@ -54,7 +54,7 @@ export const MobileResponsivenessChecker: React.FC = () => {
 
     for (const device of deviceProfiles) {
       setCurrentDevice(device.name);
-      await new Promise(resolve => setTimeout(resolve, 800));
+      await new Promise((resolve) => setTimeout(resolve, 800));
 
       const test = await testDeviceResponsiveness(device);
       tests.push(test);
@@ -69,7 +69,7 @@ export const MobileResponsivenessChecker: React.FC = () => {
     setResult({
       overallScore,
       tests,
-      generalRecommendations
+      generalRecommendations,
     });
 
     setIsRunning(false);
@@ -167,15 +167,13 @@ export const MobileResponsivenessChecker: React.FC = () => {
         recommendations.push('Consider tablet-specific layouts and interactions');
         recommendations.push('Optimize for both portrait and landscape orientations');
       }
-
     } catch (error) {
       issues.push('Error during responsiveness testing');
       score -= 20;
     }
 
-    const status = score >= 90 ? 'excellent' : 
-                  score >= 75 ? 'good' : 
-                  score >= 60 ? 'needs_improvement' : 'poor';
+    const status =
+      score >= 90 ? 'excellent' : score >= 75 ? 'good' : score >= 60 ? 'needs_improvement' : 'poor';
 
     return {
       device: device.name,
@@ -184,16 +182,18 @@ export const MobileResponsivenessChecker: React.FC = () => {
       score: Math.max(0, score),
       issues,
       recommendations,
-      status
+      status,
     };
   };
 
   const generateGeneralRecommendations = (tests: ResponsivenessTest[]): string[] => {
     const recommendations: string[] = [];
-    
-    const mobileTests = tests.filter(t => t.device.includes('iPhone') || t.device.includes('Samsung'));
-    const tabletTests = tests.filter(t => t.device.includes('iPad'));
-    
+
+    const mobileTests = tests.filter(
+      (t) => t.device.includes('iPhone') || t.device.includes('Samsung')
+    );
+    const tabletTests = tests.filter((t) => t.device.includes('iPad'));
+
     const avgMobileScore = mobileTests.reduce((sum, t) => sum + t.score, 0) / mobileTests.length;
     const avgTabletScore = tabletTests.reduce((sum, t) => sum + t.score, 0) / tabletTests.length;
 
@@ -266,11 +266,7 @@ export const MobileResponsivenessChecker: React.FC = () => {
             Test your platform across multiple device sizes and screen resolutions
           </p>
         </div>
-        <Button 
-          onClick={runResponsivenessTest} 
-          disabled={isRunning}
-          className="min-w-[200px]"
-        >
+        <Button onClick={runResponsivenessTest} disabled={isRunning} className="min-w-[200px]">
           {isRunning ? (
             <>
               <Smartphone className="mr-2 h-4 w-4 animate-pulse" />
@@ -299,15 +295,16 @@ export const MobileResponsivenessChecker: React.FC = () => {
                 <div className="flex-1">
                   <Progress value={result.overallScore} className="h-3" />
                 </div>
-                <div className="text-2xl font-bold">
-                  {result.overallScore}/100
-                </div>
+                <div className="text-2xl font-bold">{result.overallScore}/100</div>
               </div>
-              <p className="text-sm text-muted-foreground mt-2">
-                {result.overallScore >= 90 ? 'Excellent responsiveness across all devices!' :
-                 result.overallScore >= 75 ? 'Good responsiveness with minor improvements needed' :
-                 result.overallScore >= 60 ? 'Responsiveness needs attention on some devices' :
-                 'Critical responsiveness issues detected'}
+              <p className="mt-2 text-sm text-muted-foreground">
+                {result.overallScore >= 90
+                  ? 'Excellent responsiveness across all devices!'
+                  : result.overallScore >= 75
+                    ? 'Good responsiveness with minor improvements needed'
+                    : result.overallScore >= 60
+                      ? 'Responsiveness needs attention on some devices'
+                      : 'Critical responsiveness issues detected'}
               </p>
             </CardContent>
           </Card>
@@ -321,9 +318,7 @@ export const MobileResponsivenessChecker: React.FC = () => {
                       {getDeviceIcon(test.device)}
                       {getStatusIcon(test.status)}
                     </div>
-                    <Badge className={getStatusColor(test.status)}>
-                      {test.score}/100
-                    </Badge>
+                    <Badge className={getStatusColor(test.status)}>{test.score}/100</Badge>
                   </div>
                   <CardTitle className="text-sm">{test.device}</CardTitle>
                   <CardDescription className="text-xs">
@@ -333,8 +328,8 @@ export const MobileResponsivenessChecker: React.FC = () => {
                 <CardContent>
                   {test.issues.length > 0 && (
                     <div className="mb-3">
-                      <h5 className="text-xs font-semibold text-red-600 mb-1">Issues:</h5>
-                      <ul className="text-xs text-red-600 space-y-1">
+                      <h5 className="mb-1 text-xs font-semibold text-red-600">Issues:</h5>
+                      <ul className="space-y-1 text-xs text-red-600">
                         {test.issues.slice(0, 2).map((issue, i) => (
                           <li key={i}>• {issue}</li>
                         ))}
@@ -346,11 +341,13 @@ export const MobileResponsivenessChecker: React.FC = () => {
                       </ul>
                     </div>
                   )}
-                  
+
                   {test.recommendations.length > 0 && (
                     <div>
-                      <h5 className="text-xs font-semibold text-blue-600 mb-1">Top Recommendations:</h5>
-                      <ul className="text-xs text-blue-600 space-y-1">
+                      <h5 className="mb-1 text-xs font-semibold text-blue-600">
+                        Top Recommendations:
+                      </h5>
+                      <ul className="space-y-1 text-xs text-blue-600">
                         {test.recommendations.slice(0, 2).map((rec, i) => (
                           <li key={i}>• {rec}</li>
                         ))}
@@ -377,7 +374,7 @@ export const MobileResponsivenessChecker: React.FC = () => {
                 <ul className="space-y-2">
                   {result.generalRecommendations.map((recommendation, index) => (
                     <li key={index} className="flex items-start gap-2">
-                      <CheckCircle className="h-4 w-4 text-blue-500 mt-0.5 flex-shrink-0" />
+                      <CheckCircle className="mt-0.5 h-4 w-4 flex-shrink-0 text-blue-500" />
                       <span className="text-sm">{recommendation}</span>
                     </li>
                   ))}
@@ -392,7 +389,8 @@ export const MobileResponsivenessChecker: React.FC = () => {
         <Alert>
           <Smartphone className="h-4 w-4" />
           <AlertDescription>
-            Click "Test Responsiveness" to check how your platform performs across different device sizes and screen resolutions.
+            Click "Test Responsiveness" to check how your platform performs across different device
+            sizes and screen resolutions.
           </AlertDescription>
         </Alert>
       )}

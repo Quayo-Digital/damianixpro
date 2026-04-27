@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/contexts/auth';
+import { useAuthSession } from '@/contexts/auth';
+import { assertRoleScreeningForMonetization } from '@/services/screening/roleScreeningAccess';
 
 interface VendorJob {
   id: string;
@@ -132,7 +133,7 @@ interface PerformanceMetrics {
 }
 
 export const useEnhancedVendorData = () => {
-  const { user } = useAuth();
+  const { user } = useAuthSession();
   const [profile, setProfile] = useState<VendorProfile | null>(null);
   const [jobs, setJobs] = useState<VendorJob[]>([]);
   const [stats, setStats] = useState<VendorStats | null>(null);
@@ -171,7 +172,7 @@ export const useEnhancedVendorData = () => {
     verified: true,
     created_at: '2024-01-15T10:00:00Z',
     updated_at: '2024-08-07T15:30:00Z',
-    is_available: true
+    is_available: true,
   });
 
   const getMockJobs = (): VendorJob[] => [
@@ -192,7 +193,7 @@ export const useEnhancedVendorData = () => {
       customer_feedback: 'Excellent work, very professional',
       created_at: '2024-08-04T14:00:00Z',
       updated_at: '2024-08-05T11:30:00Z',
-      property_address: '23 Admiralty Way, Lekki'
+      property_address: '23 Admiralty Way, Lekki',
     },
     {
       id: 'job-2',
@@ -207,7 +208,7 @@ export const useEnhancedVendorData = () => {
       estimated_cost: 45000,
       created_at: '2024-08-06T10:00:00Z',
       updated_at: '2024-08-07T08:00:00Z',
-      property_address: '12 Banana Island, Ikoyi'
+      property_address: '12 Banana Island, Ikoyi',
     },
     {
       id: 'job-3',
@@ -222,39 +223,42 @@ export const useEnhancedVendorData = () => {
       estimated_cost: 8000,
       created_at: '2024-08-07T16:00:00Z',
       updated_at: '2024-08-07T16:00:00Z',
-      property_address: '45 Allen Avenue, Ikeja'
-    }
+      property_address: '45 Allen Avenue, Ikeja',
+    },
   ];
 
   const calculateStats = (jobsData: VendorJob[]): VendorStats => {
     const totalJobs = jobsData.length;
-    const completedJobs = jobsData.filter(job => job.status === 'completed').length;
-    const activeJobs = jobsData.filter(job => job.status === 'in_progress').length;
-    const pendingJobs = jobsData.filter(job => job.status === 'scheduled').length;
-    
+    const completedJobs = jobsData.filter((job) => job.status === 'completed').length;
+    const activeJobs = jobsData.filter((job) => job.status === 'in_progress').length;
+    const pendingJobs = jobsData.filter((job) => job.status === 'scheduled').length;
+
     const completionRate = totalJobs > 0 ? (completedJobs / totalJobs) * 100 : 0;
-    
+
     // Calculate earnings
     const totalEarnings = jobsData
-      .filter(job => job.status === 'completed')
+      .filter((job) => job.status === 'completed')
       .reduce((sum, job) => sum + (job.actual_cost || job.estimated_cost || 0), 0);
-    
+
     const currentMonth = new Date().getMonth();
     const currentYear = new Date().getFullYear();
     const monthlyEarnings = jobsData
-      .filter(job => {
+      .filter((job) => {
         if (job.status !== 'completed' || !job.completed_date) return false;
         const completedDate = new Date(job.completed_date);
-        return completedDate.getMonth() === currentMonth && completedDate.getFullYear() === currentYear;
+        return (
+          completedDate.getMonth() === currentMonth && completedDate.getFullYear() === currentYear
+        );
       })
       .reduce((sum, job) => sum + (job.actual_cost || job.estimated_cost || 0), 0);
 
     // Calculate average rating
-    const ratedJobs = jobsData.filter(job => job.customer_rating && job.customer_rating > 0);
-    const averageRating = ratedJobs.length > 0 
-      ? ratedJobs.reduce((sum, job) => sum + (job.customer_rating || 0), 0) / ratedJobs.length 
-      : 0;
-    
+    const ratedJobs = jobsData.filter((job) => job.customer_rating && job.customer_rating > 0);
+    const averageRating =
+      ratedJobs.length > 0
+        ? ratedJobs.reduce((sum, job) => sum + (job.customer_rating || 0), 0) / ratedJobs.length
+        : 0;
+
     // Mock response time (in real app, this would be calculated from actual response data)
     const responseTime = Math.random() * 12 + 1; // 1-13 hours
 
@@ -268,27 +272,30 @@ export const useEnhancedVendorData = () => {
       averageRating,
       totalReviews: ratedJobs.length,
       completionRate,
-      responseTime
+      responseTime,
     };
   };
 
-  const calculatePerformanceMetrics = (jobsData: VendorJob[], currentStats: VendorStats): PerformanceMetrics => {
+  const calculatePerformanceMetrics = (
+    jobsData: VendorJob[],
+    currentStats: VendorStats
+  ): PerformanceMetrics => {
     // Calculate previous month data based on actual data trends
     const previousMonthEarnings = Math.max(0, currentStats.monthlyEarnings * 0.85);
     const previousRating = Math.max(1, currentStats.averageRating - 0.2);
-    
+
     // Calculate customer satisfaction breakdown
-    const ratedJobs = jobsData.filter(job => job.customer_rating && job.customer_rating > 0);
+    const ratedJobs = jobsData.filter((job) => job.customer_rating && job.customer_rating > 0);
     const satisfactionBreakdown = {
-      excellent: ratedJobs.filter(job => (job.customer_rating || 0) === 5).length,
-      good: ratedJobs.filter(job => (job.customer_rating || 0) === 4).length,
-      average: ratedJobs.filter(job => (job.customer_rating || 0) === 3).length,
-      poor: ratedJobs.filter(job => (job.customer_rating || 0) < 3).length,
+      excellent: ratedJobs.filter((job) => (job.customer_rating || 0) === 5).length,
+      good: ratedJobs.filter((job) => (job.customer_rating || 0) === 4).length,
+      average: ratedJobs.filter((job) => (job.customer_rating || 0) === 3).length,
+      poor: ratedJobs.filter((job) => (job.customer_rating || 0) < 3).length,
     };
 
     // Calculate real achievements based on actual data
     const achievements = [];
-    
+
     // Job completion achievement
     if (currentStats.completedJobs >= 10) {
       achievements.push({
@@ -297,10 +304,10 @@ export const useEnhancedVendorData = () => {
         description: `Completed ${currentStats.completedJobs} job${currentStats.completedJobs === 1 ? '' : 's'}`,
         icon: '🏆',
         earnedDate: new Date().toISOString().split('T')[0],
-        type: 'performance' as const
+        type: 'performance' as const,
       });
     }
-    
+
     // High rating achievement
     if (currentStats.averageRating >= 4.0) {
       achievements.push({
@@ -309,10 +316,10 @@ export const useEnhancedVendorData = () => {
         description: `Maintaining ${currentStats.averageRating.toFixed(1)}-star rating`,
         icon: '⭐',
         earnedDate: new Date().toISOString().split('T')[0],
-        type: 'customer_service' as const
+        type: 'customer_service' as const,
       });
     }
-    
+
     // Active vendor achievement
     if (jobsData.length > 0) {
       achievements.push({
@@ -321,7 +328,7 @@ export const useEnhancedVendorData = () => {
         description: `Managing ${jobsData.length} job${jobsData.length === 1 ? '' : 's'}`,
         icon: '🔧',
         earnedDate: new Date().toISOString().split('T')[0],
-        type: 'activity' as const
+        type: 'activity' as const,
       });
     }
 
@@ -329,64 +336,70 @@ export const useEnhancedVendorData = () => {
       monthlyEarnings: {
         current: currentStats.monthlyEarnings,
         previous: previousMonthEarnings,
-        trend: currentStats.monthlyEarnings > previousMonthEarnings ? 'up' : 'down'
+        trend: currentStats.monthlyEarnings > previousMonthEarnings ? 'up' : 'down',
       },
       completionRate: {
         current: currentStats.completionRate,
         target: 95,
-        trend: currentStats.completionRate > 90 ? 'up' : 'stable'
+        trend: currentStats.completionRate > 90 ? 'up' : 'stable',
       },
       averageRating: {
         current: currentStats.averageRating,
         previous: previousRating,
-        totalReviews: currentStats.totalReviews
+        totalReviews: currentStats.totalReviews,
       },
       responseTime: {
         current: currentStats.responseTime,
         target: 4,
-        trend: currentStats.responseTime < 4 ? 'up' : 'stable'
+        trend: currentStats.responseTime < 4 ? 'up' : 'stable',
       },
       jobsCompleted: {
-        thisMonth: jobsData.filter(job => job.status === 'completed').length,
+        thisMonth: jobsData.filter((job) => job.status === 'completed').length,
         lastMonth: Math.max(0, Math.floor(currentStats.completedJobs * 0.8)),
-        trend: 'up'
+        trend: 'up',
       },
       customerSatisfaction: {
         score: currentStats.averageRating,
-        breakdown: satisfactionBreakdown
+        breakdown: satisfactionBreakdown,
       },
       earningsBreakdown: {
-        byCategory: jobsData.length > 0 ? 
-          [...new Set(jobsData.map(j => j.service_type))].map(serviceType => {
-            const categoryJobs = jobsData.filter(j => j.service_type === serviceType);
-            const amount = categoryJobs.reduce((sum, j) => sum + (j.actual_cost || j.estimated_cost || 0), 0);
-            const percentage = Math.round((amount / currentStats.totalEarnings) * 100);
-            return { category: serviceType, amount, percentage };
-          }) : [],
-        byMonth: []
+        byCategory:
+          jobsData.length > 0
+            ? [...new Set(jobsData.map((j) => j.service_type))].map((serviceType) => {
+                const categoryJobs = jobsData.filter((j) => j.service_type === serviceType);
+                const amount = categoryJobs.reduce(
+                  (sum, j) => sum + (j.actual_cost || j.estimated_cost || 0),
+                  0
+                );
+                const percentage = Math.round((amount / currentStats.totalEarnings) * 100);
+                return { category: serviceType, amount, percentage };
+              })
+            : [],
+        byMonth: [],
       },
-      achievements
+      achievements,
     };
   };
 
   const updateJobStatus = async (jobId: string, status: string, notes?: string) => {
     try {
       const updates: any = { status };
-      
+
       if (status === 'completed') {
         updates.completed_date = new Date().toISOString();
       }
 
-      const { error } = await supabase
-        .from('vendor_jobs')
-        .update(updates)
-        .eq('id', jobId);
+      if (status === 'completed' && user?.id) {
+        await assertRoleScreeningForMonetization(user.id, 'vendor');
+      }
+
+      const { error } = await supabase.from('vendor_jobs').update(updates).eq('id', jobId);
 
       if (error) throw error;
 
       // Update local state
-      const updatedJobs = jobs.map(job => 
-        job.id === jobId 
+      const updatedJobs = jobs.map((job) =>
+        job.id === jobId
           ? { ...job, status: status as any, completed_date: updates.completed_date }
           : job
       );
@@ -408,7 +421,7 @@ export const useEnhancedVendorData = () => {
       if (error) throw error;
 
       // Update local state
-      const updatedJobs = jobs.map(job => 
+      const updatedJobs = jobs.map((job) =>
         job.id === jobId ? { ...job, actual_cost: actualCost } : job
       );
       setJobs(updatedJobs);
@@ -423,10 +436,7 @@ export const useEnhancedVendorData = () => {
     try {
       if (!profile) return;
 
-      const { error } = await supabase
-        .from('vendors')
-        .update(updates)
-        .eq('id', profile.id);
+      const { error } = await supabase.from('vendors').update(updates).eq('id', profile.id);
 
       if (error) throw error;
 
@@ -442,19 +452,20 @@ export const useEnhancedVendorData = () => {
     try {
       if (!profile) return null;
 
-      const fileExt = file.name.split('.').pop();
+      const { optimizeImageForUpload } = await import('@/utils/imageOptimization');
+      const optimizedFile = await optimizeImageForUpload(file);
+
+      const fileExt = optimizedFile.name.split('.').pop();
       const fileName = `${profile.id}.${fileExt}`;
       const filePath = `vendor-profiles/${fileName}`;
 
       const { error: uploadError } = await supabase.storage
         .from('vendor-images')
-        .upload(filePath, file, { upsert: true });
+        .upload(filePath, optimizedFile, { upsert: true });
 
       if (uploadError) throw uploadError;
 
-      const { data } = supabase.storage
-        .from('vendor-images')
-        .getPublicUrl(filePath);
+      const { data } = supabase.storage.from('vendor-images').getPublicUrl(filePath);
 
       const imageUrl = data.publicUrl;
 
@@ -495,13 +506,18 @@ export const useEnhancedVendorData = () => {
             .from('profiles')
             .select('*')
             .eq('id', user.id)
-            .single();
+            .maybeSingle();
 
           vendorProfile = {
             id: user.id,
             user_id: user.id,
-            business_name: profileData?.business_name || user.user_metadata?.business_name || 'Vendor Business',
-            contact_name: profileData?.full_name || user.user_metadata?.full_name || user.email?.split('@')[0] || 'Vendor',
+            business_name:
+              profileData?.business_name || user.user_metadata?.business_name || 'Vendor Business',
+            contact_name:
+              profileData?.full_name ||
+              user.user_metadata?.full_name ||
+              user.email?.split('@')[0] ||
+              'Vendor',
             email: user.email || '',
             phone: profileData?.phone || user.user_metadata?.phone || '',
             address: profileData?.address || '',
@@ -528,9 +544,9 @@ export const useEnhancedVendorData = () => {
             verified: false,
             active: true,
             created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString()
+            updated_at: new Date().toISOString(),
           } as VendorProfile;
-          
+
           // Fetch jobs for this user (even if no vendor profile exists)
           const { data: jobs } = await supabase
             .from('vendor_jobs')
@@ -542,7 +558,7 @@ export const useEnhancedVendorData = () => {
         } else {
           // Use real vendor data
           vendorProfile = vendorData as VendorProfile;
-          
+
           // Fetch jobs for this vendor
           const { data: jobs, error: jobsError } = await supabase
             .from('vendor_jobs')
@@ -553,11 +569,11 @@ export const useEnhancedVendorData = () => {
           if (jobsError) throw jobsError;
           jobsData = (jobs || []) as VendorJob[];
         }
-        
+
         console.log('Vendor real data loaded:', {
           profile: vendorProfile.contact_name,
           jobs: jobsData.length,
-          hasVendorProfile: !vendorError && !!vendorData
+          hasVendorProfile: !vendorError && !!vendorData,
         });
 
         setProfile(vendorProfile);
@@ -569,7 +585,6 @@ export const useEnhancedVendorData = () => {
 
         const metrics = calculatePerformanceMetrics(jobsData, calculatedStats);
         setPerformanceMetrics(metrics);
-
       } catch (err: any) {
         console.error('Error fetching vendor data:', err);
         setError(err.message || 'An error occurred while fetching vendor data');
@@ -591,7 +606,7 @@ export const useEnhancedVendorData = () => {
     updateJobStatus,
     updateJobCost,
     updateProfile,
-    uploadImage
+    uploadImage,
   };
 };
 

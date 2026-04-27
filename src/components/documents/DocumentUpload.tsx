@@ -2,14 +2,8 @@
 
 import React, { useState, useCallback, useRef } from 'react';
 import { useDocumentProcessing } from '@/hooks/useDocumentProcessing';
-import { useAuth } from '@/contexts/AuthContext';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
+import { useAuthSession } from '@/contexts/AuthContext';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import {
@@ -20,15 +14,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
-import {
-  Upload,
-  FileText,
-  X,
-  CheckCircle,
-  AlertCircle,
-  Image,
-  FileIcon
-} from 'lucide-react';
+import { Upload, FileText, X, CheckCircle, AlertCircle, Image, FileIcon } from 'lucide-react';
 import { DocumentType } from '@/types/documentProcessing';
 
 interface DocumentUploadProps {
@@ -53,9 +39,9 @@ export function DocumentUpload({
   onUploadComplete,
   acceptedTypes = ['.pdf', '.jpg', '.jpeg', '.png', '.doc', '.docx'],
   maxFiles = 10,
-  maxFileSize = 10
+  maxFileSize = 10,
 }: DocumentUploadProps) {
-  const { user } = useAuth();
+  const { user } = useAuthSession();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [files, setFiles] = useState<FileWithPreview[]>([]);
   const [isDragOver, setIsDragOver] = useState(false);
@@ -63,7 +49,7 @@ export function DocumentUpload({
 
   const { uploadDocument } = useDocumentProcessing({
     userId: user?.id,
-    propertyId
+    propertyId,
   });
 
   const generateFileId = () => `file_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
@@ -94,42 +80,43 @@ export function DocumentUpload({
     return undefined;
   };
 
-  const addFiles = useCallback(async (newFiles: File[]) => {
-    if (files.length + newFiles.length > maxFiles) {
-      alert(`Maximum ${maxFiles} files allowed`);
-      return;
-    }
-
-    const validFiles: FileWithPreview[] = [];
-
-    for (const file of newFiles) {
-      const error = validateFile(file);
-      if (error) {
-        alert(`${file.name}: ${error}`);
-        continue;
+  const addFiles = useCallback(
+    async (newFiles: File[]) => {
+      if (files.length + newFiles.length > maxFiles) {
+        alert(`Maximum ${maxFiles} files allowed`);
+        return;
       }
 
-      const fileWithPreview: FileWithPreview = Object.assign(file, {
-        id: generateFileId(),
-        preview: await createFilePreview(file),
-        uploadStatus: 'pending' as const,
-        uploadProgress: 0
-      });
+      const validFiles: FileWithPreview[] = [];
 
-      validFiles.push(fileWithPreview);
-    }
+      for (const file of newFiles) {
+        const error = validateFile(file);
+        if (error) {
+          alert(`${file.name}: ${error}`);
+          continue;
+        }
 
-    setFiles(prev => [...prev, ...validFiles]);
-  }, [files.length, maxFiles, maxFileSize, acceptedTypes]);
+        const fileWithPreview: FileWithPreview = Object.assign(file, {
+          id: generateFileId(),
+          preview: await createFilePreview(file),
+          uploadStatus: 'pending' as const,
+          uploadProgress: 0,
+        });
+
+        validFiles.push(fileWithPreview);
+      }
+
+      setFiles((prev) => [...prev, ...validFiles]);
+    },
+    [files.length, maxFiles, maxFileSize, acceptedTypes]
+  );
 
   const removeFile = useCallback((fileId: string) => {
-    setFiles(prev => prev.filter(f => f.id !== fileId));
+    setFiles((prev) => prev.filter((f) => f.id !== fileId));
   }, []);
 
   const updateFileType = useCallback((fileId: string, documentType: DocumentType) => {
-    setFiles(prev => prev.map(f => 
-      f.id === fileId ? { ...f, documentType } : f
-    ));
+    setFiles((prev) => prev.map((f) => (f.id === fileId ? { ...f, documentType } : f)));
   }, []);
 
   const handleDragOver = useCallback((e: React.DragEvent) => {
@@ -142,21 +129,27 @@ export function DocumentUpload({
     setIsDragOver(false);
   }, []);
 
-  const handleDrop = useCallback((e: React.DragEvent) => {
-    e.preventDefault();
-    setIsDragOver(false);
-    
-    const droppedFiles = Array.from(e.dataTransfer.files);
-    addFiles(droppedFiles);
-  }, [addFiles]);
+  const handleDrop = useCallback(
+    (e: React.DragEvent) => {
+      e.preventDefault();
+      setIsDragOver(false);
 
-  const handleFileSelect = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files) {
-      const selectedFiles = Array.from(e.target.files);
-      addFiles(selectedFiles);
-      e.target.value = ''; // Reset input
-    }
-  }, [addFiles]);
+      const droppedFiles = Array.from(e.dataTransfer.files);
+      addFiles(droppedFiles);
+    },
+    [addFiles]
+  );
+
+  const handleFileSelect = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      if (e.target.files) {
+        const selectedFiles = Array.from(e.target.files);
+        addFiles(selectedFiles);
+        e.target.value = ''; // Reset input
+      }
+    },
+    [addFiles]
+  );
 
   const uploadFiles = useCallback(async () => {
     if (!user?.id || files.length === 0) return;
@@ -169,50 +162,54 @@ export function DocumentUpload({
         if (file.uploadStatus === 'completed') continue;
 
         // Update file status
-        setFiles(prev => prev.map(f => 
-          f.id === file.id 
-            ? { ...f, uploadStatus: 'uploading', uploadProgress: 0 }
-            : f
-        ));
+        setFiles((prev) =>
+          prev.map((f) =>
+            f.id === file.id ? { ...f, uploadStatus: 'uploading', uploadProgress: 0 } : f
+          )
+        );
 
         try {
           // Simulate upload progress
           const progressInterval = setInterval(() => {
-            setFiles(prev => prev.map(f => 
-              f.id === file.id && f.uploadProgress !== undefined
-                ? { ...f, uploadProgress: Math.min(f.uploadProgress + 10, 90) }
-                : f
-            ));
+            setFiles((prev) =>
+              prev.map((f) =>
+                f.id === file.id && f.uploadProgress !== undefined
+                  ? { ...f, uploadProgress: Math.min(f.uploadProgress + 10, 90) }
+                  : f
+              )
+            );
           }, 200);
 
           await uploadDocument({
             file,
             userId: user.id,
             propertyId,
-            documentType: file.documentType
+            documentType: file.documentType,
           });
 
           clearInterval(progressInterval);
 
           // Mark as completed
-          setFiles(prev => prev.map(f => 
-            f.id === file.id 
-              ? { ...f, uploadStatus: 'completed', uploadProgress: 100 }
-              : f
-          ));
+          setFiles((prev) =>
+            prev.map((f) =>
+              f.id === file.id ? { ...f, uploadStatus: 'completed', uploadProgress: 100 } : f
+            )
+          );
 
           uploadedIds.push(file.id);
         } catch (error) {
           // Mark as error
-          setFiles(prev => prev.map(f => 
-            f.id === file.id 
-              ? { 
-                  ...f, 
-                  uploadStatus: 'error', 
-                  errorMessage: error instanceof Error ? error.message : 'Upload failed'
-                }
-              : f
-          ));
+          setFiles((prev) =>
+            prev.map((f) =>
+              f.id === file.id
+                ? {
+                    ...f,
+                    uploadStatus: 'error',
+                    errorMessage: error instanceof Error ? error.message : 'Upload failed',
+                  }
+                : f
+            )
+          );
         }
       }
 
@@ -256,27 +253,21 @@ export function DocumentUpload({
         <CardContent>
           <div
             className={`
-              border-2 border-dashed rounded-lg p-8 text-center transition-colors
-              ${isDragOver 
-                ? 'border-blue-500 bg-blue-50' 
-                : 'border-gray-300 hover:border-gray-400'
-              }
+              rounded-lg border-2 border-dashed p-8 text-center transition-colors
+              ${isDragOver ? 'border-blue-500 bg-blue-50' : 'border-gray-300 hover:border-gray-400'}
             `}
             onDragOver={handleDragOver}
             onDragLeave={handleDragLeave}
             onDrop={handleDrop}
           >
-            <Upload className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-lg font-medium text-gray-900 mb-2">
+            <Upload className="mx-auto mb-4 h-12 w-12 text-gray-400" />
+            <h3 className="mb-2 text-lg font-medium text-gray-900">
               Drop files here or click to upload
             </h3>
-            <p className="text-gray-600 mb-4">
+            <p className="mb-4 text-gray-600">
               Maximum {maxFiles} files, up to {maxFileSize}MB each
             </p>
-            <Button
-              onClick={() => fileInputRef.current?.click()}
-              disabled={isUploading}
-            >
+            <Button onClick={() => fileInputRef.current?.click()} disabled={isUploading}>
               Select Files
             </Button>
             <input
@@ -300,14 +291,14 @@ export function DocumentUpload({
           <CardContent>
             <div className="space-y-4">
               {files.map((file) => (
-                <div key={file.id} className="flex items-center gap-4 p-4 border rounded-lg">
+                <div key={file.id} className="flex items-center gap-4 rounded-lg border p-4">
                   {/* File Preview/Icon */}
                   <div className="flex-shrink-0">
                     {file.preview ? (
                       <img
                         src={file.preview}
                         alt={file.name}
-                        className="h-12 w-12 object-cover rounded"
+                        className="h-12 w-12 rounded object-cover"
                       />
                     ) : (
                       getFileIcon(file)
@@ -315,11 +306,9 @@ export function DocumentUpload({
                   </div>
 
                   {/* File Info */}
-                  <div className="flex-1 min-w-0">
-                    <h4 className="font-medium truncate">{file.name}</h4>
-                    <p className="text-sm text-gray-600">
-                      {Math.round(file.size / 1024)} KB
-                    </p>
+                  <div className="min-w-0 flex-1">
+                    <h4 className="truncate font-medium">{file.name}</h4>
+                    <p className="text-sm text-gray-600">{Math.round(file.size / 1024)} KB</p>
 
                     {/* Document Type Selection */}
                     <div className="mt-2">
@@ -349,7 +338,7 @@ export function DocumentUpload({
                     {file.uploadStatus === 'uploading' && file.uploadProgress !== undefined && (
                       <div className="mt-2">
                         <Progress value={file.uploadProgress} className="h-2" />
-                        <p className="text-xs text-gray-600 mt-1">
+                        <p className="mt-1 text-xs text-gray-600">
                           Uploading... {file.uploadProgress}%
                         </p>
                       </div>
@@ -357,7 +346,7 @@ export function DocumentUpload({
 
                     {/* Error Message */}
                     {file.uploadStatus === 'error' && file.errorMessage && (
-                      <p className="text-sm text-red-600 mt-1">{file.errorMessage}</p>
+                      <p className="mt-1 text-sm text-red-600">{file.errorMessage}</p>
                     )}
                   </div>
 
@@ -378,21 +367,22 @@ export function DocumentUpload({
             </div>
 
             {/* Upload Button */}
-            <div className="mt-6 flex justify-between items-center">
+            <div className="mt-6 flex items-center justify-between">
               <p className="text-sm text-gray-600">
-                {files.filter(f => f.uploadStatus === 'completed').length} of {files.length} files uploaded
+                {files.filter((f) => f.uploadStatus === 'completed').length} of {files.length} files
+                uploaded
               </p>
               <div className="flex gap-2">
-                <Button
-                  variant="outline"
-                  onClick={() => setFiles([])}
-                  disabled={isUploading}
-                >
+                <Button variant="outline" onClick={() => setFiles([])} disabled={isUploading}>
                   Clear All
                 </Button>
                 <Button
                   onClick={uploadFiles}
-                  disabled={isUploading || files.length === 0 || files.every(f => f.uploadStatus === 'completed')}
+                  disabled={
+                    isUploading ||
+                    files.length === 0 ||
+                    files.every((f) => f.uploadStatus === 'completed')
+                  }
                 >
                   {isUploading ? 'Uploading...' : 'Upload Files'}
                 </Button>

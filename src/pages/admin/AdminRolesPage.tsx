@@ -1,4 +1,3 @@
-
 import { PageLayout } from '@/components/layout/PageLayout';
 import { PageContent } from '@/components/layout/PageContent';
 import { useAdminUsers } from '@/hooks/useAdminUsers';
@@ -11,7 +10,7 @@ export default function AdminRolesPage() {
   return (
     <PageLayout>
       <PageContent title="Role Management" description="Manage role assignments and permissions.">
-        <div className="bg-background p-6 rounded-lg shadow-sm border">
+        <div className="rounded-lg border bg-background p-6 shadow-sm">
           {isLoading && (
             <div className="space-y-4">
               <Skeleton className="h-12 w-full" />

@@ -1,0 +1,12 @@
+# Replace these placeholders with your real GitHub usernames/teams.
+# Syntax reference: https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
+
+* @damianixpro
+
+# Security / deployment-critical areas
+/.github/workflows/ @damianixpro
+/supabase/functions/ @damianixpro
+/src/services/nigerian/ @damianixpro
+/src/services/payments/ @damianixpro
+/scripts/check-secret-hygiene.js @damianixpro
+/SECURITY_ENV_POLICY.md @damianixpro

@@ -125,8 +125,18 @@ export interface PredictiveInsights {
   };
   riskAnalysis: {
     marketRisks: Array<{ risk: string; probability: number; impact: number; mitigation: string }>;
-    operationalRisks: Array<{ risk: string; probability: number; impact: number; mitigation: string }>;
-    financialRisks: Array<{ risk: string; probability: number; impact: number; mitigation: string }>;
+    operationalRisks: Array<{
+      risk: string;
+      probability: number;
+      impact: number;
+      mitigation: string;
+    }>;
+    financialRisks: Array<{
+      risk: string;
+      probability: number;
+      impact: number;
+      mitigation: string;
+    }>;
   };
   opportunities: Array<{
     opportunity: string;
@@ -148,7 +158,7 @@ class AdvancedAnalyticsSystem {
     this.userBehavior = this.initializeUserBehavior();
     this.businessIntelligence = this.initializeBusinessIntelligence();
     this.predictiveInsights = this.initializePredictiveInsights();
-    
+
     this.startRealTimeUpdates();
   }
 
@@ -169,8 +179,8 @@ class AdvancedAnalyticsSystem {
           priceRanges: {
             budget: { min: 5000000, max: 20000000, percentage: 35 },
             mid: { min: 20000000, max: 80000000, percentage: 45 },
-            luxury: { min: 80000000, max: 500000000, percentage: 20 }
-          }
+            luxury: { min: 80000000, max: 500000000, percentage: 20 },
+          },
         },
         abuja: {
           averagePrice: 35000000,
@@ -186,8 +196,8 @@ class AdvancedAnalyticsSystem {
           priceRanges: {
             budget: { min: 8000000, max: 25000000, percentage: 40 },
             mid: { min: 25000000, max: 70000000, percentage: 45 },
-            luxury: { min: 70000000, max: 300000000, percentage: 15 }
-          }
+            luxury: { min: 70000000, max: 300000000, percentage: 15 },
+          },
         },
         portHarcourt: {
           averagePrice: 28000000,
@@ -203,8 +213,8 @@ class AdvancedAnalyticsSystem {
           priceRanges: {
             budget: { min: 6000000, max: 20000000, percentage: 45 },
             mid: { min: 20000000, max: 50000000, percentage: 40 },
-            luxury: { min: 50000000, max: 150000000, percentage: 15 }
-          }
+            luxury: { min: 50000000, max: 150000000, percentage: 15 },
+          },
         },
         kano: {
           averagePrice: 18000000,
@@ -220,8 +230,8 @@ class AdvancedAnalyticsSystem {
           priceRanges: {
             budget: { min: 3000000, max: 15000000, percentage: 55 },
             mid: { min: 15000000, max: 35000000, percentage: 35 },
-            luxury: { min: 35000000, max: 100000000, percentage: 10 }
-          }
+            luxury: { min: 35000000, max: 100000000, percentage: 10 },
+          },
         },
         ibadan: {
           averagePrice: 22000000,
@@ -237,24 +247,24 @@ class AdvancedAnalyticsSystem {
           priceRanges: {
             budget: { min: 4000000, max: 18000000, percentage: 50 },
             mid: { min: 18000000, max: 40000000, percentage: 40 },
-            luxury: { min: 40000000, max: 120000000, percentage: 10 }
-          }
-        }
+            luxury: { min: 40000000, max: 120000000, percentage: 10 },
+          },
+        },
       },
       nationalTrends: {
         averagePrice: 29600000,
         priceGrowth: 9.8,
         demandIndex: 7.1,
         supplyIndex: 6.5,
-        affordabilityIndex: 5.9
+        affordabilityIndex: 5.9,
       },
       economicIndicators: {
         gdpGrowth: 3.2,
         inflationRate: 15.7,
         interestRates: 18.5,
-        exchangeRate: 785.50,
-        oilPrices: 82.45
-      }
+        exchangeRate: 785.5,
+        oilPrices: 82.45,
+      },
     };
   }
 
@@ -265,7 +275,7 @@ class AdvancedAnalyticsSystem {
         '35-44': 28,
         '45-54': 22,
         '18-24': 10,
-        '55+': 5
+        '55+': 5,
       },
       searchPatterns: {
         popularFilters: ['Price Range', 'Location', 'Property Type', 'Bedrooms', 'Amenities'],
@@ -273,40 +283,40 @@ class AdvancedAnalyticsSystem {
           '5M-20M': 40,
           '20M-50M': 35,
           '50M-100M': 15,
-          '100M+': 10
+          '100M+': 10,
         },
         locationPreferences: {
-          'Lagos': 45,
-          'Abuja': 25,
+          Lagos: 45,
+          Abuja: 25,
           'Port Harcourt': 12,
-          'Ibadan': 10,
-          'Kano': 8
+          Ibadan: 10,
+          Kano: 8,
         },
         propertyTypes: {
-          'Apartment': 45,
+          Apartment: 45,
           'Detached House': 30,
-          'Duplex': 15,
-          'Terraced House': 10
-        }
+          Duplex: 15,
+          'Terraced House': 10,
+        },
       },
       conversionMetrics: {
         searchToView: 15.2,
         viewToInquiry: 8.7,
         inquiryToLead: 12.3,
         leadToSale: 4.8,
-        averageTimeToDecision: 21
+        averageTimeToDecision: 21,
       },
       deviceUsage: {
         mobile: 72,
         desktop: 23,
-        tablet: 5
+        tablet: 5,
       },
       networkAnalysis: {
         '4G': 45,
         '3G': 35,
         '2G': 15,
-        'WiFi': 5
-      }
+        WiFi: 5,
+      },
     };
   }
 
@@ -316,18 +326,18 @@ class AdvancedAnalyticsSystem {
         total: 125000000,
         growth: 23.5,
         byCity: {
-          'Lagos': 65000000,
-          'Abuja': 35000000,
+          Lagos: 65000000,
+          Abuja: 35000000,
           'Port Harcourt': 15000000,
-          'Others': 10000000
+          Others: 10000000,
         },
         byPropertyType: {
-          'Residential': 85000000,
-          'Commercial': 30000000,
-          'Land': 10000000
+          Residential: 85000000,
+          Commercial: 30000000,
+          Land: 10000000,
         },
         recurring: 75000000,
-        oneTime: 50000000
+        oneTime: 50000000,
       },
       customers: {
         total: 15847,
@@ -335,7 +345,7 @@ class AdvancedAnalyticsSystem {
         churnRate: 8.3,
         acquisitionCost: 12500,
         lifetimeValue: 185000,
-        satisfaction: 4.2
+        satisfaction: 4.2,
       },
       operations: {
         listingVolume: 5847,
@@ -344,18 +354,18 @@ class AdvancedAnalyticsSystem {
         agentPerformance: {
           'Top 10%': 95,
           'Top 25%': 85,
-          'Average': 68,
-          'Below Average': 45
+          Average: 68,
+          'Below Average': 45,
         },
         maintenanceRequests: 1247,
-        responseTime: 18
+        responseTime: 18,
       },
       marketing: {
         channels: {
           'Social Media': { cost: 2500000, conversions: 1250, roi: 4.2 },
           'Google Ads': { cost: 3200000, conversions: 980, roi: 3.8 },
-          'Referrals': { cost: 800000, conversions: 650, roi: 8.5 },
-          'Email': { cost: 450000, conversions: 420, roi: 6.2 }
+          Referrals: { cost: 800000, conversions: 650, roi: 8.5 },
+          Email: { cost: 450000, conversions: 420, roi: 6.2 },
         },
         campaigns: [
           {
@@ -364,7 +374,7 @@ class AdvancedAnalyticsSystem {
             engagement: 8.5,
             conversions: 450,
             cost: 1200000,
-            roi: 5.2
+            roi: 5.2,
           },
           {
             name: 'Abuja Investment Drive',
@@ -372,10 +382,10 @@ class AdvancedAnalyticsSystem {
             engagement: 6.8,
             conversions: 280,
             cost: 950000,
-            roi: 4.1
-          }
-        ]
-      }
+            roi: 4.1,
+          },
+        ],
+      },
     };
   }
 
@@ -384,12 +394,12 @@ class AdvancedAnalyticsSystem {
       marketForecasts: {
         priceProjections: this.generatePriceProjections(),
         demandForecast: this.generateDemandForecast(),
-        supplyProjections: this.generateSupplyProjections()
+        supplyProjections: this.generateSupplyProjections(),
       },
       businessPredictions: {
         revenueProjection: this.generateRevenueProjections(),
         userGrowth: this.generateUserGrowthProjections(),
-        marketShare: this.generateMarketShareProjections()
+        marketShare: this.generateMarketShareProjections(),
       },
       riskAnalysis: {
         marketRisks: [
@@ -397,49 +407,49 @@ class AdvancedAnalyticsSystem {
             risk: 'Economic recession impact on property demand',
             probability: 35,
             impact: 8,
-            mitigation: 'Diversify into affordable housing segment'
+            mitigation: 'Diversify into affordable housing segment',
           },
           {
             risk: 'Currency devaluation affecting foreign investment',
             probability: 45,
             impact: 7,
-            mitigation: 'Focus on local investors and diaspora market'
+            mitigation: 'Focus on local investors and diaspora market',
           },
           {
             risk: 'Regulatory changes in property taxation',
             probability: 25,
             impact: 6,
-            mitigation: 'Maintain compliance team and government relations'
-          }
+            mitigation: 'Maintain compliance team and government relations',
+          },
         ],
         operationalRisks: [
           {
             risk: 'Network infrastructure limitations affecting platform performance',
             probability: 60,
             impact: 6,
-            mitigation: 'Implement advanced caching and offline capabilities'
+            mitigation: 'Implement advanced caching and offline capabilities',
           },
           {
             risk: 'Skilled talent shortage in Nigerian tech market',
             probability: 40,
             impact: 7,
-            mitigation: 'Invest in training programs and remote talent acquisition'
-          }
+            mitigation: 'Invest in training programs and remote talent acquisition',
+          },
         ],
         financialRisks: [
           {
             risk: 'Payment gateway failures during peak periods',
             probability: 30,
             impact: 8,
-            mitigation: 'Implement multiple payment providers and fallback systems'
+            mitigation: 'Implement multiple payment providers and fallback systems',
           },
           {
             risk: 'Cash flow issues from delayed property transactions',
             probability: 35,
             impact: 7,
-            mitigation: 'Diversify revenue streams and maintain cash reserves'
-          }
-        ]
+            mitigation: 'Diversify revenue streams and maintain cash reserves',
+          },
+        ],
       },
       opportunities: [
         {
@@ -447,23 +457,23 @@ class AdvancedAnalyticsSystem {
           potential: 85,
           timeframe: '6-12 months',
           requirements: ['Market research', 'Partnership with developers', 'Financing options'],
-          expectedROI: 180
+          expectedROI: 180,
         },
         {
           opportunity: 'Launch property investment advisory services',
           potential: 75,
           timeframe: '3-6 months',
           requirements: ['Expert team', 'Investment tools', 'Regulatory compliance'],
-          expectedROI: 220
+          expectedROI: 220,
         },
         {
           opportunity: 'Develop diaspora investment platform',
           potential: 90,
           timeframe: '9-15 months',
           requirements: ['International payment systems', 'Legal framework', 'Marketing'],
-          expectedROI: 350
-        }
-      ]
+          expectedROI: 350,
+        },
+      ],
     };
   }
 
@@ -471,8 +481,8 @@ class AdvancedAnalyticsSystem {
     const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'];
     return months.map((month, index) => ({
       month,
-      price: 29600000 * (1 + (index * 0.008)), // 0.8% monthly growth
-      confidence: Math.max(95 - (index * 5), 70) // Decreasing confidence over time
+      price: 29600000 * (1 + index * 0.008), // 0.8% monthly growth
+      confidence: Math.max(95 - index * 5, 70), // Decreasing confidence over time
     }));
   }
 
@@ -481,7 +491,7 @@ class AdvancedAnalyticsSystem {
     return months.map((month, index) => ({
       month,
       demand: 7.1 + (Math.random() * 0.6 - 0.3), // Slight variation around current demand
-      factors: ['Economic growth', 'Population increase', 'Infrastructure development']
+      factors: ['Economic growth', 'Population increase', 'Infrastructure development'],
     }));
   }
 
@@ -489,8 +499,8 @@ class AdvancedAnalyticsSystem {
     const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'];
     return months.map((month, index) => ({
       month,
-      supply: 6.5 + (index * 0.1), // Gradual supply increase
-      newDevelopments: Math.floor(Math.random() * 50) + 20
+      supply: 6.5 + index * 0.1, // Gradual supply increase
+      newDevelopments: Math.floor(Math.random() * 50) + 20,
     }));
   }
 
@@ -498,8 +508,8 @@ class AdvancedAnalyticsSystem {
     const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'];
     return months.map((month, index) => ({
       month,
-      revenue: 125000000 * (1 + (index * 0.02)), // 2% monthly growth
-      confidence: Math.max(90 - (index * 3), 75)
+      revenue: 125000000 * (1 + index * 0.02), // 2% monthly growth
+      confidence: Math.max(90 - index * 3, 75),
     }));
   }
 
@@ -507,8 +517,8 @@ class AdvancedAnalyticsSystem {
     const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'];
     return months.map((month, index) => ({
       month,
-      users: 15847 * (1 + (index * 0.015)), // 1.5% monthly user growth
-      churnPrediction: 8.3 + (Math.random() * 2 - 1) // Slight variation in churn
+      users: 15847 * (1 + index * 0.015), // 1.5% monthly user growth
+      churnPrediction: 8.3 + (Math.random() * 2 - 1), // Slight variation in churn
     }));
   }
 
@@ -516,13 +526,13 @@ class AdvancedAnalyticsSystem {
     const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'];
     return months.map((month, index) => ({
       month,
-      share: 15.2 + (index * 0.3), // Gradual market share growth
+      share: 15.2 + index * 0.3, // Gradual market share growth
       competitors: {
-        'PropertyPro': 22.1,
-        'ToLet': 18.5,
+        PropertyPro: 22.1,
+        ToLet: 18.5,
         'Private Property': 12.8,
-        'Others': 31.4
-      }
+        Others: 31.4,
+      },
     }));
   }
 
@@ -537,23 +547,23 @@ class AdvancedAnalyticsSystem {
 
   private updateMarketData(): void {
     // Simulate market data fluctuations
-    Object.keys(this.marketData.cities).forEach(city => {
+    Object.keys(this.marketData.cities).forEach((city) => {
       const cityData = this.marketData.cities[city as keyof typeof this.marketData.cities];
-      cityData.averagePrice *= (1 + (Math.random() * 0.002 - 0.001)); // ±0.1% variation
-      cityData.demandScore += (Math.random() * 0.2 - 0.1); // ±0.1 variation
+      cityData.averagePrice *= 1 + (Math.random() * 0.002 - 0.001); // ±0.1% variation
+      cityData.demandScore += Math.random() * 0.2 - 0.1; // ±0.1 variation
       cityData.demandScore = Math.max(0, Math.min(10, cityData.demandScore));
     });
   }
 
   private updateUserBehavior(): void {
     // Simulate user behavior changes
-    this.userBehavior.conversionMetrics.searchToView += (Math.random() * 0.4 - 0.2);
-    this.userBehavior.conversionMetrics.viewToInquiry += (Math.random() * 0.2 - 0.1);
+    this.userBehavior.conversionMetrics.searchToView += Math.random() * 0.4 - 0.2;
+    this.userBehavior.conversionMetrics.viewToInquiry += Math.random() * 0.2 - 0.1;
   }
 
   private updateBusinessIntelligence(): void {
     // Simulate business metrics updates
-    this.businessIntelligence.revenue.total *= (1 + (Math.random() * 0.001 - 0.0005));
+    this.businessIntelligence.revenue.total *= 1 + (Math.random() * 0.001 - 0.0005);
     this.businessIntelligence.customers.active += Math.floor(Math.random() * 10 - 5);
   }
 
@@ -588,7 +598,7 @@ class AdvancedAnalyticsSystem {
     generatedAt: Date;
   }> {
     // Simulate report generation
-    await new Promise(resolve => setTimeout(resolve, 2000));
+    await new Promise((resolve) => setTimeout(resolve, 2000));
 
     return {
       title: `Nigerian Property Market Analysis - ${parameters.format.toUpperCase()}`,
@@ -597,20 +607,20 @@ class AdvancedAnalyticsSystem {
         'Lagos continues to dominate with 45% of total market activity',
         'Mobile usage accounts for 72% of platform interactions',
         'Average property prices increased by 9.8% year-over-year',
-        'Demand for affordable housing (₦5M-20M) represents 40% of searches'
+        'Demand for affordable housing (₦5M-20M) represents 40% of searches',
       ],
       recommendations: [
         'Focus marketing efforts on mobile-first strategies',
         'Expand affordable housing listings in Lagos and Abuja',
         'Develop diaspora investment products for international buyers',
-        'Implement predictive pricing tools for agents'
+        'Implement predictive pricing tools for agents',
       ],
       data: {
         marketData: this.marketData,
         userBehavior: this.userBehavior,
-        businessIntelligence: this.businessIntelligence
+        businessIntelligence: this.businessIntelligence,
       },
-      generatedAt: new Date()
+      generatedAt: new Date(),
     };
   }
 
@@ -622,28 +632,26 @@ class AdvancedAnalyticsSystem {
     opportunities: string[];
     risks: string[];
   }> {
-    await new Promise(resolve => setTimeout(resolve, 1500));
+    await new Promise((resolve) => setTimeout(resolve, 1500));
 
-    const cityData = this.marketData.cities[city.toLowerCase() as keyof typeof this.marketData.cities];
-    
+    const cityData =
+      this.marketData.cities[city.toLowerCase() as keyof typeof this.marketData.cities];
+
     if (!cityData) {
       throw new Error(`Market data not available for ${city}`);
     }
 
     const marketHealth = Math.floor(
-      (cityData.demandScore * 0.3 + 
-       cityData.supplyScore * 0.2 + 
-       cityData.affordabilityIndex * 0.2 + 
-       (cityData.yearlyGrowth / 15) * 10 * 0.3) * 10
+      (cityData.demandScore * 0.3 +
+        cityData.supplyScore * 0.2 +
+        cityData.affordabilityIndex * 0.2 +
+        (cityData.yearlyGrowth / 15) * 10 * 0.3) *
+        10
     );
 
-    const growthPotential = Math.floor(
-      (cityData.yearlyGrowth / 15) * 100
-    );
+    const growthPotential = Math.floor((cityData.yearlyGrowth / 15) * 100);
 
-    const competitivePosition = Math.floor(
-      (cityData.inventory / 3000) * 100
-    );
+    const competitivePosition = Math.floor((cityData.inventory / 3000) * 100);
 
     return {
       marketHealth,
@@ -653,18 +661,18 @@ class AdvancedAnalyticsSystem {
         `Focus on ${cityData.popularAreas[0]} and ${cityData.popularAreas[1]} for premium listings`,
         `Target ${cityData.priceRanges.budget.percentage}% budget segment (₦${cityData.priceRanges.budget.min.toLocaleString()}-₦${cityData.priceRanges.budget.max.toLocaleString()})`,
         `Average days on market: ${cityData.daysOnMarket} days - optimize pricing strategy`,
-        `Demand score: ${cityData.demandScore.toFixed(1)}/10 - ${cityData.demandScore > 7 ? 'strong market' : 'moderate demand'}`
+        `Demand score: ${cityData.demandScore.toFixed(1)}/10 - ${cityData.demandScore > 7 ? 'strong market' : 'moderate demand'}`,
       ],
       opportunities: [
         'Affordable housing development partnerships',
         'Investment advisory services for high-net-worth individuals',
-        'Property management services expansion'
+        'Property management services expansion',
       ],
       risks: [
         'Economic volatility impact on purchasing power',
         'Infrastructure development delays',
-        'Regulatory changes in property taxation'
-      ]
+        'Regulatory changes in property taxation',
+      ],
     };
   }
 }
@@ -676,8 +684,11 @@ export const nigerianAnalytics = new AdvancedAnalyticsSystem();
 export const useAdvancedAnalytics = () => {
   const [marketData, setMarketData] = React.useState<NigerianMarketData | null>(null);
   const [userBehavior, setUserBehavior] = React.useState<UserBehaviorAnalytics | null>(null);
-  const [businessIntelligence, setBusinessIntelligence] = React.useState<BusinessIntelligence | null>(null);
-  const [predictiveInsights, setPredictiveInsights] = React.useState<PredictiveInsights | null>(null);
+  const [businessIntelligence, setBusinessIntelligence] =
+    React.useState<BusinessIntelligence | null>(null);
+  const [predictiveInsights, setPredictiveInsights] = React.useState<PredictiveInsights | null>(
+    null
+  );
   const [loading, setLoading] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
 
@@ -729,6 +740,6 @@ export const useAdvancedAnalytics = () => {
     loading,
     error,
     generateReport,
-    analyzeMarket
+    analyzeMarket,
   };
 };

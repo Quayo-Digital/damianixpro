@@ -48,7 +48,7 @@ import {
   Camera,
   Wifi,
   Battery,
-  Signal
+  Signal,
 } from 'lucide-react';
 import { VRTour, VRScene, VRHotspot, VRTourSession } from '@/types/vrTours';
 
@@ -75,7 +75,7 @@ export function VRTourViewer({
   enableAR = true,
   onTourComplete,
   onSceneChange,
-  onHotspotClick
+  onHotspotClick,
 }: VRTourViewerProps) {
   const {
     currentTour,
@@ -88,7 +88,7 @@ export function VRTourViewer({
     isARSupported,
     hasVRAccess,
     hasARAccess,
-    userSettings
+    userSettings,
   } = useVRTours({ autoStart });
 
   // State
@@ -141,9 +141,14 @@ export function VRTourViewer({
             resolution: '4096x2048',
             fileSize: 2048000,
             quality: 'high',
-            compressionSettings: { quality: 85, format: 'webp', progressive: true, optimization: 'web' },
-            metadata: { width: 4096, height: 2048 }
-          }
+            compressionSettings: {
+              quality: 85,
+              format: 'webp',
+              progressive: true,
+              optimization: 'web',
+            },
+            metadata: { width: 4096, height: 2048 },
+          },
         ],
         connections: [],
         annotations: [],
@@ -152,18 +157,18 @@ export function VRTourViewer({
           directionalLights: [],
           pointLights: [],
           shadows: true,
-          shadowQuality: 'medium'
+          shadowQuality: 'medium',
         },
         audio: {
           ambientSounds: [],
           spatialAudio: true,
           volume: 0.7,
           fadeIn: true,
-          fadeOut: true
+          fadeOut: true,
         },
         interactiveElements: [],
         order: 0,
-        isEntryPoint: true
+        isEntryPoint: true,
       },
       {
         id: 'scene_2',
@@ -182,9 +187,14 @@ export function VRTourViewer({
             resolution: '4096x2048',
             fileSize: 1856000,
             quality: 'high',
-            compressionSettings: { quality: 85, format: 'webp', progressive: true, optimization: 'web' },
-            metadata: { width: 4096, height: 2048 }
-          }
+            compressionSettings: {
+              quality: 85,
+              format: 'webp',
+              progressive: true,
+              optimization: 'web',
+            },
+            metadata: { width: 4096, height: 2048 },
+          },
         ],
         connections: [],
         annotations: [],
@@ -193,19 +203,19 @@ export function VRTourViewer({
           directionalLights: [],
           pointLights: [],
           shadows: true,
-          shadowQuality: 'medium'
+          shadowQuality: 'medium',
         },
         audio: {
           ambientSounds: [],
           spatialAudio: true,
           volume: 0.7,
           fadeIn: true,
-          fadeOut: true
+          fadeOut: true,
         },
         interactiveElements: [],
         order: 1,
-        isEntryPoint: false
-      }
+        isEntryPoint: false,
+      },
     ],
     hotspots: [
       {
@@ -220,10 +230,16 @@ export function VRTourViewer({
         icon: 'arrow-right',
         color: '#3b82f6',
         action: { type: 'navigate', targetSceneId: 'scene_2' },
-        visibility: { always: true, onHover: false, onClick: false, distance: { min: 0, max: 100 }, angle: { min: 0, max: 360 } },
+        visibility: {
+          always: true,
+          onHover: false,
+          onClick: false,
+          distance: { min: 0, max: 100 },
+          angle: { min: 0, max: 360 },
+        },
         animation: { type: 'pulse', duration: 2000, easing: 'ease-in-out', loop: true, delay: 0 },
-        trigger: { type: 'click', parameters: {}, conditions: [] }
-      }
+        trigger: { type: 'click', parameters: {}, conditions: [] },
+      },
     ],
     metadata: {
       propertyDetails: {
@@ -235,7 +251,7 @@ export function VRTourViewer({
         yearBuilt: 2020,
         features: ['Ocean View', 'Modern Kitchen', 'Balcony', 'Parking'],
         amenities: ['Pool', 'Gym', 'Security', '24/7 Power'],
-        neighborhood: 'Victoria Island'
+        neighborhood: 'Victoria Island',
       },
       captureInfo: {
         captureDate: new Date('2024-01-15'),
@@ -244,7 +260,7 @@ export function VRTourViewer({
         processingDate: new Date('2024-01-16'),
         software: 'Matterport',
         version: '3.0',
-        notes: 'High-quality 8K capture'
+        notes: 'High-quality 8K capture',
       },
       technicalSpecs: {
         totalScenes: 2,
@@ -259,9 +275,9 @@ export function VRTourViewer({
           storage: '1GB',
           bandwidth: '5 Mbps',
           browser: ['Chrome 80+', 'Firefox 75+', 'Safari 13+'],
-          webgl: 'WebGL 2.0'
+          webgl: 'WebGL 2.0',
         },
-        maxConcurrentUsers: 100
+        maxConcurrentUsers: 100,
       },
       seoData: {
         title: 'Virtual Tour - Luxury Apartment Victoria Island',
@@ -270,10 +286,10 @@ export function VRTourViewer({
         ogImage: '/api/placeholder/1200/630',
         ogTitle: 'Virtual Property Tour',
         ogDescription: 'Immersive 360° property viewing experience',
-        structuredData: {}
+        structuredData: {},
       },
       tags: ['luxury', 'waterfront', 'modern'],
-      categories: ['residential', 'apartment']
+      categories: ['residential', 'apartment'],
     },
     accessibility: {
       screenReader: false,
@@ -284,7 +300,7 @@ export function VRTourViewer({
       highContrast: false,
       textToSpeech: false,
       gestureControls: false,
-      customizations: []
+      customizations: [],
     },
     analytics: {
       totalViews: 1247,
@@ -302,11 +318,11 @@ export function VRTourViewer({
         shareRate: 8,
         favoriteRate: 15,
         contactRate: 7,
-        tourCompletionToInquiry: 18
-      }
+        tourCompletionToInquiry: 18,
+      },
     },
     createdAt: new Date('2024-01-10'),
-    updatedAt: new Date('2024-01-16')
+    updatedAt: new Date('2024-01-16'),
   };
 
   // Initialize tour session
@@ -320,7 +336,7 @@ export function VRTourViewer({
   useEffect(() => {
     if (currentSession && isPlaying) {
       sessionTimerRef.current = setInterval(() => {
-        setSessionDuration(prev => prev + 1);
+        setSessionDuration((prev) => prev + 1);
       }, 1000);
     } else {
       if (sessionTimerRef.current) {
@@ -340,21 +356,21 @@ export function VRTourViewer({
     try {
       setIsLoading(true);
       setError(null);
-      
+
       // Simulate loading
       for (let i = 0; i <= 100; i += 10) {
         setLoadingProgress(i);
-        await new Promise(resolve => setTimeout(resolve, 100));
+        await new Promise((resolve) => setTimeout(resolve, 100));
       }
-      
+
       const session = await startTourSession(tourId);
       setIsPlaying(true);
       setIsLoading(false);
-      
+
       trackEvent({
         type: 'scene-enter',
         sceneId: mockTour.scenes[0].id,
-        data: { viewMode, quality }
+        data: { viewMode, quality },
       });
     } catch (error) {
       setError(error instanceof Error ? error.message : 'Failed to start tour');
@@ -366,11 +382,11 @@ export function VRTourViewer({
     try {
       setIsPlaying(false);
       const session = await endTourSession();
-      
+
       if (session && onTourComplete) {
         onTourComplete(session);
       }
-      
+
       setSessionDuration(0);
       setTourProgress(0);
       setCurrentSceneIndex(0);
@@ -379,44 +395,52 @@ export function VRTourViewer({
     }
   }, [endTourSession, onTourComplete]);
 
-  const handleSceneChange = useCallback((sceneIndex: number) => {
-    if (sceneIndex >= 0 && sceneIndex < mockTour.scenes.length) {
-      setCurrentSceneIndex(sceneIndex);
-      const scene = mockTour.scenes[sceneIndex];
-      
-      trackEvent({
-        type: 'scene-enter',
-        sceneId: scene.id,
-        data: { fromScene: mockTour.scenes[currentSceneIndex]?.id }
-      });
-      
-      if (onSceneChange) {
-        onSceneChange(scene);
-      }
-      
-      // Update progress
-      setTourProgress((sceneIndex + 1) / mockTour.scenes.length * 100);
-    }
-  }, [currentSceneIndex, trackEvent, onSceneChange]);
+  const handleSceneChange = useCallback(
+    (sceneIndex: number) => {
+      if (sceneIndex >= 0 && sceneIndex < mockTour.scenes.length) {
+        setCurrentSceneIndex(sceneIndex);
+        const scene = mockTour.scenes[sceneIndex];
 
-  const handleHotspotClick = useCallback((hotspot: VRHotspot) => {
-    trackEvent({
-      type: 'hotspot-click',
-      hotspotId: hotspot.id,
-      data: { hotspotType: hotspot.type, action: hotspot.action.type }
-    });
-    
-    if (hotspot.action.type === 'navigate' && hotspot.action.targetSceneId) {
-      const targetSceneIndex = mockTour.scenes.findIndex(s => s.id === hotspot.action.targetSceneId);
-      if (targetSceneIndex !== -1) {
-        handleSceneChange(targetSceneIndex);
+        trackEvent({
+          type: 'scene-enter',
+          sceneId: scene.id,
+          data: { fromScene: mockTour.scenes[currentSceneIndex]?.id },
+        });
+
+        if (onSceneChange) {
+          onSceneChange(scene);
+        }
+
+        // Update progress
+        setTourProgress(((sceneIndex + 1) / mockTour.scenes.length) * 100);
       }
-    }
-    
-    if (onHotspotClick) {
-      onHotspotClick(hotspot);
-    }
-  }, [trackEvent, onHotspotClick, handleSceneChange]);
+    },
+    [currentSceneIndex, trackEvent, onSceneChange]
+  );
+
+  const handleHotspotClick = useCallback(
+    (hotspot: VRHotspot) => {
+      trackEvent({
+        type: 'hotspot-click',
+        hotspotId: hotspot.id,
+        data: { hotspotType: hotspot.type, action: hotspot.action.type },
+      });
+
+      if (hotspot.action.type === 'navigate' && hotspot.action.targetSceneId) {
+        const targetSceneIndex = mockTour.scenes.findIndex(
+          (s) => s.id === hotspot.action.targetSceneId
+        );
+        if (targetSceneIndex !== -1) {
+          handleSceneChange(targetSceneIndex);
+        }
+      }
+
+      if (onHotspotClick) {
+        onHotspotClick(hotspot);
+      }
+    },
+    [trackEvent, onHotspotClick, handleSceneChange]
+  );
 
   const toggleFullscreen = useCallback(() => {
     if (!document.fullscreenElement) {
@@ -435,17 +459,17 @@ export function VRTourViewer({
   };
 
   const currentScene = mockTour.scenes[currentSceneIndex];
-  const sceneHotspots = mockTour.hotspots.filter(h => h.sceneId === currentScene?.id);
+  const sceneHotspots = mockTour.hotspots.filter((h) => h.sceneId === currentScene?.id);
 
   if (!hasVRAccess) {
     return (
-      <FeatureGate 
+      <FeatureGate
         feature="vr_tours"
         fallback={
           <Card className={className}>
             <CardContent className="p-6">
-              <div className="text-center space-y-4">
-                <Glasses className="h-12 w-12 mx-auto text-muted-foreground" />
+              <div className="space-y-4 text-center">
+                <Glasses className="mx-auto h-12 w-12 text-muted-foreground" />
                 <h3 className="text-lg font-semibold">VR Tours Available in Premium</h3>
                 <p className="text-muted-foreground">
                   Upgrade to access immersive virtual reality property tours
@@ -462,7 +486,7 @@ export function VRTourViewer({
   }
 
   return (
-    <Card className={cn("relative overflow-hidden", className)} ref={viewerRef}>
+    <Card className={cn('relative overflow-hidden', className)} ref={viewerRef}>
       {/* Tour Header */}
       {showInfo && (
         <CardHeader className="pb-2">
@@ -476,7 +500,7 @@ export function VRTourViewer({
               <Badge variant="outline">{mockTour.quality.toUpperCase()}</Badge>
               {mockTour.analytics.totalViews > 0 && (
                 <Badge variant="outline">
-                  <Eye className="h-3 w-3 mr-1" />
+                  <Eye className="mr-1 h-3 w-3" />
                   {mockTour.analytics.totalViews.toLocaleString()}
                 </Badge>
               )}
@@ -488,9 +512,9 @@ export function VRTourViewer({
       <CardContent className="p-0">
         {/* Loading State */}
         {isLoading && (
-          <div className="absolute inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-center justify-center">
-            <div className="text-center space-y-4">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto" />
+          <div className="absolute inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm">
+            <div className="space-y-4 text-center">
+              <div className="mx-auto h-12 w-12 animate-spin rounded-full border-b-2 border-primary" />
               <div className="space-y-2">
                 <p className="text-sm font-medium">Loading VR Tour...</p>
                 <Progress value={loadingProgress} className="w-64" />
@@ -512,15 +536,15 @@ export function VRTourViewer({
         <div className="relative aspect-video bg-black">
           <canvas
             ref={canvasRef}
-            className="w-full h-full"
+            className="h-full w-full"
             style={{ display: isLoading ? 'none' : 'block' }}
           />
-          
+
           {/* Placeholder for actual 360/VR content */}
           {!isLoading && (
-            <div className="absolute inset-0 bg-gradient-to-br from-blue-900 to-purple-900 flex items-center justify-center">
-              <div className="text-center text-white space-y-4">
-                <Glasses className="h-16 w-16 mx-auto opacity-50" />
+            <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-blue-900 to-purple-900">
+              <div className="space-y-4 text-center text-white">
+                <Glasses className="mx-auto h-16 w-16 opacity-50" />
                 <p className="text-lg font-medium">VR Tour Viewer</p>
                 <p className="text-sm opacity-75">
                   Scene: {currentScene?.name} ({currentSceneIndex + 1}/{mockTour.scenes.length})
@@ -528,7 +552,7 @@ export function VRTourViewer({
                 {sceneHotspots.length > 0 && showHotspots && (
                   <div className="space-y-2">
                     <p className="text-xs opacity-60">Interactive Hotspots:</p>
-                    {sceneHotspots.map(hotspot => (
+                    {sceneHotspots.map((hotspot) => (
                       <Button
                         key={hotspot.id}
                         variant="outline"
@@ -548,7 +572,7 @@ export function VRTourViewer({
           {/* Tour Controls Overlay */}
           {showControls && !isLoading && (
             <div className="absolute bottom-4 left-4 right-4">
-              <div className="bg-background/90 backdrop-blur-sm rounded-lg p-4 space-y-3">
+              <div className="space-y-3 rounded-lg bg-background/90 p-4 backdrop-blur-sm">
                 {/* Progress Bar */}
                 <div className="space-y-1">
                   <div className="flex items-center justify-between text-xs">
@@ -563,16 +587,16 @@ export function VRTourViewer({
                   <div className="flex items-center space-x-2">
                     {!isPlaying ? (
                       <Button size="sm" onClick={handleStartTour}>
-                        <Play className="h-4 w-4 mr-1" />
+                        <Play className="mr-1 h-4 w-4" />
                         Start Tour
                       </Button>
                     ) : (
                       <Button size="sm" variant="outline" onClick={handleStopTour}>
-                        <Square className="h-4 w-4 mr-1" />
+                        <Square className="mr-1 h-4 w-4" />
                         Stop
                       </Button>
                     )}
-                    
+
                     <Button
                       size="sm"
                       variant="outline"
@@ -581,11 +605,15 @@ export function VRTourViewer({
                     >
                       <ChevronLeft className="h-4 w-4" />
                     </Button>
-                    
+
                     <Button
                       size="sm"
                       variant="outline"
-                      onClick={() => handleSceneChange(Math.min(mockTour.scenes.length - 1, currentSceneIndex + 1))}
+                      onClick={() =>
+                        handleSceneChange(
+                          Math.min(mockTour.scenes.length - 1, currentSceneIndex + 1)
+                        )
+                      }
                       disabled={currentSceneIndex === mockTour.scenes.length - 1}
                     >
                       <ChevronRight className="h-4 w-4" />
@@ -595,13 +623,17 @@ export function VRTourViewer({
                   <div className="flex items-center space-x-2">
                     {currentSession && (
                       <Badge variant="outline" className="text-xs">
-                        <Clock className="h-3 w-3 mr-1" />
+                        <Clock className="mr-1 h-3 w-3" />
                         {formatDuration(sessionDuration)}
                       </Badge>
                     )}
-                    
+
                     <Button size="sm" variant="outline" onClick={toggleFullscreen}>
-                      {isFullscreen ? <Minimize className="h-4 w-4" /> : <Maximize className="h-4 w-4" />}
+                      {isFullscreen ? (
+                        <Minimize className="h-4 w-4" />
+                      ) : (
+                        <Maximize className="h-4 w-4" />
+                      )}
                     </Button>
                   </div>
                 </div>
@@ -613,28 +645,28 @@ export function VRTourViewer({
                     variant={viewMode === '360' ? 'default' : 'outline'}
                     onClick={() => setViewMode('360')}
                   >
-                    <Monitor className="h-4 w-4 mr-1" />
+                    <Monitor className="mr-1 h-4 w-4" />
                     360°
                   </Button>
-                  
+
                   {isVRSupported && hasVRAccess && (
                     <Button
                       size="sm"
                       variant={viewMode === 'vr' ? 'default' : 'outline'}
                       onClick={() => setViewMode('vr')}
                     >
-                      <Glasses className="h-4 w-4 mr-1" />
+                      <Glasses className="mr-1 h-4 w-4" />
                       VR
                     </Button>
                   )}
-                  
+
                   {isARSupported && hasARAccess && (
                     <Button
                       size="sm"
                       variant={viewMode === 'ar' ? 'default' : 'outline'}
                       onClick={() => setViewMode('ar')}
                     >
-                      <Smartphone className="h-4 w-4 mr-1" />
+                      <Smartphone className="mr-1 h-4 w-4" />
                       AR
                     </Button>
                   )}
@@ -645,7 +677,7 @@ export function VRTourViewer({
 
           {/* Instructions Overlay */}
           {showInstructions && !isLoading && (
-            <div className="absolute top-4 right-4">
+            <div className="absolute right-4 top-4">
               <Card className="w-64">
                 <CardContent className="p-3">
                   <div className="space-y-2 text-xs">
@@ -671,38 +703,46 @@ export function VRTourViewer({
 
         {/* Property Info Panel */}
         {showInfo && (
-          <div className="p-4 border-t">
+          <div className="border-t p-4">
             <Tabs defaultValue="details" className="w-full">
               <TabsList className="grid w-full grid-cols-3">
                 <TabsTrigger value="details">Details</TabsTrigger>
                 <TabsTrigger value="scenes">Scenes</TabsTrigger>
                 <TabsTrigger value="stats">Stats</TabsTrigger>
               </TabsList>
-              
+
               <TabsContent value="details" className="space-y-3">
                 <div className="grid grid-cols-2 gap-4 text-sm">
                   <div>
                     <p className="font-medium">Property Type</p>
-                    <p className="text-muted-foreground capitalize">{mockTour.metadata.propertyDetails.propertyType}</p>
+                    <p className="capitalize text-muted-foreground">
+                      {mockTour.metadata.propertyDetails.propertyType}
+                    </p>
                   </div>
                   <div>
                     <p className="font-medium">Bedrooms</p>
-                    <p className="text-muted-foreground">{mockTour.metadata.propertyDetails.bedrooms}</p>
+                    <p className="text-muted-foreground">
+                      {mockTour.metadata.propertyDetails.bedrooms}
+                    </p>
                   </div>
                   <div>
                     <p className="font-medium">Square Footage</p>
-                    <p className="text-muted-foreground">{mockTour.metadata.propertyDetails.squareFootage} sq ft</p>
+                    <p className="text-muted-foreground">
+                      {mockTour.metadata.propertyDetails.squareFootage} sq ft
+                    </p>
                   </div>
                   <div>
                     <p className="font-medium">Year Built</p>
-                    <p className="text-muted-foreground">{mockTour.metadata.propertyDetails.yearBuilt}</p>
+                    <p className="text-muted-foreground">
+                      {mockTour.metadata.propertyDetails.yearBuilt}
+                    </p>
                   </div>
                 </div>
-                
+
                 <div>
-                  <p className="font-medium text-sm mb-2">Features</p>
+                  <p className="mb-2 text-sm font-medium">Features</p>
                   <div className="flex flex-wrap gap-1">
-                    {mockTour.metadata.propertyDetails.features.map(feature => (
+                    {mockTour.metadata.propertyDetails.features.map((feature) => (
                       <Badge key={feature} variant="secondary" className="text-xs">
                         {feature}
                       </Badge>
@@ -710,19 +750,19 @@ export function VRTourViewer({
                   </div>
                 </div>
               </TabsContent>
-              
+
               <TabsContent value="scenes" className="space-y-2">
                 {mockTour.scenes.map((scene, index) => (
                   <div
                     key={scene.id}
                     className={cn(
-                      "flex items-center justify-between p-2 rounded-lg border cursor-pointer hover:bg-muted/50",
-                      currentSceneIndex === index && "bg-muted"
+                      'flex cursor-pointer items-center justify-between rounded-lg border p-2 hover:bg-muted/50',
+                      currentSceneIndex === index && 'bg-muted'
                     )}
                     onClick={() => handleSceneChange(index)}
                   >
                     <div>
-                      <p className="font-medium text-sm">{scene.name}</p>
+                      <p className="text-sm font-medium">{scene.name}</p>
                       <p className="text-xs text-muted-foreground">{scene.description}</p>
                     </div>
                     <Badge variant="outline" className="text-xs">
@@ -731,12 +771,14 @@ export function VRTourViewer({
                   </div>
                 ))}
               </TabsContent>
-              
+
               <TabsContent value="stats" className="space-y-3">
                 <div className="grid grid-cols-2 gap-4 text-sm">
                   <div>
                     <p className="font-medium">Total Views</p>
-                    <p className="text-muted-foreground">{mockTour.analytics.totalViews.toLocaleString()}</p>
+                    <p className="text-muted-foreground">
+                      {mockTour.analytics.totalViews.toLocaleString()}
+                    </p>
                   </div>
                   <div>
                     <p className="font-medium">Completion Rate</p>
@@ -744,11 +786,15 @@ export function VRTourViewer({
                   </div>
                   <div>
                     <p className="font-medium">Avg. View Time</p>
-                    <p className="text-muted-foreground">{mockTour.analytics.averageViewTime} min</p>
+                    <p className="text-muted-foreground">
+                      {mockTour.analytics.averageViewTime} min
+                    </p>
                   </div>
                   <div>
                     <p className="font-medium">Inquiries</p>
-                    <p className="text-muted-foreground">{mockTour.analytics.conversionMetrics.inquiryRate}%</p>
+                    <p className="text-muted-foreground">
+                      {mockTour.analytics.conversionMetrics.inquiryRate}%
+                    </p>
                   </div>
                 </div>
               </TabsContent>

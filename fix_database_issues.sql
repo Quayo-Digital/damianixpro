@@ -1,4 +1,4 @@
--- Fix Database Issues for Nigeria Homes Platform
+-- Fix Database Issues for DamianixPro Platform
 -- This script addresses the agent role and property creation issues
 
 -- 1. First, let's ensure we have some test users with agent roles

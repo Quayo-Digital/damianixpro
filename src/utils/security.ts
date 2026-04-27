@@ -1,6 +1,7 @@
 import { supabase } from '@/integrations/supabase/client';
+import { logger } from '@/utils/logger';
 
-// Security utilities for Nigeria Homes platform
+// Security utilities for DamianixPro platform
 export interface SecurityConfig {
   enableCSP: boolean;
   enableHSTS: boolean;
@@ -15,7 +16,12 @@ export interface SecurityConfig {
 
 export interface SecurityEvent {
   id: string;
-  type: 'login_attempt' | 'failed_login' | 'suspicious_activity' | 'data_access' | 'permission_escalation';
+  type:
+    | 'login_attempt'
+    | 'failed_login'
+    | 'suspicious_activity'
+    | 'data_access'
+    | 'permission_escalation';
   userId?: string;
   userRole?: string;
   ipAddress?: string;
@@ -44,7 +50,7 @@ export const DEFAULT_SECURITY_CONFIG: SecurityConfig = {
   sessionTimeout: 30, // 30 minutes for Nigerian banking standards
   maxLoginAttempts: 5,
   passwordMinLength: 8,
-  requireMFA: false // Can be enabled for admin accounts
+  requireMFA: false, // Can be enabled for admin accounts
 };
 
 // Security monitoring class
@@ -69,11 +75,11 @@ export class SecurityMonitor {
     const securityEvent: SecurityEvent = {
       ...event,
       id: crypto.randomUUID(),
-      timestamp: new Date()
+      timestamp: new Date(),
     };
 
     this.events.push(securityEvent);
-    
+
     // Store in localStorage for persistence (in production, use secure backend)
     try {
       const existingEvents = JSON.parse(localStorage.getItem('security_events') || '[]');
@@ -82,7 +88,7 @@ export class SecurityMonitor {
       const recentEvents = existingEvents.slice(-1000);
       localStorage.setItem('security_events', JSON.stringify(recentEvents));
     } catch (error) {
-      console.error('Failed to store security event:', error);
+      logger.error('Failed to store security event', error instanceof Error ? error : undefined);
     }
 
     // Alert on critical events
@@ -93,8 +99,13 @@ export class SecurityMonitor {
 
   // Handle critical security events
   private handleCriticalEvent(event: SecurityEvent): void {
-    console.warn('CRITICAL SECURITY EVENT:', event);
-    
+    logger.warn('CRITICAL SECURITY EVENT', {
+      type: event.type,
+      severity: event.severity,
+      userId: event.userId,
+      details: event.details,
+    });
+
     // In production, this would:
     // 1. Send alert to security team
     // 2. Log to SIEM system
@@ -113,18 +124,17 @@ export class SecurityMonitor {
 
     if (filters) {
       if (filters.type) {
-        filteredEvents = filteredEvents.filter(e => e.type === filters.type);
+        filteredEvents = filteredEvents.filter((e) => e.type === filters.type);
       }
       if (filters.severity) {
-        filteredEvents = filteredEvents.filter(e => e.severity === filters.severity);
+        filteredEvents = filteredEvents.filter((e) => e.severity === filters.severity);
       }
       if (filters.userId) {
-        filteredEvents = filteredEvents.filter(e => e.userId === filters.userId);
+        filteredEvents = filteredEvents.filter((e) => e.userId === filters.userId);
       }
       if (filters.timeRange) {
-        filteredEvents = filteredEvents.filter(e => 
-          e.timestamp >= filters.timeRange!.start && 
-          e.timestamp <= filters.timeRange!.end
+        filteredEvents = filteredEvents.filter(
+          (e) => e.timestamp >= filters.timeRange!.start && e.timestamp <= filters.timeRange!.end
         );
       }
     }
@@ -138,16 +148,16 @@ export class SecurityMonitor {
 
     // 1. Check authentication security
     results.push(await this.auditAuthentication());
-    
+
     // 2. Check authorization controls
     results.push(await this.auditAuthorization());
-    
+
     // 3. Check database security
     results.push(await this.auditDatabaseSecurity());
-    
+
     // 4. Check frontend security
     results.push(await this.auditFrontendSecurity());
-    
+
     // 5. Check API security
     results.push(await this.auditApiSecurity());
 
@@ -158,7 +168,7 @@ export class SecurityMonitor {
     try {
       const session = await supabase.auth.getSession();
       const hasValidSession = session.data.session !== null;
-      
+
       return {
         category: 'Authentication',
         testName: 'Session Management',
@@ -168,8 +178,8 @@ export class SecurityMonitor {
         recommendations: [
           'Implement session timeout',
           'Use secure session storage',
-          'Implement session rotation'
-        ]
+          'Implement session rotation',
+        ],
       };
     } catch (error) {
       return {
@@ -178,7 +188,7 @@ export class SecurityMonitor {
         status: 'fail',
         score: 0,
         details: 'Session audit failed',
-        recommendations: ['Review session implementation']
+        recommendations: ['Review session implementation'],
       };
     }
   }
@@ -194,8 +204,8 @@ export class SecurityMonitor {
       recommendations: [
         'Regularly review RLS policies',
         'Test policy effectiveness',
-        'Monitor unauthorized access attempts'
-      ]
+        'Monitor unauthorized access attempts',
+      ],
     };
   }
 
@@ -209,8 +219,8 @@ export class SecurityMonitor {
       recommendations: [
         'Continue using parameterized queries',
         'Validate all inputs',
-        'Monitor database access patterns'
-      ]
+        'Monitor database access patterns',
+      ],
     };
   }
 
@@ -218,7 +228,7 @@ export class SecurityMonitor {
     // Check for common frontend security issues
     const hasCSP = document.querySelector('meta[http-equiv="Content-Security-Policy"]') !== null;
     const hasXFrameOptions = true; // Assume configured at server level
-    
+
     return {
       category: 'Frontend',
       testName: 'XSS Protection',
@@ -229,8 +239,8 @@ export class SecurityMonitor {
         'Implement Content Security Policy',
         'Validate all user inputs',
         'Sanitize dynamic content',
-        'Use HTTPS everywhere'
-      ]
+        'Use HTTPS everywhere',
+      ],
     };
   }
 
@@ -245,8 +255,8 @@ export class SecurityMonitor {
         'Implement API rate limiting',
         'Add request throttling',
         'Monitor API abuse patterns',
-        'Implement CORS properly'
-      ]
+        'Implement CORS properly',
+      ],
     };
   }
 }
@@ -270,30 +280,30 @@ export class InputValidator {
     strength: 'weak' | 'medium' | 'strong';
   } {
     const errors: string[] = [];
-    
+
     if (password.length < 8) {
       errors.push('Password must be at least 8 characters long');
     }
-    
+
     if (!/[A-Z]/.test(password)) {
       errors.push('Password must contain at least one uppercase letter');
     }
-    
+
     if (!/[a-z]/.test(password)) {
       errors.push('Password must contain at least one lowercase letter');
     }
-    
+
     if (!/\d/.test(password)) {
       errors.push('Password must contain at least one number');
     }
-    
+
     if (!/[!@#$%^&*(),.?":{}|<>]/.test(password)) {
       errors.push('Password must contain at least one special character');
     }
 
     const isValid = errors.length === 0;
     let strength: 'weak' | 'medium' | 'strong' = 'weak';
-    
+
     if (isValid && password.length >= 12) {
       strength = 'strong';
     } else if (isValid) {
@@ -330,13 +340,13 @@ export class EncryptionUtils {
     const data = encoder.encode(password);
     const hashBuffer = await crypto.subtle.digest('SHA-256', data);
     const hashArray = Array.from(new Uint8Array(hashBuffer));
-    return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+    return hashArray.map((b) => b.toString(16).padStart(2, '0')).join('');
   }
 
   static generateSecureToken(): string {
     const array = new Uint8Array(32);
     crypto.getRandomValues(array);
-    return Array.from(array, byte => byte.toString(16).padStart(2, '0')).join('');
+    return Array.from(array, (byte) => byte.toString(16).padStart(2, '0')).join('');
   }
 
   static async encryptSensitiveData(data: string, key?: string): Promise<string> {
@@ -344,51 +354,67 @@ export class EncryptionUtils {
     const encoder = new TextEncoder();
     const dataBuffer = encoder.encode(data);
     const keyBuffer = encoder.encode(key || 'default-key');
-    
+
     // XOR encryption (for demo purposes only)
     const encrypted = new Uint8Array(dataBuffer.length);
     for (let i = 0; i < dataBuffer.length; i++) {
       encrypted[i] = dataBuffer[i] ^ keyBuffer[i % keyBuffer.length];
     }
-    
+
     return btoa(String.fromCharCode(...encrypted));
   }
 }
 
 // Security headers utility
 export const SecurityHeaders = {
-  // Content Security Policy for Nigeria Homes
+  // Content Security Policy for DamianixPro
   getCSP(): string {
+    // script-src: 'unsafe-eval' is often required by bundled tooling or payment SDKs; without it
+    // DevTools reports "CSP prevents evaluation of arbitrary strings". Set VITE_CSP_ALLOW_UNSAFE_EVAL=false
+    // for a stricter policy if you audit dependencies and confirm no eval() usage.
+    const allowUnsafeEval = import.meta.env.VITE_CSP_ALLOW_UNSAFE_EVAL !== 'false';
+    const scriptSrc = [
+      "'self'",
+      "'unsafe-inline'",
+      ...(allowUnsafeEval ? (["'unsafe-eval'"] as const) : []),
+      'https://checkout.flutterwave.com',
+    ].join(' ');
     return [
       "default-src 'self'",
-      "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://js.paystack.co https://checkout.flutterwave.com",
+      `script-src ${scriptSrc}`,
       "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
       "font-src 'self' https://fonts.gstatic.com",
       "img-src 'self' data: https: blob:",
-      "connect-src 'self' https://*.supabase.co https://api.paystack.co https://api.flutterwave.com",
-      "frame-src 'self' https://js.paystack.co https://checkout.flutterwave.com",
+      "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://api.flutterwave.com https://nominatim.openstreetmap.org https://photon.komoot.io https://geocoding-api.open-meteo.com",
+      "frame-src 'self' https://checkout.flutterwave.com",
+      "worker-src 'self' blob:",
       "object-src 'none'",
       "base-uri 'self'",
-      "form-action 'self'"
+      "form-action 'self'",
     ].join('; ');
   },
 
   // Apply security headers (for development testing)
   applyHeaders(): void {
     if (typeof document !== 'undefined') {
+      // Runtime CSP injection is opt-in. Prefer server headers in production.
+      if (import.meta.env.VITE_ENABLE_RUNTIME_CSP !== 'true') return;
+      // Do not enforce runtime CSP in local dev; Vite/HMR and SDK tooling may require eval-like behavior.
+      if (import.meta.env.DEV) return;
+      // Respect host-provided CSP headers/meta if present.
+      const existingCsp = document.querySelector('meta[http-equiv="Content-Security-Policy"]');
+      if (existingCsp) return;
+
       // Create CSP meta tag
       const cspMeta = document.createElement('meta');
       cspMeta.setAttribute('http-equiv', 'Content-Security-Policy');
       cspMeta.setAttribute('content', this.getCSP());
       document.head.appendChild(cspMeta);
 
-      // Create X-Frame-Options meta tag
-      const frameMeta = document.createElement('meta');
-      frameMeta.setAttribute('http-equiv', 'X-Frame-Options');
-      frameMeta.setAttribute('content', 'DENY');
-      document.head.appendChild(frameMeta);
+      // X-Frame-Options must be set via HTTP header, not meta tag.
+      // Configure in vercel.json, public/_headers, or your hosting provider.
     }
-  }
+  },
 };
 
 // Initialize security monitoring

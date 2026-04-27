@@ -1,40 +1,73 @@
 /**
  * Review List Component
- * Displays a list of reviews with statistics
+ * Displays a list of reviews with statistics and Add Review form for eligible guests
  */
 
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { ReviewCard } from './ReviewCard';
+import { ReviewForm } from './ReviewForm';
 import { getReviewsByListing, getReviewsByBooking } from '@/services/shortlet/api/reviews';
+import { getBookingsByGuest } from '@/services/shortlet/api/bookings';
 import { useToast } from '@/hooks/use-toast';
-import { Star, Loader2, TrendingUp, MessageSquare } from 'lucide-react';
+import { useAuthSession } from '@/contexts/auth';
+import { Star, Loader2, MessageSquare, PenSquare } from 'lucide-react';
+import { ReviewType } from '@/services/shortlet/types';
+import { BookingStatus } from '@/services/shortlet/types';
 import type { Review } from '@/services/shortlet/types';
+import type { Booking } from '@/services/shortlet/types';
 
 interface ReviewListProps {
   listingId?: string;
   bookingId?: string;
+  ownerId?: string;
   showStatistics?: boolean;
+  showAddReview?: boolean;
   limit?: number;
 }
 
-export function ReviewList({ 
-  listingId, 
+export function ReviewList({
+  listingId,
   bookingId,
+  ownerId,
   showStatistics = true,
-  limit
+  showAddReview = false,
+  limit,
 }: ReviewListProps) {
   const { toast } = useToast();
+  const { user } = useAuthSession();
   const [reviews, setReviews] = useState<Review[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [sortBy, setSortBy] = useState<'newest' | 'oldest' | 'highest' | 'lowest'>('newest');
 
+  // Add Review: unreviewed completed booking for this listing
+  const [eligibleBooking, setEligibleBooking] = useState<Booking | null>(null);
+  const [hasReviewedAll, setHasReviewedAll] = useState(false);
+  const [checkingEligibility, setCheckingEligibility] = useState(false);
+  const [showForm, setShowForm] = useState(false);
+
+  const canShowAddReview = showAddReview && listingId && ownerId && user?.id && user.id !== ownerId; // Guest, not owner
+
   useEffect(() => {
     loadReviews();
   }, [listingId, bookingId, sortBy]);
+
+  useEffect(() => {
+    if (canShowAddReview && !showForm) {
+      findEligibleBooking();
+    } else if (!canShowAddReview) {
+      setEligibleBooking(null);
+      setHasReviewedAll(false);
+    }
+  }, [canShowAddReview, listingId, user?.id, showForm]);
 
   const loadReviews = async () => {
     setIsLoading(true);
@@ -83,12 +116,42 @@ export function ReviewList({
     }
   };
 
+  const findEligibleBooking = async () => {
+    if (!user?.id || !listingId) return;
+    setCheckingEligibility(true);
+    try {
+      const bookings = await getBookingsByGuest(user.id, BookingStatus.COMPLETED);
+      const forThisListing = (bookings || []).filter((b) => b.listing?.id === listingId);
+      for (const booking of forThisListing) {
+        const existing = await getReviewsByBooking(String(booking.id));
+        if (!existing) {
+          setEligibleBooking(booking);
+          setHasReviewedAll(false);
+          return;
+        }
+      }
+      setEligibleBooking(null);
+      setHasReviewedAll(forThisListing.length > 0);
+    } catch {
+      setEligibleBooking(null);
+      setHasReviewedAll(false);
+    } finally {
+      setCheckingEligibility(false);
+    }
+  };
+
+  const handleReviewSuccess = () => {
+    setShowForm(false);
+    setEligibleBooking(null);
+    loadReviews();
+  };
+
   const calculateStatistics = () => {
     if (reviews.length === 0) {
       return {
         average: 0,
         total: 0,
-        distribution: { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 }
+        distribution: { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 },
       };
     }
 
@@ -96,10 +159,13 @@ export function ReviewList({
     const sum = reviews.reduce((acc, review) => acc + review.rating, 0);
     const average = sum / total;
 
-    const distribution = reviews.reduce((acc, review) => {
-      acc[review.rating as keyof typeof acc] = (acc[review.rating as keyof typeof acc] || 0) + 1;
-      return acc;
-    }, { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 });
+    const distribution = reviews.reduce(
+      (acc, review) => {
+        acc[review.rating as keyof typeof acc] = (acc[review.rating as keyof typeof acc] || 0) + 1;
+        return acc;
+      },
+      { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 }
+    );
 
     return { average, total, distribution };
   };
@@ -111,9 +177,7 @@ export function ReviewList({
       <Star
         key={i}
         className={`h-4 w-4 ${
-          i < rating
-            ? 'fill-yellow-400 text-yellow-400'
-            : 'fill-gray-200 text-gray-200'
+          i < rating ? 'fill-yellow-400 text-yellow-400' : 'fill-gray-200 text-gray-200'
         }`}
       />
     ));
@@ -126,44 +190,88 @@ export function ReviewList({
         <Card>
           <CardHeader>
             <CardTitle>Reviews & Ratings</CardTitle>
-            <CardDescription>{stats.total} {stats.total === 1 ? 'review' : 'reviews'}</CardDescription>
+            <CardDescription>
+              {stats.total} {stats.total === 1 ? 'review' : 'reviews'}
+            </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
             {/* Average Rating */}
             <div className="flex items-center gap-4">
               <div className="text-center">
                 <div className="text-4xl font-bold">{stats.average.toFixed(1)}</div>
-                <div className="flex items-center gap-1 mt-1">
+                <div className="mt-1 flex items-center gap-1">
                   {renderStars(Math.round(stats.average))}
                 </div>
-                <p className="text-sm text-muted-foreground mt-1">
+                <p className="mt-1 text-sm text-muted-foreground">
                   Based on {stats.total} {stats.total === 1 ? 'review' : 'reviews'}
                 </p>
               </div>
               <div className="flex-1 space-y-2">
-                {[5, 4, 3, 2, 1].map(rating => {
+                {[5, 4, 3, 2, 1].map((rating) => {
                   const count = stats.distribution[rating as keyof typeof stats.distribution];
                   const percentage = stats.total > 0 ? (count / stats.total) * 100 : 0;
                   return (
                     <div key={rating} className="flex items-center gap-2">
-                      <div className="flex items-center gap-1 w-16">
+                      <div className="flex w-16 items-center gap-1">
                         <span className="text-sm font-medium">{rating}</span>
                         <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />
                       </div>
-                      <div className="flex-1 h-2 bg-muted rounded-full overflow-hidden">
+                      <div className="h-2 flex-1 overflow-hidden rounded-full bg-muted">
                         <div
                           className="h-full bg-yellow-400 transition-all"
                           style={{ width: `${percentage}%` }}
                         />
                       </div>
-                      <span className="text-sm text-muted-foreground w-12 text-right">
-                        {count}
-                      </span>
+                      <span className="w-12 text-right text-sm text-muted-foreground">{count}</span>
                     </div>
                   );
                 })}
               </div>
             </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Add Review Section - for guests with completed stays or sign-in prompt */}
+      {showAddReview && listingId && ownerId && !bookingId && user?.id !== ownerId && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <PenSquare className="h-5 w-5" />
+              Share Your Experience
+            </CardTitle>
+            <CardDescription>
+              {!user
+                ? 'Sign in to leave a review after your stay.'
+                : checkingEligibility
+                  ? 'Checking if you can leave a review...'
+                  : eligibleBooking
+                    ? 'You stayed here! Add a review to help other guests.'
+                    : hasReviewedAll
+                      ? "You've already reviewed this property. Thank you!"
+                      : 'You can leave a review after completing a stay at this property.'}
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            {!user ? null : checkingEligibility ? (
+              <div className="flex h-24 items-center justify-center">
+                <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+              </div>
+            ) : showForm && eligibleBooking ? (
+              <ReviewForm
+                bookingId={String(eligibleBooking.id)}
+                listingId={listingId}
+                revieweeId={String(ownerId)}
+                reviewType={ReviewType.GUEST}
+                onSuccess={handleReviewSuccess}
+                onCancel={() => setShowForm(false)}
+              />
+            ) : eligibleBooking ? (
+              <Button onClick={() => setShowForm(true)}>
+                <PenSquare className="mr-2 h-4 w-4" />
+                Write a Review
+              </Button>
+            ) : null}
           </CardContent>
         </Card>
       )}
@@ -192,22 +300,20 @@ export function ReviewList({
 
       {/* Reviews List */}
       {isLoading ? (
-        <div className="flex items-center justify-center h-64">
+        <div className="flex h-64 items-center justify-center">
           <Loader2 className="h-8 w-8 animate-spin text-primary" />
         </div>
       ) : reviews.length === 0 ? (
         <Card>
           <CardContent className="py-12 text-center">
-            <MessageSquare className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-            <h3 className="text-lg font-semibold mb-2">No reviews yet</h3>
-            <p className="text-muted-foreground">
-              Be the first to review this property!
-            </p>
+            <MessageSquare className="mx-auto mb-4 h-12 w-12 text-muted-foreground" />
+            <h3 className="mb-2 text-lg font-semibold">No reviews yet</h3>
+            <p className="text-muted-foreground">Be the first to review this property!</p>
           </CardContent>
         </Card>
       ) : (
         <div className="space-y-4">
-          {reviews.map(review => (
+          {reviews.map((review) => (
             <ReviewCard key={review.id} review={review} />
           ))}
         </div>
@@ -215,4 +321,3 @@ export function ReviewList({
     </div>
   );
 }
-

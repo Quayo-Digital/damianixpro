@@ -5,7 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Progress } from '@/components/ui/progress';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { 
+import {
   Database,
   Activity,
   Zap,
@@ -26,13 +26,13 @@ import {
   Server,
   HardDrive,
   Network,
-  Target
+  Target,
 } from 'lucide-react';
-import { 
+import {
   useDatabaseOptimization,
   DatabaseMetrics,
   QueryAnalysis,
-  IndexRecommendation
+  IndexRecommendation,
 } from '@/utils/database-optimization-system';
 
 export const DatabaseOptimizationDashboard = () => {
@@ -46,7 +46,7 @@ export const DatabaseOptimizationDashboard = () => {
     runAnalysis,
     healthCheck,
     getIndexRecommendations,
-    getNigerianConfig
+    getNigerianConfig,
   } = useDatabaseOptimization();
 
   const [activeTab, setActiveTab] = useState('overview');
@@ -154,20 +154,22 @@ export const DatabaseOptimizationDashboard = () => {
           <CheckCircle2 className="h-4 w-4 text-green-600" />
           <AlertTitle className="text-green-800">Optimization Successful!</AlertTitle>
           <AlertDescription className="text-green-700">
-            Database optimization completed with {optimizationResults.estimatedImprovement || optimizationResults.totalImprovement}% estimated improvement.
+            Database optimization completed with{' '}
+            {optimizationResults.estimatedImprovement || optimizationResults.totalImprovement}%
+            estimated improvement.
           </AlertDescription>
         </Alert>
       )}
 
       {/* Quick Stats */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center gap-2">
               <Users className="h-4 w-4 text-blue-600" />
               <span className="text-sm font-medium">Active Connections</span>
             </div>
-            <div className="text-2xl font-bold mt-1">
+            <div className="mt-1 text-2xl font-bold">
               {metrics.connectionPool.active}/{metrics.connectionPool.maxConnections}
             </div>
             <div className="text-xs text-gray-600">
@@ -182,7 +184,7 @@ export const DatabaseOptimizationDashboard = () => {
               <Clock className="h-4 w-4 text-green-600" />
               <span className="text-sm font-medium">Avg Response</span>
             </div>
-            <div className="text-2xl font-bold text-green-600 mt-1">
+            <div className="mt-1 text-2xl font-bold text-green-600">
               {metrics.queryPerformance.averageResponseTime.toFixed(0)}ms
             </div>
             <div className="text-xs text-gray-600">Query response time</div>
@@ -195,7 +197,7 @@ export const DatabaseOptimizationDashboard = () => {
               <BarChart3 className="h-4 w-4 text-purple-600" />
               <span className="text-sm font-medium">Cache Hit Rate</span>
             </div>
-            <div className="text-2xl font-bold text-purple-600 mt-1">
+            <div className="mt-1 text-2xl font-bold text-purple-600">
               {metrics.queryPerformance.cacheHitRate.toFixed(1)}%
             </div>
             <div className="text-xs text-gray-600">Query cache efficiency</div>
@@ -208,7 +210,7 @@ export const DatabaseOptimizationDashboard = () => {
               <TrendingUp className="h-4 w-4 text-orange-600" />
               <span className="text-sm font-medium">Queries/sec</span>
             </div>
-            <div className="text-2xl font-bold text-orange-600 mt-1">
+            <div className="mt-1 text-2xl font-bold text-orange-600">
               {metrics.queryPerformance.queriesPerSecond.toFixed(1)}
             </div>
             <div className="text-xs text-gray-600">Current throughput</div>
@@ -227,7 +229,7 @@ export const DatabaseOptimizationDashboard = () => {
         </TabsList>
 
         <TabsContent value="overview" className="space-y-6">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
             {/* Performance Metrics */}
             <Card>
               <CardHeader>
@@ -240,23 +242,29 @@ export const DatabaseOptimizationDashboard = () => {
                 <div className="space-y-2">
                   <div className="flex justify-between text-sm">
                     <span>Connection Pool Utilization</span>
-                    <span className="font-medium">{metrics.connectionPool.utilization.toFixed(1)}%</span>
+                    <span className="font-medium">
+                      {metrics.connectionPool.utilization.toFixed(1)}%
+                    </span>
                   </div>
                   <Progress value={metrics.connectionPool.utilization} className="h-2" />
                 </div>
-                
+
                 <div className="space-y-2">
                   <div className="flex justify-between text-sm">
                     <span>Cache Hit Rate</span>
-                    <span className="font-medium">{metrics.queryPerformance.cacheHitRate.toFixed(1)}%</span>
+                    <span className="font-medium">
+                      {metrics.queryPerformance.cacheHitRate.toFixed(1)}%
+                    </span>
                   </div>
                   <Progress value={metrics.queryPerformance.cacheHitRate} className="h-2" />
                 </div>
-                
+
                 <div className="space-y-2">
                   <div className="flex justify-between text-sm">
                     <span>Index Efficiency</span>
-                    <span className="font-medium">{metrics.indexUsage.indexEfficiency.toFixed(1)}%</span>
+                    <span className="font-medium">
+                      {metrics.indexUsage.indexEfficiency.toFixed(1)}%
+                    </span>
                   </div>
                   <Progress value={metrics.indexUsage.indexEfficiency} className="h-2" />
                 </div>
@@ -274,22 +282,30 @@ export const DatabaseOptimizationDashboard = () => {
               <CardContent className="space-y-4">
                 <div className="flex items-center justify-between">
                   <span className="text-sm">Connection Retries</span>
-                  <span className="font-medium">{metrics.nigerianOptimizations.connectionRetries}</span>
+                  <span className="font-medium">
+                    {metrics.nigerianOptimizations.connectionRetries}
+                  </span>
                 </div>
-                
+
                 <div className="flex items-center justify-between">
                   <span className="text-sm">Timeout Adjustments</span>
-                  <span className="font-medium">{metrics.nigerianOptimizations.timeoutAdjustments}</span>
+                  <span className="font-medium">
+                    {metrics.nigerianOptimizations.timeoutAdjustments}
+                  </span>
                 </div>
-                
+
                 <div className="flex items-center justify-between">
                   <span className="text-sm">Latency Compensation</span>
-                  <span className="font-medium">{metrics.nigerianOptimizations.networkLatencyCompensation.toFixed(0)}ms</span>
+                  <span className="font-medium">
+                    {metrics.nigerianOptimizations.networkLatencyCompensation.toFixed(0)}ms
+                  </span>
                 </div>
-                
+
                 <div className="flex items-center justify-between">
                   <span className="text-sm">Data Compression</span>
-                  <span className="font-medium text-green-600">{metrics.nigerianOptimizations.dataCompressionRatio.toFixed(1)}%</span>
+                  <span className="font-medium text-green-600">
+                    {metrics.nigerianOptimizations.dataCompressionRatio.toFixed(1)}%
+                  </span>
                 </div>
               </CardContent>
             </Card>
@@ -304,18 +320,18 @@ export const DatabaseOptimizationDashboard = () => {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
-                <Button 
-                  onClick={handleRunAnalysis} 
-                  variant="outline" 
+              <div className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-4">
+                <Button
+                  onClick={handleRunAnalysis}
+                  variant="outline"
                   className="flex items-center gap-2"
                   disabled={loading}
                 >
                   <Search className="h-4 w-4" />
                   Run Analysis
                 </Button>
-                <Button 
-                  onClick={handleOptimizeConnectionPool} 
+                <Button
+                  onClick={handleOptimizeConnectionPool}
                   variant="outline"
                   className="flex items-center gap-2"
                   disabled={loading}
@@ -323,8 +339,8 @@ export const DatabaseOptimizationDashboard = () => {
                   <Network className="h-4 w-4" />
                   Optimize Pool
                 </Button>
-                <Button 
-                  onClick={handleCreateIndexes} 
+                <Button
+                  onClick={handleCreateIndexes}
                   variant="outline"
                   className="flex items-center gap-2"
                   disabled={loading}
@@ -332,8 +348,8 @@ export const DatabaseOptimizationDashboard = () => {
                   <Database className="h-4 w-4" />
                   Create Indexes
                 </Button>
-                <Button 
-                  onClick={handleHealthCheck} 
+                <Button
+                  onClick={handleHealthCheck}
                   variant="outline"
                   className="flex items-center gap-2"
                   disabled={loading}
@@ -363,7 +379,7 @@ export const DatabaseOptimizationDashboard = () => {
                   value={queryToAnalyze}
                   onChange={(e) => setQueryToAnalyze(e.target.value)}
                   placeholder="Enter SQL query to analyze..."
-                  className="flex-1 p-2 border rounded-md font-mono text-sm"
+                  className="flex-1 rounded-md border p-2 font-mono text-sm"
                   rows={3}
                 />
                 <Button onClick={handleAnalyzeQuery} disabled={!queryToAnalyze.trim()}>
@@ -372,11 +388,13 @@ export const DatabaseOptimizationDashboard = () => {
               </div>
 
               {queryAnalysis && (
-                <div className="space-y-4 p-4 border rounded-lg bg-gray-50">
+                <div className="space-y-4 rounded-lg border bg-gray-50 p-4">
                   <div className="flex items-center justify-between">
                     <h4 className="font-medium">Analysis Results</h4>
                     <div className="flex items-center gap-2">
-                      <Badge variant={queryAnalysis.priority === 'critical' ? 'destructive' : 'default'}>
+                      <Badge
+                        variant={queryAnalysis.priority === 'critical' ? 'destructive' : 'default'}
+                      >
                         {queryAnalysis.priority}
                       </Badge>
                       <Badge variant="outline">
@@ -384,18 +402,20 @@ export const DatabaseOptimizationDashboard = () => {
                       </Badge>
                     </div>
                   </div>
-                  
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+
+                  <div className="grid grid-cols-1 gap-4 text-sm md:grid-cols-2">
                     <div>
-                      <span className="font-medium">Execution Time:</span> {queryAnalysis.executionTime.toFixed(2)}ms
+                      <span className="font-medium">Execution Time:</span>{' '}
+                      {queryAnalysis.executionTime.toFixed(2)}ms
                     </div>
                     <div>
-                      <span className="font-medium">Frequency:</span> {queryAnalysis.frequency} times
+                      <span className="font-medium">Frequency:</span> {queryAnalysis.frequency}{' '}
+                      times
                     </div>
                   </div>
-                  
+
                   <div>
-                    <h5 className="font-medium mb-2">Index Usage:</h5>
+                    <h5 className="mb-2 font-medium">Index Usage:</h5>
                     <div className="flex flex-wrap gap-1">
                       {queryAnalysis.indexUsage.map((index, i) => (
                         <Badge key={i} variant="outline" className="text-xs">
@@ -404,13 +424,13 @@ export const DatabaseOptimizationDashboard = () => {
                       ))}
                     </div>
                   </div>
-                  
+
                   <div>
-                    <h5 className="font-medium mb-2">Optimization Suggestions:</h5>
+                    <h5 className="mb-2 font-medium">Optimization Suggestions:</h5>
                     <ul className="space-y-1 text-sm">
                       {queryAnalysis.suggestions.map((suggestion, i) => (
                         <li key={i} className="flex items-start gap-2">
-                          <Target className="h-3 w-3 text-blue-600 mt-1 flex-shrink-0" />
+                          <Target className="mt-1 h-3 w-3 flex-shrink-0 text-blue-600" />
                           <span>{suggestion}</span>
                         </li>
                       ))}
@@ -423,18 +443,16 @@ export const DatabaseOptimizationDashboard = () => {
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
                     <h4 className="font-medium">Performance Analysis Results</h4>
-                    <Badge variant="default">
-                      Score: {performanceResults.overallScore}/100
-                    </Badge>
+                    <Badge variant="default">Score: {performanceResults.overallScore}/100</Badge>
                   </div>
-                  
+
                   {performanceResults.slowQueries.length > 0 && (
                     <div>
-                      <h5 className="font-medium mb-2">Slow Queries Detected:</h5>
+                      <h5 className="mb-2 font-medium">Slow Queries Detected:</h5>
                       <div className="space-y-2">
                         {performanceResults.slowQueries.map((query: QueryAnalysis, i: number) => (
-                          <div key={i} className="p-3 border rounded-lg">
-                            <div className="font-mono text-xs mb-2 text-gray-600">
+                          <div key={i} className="rounded-lg border p-3">
+                            <div className="mb-2 font-mono text-xs text-gray-600">
                               {query.query.substring(0, 100)}...
                             </div>
                             <div className="flex items-center gap-4 text-sm">
@@ -458,7 +476,7 @@ export const DatabaseOptimizationDashboard = () => {
         <TabsContent value="indexes" className="space-y-6">
           <Card>
             <CardHeader>
-              <div className="flex justify-between items-center">
+              <div className="flex items-center justify-between">
                 <div>
                   <CardTitle className="flex items-center gap-2">
                     <Database className="h-5 w-5" />
@@ -476,8 +494,8 @@ export const DatabaseOptimizationDashboard = () => {
             <CardContent>
               <div className="space-y-4">
                 {indexRecommendations.map((recommendation, index) => (
-                  <div key={index} className="p-4 border rounded-lg">
-                    <div className="flex items-center justify-between mb-2">
+                  <div key={index} className="rounded-lg border p-4">
+                    <div className="mb-2 flex items-center justify-between">
                       <h4 className="font-medium">
                         {recommendation.table}({recommendation.columns.join(', ')})
                       </h4>
@@ -485,17 +503,15 @@ export const DatabaseOptimizationDashboard = () => {
                         <Badge variant="default">
                           +{recommendation.estimatedImprovement}% faster
                         </Badge>
-                        <Badge variant="outline">
-                          Priority: {recommendation.priority}/10
-                        </Badge>
+                        <Badge variant="outline">Priority: {recommendation.priority}/10</Badge>
                       </div>
                     </div>
-                    
-                    <p className="text-sm text-gray-600 mb-3">
+
+                    <p className="mb-3 text-sm text-gray-600">
                       🇳🇬 {recommendation.nigerianBenefit}
                     </p>
-                    
-                    <div className="bg-gray-100 p-2 rounded font-mono text-xs">
+
+                    <div className="rounded bg-gray-100 p-2 font-mono text-xs">
                       {recommendation.creationQuery}
                     </div>
                   </div>
@@ -517,7 +533,7 @@ export const DatabaseOptimizationDashboard = () => {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                 <div className="space-y-4">
                   <h4 className="font-medium">Current Pool Status</h4>
                   <div className="space-y-2">
@@ -535,11 +551,13 @@ export const DatabaseOptimizationDashboard = () => {
                     </div>
                     <div className="flex justify-between">
                       <span className="text-sm">Pool Utilization</span>
-                      <span className="font-medium">{metrics.connectionPool.utilization.toFixed(1)}%</span>
+                      <span className="font-medium">
+                        {metrics.connectionPool.utilization.toFixed(1)}%
+                      </span>
                     </div>
                   </div>
                 </div>
-                
+
                 <div className="space-y-4">
                   <h4 className="font-medium">Nigerian Optimized Config</h4>
                   <div className="space-y-2">
@@ -553,11 +571,15 @@ export const DatabaseOptimizationDashboard = () => {
                           </div>
                           <div className="flex justify-between">
                             <span className="text-sm">Acquire Timeout</span>
-                            <span className="font-medium">{config.acquireTimeoutMillis / 1000}s</span>
+                            <span className="font-medium">
+                              {config.acquireTimeoutMillis / 1000}s
+                            </span>
                           </div>
                           <div className="flex justify-between">
                             <span className="text-sm">Idle Timeout</span>
-                            <span className="font-medium">{config.idleTimeoutMillis / 1000 / 60}min</span>
+                            <span className="font-medium">
+                              {config.idleTimeoutMillis / 1000 / 60}min
+                            </span>
                           </div>
                           <div className="flex justify-between">
                             <span className="text-sm">Nigerian Optimized</span>
@@ -571,9 +593,9 @@ export const DatabaseOptimizationDashboard = () => {
                   </div>
                 </div>
               </div>
-              
+
               <Button onClick={handleOptimizeConnectionPool} disabled={loading} className="w-full">
-                <Settings className="h-4 w-4 mr-2" />
+                <Settings className="mr-2 h-4 w-4" />
                 Optimize Connection Pool for Nigerian Networks
               </Button>
             </CardContent>
@@ -583,7 +605,7 @@ export const DatabaseOptimizationDashboard = () => {
         <TabsContent value="health" className="space-y-6">
           <Card>
             <CardHeader>
-              <div className="flex justify-between items-center">
+              <div className="flex items-center justify-between">
                 <div>
                   <CardTitle className="flex items-center gap-2">
                     <Activity className="h-5 w-5" />
@@ -602,86 +624,99 @@ export const DatabaseOptimizationDashboard = () => {
               {healthResults ? (
                 <div className="space-y-6">
                   <div className="text-center">
-                    <div className="text-3xl font-bold mb-2">
-                      <span className={
-                        healthResults.overallHealth >= 90 ? 'text-green-600' :
-                        healthResults.overallHealth >= 75 ? 'text-blue-600' :
-                        healthResults.overallHealth >= 60 ? 'text-yellow-600' : 'text-red-600'
-                      }>
+                    <div className="mb-2 text-3xl font-bold">
+                      <span
+                        className={
+                          healthResults.overallHealth >= 90
+                            ? 'text-green-600'
+                            : healthResults.overallHealth >= 75
+                              ? 'text-blue-600'
+                              : healthResults.overallHealth >= 60
+                                ? 'text-yellow-600'
+                                : 'text-red-600'
+                        }
+                      >
                         {healthResults.overallHealth}/100
                       </span>
                     </div>
                     <div className="text-gray-600">Overall Database Health</div>
                   </div>
-                  
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+                  <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                     <Card>
                       <CardContent className="p-4">
-                        <div className="flex justify-between items-center mb-2">
+                        <div className="mb-2 flex items-center justify-between">
                           <span className="text-sm font-medium">Connection Stability</span>
                           <Badge variant={getHealthBadgeVariant(healthResults.connectionStability)}>
                             {getHealthStatus(healthResults.connectionStability)}
                           </Badge>
                         </div>
                         <Progress value={healthResults.connectionStability} className="h-2" />
-                        <div className="text-xs text-gray-600 mt-1">
+                        <div className="mt-1 text-xs text-gray-600">
                           {healthResults.connectionStability}/100
                         </div>
                       </CardContent>
                     </Card>
-                    
+
                     <Card>
                       <CardContent className="p-4">
-                        <div className="flex justify-between items-center mb-2">
+                        <div className="mb-2 flex items-center justify-between">
                           <span className="text-sm font-medium">Network Resilience</span>
                           <Badge variant={getHealthBadgeVariant(healthResults.networkResilience)}>
                             {getHealthStatus(healthResults.networkResilience)}
                           </Badge>
                         </div>
                         <Progress value={healthResults.networkResilience} className="h-2" />
-                        <div className="text-xs text-gray-600 mt-1">
+                        <div className="mt-1 text-xs text-gray-600">
                           {healthResults.networkResilience}/100
                         </div>
                       </CardContent>
                     </Card>
-                    
+
                     <Card>
                       <CardContent className="p-4">
-                        <div className="flex justify-between items-center mb-2">
+                        <div className="mb-2 flex items-center justify-between">
                           <span className="text-sm font-medium">Payment Gateway Optimization</span>
-                          <Badge variant={getHealthBadgeVariant(healthResults.paymentGatewayOptimization)}>
+                          <Badge
+                            variant={getHealthBadgeVariant(
+                              healthResults.paymentGatewayOptimization
+                            )}
+                          >
                             {getHealthStatus(healthResults.paymentGatewayOptimization)}
                           </Badge>
                         </div>
-                        <Progress value={healthResults.paymentGatewayOptimization} className="h-2" />
-                        <div className="text-xs text-gray-600 mt-1">
+                        <Progress
+                          value={healthResults.paymentGatewayOptimization}
+                          className="h-2"
+                        />
+                        <div className="mt-1 text-xs text-gray-600">
                           {healthResults.paymentGatewayOptimization}/100
                         </div>
                       </CardContent>
                     </Card>
-                    
+
                     <Card>
                       <CardContent className="p-4">
-                        <div className="flex justify-between items-center mb-2">
+                        <div className="mb-2 flex items-center justify-between">
                           <span className="text-sm font-medium">Data Integrity</span>
                           <Badge variant={getHealthBadgeVariant(healthResults.dataIntegrity)}>
                             {getHealthStatus(healthResults.dataIntegrity)}
                           </Badge>
                         </div>
                         <Progress value={healthResults.dataIntegrity} className="h-2" />
-                        <div className="text-xs text-gray-600 mt-1">
+                        <div className="mt-1 text-xs text-gray-600">
                           {healthResults.dataIntegrity}/100
                         </div>
                       </CardContent>
                     </Card>
                   </div>
-                  
+
                   <div>
-                    <h4 className="font-medium mb-3">Nigerian Market Recommendations</h4>
+                    <h4 className="mb-3 font-medium">Nigerian Market Recommendations</h4>
                     <div className="space-y-2">
                       {healthResults.recommendations.map((rec: string, index: number) => (
                         <div key={index} className="flex items-start gap-2 text-sm">
-                          <Target className="h-4 w-4 text-blue-600 mt-0.5 flex-shrink-0" />
+                          <Target className="mt-0.5 h-4 w-4 flex-shrink-0 text-blue-600" />
                           <span>{rec}</span>
                         </div>
                       ))}
@@ -689,10 +724,13 @@ export const DatabaseOptimizationDashboard = () => {
                   </div>
                 </div>
               ) : (
-                <div className="text-center py-12 text-gray-500">
-                  <Activity className="h-16 w-16 mx-auto mb-4" />
-                  <h3 className="text-lg font-medium mb-2">Database Health Check</h3>
-                  <p>Run a comprehensive health check to assess database performance for Nigerian market conditions</p>
+                <div className="py-12 text-center text-gray-500">
+                  <Activity className="mx-auto mb-4 h-16 w-16" />
+                  <h3 className="mb-2 text-lg font-medium">Database Health Check</h3>
+                  <p>
+                    Run a comprehensive health check to assess database performance for Nigerian
+                    market conditions
+                  </p>
                 </div>
               )}
             </CardContent>

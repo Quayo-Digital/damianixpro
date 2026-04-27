@@ -6,11 +6,11 @@ export type SwipeDirection = 'left' | 'right' | 'up' | 'down';
 
 // Swipe gesture configuration
 interface SwipeConfig {
-  minDistance?: number;        // Minimum distance for a valid swipe (px)
-  maxTime?: number;           // Maximum time for a valid swipe (ms)
-  threshold?: number;         // Threshold for detecting swipe direction
-  preventScroll?: boolean;    // Prevent default scroll behavior
-  passive?: boolean;          // Use passive event listeners
+  minDistance?: number; // Minimum distance for a valid swipe (px)
+  maxTime?: number; // Maximum time for a valid swipe (ms)
+  threshold?: number; // Threshold for detecting swipe direction
+  preventScroll?: boolean; // Prevent default scroll behavior
+  passive?: boolean; // Use passive event listeners
 }
 
 // Swipe event data
@@ -51,10 +51,7 @@ interface TouchState {
   isTracking: boolean;
 }
 
-export const useSwipeGestures = (
-  handlers: SwipeHandlers,
-  config: SwipeConfig = {}
-) => {
+export const useSwipeGestures = (handlers: SwipeHandlers, config: SwipeConfig = {}) => {
   const { isTouchDevice } = useDeviceDetection();
   const elementRef = useRef<HTMLElement | null>(null);
   const touchState = useRef<TouchState>({
@@ -75,7 +72,7 @@ export const useSwipeGestures = (
     const handleTouchStart = (e: TouchEvent) => {
       const touch = e.touches[0];
       const startPoint = { x: touch.clientX, y: touch.clientY };
-      
+
       touchState.current = {
         startX: touch.clientX,
         startY: touch.clientY,
@@ -219,13 +216,16 @@ export const useSwipeableCarousel = (
     setTimeout(() => setIsAnimating(false), 300);
   };
 
-  const swipeRef = useSwipeGestures({
-    onSwipeLeft: goToNext,
-    onSwipeRight: goToPrevious,
-  }, {
-    minDistance: 50,
-    preventScroll: true,
-  });
+  const swipeRef = useSwipeGestures(
+    {
+      onSwipeLeft: goToNext,
+      onSwipeRight: goToPrevious,
+    },
+    {
+      minDistance: 50,
+      preventScroll: true,
+    }
+  );
 
   return {
     currentIndex,
@@ -268,13 +268,16 @@ export const useSwipeableTabs = (
     }
   };
 
-  const swipeRef = useSwipeGestures({
-    onSwipeLeft: goToNextTab,
-    onSwipeRight: goToPreviousTab,
-  }, {
-    minDistance: 80,
-    preventScroll: false,
-  });
+  const swipeRef = useSwipeGestures(
+    {
+      onSwipeLeft: goToNextTab,
+      onSwipeRight: goToPreviousTab,
+    },
+    {
+      minDistance: 80,
+      preventScroll: false,
+    }
+  );
 
   return {
     activeTab,
@@ -286,47 +289,47 @@ export const useSwipeableTabs = (
 };
 
 // Hook for pull-to-refresh functionality
-export const usePullToRefresh = (
-  onRefresh: () => Promise<void> | void,
-  threshold: number = 80
-) => {
+export const usePullToRefresh = (onRefresh: () => Promise<void> | void, threshold: number = 80) => {
   const [isPulling, setIsPulling] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [pullDistance, setPullDistance] = useState(0);
 
-  const swipeRef = useSwipeGestures({
-    onSwipeStart: (point) => {
-      // Only start pull-to-refresh if at top of page
-      if (window.scrollY === 0) {
-        setIsPulling(true);
-      }
-    },
-    onSwipeDown: async (event) => {
-      if (!isPulling || window.scrollY > 0) return;
+  const swipeRef = useSwipeGestures(
+    {
+      onSwipeStart: (point) => {
+        // Only start pull-to-refresh if at top of page
+        if (window.scrollY === 0) {
+          setIsPulling(true);
+        }
+      },
+      onSwipeDown: async (event) => {
+        if (!isPulling || window.scrollY > 0) return;
 
-      setPullDistance(event.distance);
+        setPullDistance(event.distance);
 
-      if (event.distance >= threshold && !isRefreshing) {
-        setIsRefreshing(true);
-        try {
-          await onRefresh();
-        } finally {
-          setIsRefreshing(false);
+        if (event.distance >= threshold && !isRefreshing) {
+          setIsRefreshing(true);
+          try {
+            await onRefresh();
+          } finally {
+            setIsRefreshing(false);
+            setIsPulling(false);
+            setPullDistance(0);
+          }
+        }
+      },
+      onSwipeEnd: () => {
+        if (pullDistance < threshold) {
           setIsPulling(false);
           setPullDistance(0);
         }
-      }
+      },
     },
-    onSwipeEnd: () => {
-      if (pullDistance < threshold) {
-        setIsPulling(false);
-        setPullDistance(0);
-      }
-    },
-  }, {
-    minDistance: 20,
-    preventScroll: isPulling,
-  });
+    {
+      minDistance: 20,
+      preventScroll: isPulling,
+    }
+  );
 
   return {
     isPulling,
@@ -345,25 +348,28 @@ export const useSwipeToDismiss = (
   const [isDismissing, setIsDismissing] = useState(false);
   const [dismissDirection, setDismissDirection] = useState<'left' | 'right' | null>(null);
 
-  const swipeRef = useSwipeGestures({
-    onSwipeLeft: (event) => {
-      if (event.distance >= threshold) {
-        setIsDismissing(true);
-        setDismissDirection('left');
-        setTimeout(() => onDismiss('left'), 200);
-      }
+  const swipeRef = useSwipeGestures(
+    {
+      onSwipeLeft: (event) => {
+        if (event.distance >= threshold) {
+          setIsDismissing(true);
+          setDismissDirection('left');
+          setTimeout(() => onDismiss('left'), 200);
+        }
+      },
+      onSwipeRight: (event) => {
+        if (event.distance >= threshold) {
+          setIsDismissing(true);
+          setDismissDirection('right');
+          setTimeout(() => onDismiss('right'), 200);
+        }
+      },
     },
-    onSwipeRight: (event) => {
-      if (event.distance >= threshold) {
-        setIsDismissing(true);
-        setDismissDirection('right');
-        setTimeout(() => onDismiss('right'), 200);
-      }
-    },
-  }, {
-    minDistance: threshold,
-    preventScroll: false,
-  });
+    {
+      minDistance: threshold,
+      preventScroll: false,
+    }
+  );
 
   return {
     isDismissing,
@@ -373,10 +379,7 @@ export const useSwipeToDismiss = (
 };
 
 // Hook for long press gestures
-export const useLongPress = (
-  onLongPress: () => void,
-  duration: number = 500
-) => {
+export const useLongPress = (onLongPress: () => void, duration: number = 500) => {
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
   const [isPressed, setIsPressed] = useState(false);
 
@@ -417,7 +420,7 @@ export const useLongPress = (
       element.removeEventListener('mousedown', handleStart);
       element.removeEventListener('mouseup', handleEnd);
       element.removeEventListener('mouseleave', handleEnd);
-      
+
       if (timeoutRef.current) {
         clearTimeout(timeoutRef.current);
       }

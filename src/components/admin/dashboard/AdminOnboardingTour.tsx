@@ -1,4 +1,3 @@
-
 import React from 'react';
 import Joyride, { Step, CallBackProps, STATUS } from 'react-joyride';
 
@@ -11,13 +10,15 @@ export const AdminOnboardingTour: React.FC<AdminOnboardingTourProps> = ({ run, o
   const steps: Step[] = [
     {
       target: '.platform-monitoring-center',
-      content: 'Access comprehensive platform monitoring, security audits, performance optimization, CDN deployment, and intelligent analytics all in one centralized location.',
+      content:
+        'Access comprehensive platform monitoring, security audits, performance optimization, CDN deployment, and intelligent analytics all in one centralized location.',
       title: 'Platform Monitoring & Security Center',
-      placement: 'bottom'
+      placement: 'bottom',
     },
     {
       target: '#tour-step-1',
-      content: 'Welcome to your dashboard! Here are your key platform statistics at a glance, with trends from the last 30 days.',
+      content:
+        'Welcome to your dashboard! Here are your key platform statistics at a glance, with trends from the last 30 days.',
       placement: 'bottom',
       title: 'Platform Stats',
     },
@@ -41,13 +42,15 @@ export const AdminOnboardingTour: React.FC<AdminOnboardingTourProps> = ({ run, o
     },
     {
       target: '#tour-step-5',
-      content: 'And here you can view and manage all support tickets, including technical issues, billing inquiries, and feature requests.',
+      content:
+        'And here you can view and manage all support tickets, including technical issues, billing inquiries, and feature requests.',
       placement: 'left',
       title: 'Support Tickets',
     },
     {
       target: '#tour-step-6',
-      content: 'This is your comprehensive Platform Monitoring & Security Center! Monitor real-time platform health, run security audits, handle performance emergencies, optimize images/CDN, and track live user metrics across Nigerian networks. All monitoring and testing capabilities are now integrated directly into your admin dashboard.',
+      content:
+        'This is your comprehensive Platform Monitoring & Security Center! Monitor real-time platform health, run security audits, handle performance emergencies, optimize images/CDN, and track live user metrics across Nigerian networks. All monitoring and testing capabilities are now integrated directly into your admin dashboard.',
       placement: 'top',
       title: 'Platform Monitoring & Security Center',
     },
@@ -82,8 +85,8 @@ export const AdminOnboardingTour: React.FC<AdminOnboardingTourProps> = ({ run, o
           borderRadius: '0.25rem',
         },
         buttonBack: {
-          marginRight: 'auto'
-        }
+          marginRight: 'auto',
+        },
       }}
     />
   );

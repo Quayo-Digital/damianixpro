@@ -8,16 +8,16 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { 
-  Download, 
-  Trash2, 
-  Eye, 
-  MapPin, 
-  Calendar, 
+import {
+  Download,
+  Trash2,
+  Eye,
+  MapPin,
+  Calendar,
   FileImage,
   Share2,
   Copy,
-  Check
+  Check,
 } from 'lucide-react';
 import { CapturedPhoto } from '@/services/camera/CameraService';
 
@@ -46,7 +46,7 @@ export function PhotoGallery({
   allowDownload = true,
   allowShare = true,
   maxDisplayPhotos,
-  className = ''
+  className = '',
 }: PhotoGalleryProps) {
   const [selectedPhoto, setSelectedPhoto] = useState<CapturedPhoto | null>(null);
   const [copiedPhotoId, setCopiedPhotoId] = useState<string | null>(null);
@@ -68,7 +68,7 @@ export function PhotoGallery({
       month: 'short',
       day: 'numeric',
       hour: '2-digit',
-      minute: '2-digit'
+      minute: '2-digit',
     }).format(date);
   };
 
@@ -89,7 +89,7 @@ export function PhotoGallery({
         await navigator.share({
           title: 'Property Photo',
           text: `Photo captured on ${formatDate(photo.timestamp)}`,
-          files: [file]
+          files: [file],
         });
         onPhotoShare?.(photo);
       } catch (error) {
@@ -113,7 +113,7 @@ export function PhotoGallery({
     return (
       <Card className={className}>
         <CardContent className="p-6 text-center">
-          <FileImage className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+          <FileImage className="mx-auto mb-4 h-12 w-12 text-muted-foreground" />
           <p className="text-muted-foreground">No photos captured yet</p>
         </CardContent>
       </Card>
@@ -134,40 +134,36 @@ export function PhotoGallery({
             </Badge>
           </div>
         </CardHeader>
-        
+
         <CardContent>
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4">
             {displayPhotos.map((photo) => (
-              <div key={photo.id} className="relative group">
+              <div key={photo.id} className="group relative">
                 {/* Photo Thumbnail */}
                 <div
-                  className="aspect-square bg-gray-100 rounded-lg overflow-hidden cursor-pointer"
+                  className="aspect-square cursor-pointer overflow-hidden rounded-lg bg-gray-100"
                   onClick={() => setSelectedPhoto(photo)}
                 >
                   <img
                     src={photo.dataUrl}
                     alt={photo.filename}
-                    className="w-full h-full object-cover transition-transform group-hover:scale-105"
+                    className="h-full w-full object-cover transition-transform group-hover:scale-105"
                   />
-                  
+
                   {/* Overlay on Hover */}
-                  <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                  <div className="absolute inset-0 flex items-center justify-center bg-black/50 opacity-0 transition-opacity group-hover:opacity-100">
                     <Eye className="h-6 w-6 text-white" />
                   </div>
                 </div>
 
                 {/* Photo Info */}
                 <div className="mt-2 space-y-1">
-                  <p className="text-xs text-muted-foreground truncate">
-                    {photo.filename}
-                  </p>
-                  <p className="text-xs text-muted-foreground">
-                    {formatFileSize(photo.size)}
-                  </p>
+                  <p className="truncate text-xs text-muted-foreground">{photo.filename}</p>
+                  <p className="text-xs text-muted-foreground">{formatFileSize(photo.size)}</p>
                 </div>
 
                 {/* Action Buttons */}
-                <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                <div className="absolute right-2 top-2 opacity-0 transition-opacity group-hover:opacity-100">
                   <div className="flex gap-1">
                     {allowDownload && (
                       <Button
@@ -177,12 +173,12 @@ export function PhotoGallery({
                           e.stopPropagation();
                           handleDownload(photo);
                         }}
-                        className="w-8 h-8 p-0 bg-white/90 hover:bg-white"
+                        className="h-8 w-8 border border-border bg-card/95 p-0 hover:bg-card"
                       >
                         <Download className="h-3 w-3" />
                       </Button>
                     )}
-                    
+
                     {allowDelete && (
                       <Button
                         variant="destructive"
@@ -191,7 +187,7 @@ export function PhotoGallery({
                           e.stopPropagation();
                           onPhotoDelete?.(photo.id);
                         }}
-                        className="w-8 h-8 p-0"
+                        className="h-8 w-8 p-0"
                       >
                         <Trash2 className="h-3 w-3" />
                       </Button>
@@ -203,11 +199,9 @@ export function PhotoGallery({
 
             {/* Show More Indicator */}
             {remainingCount > 0 && (
-              <div className="aspect-square bg-gray-100 rounded-lg flex items-center justify-center">
+              <div className="flex aspect-square items-center justify-center rounded-lg bg-gray-100">
                 <div className="text-center">
-                  <p className="text-2xl font-bold text-muted-foreground">
-                    +{remainingCount}
-                  </p>
+                  <p className="text-2xl font-bold text-muted-foreground">+{remainingCount}</p>
                   <p className="text-xs text-muted-foreground">more</p>
                 </div>
               </div>
@@ -218,7 +212,7 @@ export function PhotoGallery({
 
       {/* Photo Detail Modal */}
       <Dialog open={!!selectedPhoto} onOpenChange={() => setSelectedPhoto(null)}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-auto">
+        <DialogContent className="max-h-[90vh] max-w-4xl overflow-auto">
           {selectedPhoto && (
             <>
               <DialogHeader>
@@ -234,29 +228,31 @@ export function PhotoGallery({
                   <img
                     src={selectedPhoto.dataUrl}
                     alt={selectedPhoto.filename}
-                    className="w-full h-auto max-h-96 object-contain rounded-lg bg-gray-100"
+                    className="h-auto max-h-96 w-full rounded-lg bg-gray-100 object-contain"
                   />
                 </div>
 
                 {/* Photo Metadata */}
                 {showMetadata && (
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                  <div className="grid grid-cols-1 gap-4 text-sm md:grid-cols-2">
                     <div className="space-y-2">
                       <div className="flex items-center gap-2">
                         <Calendar className="h-4 w-4 text-muted-foreground" />
                         <span className="font-medium">Captured:</span>
                         <span>{formatDate(selectedPhoto.timestamp)}</span>
                       </div>
-                      
+
                       <div className="flex items-center gap-2">
                         <FileImage className="h-4 w-4 text-muted-foreground" />
                         <span className="font-medium">Size:</span>
                         <span>{formatFileSize(selectedPhoto.size)}</span>
                       </div>
-                      
+
                       <div className="flex items-center gap-2">
                         <span className="font-medium">Dimensions:</span>
-                        <span>{selectedPhoto.metadata.width} × {selectedPhoto.metadata.height}</span>
+                        <span>
+                          {selectedPhoto.metadata.width} × {selectedPhoto.metadata.height}
+                        </span>
                       </div>
                     </div>
 
@@ -265,12 +261,12 @@ export function PhotoGallery({
                         <span className="font-medium">Format:</span>
                         <span className="uppercase">{selectedPhoto.metadata.format}</span>
                       </div>
-                      
+
                       <div className="flex items-center gap-2">
                         <span className="font-medium">Quality:</span>
                         <span>{Math.round(selectedPhoto.metadata.quality * 100)}%</span>
                       </div>
-                      
+
                       <div className="flex items-center gap-2">
                         <span className="font-medium">Camera:</span>
                         <span className="capitalize">{selectedPhoto.metadata.facingMode}</span>
@@ -281,7 +277,8 @@ export function PhotoGallery({
                           <MapPin className="h-4 w-4 text-muted-foreground" />
                           <span className="font-medium">Location:</span>
                           <span className="text-xs">
-                            {selectedPhoto.location.latitude.toFixed(6)}, {selectedPhoto.location.longitude.toFixed(6)}
+                            {selectedPhoto.location.latitude.toFixed(6)},{' '}
+                            {selectedPhoto.location.longitude.toFixed(6)}
                           </span>
                         </div>
                       )}
@@ -290,17 +287,14 @@ export function PhotoGallery({
                 )}
 
                 {/* Action Buttons */}
-                <div className="flex gap-2 pt-4 border-t">
+                <div className="flex gap-2 border-t pt-4">
                   {allowDownload && (
-                    <Button
-                      onClick={() => handleDownload(selectedPhoto)}
-                      className="flex-1"
-                    >
-                      <Download className="h-4 w-4 mr-2" />
+                    <Button onClick={() => handleDownload(selectedPhoto)} className="flex-1">
+                      <Download className="mr-2 h-4 w-4" />
                       Download
                     </Button>
                   )}
-                  
+
                   {allowShare && (
                     <Button
                       variant="outline"
@@ -309,18 +303,18 @@ export function PhotoGallery({
                     >
                       {copiedPhotoId === selectedPhoto.id ? (
                         <>
-                          <Check className="h-4 w-4 mr-2" />
+                          <Check className="mr-2 h-4 w-4" />
                           Copied!
                         </>
                       ) : (
                         <>
-                          <Share2 className="h-4 w-4 mr-2" />
+                          <Share2 className="mr-2 h-4 w-4" />
                           Share
                         </>
                       )}
                     </Button>
                   )}
-                  
+
                   {allowDelete && (
                     <Button
                       variant="destructive"
@@ -329,16 +323,17 @@ export function PhotoGallery({
                         setSelectedPhoto(null);
                       }}
                     >
-                      <Trash2 className="h-4 w-4 mr-2" />
+                      <Trash2 className="mr-2 h-4 w-4" />
                       Delete
                     </Button>
                   )}
                 </div>
 
                 {/* Nigerian Network Info */}
-                <div className="text-center pt-2 border-t">
+                <div className="border-t pt-2 text-center">
                   <p className="text-xs text-muted-foreground">
-                    📱 Photo optimized for Nigerian networks • {formatFileSize(selectedPhoto.size)} size
+                    📱 Photo optimized for Nigerian networks • {formatFileSize(selectedPhoto.size)}{' '}
+                    size
                   </p>
                 </div>
               </div>

@@ -181,7 +181,7 @@ async function runProductionCleanup() {
               '+234-XXX-XXX-XXXX'
             ],
             production: [
-              'Nigeria Homes Limited',
+              'Damianix Systems Limited',
               'Real business address',
               'Actual contact numbers'
             ],
@@ -287,7 +287,7 @@ async function runProductionCleanup() {
         const securityCleanup = {
           apiKeys: {
             development: [
-              'Test Paystack keys',
+              'Test payment gateway keys',
               'Demo Flutterwave credentials',
               'Development Supabase keys',
               'Sandbox API endpoints'

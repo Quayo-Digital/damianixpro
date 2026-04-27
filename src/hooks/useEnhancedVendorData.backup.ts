@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/contexts/auth';
+import { useAuthSession } from '@/contexts/auth';
 
 interface VendorJob {
   id: string;
@@ -132,7 +132,7 @@ interface PerformanceMetrics {
 }
 
 export function useEnhancedVendorData() {
-  const { user } = useAuth();
+  const { user } = useAuthSession();
   const [profile, setProfile] = useState<VendorProfile | null>(null);
   const [jobs, setJobs] = useState<VendorJob[]>([]);
   const [stats, setStats] = useState<VendorStats | null>(null);
@@ -141,11 +141,7 @@ export function useEnhancedVendorData() {
   const [error, setError] = useState<string | null>(null);
 
   const fetchVendorProfile = async (vendorId: string) => {
-    const { data, error } = await supabase
-      .from('vendors')
-      .select('*')
-      .eq('id', vendorId)
-      .single();
+    const { data, error } = await supabase.from('vendors').select('*').eq('id', vendorId).single();
 
     if (error) throw error;
     return data;
@@ -164,33 +160,36 @@ export function useEnhancedVendorData() {
 
   const calculateStats = (jobs: VendorJob[]): VendorStats => {
     const totalJobs = jobs.length;
-    const completedJobs = jobs.filter(job => job.status === 'completed').length;
-    const activeJobs = jobs.filter(job => job.status === 'in_progress').length;
-    const pendingJobs = jobs.filter(job => job.status === 'scheduled').length;
-    
+    const completedJobs = jobs.filter((job) => job.status === 'completed').length;
+    const activeJobs = jobs.filter((job) => job.status === 'in_progress').length;
+    const pendingJobs = jobs.filter((job) => job.status === 'scheduled').length;
+
     const completionRate = totalJobs > 0 ? (completedJobs / totalJobs) * 100 : 0;
-    
+
     // Calculate earnings
     const totalEarnings = jobs
-      .filter(job => job.status === 'completed')
+      .filter((job) => job.status === 'completed')
       .reduce((sum, job) => sum + (job.actual_cost || job.estimated_cost), 0);
-    
+
     const currentMonth = new Date().getMonth();
     const currentYear = new Date().getFullYear();
     const monthlyEarnings = jobs
-      .filter(job => {
+      .filter((job) => {
         if (job.status !== 'completed' || !job.completed_date) return false;
         const completedDate = new Date(job.completed_date);
-        return completedDate.getMonth() === currentMonth && completedDate.getFullYear() === currentYear;
+        return (
+          completedDate.getMonth() === currentMonth && completedDate.getFullYear() === currentYear
+        );
       })
       .reduce((sum, job) => sum + (job.actual_cost || job.estimated_cost), 0);
 
     // Calculate average rating
-    const ratedJobs = jobs.filter(job => job.customer_rating && job.customer_rating > 0);
-    const averageRating = ratedJobs.length > 0 
-      ? ratedJobs.reduce((sum, job) => sum + (job.customer_rating || 0), 0) / ratedJobs.length 
-      : 0;
-    
+    const ratedJobs = jobs.filter((job) => job.customer_rating && job.customer_rating > 0);
+    const averageRating =
+      ratedJobs.length > 0
+        ? ratedJobs.reduce((sum, job) => sum + (job.customer_rating || 0), 0) / ratedJobs.length
+        : 0;
+
     // Mock response time (in real app, this would be calculated from actual response data)
     const responseTime = Math.random() * 12 + 1; // 1-13 hours
 
@@ -204,11 +203,14 @@ export function useEnhancedVendorData() {
       averageRating,
       totalReviews: ratedJobs.length,
       completionRate,
-      responseTime
+      responseTime,
     };
   };
 
-  const calculatePerformanceMetrics = (jobs: VendorJob[], currentStats: VendorStats): PerformanceMetrics => {
+  const calculatePerformanceMetrics = (
+    jobs: VendorJob[],
+    currentStats: VendorStats
+  ): PerformanceMetrics => {
     const currentMonth = new Date().getMonth();
     const lastMonth = currentMonth === 0 ? 11 : currentMonth - 1;
     const currentYear = new Date().getFullYear();
@@ -216,36 +218,40 @@ export function useEnhancedVendorData() {
 
     // Calculate previous month earnings
     const lastMonthEarnings = jobs
-      .filter(job => {
+      .filter((job) => {
         if (job.status !== 'completed' || !job.completed_date) return false;
         const completedDate = new Date(job.completed_date);
-        return completedDate.getMonth() === lastMonth && completedDate.getFullYear() === lastMonthYear;
+        return (
+          completedDate.getMonth() === lastMonth && completedDate.getFullYear() === lastMonthYear
+        );
       })
       .reduce((sum, job) => sum + (job.actual_cost || job.estimated_cost), 0);
 
     // Calculate earnings by category
     const categoryEarnings = new Map<string, number>();
     let totalCategoryEarnings = 0;
-    
-    jobs.filter(job => job.status === 'completed').forEach(job => {
-      const amount = job.actual_cost || job.estimated_cost;
-      categoryEarnings.set(job.category, (categoryEarnings.get(job.category) || 0) + amount);
-      totalCategoryEarnings += amount;
-    });
+
+    jobs
+      .filter((job) => job.status === 'completed')
+      .forEach((job) => {
+        const amount = job.actual_cost || job.estimated_cost;
+        categoryEarnings.set(job.category, (categoryEarnings.get(job.category) || 0) + amount);
+        totalCategoryEarnings += amount;
+      });
 
     const earningsByCategory = Array.from(categoryEarnings.entries()).map(([category, amount]) => ({
       category,
       amount,
-      percentage: totalCategoryEarnings > 0 ? (amount / totalCategoryEarnings) * 100 : 0
+      percentage: totalCategoryEarnings > 0 ? (amount / totalCategoryEarnings) * 100 : 0,
     }));
 
     // Calculate customer satisfaction breakdown
-    const ratedJobs = jobs.filter(job => job.customer_rating && job.customer_rating > 0);
+    const ratedJobs = jobs.filter((job) => job.customer_rating && job.customer_rating > 0);
     const satisfactionBreakdown = {
-      excellent: ratedJobs.filter(job => job.customer_rating === 5).length,
-      good: ratedJobs.filter(job => job.customer_rating === 4).length,
-      average: ratedJobs.filter(job => job.customer_rating === 3).length,
-      poor: ratedJobs.filter(job => job.customer_rating && job.customer_rating <= 2).length,
+      excellent: ratedJobs.filter((job) => job.customer_rating === 5).length,
+      good: ratedJobs.filter((job) => job.customer_rating === 4).length,
+      average: ratedJobs.filter((job) => job.customer_rating === 3).length,
+      poor: ratedJobs.filter((job) => job.customer_rating && job.customer_rating <= 2).length,
     };
 
     // Generate mock achievements based on performance
@@ -257,7 +263,7 @@ export function useEnhancedVendorData() {
         description: 'Successfully completed your first 10 jobs',
         icon: 'target',
         earnedDate: new Date().toISOString(),
-        type: 'milestone' as const
+        type: 'milestone' as const,
       });
     }
     if (currentStats.averageRating >= 4.5) {
@@ -267,7 +273,7 @@ export function useEnhancedVendorData() {
         description: 'Maintained 4.5+ star rating',
         icon: 'star',
         earnedDate: new Date().toISOString(),
-        type: 'customer_service' as const
+        type: 'customer_service' as const,
       });
     }
     if (currentStats.completionRate >= 90) {
@@ -277,7 +283,7 @@ export function useEnhancedVendorData() {
         description: '90%+ job completion rate',
         icon: 'award',
         earnedDate: new Date().toISOString(),
-        type: 'performance' as const
+        type: 'performance' as const,
       });
     }
 
@@ -285,60 +291,65 @@ export function useEnhancedVendorData() {
       monthlyEarnings: {
         current: currentStats.monthlyEarnings,
         previous: lastMonthEarnings,
-        trend: currentStats.monthlyEarnings > lastMonthEarnings ? 'up' : 
-               currentStats.monthlyEarnings < lastMonthEarnings ? 'down' : 'stable'
+        trend:
+          currentStats.monthlyEarnings > lastMonthEarnings
+            ? 'up'
+            : currentStats.monthlyEarnings < lastMonthEarnings
+              ? 'down'
+              : 'stable',
       },
       completionRate: {
         current: currentStats.completionRate,
         target: 85,
-        trend: 'stable' // Would be calculated based on historical data
+        trend: 'stable', // Would be calculated based on historical data
       },
       averageRating: {
         current: currentStats.averageRating,
         previous: currentStats.averageRating, // Would be calculated from historical data
-        totalReviews: currentStats.totalReviews
+        totalReviews: currentStats.totalReviews,
       },
       responseTime: {
         current: currentStats.responseTime,
         target: 4,
-        trend: 'stable'
+        trend: 'stable',
       },
       jobsCompleted: {
-        thisMonth: jobs.filter(job => {
+        thisMonth: jobs.filter((job) => {
           if (job.status !== 'completed' || !job.completed_date) return false;
           const completedDate = new Date(job.completed_date);
-          return completedDate.getMonth() === currentMonth && completedDate.getFullYear() === currentYear;
+          return (
+            completedDate.getMonth() === currentMonth && completedDate.getFullYear() === currentYear
+          );
         }).length,
-        lastMonth: jobs.filter(job => {
+        lastMonth: jobs.filter((job) => {
           if (job.status !== 'completed' || !job.completed_date) return false;
           const completedDate = new Date(job.completed_date);
-          return completedDate.getMonth() === lastMonth && completedDate.getFullYear() === lastMonthYear;
+          return (
+            completedDate.getMonth() === lastMonth && completedDate.getFullYear() === lastMonthYear
+          );
         }).length,
-        trend: 'stable'
+        trend: 'stable',
       },
       customerSatisfaction: {
         score: currentStats.averageRating,
-        breakdown: satisfactionBreakdown
+        breakdown: satisfactionBreakdown,
       },
       earningsBreakdown: {
         byCategory: earningsByCategory,
-        byMonth: [] // Would be populated with historical monthly data
+        byMonth: [], // Would be populated with historical monthly data
       },
-      achievements
+      achievements,
     };
   };
 
   const updateJobStatus = async (jobId: string, status: string, notes?: string) => {
     const updates: any = { status };
-    
+
     if (status === 'completed') {
       updates.completed_date = new Date().toISOString();
     }
 
-    const { error } = await supabase
-      .from('vendor_jobs')
-      .update(updates)
-      .eq('id', jobId);
+    const { error } = await supabase.from('vendor_jobs').update(updates).eq('id', jobId);
 
     if (error) throw error;
 
@@ -369,15 +380,12 @@ export function useEnhancedVendorData() {
   const updateProfile = async (updates: Partial<VendorProfile>) => {
     if (!profile) throw new Error('No profile to update');
 
-    const { error } = await supabase
-      .from('vendors')
-      .update(updates)
-      .eq('id', profile.id);
+    const { error } = await supabase.from('vendors').update(updates).eq('id', profile.id);
 
     if (error) throw error;
 
     // Update local state
-    setProfile(prev => prev ? { ...prev, ...updates } : null);
+    setProfile((prev) => (prev ? { ...prev, ...updates } : null));
   };
 
   const uploadImage = async (file: File): Promise<string> => {
@@ -392,9 +400,7 @@ export function useEnhancedVendorData() {
 
     if (uploadError) throw uploadError;
 
-    const { data } = supabase.storage
-      .from('vendor-images')
-      .getPublicUrl(fileName);
+    const { data } = supabase.storage.from('vendor-images').getPublicUrl(fileName);
 
     return data.publicUrl;
   };
@@ -449,7 +455,7 @@ export function useEnhancedVendorData() {
             verified: true,
             created_at: '2024-01-15T10:00:00Z',
             updated_at: '2024-08-07T15:30:00Z',
-            is_available: true
+            is_available: true,
           };
           setProfile(mockProfile);
         } else {
@@ -467,7 +473,6 @@ export function useEnhancedVendorData() {
         // Calculate performance metrics
         const metrics = calculatePerformanceMetrics(jobsData, calculatedStats);
         setPerformanceMetrics(metrics);
-
       } catch (err: any) {
         console.error('Error fetching vendor data:', err);
         setError(err.message || 'An error occurred while fetching vendor data');
@@ -489,7 +494,7 @@ export function useEnhancedVendorData() {
     updateJobStatus,
     updateJobCost,
     updateProfile,
-    uploadImage
+    uploadImage,
   };
 }
 

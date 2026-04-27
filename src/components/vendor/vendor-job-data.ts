@@ -1,4 +1,3 @@
-
 export interface VendorJob {
   id: string;
   vendor_id: string;

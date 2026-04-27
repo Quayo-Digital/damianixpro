@@ -1,4 +1,3 @@
-
 import { Slider } from '@/components/ui/slider';
 
 interface PriceRangeFilterProps {
@@ -12,20 +11,20 @@ export function PriceRangeFilter({
   localPriceRange,
   setLocalPriceRange,
   minPrice,
-  maxPrice
+  maxPrice,
 }: PriceRangeFilterProps) {
   // Format price for display
   const formatPrice = (price: number) => {
     return `₦${price.toLocaleString()}`;
   };
-  
+
   return (
     <div>
-      <h4 className="font-medium mb-2">Price Range</h4>
-      <div className="pt-5 px-2">
+      <h4 className="mb-2 font-medium">Price Range</h4>
+      <div className="px-2 pt-5">
         <Slider
           defaultValue={localPriceRange}
-          value={localPriceRange} 
+          value={localPriceRange}
           min={minPrice}
           max={maxPrice}
           step={10000}

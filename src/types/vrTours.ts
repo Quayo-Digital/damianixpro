@@ -71,7 +71,15 @@ export interface VRHotspot {
 }
 
 export interface HotspotAction {
-  type: 'navigate' | 'show-info' | 'play-media' | 'toggle-visibility' | 'measure' | 'bookmark' | 'share' | 'contact';
+  type:
+    | 'navigate'
+    | 'show-info'
+    | 'play-media'
+    | 'toggle-visibility'
+    | 'measure'
+    | 'bookmark'
+    | 'share'
+    | 'contact';
   targetSceneId?: string;
   mediaUrl?: string;
   infoContent?: string;
@@ -506,7 +514,23 @@ export interface NetworkMetrics {
 }
 
 // Utility types
-export type RoomType = 'living-room' | 'bedroom' | 'kitchen' | 'bathroom' | 'dining-room' | 'office' | 'garage' | 'basement' | 'attic' | 'balcony' | 'garden' | 'hallway' | 'closet' | 'laundry' | 'storage' | 'other';
+export type RoomType =
+  | 'living-room'
+  | 'bedroom'
+  | 'kitchen'
+  | 'bathroom'
+  | 'dining-room'
+  | 'office'
+  | 'garage'
+  | 'basement'
+  | 'attic'
+  | 'balcony'
+  | 'garden'
+  | 'hallway'
+  | 'closet'
+  | 'laundry'
+  | 'storage'
+  | 'other';
 
 export type TourQuality = 'low' | 'medium' | 'high' | 'ultra';
 export type TourStatus = 'draft' | 'processing' | 'published' | 'archived';

@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Button } from '@/components/ui/button';
 
@@ -10,30 +9,30 @@ interface PropertyFiltersProps {
 export function PropertyFilters({ activeFilter, setActiveFilter }: PropertyFiltersProps) {
   return (
     <div className="space-x-2">
-      <Button 
-        variant={activeFilter === 'all' ? 'default' : 'outline'} 
-        size="sm" 
+      <Button
+        variant={activeFilter === 'all' ? 'default' : 'outline'}
+        size="sm"
         onClick={() => setActiveFilter('all')}
       >
         All
       </Button>
-      <Button 
-        variant={activeFilter === 'residential' ? 'default' : 'outline'} 
-        size="sm" 
+      <Button
+        variant={activeFilter === 'residential' ? 'default' : 'outline'}
+        size="sm"
         onClick={() => setActiveFilter('residential')}
       >
         Residential
       </Button>
-      <Button 
-        variant={activeFilter === 'commercial' ? 'default' : 'outline'} 
-        size="sm" 
+      <Button
+        variant={activeFilter === 'commercial' ? 'default' : 'outline'}
+        size="sm"
         onClick={() => setActiveFilter('commercial')}
       >
         Commercial
       </Button>
-      <Button 
-        variant={activeFilter === 'industrial' ? 'default' : 'outline'} 
-        size="sm" 
+      <Button
+        variant={activeFilter === 'industrial' ? 'default' : 'outline'}
+        size="sm"
         onClick={() => setActiveFilter('industrial')}
       >
         Industrial

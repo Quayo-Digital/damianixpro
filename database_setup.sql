@@ -268,4 +268,4 @@ ALTER PUBLICATION supabase_realtime ADD TABLE public.notifications;
 -- =====================================================
 
 -- The database setup is now complete!
--- You can now use the Nigeria Homes application with full functionality.
+-- You can now use the DamianixPro application with full functionality.

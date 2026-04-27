@@ -1,20 +1,38 @@
-
 export const PropertyDetailLoading = () => {
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="animate-pulse">
-        <div className="h-8 w-48 bg-gray-200 rounded mb-4"></div>
-        <div className="h-64 bg-gray-200 rounded-lg mb-6"></div>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="space-y-4">
-            <div className="h-8 w-3/4 bg-gray-200 rounded"></div>
-            <div className="h-4 bg-gray-200 rounded w-1/2"></div>
-            <div className="h-4 bg-gray-200 rounded w-full"></div>
-            <div className="h-4 bg-gray-200 rounded w-3/4"></div>
+        {/* Back button skeleton */}
+        <div className="mb-6 h-9 w-48 rounded bg-gray-200"></div>
+
+        {/* Main content grid - matches the actual layout */}
+        <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
+          {/* Left column - matches lg:col-span-2 */}
+          <div className="space-y-6 lg:col-span-2">
+            {/* Header skeleton */}
+            <div className="space-y-3">
+              <div className="h-8 w-3/4 rounded bg-gray-200"></div>
+              <div className="h-5 w-1/2 rounded bg-gray-200"></div>
+              <div className="h-5 w-2/3 rounded bg-gray-200"></div>
+            </div>
+
+            {/* Image skeleton */}
+            <div className="h-96 rounded-lg bg-gray-200"></div>
+
+            {/* Tabs skeleton */}
+            <div className="space-y-4">
+              <div className="h-10 w-full rounded bg-gray-200"></div>
+              <div className="h-32 rounded bg-gray-200"></div>
+            </div>
           </div>
-          <div className="space-y-4">
-            <div className="h-40 bg-gray-200 rounded"></div>
-            <div className="h-12 bg-gray-200 rounded"></div>
+
+          {/* Right column - matches lg:col-span-1 */}
+          <div className="lg:col-span-1">
+            <div className="space-y-4">
+              <div className="h-40 rounded-lg bg-gray-200"></div>
+              <div className="h-12 rounded bg-gray-200"></div>
+              <div className="h-12 rounded bg-gray-200"></div>
+            </div>
           </div>
         </div>
       </div>

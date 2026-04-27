@@ -42,17 +42,17 @@ export function FinanceChartTabs({
   onOpenCashFlowDetails,
   onOpenPropertiesDetails,
   isLoading,
-  error
+  error,
 }: ChartTabsProps) {
   const isMobile = useIsMobile();
-  
+
   return (
-    <Tabs defaultValue="revenue" className="w-full mt-6">
+    <Tabs defaultValue="revenue" className="mt-6 w-full">
       {isMobile ? (
         <div className="relative mb-4">
-          <ScrollArea className="pb-2 w-full">
-            <div className="flex pb-3 px-1">
-              <TabsList className="inline-flex w-max px-4 border rounded-lg">
+          <ScrollArea className="w-full pb-2">
+            <div className="flex px-1 pb-3">
+              <TabsList className="inline-flex w-max rounded-lg border px-4">
                 <TabsTrigger value="revenue">Revenue</TabsTrigger>
                 <TabsTrigger value="expenses">Expenses</TabsTrigger>
                 <TabsTrigger value="cashflow">Cash Flow</TabsTrigger>
@@ -63,7 +63,7 @@ export function FinanceChartTabs({
           </ScrollArea>
         </div>
       ) : (
-        <TabsList className="w-full max-w-md mx-auto grid grid-cols-5">
+        <TabsList className="mx-auto grid w-full max-w-md grid-cols-5">
           <TabsTrigger value="revenue">Revenue</TabsTrigger>
           <TabsTrigger value="expenses">Expenses</TabsTrigger>
           <TabsTrigger value="cashflow">Cash Flow</TabsTrigger>
@@ -71,7 +71,7 @@ export function FinanceChartTabs({
           <TabsTrigger value="integrations">Integrations</TabsTrigger>
         </TabsList>
       )}
-      
+
       <TabsContent value="revenue">
         <RevenueChart
           revenueData={revenueData}
@@ -79,14 +79,14 @@ export function FinanceChartTabs({
           chartColors={{
             revenue: chartColors.revenue,
             expenses: chartColors.expenses,
-            profit: chartColors.profit
+            profit: chartColors.profit,
           }}
           onViewDetails={onOpenRevenueDetails}
           isLoading={isLoading}
           error={error}
         />
       </TabsContent>
-      
+
       <TabsContent value="expenses">
         <ExpenseChart
           expenseData={expenseData}
@@ -97,13 +97,13 @@ export function FinanceChartTabs({
           error={error}
         />
       </TabsContent>
-      
+
       <TabsContent value="cashflow">
         <CashFlowChart
           cashFlowData={cashFlowData}
           chartColors={{
             inflow: chartColors.inflow,
-            outflow: chartColors.outflow
+            outflow: chartColors.outflow,
           }}
           formatAmount={formatAmount}
           onViewDetails={onOpenCashFlowDetails}
@@ -111,7 +111,7 @@ export function FinanceChartTabs({
           error={error}
         />
       </TabsContent>
-      
+
       <TabsContent value="properties">
         <PropertyChart
           propertyData={propertyPerformanceData}
@@ -125,7 +125,7 @@ export function FinanceChartTabs({
           error={error}
         />
       </TabsContent>
-      
+
       <TabsContent value="integrations">
         <FinancialIntegrations />
       </TabsContent>

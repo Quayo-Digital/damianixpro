@@ -4,19 +4,32 @@
  */
 
 import React, { useState, useEffect } from 'react';
+import { useAuthSession } from '@/contexts/auth';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
-import { getBookingsByListing, getBookingsByOwner, getBookingsByGuest, updateBookingStatus } from '@/services/shortlet/api/bookings';
+import {
+  useShortletBookingsByListing,
+  useShortletBookingsByOwner,
+  useShortletBookingsByGuest,
+  useUpdateShortletBookingStatus,
+} from '@/hooks/useShortletBookings';
 import { format, differenceInDays } from 'date-fns';
-import { 
-  Calendar, 
-  Users, 
-  DollarSign, 
+import { logger } from '@/utils/logger';
+import {
+  Calendar,
+  Users,
+  DollarSign,
   MapPin,
   CheckCircle2,
   XCircle,
@@ -25,11 +38,10 @@ import {
   Search,
   Filter,
   Eye,
-  Loader2
+  Loader2,
 } from 'lucide-react';
 import type { Booking, BookingStatus } from '@/services/shortlet/types';
 import { BookingCard } from './BookingCard';
-import { useAuth } from '@/contexts/auth';
 
 interface BookingListProps {
   listingId?: string;
@@ -39,77 +51,86 @@ interface BookingListProps {
   onBookingClick?: (bookingId: string) => void;
 }
 
-export function BookingList({ 
-  listingId, 
-  ownerId, 
+export function BookingList({
+  listingId,
+  ownerId,
   guestId,
   mode = 'owner',
-  onBookingClick 
+  onBookingClick,
 }: BookingListProps) {
   const { toast } = useToast();
-  const { user } = useAuth();
-  const [bookings, setBookings] = useState<Booking[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const { user } = useAuthSession();
+  const updateStatusMutation = useUpdateShortletBookingStatus();
   const [activeTab, setActiveTab] = useState<BookingStatus | 'all'>('all');
   const [searchQuery, setSearchQuery] = useState('');
 
+  // Use React Query hooks
+  const effectiveOwnerId = ownerId || (mode === 'owner' && user?.id ? user.id : null);
+  const effectiveGuestId = guestId || (mode === 'guest' && user?.id ? user.id : null);
+
+  const listingsQuery = useShortletBookingsByListing(listingId || null);
+  const ownerQuery = useShortletBookingsByOwner(effectiveOwnerId ? String(effectiveOwnerId) : null);
+  const guestQuery = useShortletBookingsByGuest(effectiveGuestId ? String(effectiveGuestId) : null);
+
+  // Determine which query to use
+  let bookingsQuery;
+  if (listingId) {
+    bookingsQuery = listingsQuery;
+  } else if (effectiveOwnerId) {
+    bookingsQuery = ownerQuery;
+  } else if (effectiveGuestId) {
+    bookingsQuery = guestQuery;
+  } else {
+    bookingsQuery = { data: [], isLoading: false, error: null };
+  }
+
+  let allBookings = bookingsQuery.data || [];
+
+  // Filter by status
+  if (activeTab !== 'all') {
+    allBookings = allBookings.filter((b) => b.status === activeTab);
+  }
+
+  // Filter by search query
+  const filteredBookings = allBookings.filter((booking) => {
+    if (!searchQuery) return true;
+    const query = searchQuery.toLowerCase();
+    return (
+      booking.id.toLowerCase().includes(query) ||
+      booking.listing?.title?.toLowerCase().includes(query) ||
+      booking.guest?.email?.toLowerCase().includes(query)
+    );
+  });
+
+  const isLoading = bookingsQuery.isLoading;
+
+  // Handle errors
   useEffect(() => {
-    loadBookings();
-  }, [listingId, ownerId, guestId, activeTab]);
-
-  const loadBookings = async () => {
-    setIsLoading(true);
-    try {
-      let allBookings: Booking[] = [];
-
-      if (listingId) {
-        allBookings = await getBookingsByListing(String(listingId));
-      } else if (ownerId || (mode === 'owner' && user?.id)) {
-        const id = ownerId || user?.id;
-        allBookings = await getBookingsByOwner(String(id || ''));
-      } else if (guestId || (mode === 'guest' && user?.id)) {
-        const id = guestId || user?.id;
-        allBookings = await getBookingsByGuest(String(id || ''));
-      }
-
-      // Filter by status
-      if (activeTab !== 'all') {
-        allBookings = allBookings.filter(b => b.status === activeTab);
-      }
-
-      // Filter by search query
-      if (searchQuery) {
-        const query = searchQuery.toLowerCase();
-        allBookings = allBookings.filter(b => 
-          b.listing?.title?.toLowerCase().includes(query) ||
-          b.guest?.name?.toLowerCase().includes(query) ||
-          b.id.toLowerCase().includes(query)
-        );
-      }
-
-      setBookings(allBookings);
-    } catch (error) {
-      console.error('Error loading bookings:', error);
+    if (bookingsQuery.error) {
+      logger.error('Error loading bookings', bookingsQuery.error, {
+        listingId,
+        ownerId,
+        guestId,
+        mode,
+      });
       toast({
         title: 'Error',
         description: 'Failed to load bookings',
         variant: 'destructive',
       });
-    } finally {
-      setIsLoading(false);
     }
-  };
+  }, [bookingsQuery.error, listingId, ownerId, guestId, mode, toast]);
 
   const handleStatusChange = async (bookingId: string, newStatus: BookingStatus) => {
     try {
-      await updateBookingStatus(bookingId, newStatus);
+      await updateStatusMutation.mutateAsync({ bookingId, status: newStatus });
       toast({
         title: 'Success',
         description: `Booking ${newStatus}`,
       });
-      loadBookings();
+      // React Query will automatically refetch
     } catch (error) {
-      console.error('Error updating booking status:', error);
+      logger.error('Error updating booking status', error, { bookingId, newStatus });
       toast({
         title: 'Error',
         description: 'Failed to update booking status',
@@ -119,11 +140,11 @@ export function BookingList({
   };
 
   const statusCounts = {
-    all: bookings.length,
-    pending: bookings.filter(b => b.status === 'pending').length,
-    confirmed: bookings.filter(b => b.status === 'confirmed').length,
-    cancelled: bookings.filter(b => b.status === 'cancelled').length,
-    completed: bookings.filter(b => b.status === 'completed').length,
+    all: filteredBookings.length,
+    pending: filteredBookings.filter((b) => b.status === 'pending').length,
+    confirmed: filteredBookings.filter((b) => b.status === 'confirmed').length,
+    cancelled: filteredBookings.filter((b) => b.status === 'cancelled').length,
+    completed: filteredBookings.filter((b) => b.status === 'completed').length,
   };
 
   return (
@@ -144,8 +165,8 @@ export function BookingList({
       <Card>
         <CardContent className="pt-6">
           <div className="flex gap-2">
-            <div className="flex-1 relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 transform text-muted-foreground" />
               <Input
                 placeholder="Search bookings..."
                 value={searchQuery}
@@ -160,39 +181,37 @@ export function BookingList({
       {/* Status Tabs */}
       <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as any)}>
         <TabsList className="grid w-full grid-cols-5">
-          <TabsTrigger value="all">
-            All ({statusCounts.all})
-          </TabsTrigger>
+          <TabsTrigger value="all">All ({statusCounts.all})</TabsTrigger>
           <TabsTrigger value="pending">
-            <Clock className="h-4 w-4 mr-2" />
+            <Clock className="mr-2 h-4 w-4" />
             Pending ({statusCounts.pending})
           </TabsTrigger>
           <TabsTrigger value="confirmed">
-            <CheckCircle2 className="h-4 w-4 mr-2" />
+            <CheckCircle2 className="mr-2 h-4 w-4" />
             Confirmed ({statusCounts.confirmed})
           </TabsTrigger>
           <TabsTrigger value="cancelled">
-            <XCircle className="h-4 w-4 mr-2" />
+            <XCircle className="mr-2 h-4 w-4" />
             Cancelled ({statusCounts.cancelled})
           </TabsTrigger>
           <TabsTrigger value="completed">
-            <CheckCircle2 className="h-4 w-4 mr-2" />
+            <CheckCircle2 className="mr-2 h-4 w-4" />
             Completed ({statusCounts.completed})
           </TabsTrigger>
         </TabsList>
 
         <TabsContent value={activeTab} className="mt-6">
           {isLoading ? (
-            <div className="flex items-center justify-center h-64">
+            <div className="flex h-64 items-center justify-center">
               <Loader2 className="h-8 w-8 animate-spin text-primary" />
             </div>
-          ) : bookings.length === 0 ? (
+          ) : filteredBookings.length === 0 ? (
             <Card>
               <CardContent className="py-12 text-center">
-                <Calendar className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-                <h3 className="text-lg font-semibold mb-2">No bookings found</h3>
+                <Calendar className="mx-auto mb-4 h-12 w-12 text-muted-foreground" />
+                <h3 className="mb-2 text-lg font-semibold">No bookings found</h3>
                 <p className="text-muted-foreground">
-                  {activeTab === 'all' 
+                  {activeTab === 'all'
                     ? 'No bookings match your criteria'
                     : `No ${activeTab} bookings found`}
                 </p>
@@ -200,7 +219,7 @@ export function BookingList({
             </Card>
           ) : (
             <div className="space-y-4">
-              {bookings.map(booking => (
+              {filteredBookings.map((booking) => (
                 <BookingCard
                   key={booking.id}
                   booking={booking}
@@ -216,4 +235,3 @@ export function BookingList({
     </div>
   );
 }
-

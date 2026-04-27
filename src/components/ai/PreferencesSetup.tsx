@@ -1,16 +1,10 @@
 // User Preferences Setup Component for AI Matching
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   Form,
   FormControl,
@@ -35,80 +29,157 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import {
-  Brain,
-  Home,
-  MapPin,
-  DollarSign,
-  Settings,
-  Star,
-  CheckCircle,
-} from 'lucide-react';
+import { Brain, Home, MapPin, DollarSign, Settings, Star, CheckCircle } from 'lucide-react';
 import { UserPreferences } from '@/types/preferences';
 import { useUserPreferences } from '@/hooks/useUserPreferences';
+import { useAuthSession } from '@/contexts/auth';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 
-const preferencesSchema = z.object({
-  min_budget: z.number().min(0),
-  max_budget: z.number().min(0),
-  budget_flexibility: z.enum(['strict', 'flexible', 'very_flexible']),
-  preferred_areas: z.array(z.string()).min(1, 'Select at least one area'),
-  property_types: z.array(z.enum(['apartment', 'house', 'studio', 'duplex', 'penthouse'])).min(1, 'Select at least one property type'),
-  min_bedrooms: z.number().min(1),
-  max_bedrooms: z.number().optional(),
-  min_bathrooms: z.number().min(1),
-  furnished_preference: z.enum(['furnished', 'unfurnished', 'either']),
-  amenity_preferences: z.object({
-    parking: z.number().min(0).max(10),
-    gym: z.number().min(0).max(10),
-    pool: z.number().min(0).max(10),
-    security: z.number().min(0).max(10),
-    generator: z.number().min(0).max(10),
-    internet: z.number().min(0).max(10),
-    air_conditioning: z.number().min(0).max(10),
-    balcony: z.number().min(0).max(10),
-    garden: z.number().min(0).max(10),
-    elevator: z.number().min(0).max(10),
-    laundry: z.number().min(0).max(10),
-    pet_friendly: z.number().min(0).max(10),
-  }),
-  noise_tolerance: z.enum(['quiet', 'moderate', 'lively']),
-  social_preference: z.enum(['private', 'community_oriented']),
-  work_from_home: z.boolean(),
-  has_pets: z.boolean(),
-  pet_types: z.array(z.string()).optional(),
-});
+const defaultAmenities = {
+  parking: 5,
+  gym: 3,
+  pool: 3,
+  security: 8,
+  generator: 7,
+  internet: 6,
+  air_conditioning: 6,
+  balcony: 4,
+  garden: 3,
+  elevator: 4,
+  laundry: 5,
+  pet_friendly: 2,
+};
+
+const preferencesSchema = z
+  .object({
+    min_budget: z.preprocess(
+      (val) =>
+        val === undefined || val === '' || Number.isNaN(Number(val)) ? 500000 : Number(val),
+      z.number().min(0)
+    ),
+    max_budget: z.preprocess(
+      (val) =>
+        val === undefined || val === '' || Number.isNaN(Number(val)) ? 5000000 : Number(val),
+      z.number().min(0)
+    ),
+    budget_flexibility: z.enum(['strict', 'flexible', 'very_flexible']).default('flexible'),
+    preferred_areas: z.preprocess(
+      (val) => (Array.isArray(val) ? val.filter(Boolean) : []),
+      z.array(z.string()).default([])
+    ),
+    property_types: z.preprocess(
+      (val) => (Array.isArray(val) && val.length === 0 ? ['apartment'] : val),
+      z.array(z.enum(['apartment', 'house', 'studio', 'duplex', 'penthouse'])).min(1)
+    ),
+    min_bedrooms: z.preprocess((val) => {
+      const n = Number(val);
+      return val === undefined || val === '' || Number.isNaN(n) || n < 1 ? 1 : n;
+    }, z.number().min(1)),
+    max_bedrooms: z.preprocess((val) => {
+      if (val === undefined || val === '') return undefined;
+      const n = Number(val);
+      return Number.isNaN(n) || n < 1 ? undefined : n;
+    }, z.number().min(1).optional()),
+    min_bathrooms: z.preprocess((val) => {
+      const n = Number(val);
+      return val === undefined || val === '' || Number.isNaN(n) || n < 1 ? 1 : n;
+    }, z.number().min(1)),
+    furnished_preference: z.enum(['furnished', 'unfurnished', 'either']).default('either'),
+    amenity_preferences: z.preprocess(
+      (val) => {
+        if (!val || typeof val !== 'object') return defaultAmenities;
+        const merged = { ...defaultAmenities };
+        for (const k of Object.keys(defaultAmenities)) {
+          const v = (val as Record<string, unknown>)[k];
+          if (typeof v === 'number' && v >= 0 && v <= 10) merged[k as keyof typeof merged] = v;
+        }
+        return merged;
+      },
+      z.object({
+        parking: z.number().min(0).max(10).default(5),
+        gym: z.number().min(0).max(10).default(3),
+        pool: z.number().min(0).max(10).default(3),
+        security: z.number().min(0).max(10).default(8),
+        generator: z.number().min(0).max(10).default(7),
+        internet: z.number().min(0).max(10).default(6),
+        air_conditioning: z.number().min(0).max(10).default(6),
+        balcony: z.number().min(0).max(10).default(4),
+        garden: z.number().min(0).max(10).default(3),
+        elevator: z.number().min(0).max(10).default(4),
+        laundry: z.number().min(0).max(10).default(5),
+        pet_friendly: z.number().min(0).max(10).default(2),
+      })
+    ),
+    noise_tolerance: z.enum(['quiet', 'moderate', 'lively']).default('moderate'),
+    social_preference: z.enum(['private', 'community_oriented']).default('private'),
+    work_from_home: z.boolean().default(false),
+    has_pets: z.boolean().default(false),
+    pet_types: z.array(z.string()).optional().default([]),
+  })
+  .superRefine((data, ctx) => {
+    if (data.max_budget < data.min_budget) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['max_budget'],
+        message: 'Maximum budget must be greater than or equal to minimum budget',
+      });
+    }
+    if (data.max_bedrooms != null && data.max_bedrooms < data.min_bedrooms) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['max_bedrooms'],
+        message: 'Max bedrooms must be greater than or equal to min bedrooms',
+      });
+    }
+  });
 
 type PreferencesFormData = z.infer<typeof preferencesSchema>;
 
-// Major Nigerian Cities and Areas (Limited to Lagos, Abuja FCT, and Port Harcourt)
+// Abuja-focused cities and areas
 const NIGERIAN_CITIES = [
-  // Lagos State
-  { city: 'Lagos', label: 'Lagos State', areas: [
-    'Victoria Island', 'Ikoyi', 'Lekki', 'Ajah', 'Ikeja', 'Maryland',
-    'Surulere', 'Yaba', 'Lagos Island', 'Apapa', 'Festac', 'Gbagada',
-    'Magodo', 'Ojodu', 'Ogba', 'Isolo', 'Alaba', 'Mushin', 'Oshodi',
-    'Ketu', 'Mile 12', 'Ikorodu', 'Epe', 'Badagry'
-  ]},
   // Federal Capital Territory (Abuja)
-  { city: 'Abuja', label: 'Abuja FCT', areas: [
-    'Maitama', 'Asokoro', 'Wuse', 'Garki', 'Gwarinpa', 'Kubwa',
-    'Nyanya', 'Karu', 'Lugbe', 'Jabi', 'Utako', 'Lokogoma',
-    'Katampe', 'Lifecamp', 'Gwagwalada', 'Suleja', 'Kuje', 'Guzape',
-    'Jikwoyi', 'Apo', 'Asokoro Extension', 'Pyakasa', 'Karsana',
-    'Guzape 2', 'Idu', 'Katampe Extension', 'Asokoro Hilltop',
-    'Kurudu', 'Maitama 2', 'Apo Tyafi'
-  ]},
-  // Rivers State Capital
-  { city: 'Port Harcourt', label: 'Port Harcourt', areas: [
-    'GRA', 'Old GRA', 'New GRA', 'Trans Amadi', 'D-Line', 'Mile 1',
-    'Mile 2', 'Mile 3', 'Rumuola', 'Rumuokwuta', 'Eliozu', 'Obio/Akpor',
-    'Oyigbo', 'Okrika', 'Bonny', 'Degema'
-  ]}
+  {
+    city: 'Abuja',
+    label: 'Abuja FCT',
+    areas: [
+      'Maitama',
+      'Asokoro',
+      'Wuse',
+      'Garki',
+      'Gwarinpa',
+      'Kubwa',
+      'Nyanya',
+      'Karu',
+      'Lugbe',
+      'Jabi',
+      'Utako',
+      'Lokogoma',
+      'Katampe',
+      'Lifecamp',
+      'Gwagwalada',
+      'Suleja',
+      'Kuje',
+      'Guzape',
+      'Jikwoyi',
+      'Apo',
+      'Asokoro Extension',
+      'Pyakasa',
+      'Karsana',
+      'Guzape 2',
+      'Idu',
+      'Katampe Extension',
+      'Asokoro Hilltop',
+      'Kurudu',
+      'Maitama 2',
+      'Apo Tyafi',
+    ],
+  },
 ];
 
 // Flatten all areas for easy access
 const ALL_NIGERIAN_AREAS = NIGERIAN_CITIES.reduce((acc, cityData) => {
-  const cityAreas = cityData.areas.map(area => `${area}, ${cityData.city}`);
+  const cityAreas = cityData.areas.map((area) => `${area}, ${cityData.city}`);
   return [...acc, ...cityAreas];
 }, [] as string[]);
 
@@ -138,12 +209,16 @@ const AMENITIES = [
 interface PreferencesSetupProps {
   onComplete?: () => void;
   showProgress?: boolean;
+  /** When true (e.g. in onboarding), falls back to profiles if user_preferences fails */
+  onboardingMode?: boolean;
 }
 
 export const PreferencesSetup: React.FC<PreferencesSetupProps> = ({
   onComplete,
   showProgress = true,
+  onboardingMode = false,
 }) => {
+  const { user } = useAuthSession();
   const { preferences, updatePreferences, isUpdating, completionPercentage } = useUserPreferences();
   const [currentStep, setCurrentStep] = useState(0);
 
@@ -184,15 +259,86 @@ export const PreferencesSetup: React.FC<PreferencesSetupProps> = ({
     },
   });
 
+  useEffect(() => {
+    if (!userPrefs) return;
+    form.reset({
+      min_budget: userPrefs.min_budget || 500000,
+      max_budget: userPrefs.max_budget || 5000000,
+      budget_flexibility: userPrefs.budget_flexibility || 'flexible',
+      preferred_areas: userPrefs.preferred_areas || [],
+      property_types: userPrefs.property_types || ['apartment'],
+      min_bedrooms: userPrefs.min_bedrooms || 1,
+      max_bedrooms: userPrefs.max_bedrooms || undefined,
+      min_bathrooms: userPrefs.min_bathrooms || 1,
+      furnished_preference: userPrefs.furnished_preference || 'either',
+      amenity_preferences: userPrefs.amenity_preferences || defaultAmenities,
+      noise_tolerance: userPrefs.noise_tolerance || 'moderate',
+      social_preference: userPrefs.social_preference || 'private',
+      work_from_home: userPrefs.work_from_home || false,
+      has_pets: userPrefs.has_pets || false,
+      pet_types: userPrefs.pet_types || [],
+    });
+  }, [userPrefs, form]);
+
+  const saveToProfilesFallback = async (data: PreferencesFormData) => {
+    if (!user?.id) throw new Error('Please sign in to save preferences');
+    const { error: profileError } = await supabase
+      .from('profiles')
+      .update({
+        onboarding_completed: true,
+        onboarding_data: {
+          preferences: data,
+          saved_at: new Date().toISOString(),
+        },
+      })
+      .eq('id', user.id);
+    if (profileError) throw profileError;
+    await supabase.auth.updateUser({ data: { onboarded: true } });
+  };
+
   const onSubmit = async (data: PreferencesFormData) => {
+    if (!user?.id) {
+      toast.error('Please sign in to save your preferences');
+      return;
+    }
     try {
       await updatePreferences(data);
-      if (onComplete) {
-        onComplete();
-      }
+      onComplete?.();
     } catch (error) {
       console.error('Error saving preferences:', error);
+      if (onboardingMode && onComplete) {
+        try {
+          await saveToProfilesFallback(data);
+          toast.success('Preferences saved! Completing setup...');
+          onComplete();
+        } catch (fallbackError) {
+          console.error('Fallback save failed:', fallbackError);
+          toast.error('Could not save preferences. Try again or use "Skip for now" to continue.');
+        }
+      } else {
+        toast.error('Could not save preferences. Please try again.');
+      }
     }
+  };
+
+  const onInvalid = () => {
+    const errors = form.formState.errors;
+    const firstError = Object.values(errors)[0];
+    const message =
+      firstError?.message && typeof firstError.message === 'string'
+        ? firstError.message
+        : 'Please complete all required fields (e.g. budget, preferred areas, property type)';
+    toast.error(message);
+  };
+
+  const handleNextStep = async () => {
+    const currentFields = steps[currentStep].fields as Array<keyof PreferencesFormData>;
+    const isValid = await form.trigger(currentFields);
+    if (!isValid) {
+      toast.error('Please complete the required fields before continuing');
+      return;
+    }
+    setCurrentStep(Math.min(steps.length - 1, currentStep + 1));
   };
 
   const steps = [
@@ -204,7 +350,13 @@ export const PreferencesSetup: React.FC<PreferencesSetupProps> = ({
     {
       title: 'Property Details',
       description: 'Choose property type and size',
-      fields: ['property_types', 'min_bedrooms', 'max_bedrooms', 'min_bathrooms', 'furnished_preference'],
+      fields: [
+        'property_types',
+        'min_bedrooms',
+        'max_bedrooms',
+        'min_bathrooms',
+        'furnished_preference',
+      ],
     },
     {
       title: 'Amenities',
@@ -233,8 +385,13 @@ export const PreferencesSetup: React.FC<PreferencesSetupProps> = ({
                     <FormControl>
                       <Input
                         type="number"
-                        {...field}
-                        onChange={(e) => field.onChange(Number(e.target.value))}
+                        value={field.value ?? ''}
+                        onChange={(e) =>
+                          field.onChange(e.target.value !== '' ? Number(e.target.value) : 500000)
+                        }
+                        onBlur={field.onBlur}
+                        name={field.name}
+                        ref={field.ref}
                       />
                     </FormControl>
                     <FormMessage />
@@ -250,8 +407,13 @@ export const PreferencesSetup: React.FC<PreferencesSetupProps> = ({
                     <FormControl>
                       <Input
                         type="number"
-                        {...field}
-                        onChange={(e) => field.onChange(Number(e.target.value))}
+                        value={field.value ?? ''}
+                        onChange={(e) =>
+                          field.onChange(e.target.value !== '' ? Number(e.target.value) : 5000000)
+                        }
+                        onBlur={field.onBlur}
+                        name={field.name}
+                        ref={field.ref}
                       />
                     </FormControl>
                     <FormMessage />
@@ -269,7 +431,7 @@ export const PreferencesSetup: React.FC<PreferencesSetupProps> = ({
                   <FormControl>
                     <RadioGroup
                       onValueChange={field.onChange}
-                      defaultValue={field.value}
+                      value={field.value || 'flexible'}
                       className="flex space-x-4"
                     >
                       <div className="flex items-center space-x-2">
@@ -301,24 +463,25 @@ export const PreferencesSetup: React.FC<PreferencesSetupProps> = ({
                   <div className="space-y-4">
                     {NIGERIAN_CITIES.map((cityData) => (
                       <div key={cityData.city} className="space-y-2">
-                        <h4 className="font-medium text-sm text-primary">{cityData.label}</h4>
-                        <div className="grid grid-cols-2 md:grid-cols-3 gap-2 pl-4">
+                        <h4 className="text-sm font-medium text-primary">{cityData.label}</h4>
+                        <div className="grid grid-cols-2 gap-2 pl-4 md:grid-cols-3">
                           {cityData.areas.map((area) => {
                             const fullAreaName = `${area}, ${cityData.city}`;
                             return (
                               <div key={fullAreaName} className="flex items-center space-x-2">
                                 <Checkbox
                                   id={fullAreaName}
-                                  checked={field.value.includes(fullAreaName)}
+                                  checked={(field.value || []).includes(fullAreaName)}
                                   onCheckedChange={(checked) => {
+                                    const arr = field.value || [];
                                     if (checked) {
-                                      field.onChange([...field.value, fullAreaName]);
+                                      field.onChange([...arr, fullAreaName]);
                                     } else {
-                                      field.onChange(field.value.filter((a) => a !== fullAreaName));
+                                      field.onChange(arr.filter((a) => a !== fullAreaName));
                                     }
                                   }}
                                 />
-                                <label htmlFor={fullAreaName} className="text-sm cursor-pointer">
+                                <label htmlFor={fullAreaName} className="cursor-pointer text-sm">
                                   {area}
                                 </label>
                               </div>
@@ -350,12 +513,13 @@ export const PreferencesSetup: React.FC<PreferencesSetupProps> = ({
                       <div key={type.value} className="flex items-center space-x-2">
                         <Checkbox
                           id={type.value}
-                          checked={field.value.includes(type.value)}
+                          checked={(field.value || []).includes(type.value)}
                           onCheckedChange={(checked) => {
+                            const arr = field.value || [];
                             if (checked) {
-                              field.onChange([...field.value, type.value]);
+                              field.onChange([...arr, type.value]);
                             } else {
-                              field.onChange(field.value.filter((t) => t !== type.value));
+                              field.onChange(arr.filter((t) => t !== type.value));
                             }
                           }}
                         />
@@ -381,8 +545,14 @@ export const PreferencesSetup: React.FC<PreferencesSetupProps> = ({
                       <Input
                         type="number"
                         min="1"
-                        {...field}
-                        onChange={(e) => field.onChange(Number(e.target.value))}
+                        value={field.value ?? ''}
+                        onChange={(e) => {
+                          const v = e.target.value;
+                          field.onChange(v !== '' ? Math.max(1, Number(v)) : 1);
+                        }}
+                        onBlur={field.onBlur}
+                        name={field.name}
+                        ref={field.ref}
                       />
                     </FormControl>
                     <FormMessage />
@@ -399,8 +569,13 @@ export const PreferencesSetup: React.FC<PreferencesSetupProps> = ({
                       <Input
                         type="number"
                         min="1"
-                        {...field}
-                        onChange={(e) => field.onChange(e.target.value ? Number(e.target.value) : undefined)}
+                        value={field.value ?? ''}
+                        onChange={(e) =>
+                          field.onChange(e.target.value !== '' ? Number(e.target.value) : undefined)
+                        }
+                        onBlur={field.onBlur}
+                        name={field.name}
+                        ref={field.ref}
                       />
                     </FormControl>
                     <FormMessage />
@@ -417,8 +592,14 @@ export const PreferencesSetup: React.FC<PreferencesSetupProps> = ({
                       <Input
                         type="number"
                         min="1"
-                        {...field}
-                        onChange={(e) => field.onChange(Number(e.target.value))}
+                        value={field.value ?? ''}
+                        onChange={(e) => {
+                          const v = e.target.value;
+                          field.onChange(v !== '' ? Math.max(1, Number(v)) : 1);
+                        }}
+                        onBlur={field.onBlur}
+                        name={field.name}
+                        ref={field.ref}
                       />
                     </FormControl>
                     <FormMessage />
@@ -433,7 +614,10 @@ export const PreferencesSetup: React.FC<PreferencesSetupProps> = ({
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Furnished Preference</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <Select
+                    onValueChange={field.onChange}
+                    value={field.value ? String(field.value) : 'either'}
+                  >
                     <FormControl>
                       <SelectTrigger>
                         <SelectValue placeholder="Select preference" />
@@ -455,7 +639,7 @@ export const PreferencesSetup: React.FC<PreferencesSetupProps> = ({
       case 2:
         return (
           <div className="space-y-6">
-            <div className="text-sm text-muted-foreground mb-4">
+            <div className="mb-4 text-sm text-muted-foreground">
               Rate each amenity's importance to you (0 = Not important, 10 = Very important)
             </div>
             {AMENITIES.map((amenity) => (
@@ -477,8 +661,8 @@ export const PreferencesSetup: React.FC<PreferencesSetupProps> = ({
                         min={0}
                         max={10}
                         step={1}
-                        value={[field.value]}
-                        onValueChange={(value) => field.onChange(value[0])}
+                        value={[field.value ?? 5]}
+                        onValueChange={(value) => field.onChange(value[0] ?? 5)}
                         className="w-full"
                       />
                     </FormControl>
@@ -499,7 +683,10 @@ export const PreferencesSetup: React.FC<PreferencesSetupProps> = ({
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Noise Tolerance</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <Select
+                    onValueChange={field.onChange}
+                    value={field.value ? String(field.value) : 'moderate'}
+                  >
                     <FormControl>
                       <SelectTrigger>
                         <SelectValue placeholder="Select tolerance" />
@@ -522,7 +709,10 @@ export const PreferencesSetup: React.FC<PreferencesSetupProps> = ({
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Social Preference</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <Select
+                    onValueChange={field.onChange}
+                    value={field.value ? String(field.value) : 'private'}
+                  >
                     <FormControl>
                       <SelectTrigger>
                         <SelectValue placeholder="Select preference" />
@@ -549,8 +739,8 @@ export const PreferencesSetup: React.FC<PreferencesSetupProps> = ({
                   </div>
                   <FormControl>
                     <Checkbox
-                      checked={field.value}
-                      onCheckedChange={field.onChange}
+                      checked={!!field.value}
+                      onCheckedChange={(c) => field.onChange(c === true)}
                     />
                   </FormControl>
                 </FormItem>
@@ -568,8 +758,8 @@ export const PreferencesSetup: React.FC<PreferencesSetupProps> = ({
                   </div>
                   <FormControl>
                     <Checkbox
-                      checked={field.value}
-                      onCheckedChange={field.onChange}
+                      checked={!!field.value}
+                      onCheckedChange={(c) => field.onChange(c === true)}
                     />
                   </FormControl>
                 </FormItem>
@@ -584,7 +774,7 @@ export const PreferencesSetup: React.FC<PreferencesSetupProps> = ({
   };
 
   return (
-    <Card className="w-full max-w-4xl mx-auto">
+    <Card className="mx-auto w-full max-w-4xl">
       <CardHeader>
         <div className="flex items-center space-x-2">
           <Brain className="h-6 w-6 text-purple-600" />
@@ -598,17 +788,33 @@ export const PreferencesSetup: React.FC<PreferencesSetupProps> = ({
         {showProgress && (
           <div className="space-y-2">
             <div className="flex justify-between text-sm">
-              <span>Step {currentStep + 1} of {steps.length}</span>
+              <span>
+                Step {currentStep + 1} of {steps.length}
+              </span>
               <span>{completionPercentage}% complete</span>
             </div>
-            <Progress value={(currentStep + 1) / steps.length * 100} />
+            <Progress value={((currentStep + 1) / steps.length) * 100} />
           </div>
         )}
       </CardHeader>
 
       <CardContent>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              form
+                .handleSubmit(
+                  onSubmit,
+                  onInvalid
+                )(e)
+                .catch((err) => {
+                  console.error('Form submission error:', err);
+                  toast.error('Something went wrong. Please try again.');
+                });
+            }}
+            className="space-y-6"
+          >
             <div className="mb-6">
               <h3 className="text-lg font-semibold">{steps[currentStep].title}</h3>
               <p className="text-sm text-muted-foreground">{steps[currentStep].description}</p>
@@ -630,22 +836,19 @@ export const PreferencesSetup: React.FC<PreferencesSetupProps> = ({
 
               <div className="flex space-x-2">
                 {currentStep < steps.length - 1 ? (
-                  <Button
-                    type="button"
-                    onClick={() => setCurrentStep(Math.min(steps.length - 1, currentStep + 1))}
-                  >
+                  <Button type="button" onClick={handleNextStep}>
                     Next
                   </Button>
                 ) : (
                   <Button type="submit" disabled={isUpdating}>
                     {isUpdating ? (
                       <>
-                        <Settings className="h-4 w-4 mr-2 animate-spin" />
+                        <Settings className="mr-2 h-4 w-4 animate-spin" />
                         Saving...
                       </>
                     ) : (
                       <>
-                        <CheckCircle className="h-4 w-4 mr-2" />
+                        <CheckCircle className="mr-2 h-4 w-4" />
                         Save Preferences
                       </>
                     )}

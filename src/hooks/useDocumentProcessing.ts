@@ -14,7 +14,7 @@ import {
   DocumentAnalytics,
   DocumentType,
   DocumentStatus,
-  DocumentProcessingResponse
+  DocumentProcessingResponse,
 } from '@/types/documentProcessing';
 
 interface UseDocumentProcessingOptions {
@@ -27,7 +27,7 @@ interface UseDocumentProcessingOptions {
 export function useDocumentProcessing(options: UseDocumentProcessingOptions = {}) {
   const { userId, propertyId, autoRefresh = true, filters } = options;
   const queryClient = useQueryClient();
-  
+
   const [uploadProgress, setUploadProgress] = useState<Record<string, number>>({});
   const [processingStatus, setProcessingStatus] = useState<Record<string, string>>({});
 
@@ -36,7 +36,7 @@ export function useDocumentProcessing(options: UseDocumentProcessingOptions = {}
     data: documents = [],
     isLoading: documentsLoading,
     error: documentsError,
-    refetch: refetchDocuments
+    refetch: refetchDocuments,
   } = useQuery({
     queryKey: ['documents', userId, propertyId, filters],
     queryFn: async () => {
@@ -71,14 +71,11 @@ export function useDocumentProcessing(options: UseDocumentProcessingOptions = {}
       if (error) throw error;
       return data as DocumentMetadata[];
     },
-    enabled: !!userId || !!propertyId
+    enabled: !!userId || !!propertyId,
   });
 
   // Fetch document analytics
-  const {
-    data: analytics,
-    isLoading: analyticsLoading
-  } = useQuery({
+  const { data: analytics, isLoading: analyticsLoading } = useQuery({
     queryKey: ['document-analytics', userId],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -89,7 +86,7 @@ export function useDocumentProcessing(options: UseDocumentProcessingOptions = {}
       if (error) throw error;
       return IntelligentDocumentProcessor.generateAnalytics(data);
     },
-    enabled: !!userId
+    enabled: !!userId,
   });
 
   // Upload and process document mutation
@@ -98,7 +95,7 @@ export function useDocumentProcessing(options: UseDocumentProcessingOptions = {}
       file,
       userId,
       propertyId,
-      documentType
+      documentType,
     }: {
       file: File;
       userId: string;
@@ -106,10 +103,10 @@ export function useDocumentProcessing(options: UseDocumentProcessingOptions = {}
       documentType?: DocumentType;
     }) => {
       const documentId = `doc_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-      
+
       // Update upload progress
-      setUploadProgress(prev => ({ ...prev, [documentId]: 0 }));
-      setProcessingStatus(prev => ({ ...prev, [documentId]: 'Uploading...' }));
+      setUploadProgress((prev) => ({ ...prev, [documentId]: 0 }));
+      setProcessingStatus((prev) => ({ ...prev, [documentId]: 'Uploading...' }));
 
       try {
         // Upload file to Supabase Storage
@@ -122,7 +119,7 @@ export function useDocumentProcessing(options: UseDocumentProcessingOptions = {}
         console.log('DocumentProcessing upload - File details:', {
           name: file.name,
           type: file.type,
-          size: file.size
+          size: file.size,
         });
 
         const { error: uploadError } = await supabase.storage
@@ -131,24 +128,18 @@ export function useDocumentProcessing(options: UseDocumentProcessingOptions = {}
 
         if (uploadError) throw uploadError;
 
-        setUploadProgress(prev => ({ ...prev, [documentId]: 50 }));
-        setProcessingStatus(prev => ({ ...prev, [documentId]: 'Processing...' }));
+        setUploadProgress((prev) => ({ ...prev, [documentId]: 50 }));
+        setProcessingStatus((prev) => ({ ...prev, [documentId]: 'Processing...' }));
 
         // Process document with AI
-        const result = await IntelligentDocumentProcessor.processDocument(
-          file,
-          userId,
-          propertyId
-        );
+        const result = await IntelligentDocumentProcessor.processDocument(file, userId, propertyId);
 
         // Save metadata to database
-        const { error: metadataError } = await supabase
-          .from('document_metadata')
-          .insert({
-            ...result.metadata,
-            file_path: filePath,
-            document_type: documentType || result.classification.predicted_type
-          });
+        const { error: metadataError } = await supabase.from('document_metadata').insert({
+          ...result.metadata,
+          file_path: filePath,
+          document_type: documentType || result.classification.predicted_type,
+        });
 
         if (metadataError) throw metadataError;
 
@@ -173,26 +164,26 @@ export function useDocumentProcessing(options: UseDocumentProcessingOptions = {}
 
         if (validationError) throw validationError;
 
-        setUploadProgress(prev => ({ ...prev, [documentId]: 100 }));
-        setProcessingStatus(prev => ({ ...prev, [documentId]: 'Completed' }));
+        setUploadProgress((prev) => ({ ...prev, [documentId]: 100 }));
+        setProcessingStatus((prev) => ({ ...prev, [documentId]: 'Completed' }));
 
         return result;
       } catch (error) {
-        setProcessingStatus(prev => ({ ...prev, [documentId]: 'Failed' }));
+        setProcessingStatus((prev) => ({ ...prev, [documentId]: 'Failed' }));
         throw error;
       }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['documents'] });
       queryClient.invalidateQueries({ queryKey: ['document-analytics'] });
-    }
+    },
   });
 
   // Update document status mutation
   const updateDocumentMutation = useMutation({
     mutationFn: async ({
       documentId,
-      updates
+      updates,
     }: {
       documentId: string;
       updates: Partial<DocumentMetadata>;
@@ -206,7 +197,7 @@ export function useDocumentProcessing(options: UseDocumentProcessingOptions = {}
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['documents'] });
-    }
+    },
   });
 
   // Delete document mutation
@@ -235,13 +226,13 @@ export function useDocumentProcessing(options: UseDocumentProcessingOptions = {}
         supabase.from('document_validations').delete().eq('document_id', documentId),
         supabase.from('document_classifications').delete().eq('document_id', documentId),
         supabase.from('document_extractions').delete().eq('document_id', documentId),
-        supabase.from('document_metadata').delete().eq('id', documentId)
+        supabase.from('document_metadata').delete().eq('id', documentId),
       ]);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['documents'] });
       queryClient.invalidateQueries({ queryKey: ['document-analytics'] });
-    }
+    },
   });
 
   // Reprocess document mutation
@@ -265,7 +256,7 @@ export function useDocumentProcessing(options: UseDocumentProcessingOptions = {}
 
       // Convert blob to file
       const file = new File([fileData], document.original_filename, {
-        type: document.file_type
+        type: document.file_type,
       });
 
       // Reprocess with AI
@@ -277,35 +268,40 @@ export function useDocumentProcessing(options: UseDocumentProcessingOptions = {}
 
       // Update all related records
       await Promise.all([
-        supabase.from('document_metadata').update({
-          document_type: result.classification.predicted_type,
-          status: result.validation.overall_status === 'passed' ? 'processed' : 'needs_review',
-          confidence_score: result.classification.confidence_score,
-          updated_at: new Date().toISOString()
-        }).eq('id', documentId),
-        
+        supabase
+          .from('document_metadata')
+          .update({
+            document_type: result.classification.predicted_type,
+            status: result.validation.overall_status === 'passed' ? 'processed' : 'needs_review',
+            confidence_score: result.classification.confidence_score,
+            updated_at: new Date().toISOString(),
+          })
+          .eq('id', documentId),
+
         supabase.from('document_extractions').upsert(result.extraction),
         supabase.from('document_classifications').upsert(result.classification),
-        supabase.from('document_validations').upsert(result.validation)
+        supabase.from('document_validations').upsert(result.validation),
       ]);
 
       return result;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['documents'] });
-    }
+    },
   });
 
   // Get document details with all related data
   const getDocumentDetails = useCallback(async (documentId: string) => {
     const { data, error } = await supabase
       .from('document_metadata')
-      .select(`
+      .select(
+        `
         *,
         document_extractions(*),
         document_classifications(*),
         document_validations(*)
-      `)
+      `
+      )
       .eq('id', documentId)
       .single();
 
@@ -314,9 +310,10 @@ export function useDocumentProcessing(options: UseDocumentProcessingOptions = {}
   }, []);
 
   // Filter and sort documents
-  const filteredDocuments = documents.filter(doc => {
+  const filteredDocuments = documents.filter((doc) => {
     if (filters?.needs_review && doc.status !== 'needs_review') return false;
-    if (filters?.has_fraud_alerts && !doc.confidence_score || doc.confidence_score > 0.7) return false;
+    if ((filters?.has_fraud_alerts && !doc.confidence_score) || doc.confidence_score > 0.7)
+      return false;
     if (filters?.confidence_range) {
       const { min, max } = filters.confidence_range;
       if (doc.confidence_score < min || doc.confidence_score > max) return false;
@@ -325,22 +322,28 @@ export function useDocumentProcessing(options: UseDocumentProcessingOptions = {}
   });
 
   // Utility functions
-  const getDocumentsByType = useCallback((type: DocumentType) => {
-    return documents.filter(doc => doc.document_type === type);
-  }, [documents]);
+  const getDocumentsByType = useCallback(
+    (type: DocumentType) => {
+      return documents.filter((doc) => doc.document_type === type);
+    },
+    [documents]
+  );
 
-  const getDocumentsByStatus = useCallback((status: DocumentStatus) => {
-    return documents.filter(doc => doc.status === status);
-  }, [documents]);
+  const getDocumentsByStatus = useCallback(
+    (status: DocumentStatus) => {
+      return documents.filter((doc) => doc.status === status);
+    },
+    [documents]
+  );
 
   const getPendingDocuments = useCallback(() => {
-    return documents.filter(doc => 
+    return documents.filter((doc) =>
       ['uploaded', 'processing', 'needs_review'].includes(doc.status)
     );
   }, [documents]);
 
   const getHighRiskDocuments = useCallback(() => {
-    return documents.filter(doc => doc.confidence_score < 0.5);
+    return documents.filter((doc) => doc.confidence_score < 0.5);
   }, [documents]);
 
   // Real-time updates
@@ -355,7 +358,7 @@ export function useDocumentProcessing(options: UseDocumentProcessingOptions = {}
           event: '*',
           schema: 'public',
           table: 'document_metadata',
-          filter: `user_id=eq.${userId}`
+          filter: `user_id=eq.${userId}`,
         },
         () => {
           queryClient.invalidateQueries({ queryKey: ['documents'] });
@@ -405,14 +408,14 @@ export function useDocumentProcessing(options: UseDocumentProcessingOptions = {}
 
     // Clear progress tracking
     clearProgress: useCallback((documentId: string) => {
-      setUploadProgress(prev => {
+      setUploadProgress((prev) => {
         const { [documentId]: _, ...rest } = prev;
         return rest;
       });
-      setProcessingStatus(prev => {
+      setProcessingStatus((prev) => {
         const { [documentId]: _, ...rest } = prev;
         return rest;
       });
-    }, [])
+    }, []),
   };
 }

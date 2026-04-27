@@ -4,9 +4,18 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { 
-  BarChart3, TrendingUp, Users, MapPin, Smartphone, 
-  DollarSign, Target, Eye, Activity, Globe, RefreshCw
+import {
+  BarChart3,
+  TrendingUp,
+  Users,
+  MapPin,
+  Smartphone,
+  DollarSign,
+  Target,
+  Eye,
+  Activity,
+  Globe,
+  RefreshCw,
 } from 'lucide-react';
 import { useAdvancedAnalytics } from '@/utils/advanced-analytics-system';
 
@@ -19,7 +28,7 @@ export const AdvancedAnalyticsDashboard = () => {
     loading,
     error,
     generateReport,
-    analyzeMarket
+    analyzeMarket,
   } = useAdvancedAnalytics();
 
   const [activeTab, setActiveTab] = useState('market');
@@ -69,8 +78,7 @@ export const AdvancedAnalyticsDashboard = () => {
                 Live Data
               </Badge>
               <Badge variant="secondary" className="flex items-center gap-1">
-                <Globe className="h-3 w-3" />
-                5 Cities
+                <Globe className="h-3 w-3" />5 Cities
               </Badge>
             </div>
           </div>
@@ -78,14 +86,14 @@ export const AdvancedAnalyticsDashboard = () => {
       </Card>
 
       {/* Key Metrics */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center gap-2">
               <DollarSign className="h-4 w-4 text-green-600" />
               <span className="text-sm font-medium">National Avg Price</span>
             </div>
-            <div className="text-2xl font-bold text-green-600 mt-1">
+            <div className="mt-1 text-2xl font-bold text-green-600">
               {formatCurrency(marketData.nationalTrends.averagePrice)}
             </div>
             <div className="text-xs text-gray-600">
@@ -100,7 +108,7 @@ export const AdvancedAnalyticsDashboard = () => {
               <Users className="h-4 w-4 text-blue-600" />
               <span className="text-sm font-medium">Total Users</span>
             </div>
-            <div className="text-2xl font-bold mt-1">
+            <div className="mt-1 text-2xl font-bold">
               {businessIntelligence.customers.total.toLocaleString()}
             </div>
             <div className="text-xs text-gray-600">
@@ -115,7 +123,7 @@ export const AdvancedAnalyticsDashboard = () => {
               <TrendingUp className="h-4 w-4 text-purple-600" />
               <span className="text-sm font-medium">Revenue</span>
             </div>
-            <div className="text-2xl font-bold text-purple-600 mt-1">
+            <div className="mt-1 text-2xl font-bold text-purple-600">
               {formatCurrency(businessIntelligence.revenue.total)}
             </div>
             <div className="text-xs text-gray-600">
@@ -130,7 +138,7 @@ export const AdvancedAnalyticsDashboard = () => {
               <Smartphone className="h-4 w-4 text-orange-600" />
               <span className="text-sm font-medium">Mobile Usage</span>
             </div>
-            <div className="text-2xl font-bold text-orange-600 mt-1">
+            <div className="mt-1 text-2xl font-bold text-orange-600">
               {userBehavior.deviceUsage.mobile}%
             </div>
             <div className="text-xs text-gray-600">Primary platform</div>
@@ -148,19 +156,19 @@ export const AdvancedAnalyticsDashboard = () => {
         </TabsList>
 
         <TabsContent value="market" className="space-y-6">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
             {/* City Analysis */}
             <Card>
               <CardHeader>
-                <div className="flex justify-between items-center">
+                <div className="flex items-center justify-between">
                   <CardTitle className="flex items-center gap-2">
                     <MapPin className="h-5 w-5" />
                     City Market Analysis
                   </CardTitle>
-                  <select 
+                  <select
                     value={selectedCity}
                     onChange={(e) => setSelectedCity(e.target.value)}
-                    className="p-2 border rounded-md text-sm"
+                    className="rounded-md border p-2 text-sm"
                   >
                     <option value="lagos">Lagos</option>
                     <option value="abuja">Abuja</option>
@@ -172,24 +180,29 @@ export const AdvancedAnalyticsDashboard = () => {
               </CardHeader>
               <CardContent className="space-y-4">
                 {(() => {
-                  const cityData = marketData.cities[selectedCity as keyof typeof marketData.cities];
+                  const cityData =
+                    marketData.cities[selectedCity as keyof typeof marketData.cities];
                   return (
                     <>
                       <div className="grid grid-cols-2 gap-4 text-sm">
                         <div>
-                          <span className="font-medium">Avg Price:</span> {formatCurrency(cityData.averagePrice)}
+                          <span className="font-medium">Avg Price:</span>{' '}
+                          {formatCurrency(cityData.averagePrice)}
                         </div>
                         <div>
-                          <span className="font-medium">Growth:</span> +{formatPercentage(cityData.yearlyGrowth)}
+                          <span className="font-medium">Growth:</span> +
+                          {formatPercentage(cityData.yearlyGrowth)}
                         </div>
                         <div>
-                          <span className="font-medium">Inventory:</span> {cityData.inventory.toLocaleString()}
+                          <span className="font-medium">Inventory:</span>{' '}
+                          {cityData.inventory.toLocaleString()}
                         </div>
                         <div>
-                          <span className="font-medium">Days on Market:</span> {cityData.daysOnMarket}
+                          <span className="font-medium">Days on Market:</span>{' '}
+                          {cityData.daysOnMarket}
                         </div>
                       </div>
-                      
+
                       <div className="space-y-2">
                         <div className="flex justify-between text-sm">
                           <span>Demand Score</span>
@@ -197,7 +210,7 @@ export const AdvancedAnalyticsDashboard = () => {
                         </div>
                         <Progress value={cityData.demandScore * 10} className="h-2" />
                       </div>
-                      
+
                       <div className="space-y-2">
                         <div className="flex justify-between text-sm">
                           <span>Supply Score</span>
@@ -205,9 +218,9 @@ export const AdvancedAnalyticsDashboard = () => {
                         </div>
                         <Progress value={cityData.supplyScore * 10} className="h-2" />
                       </div>
-                      
+
                       <Button onClick={handleAnalyzeMarket} className="w-full" disabled={loading}>
-                        <Eye className="h-4 w-4 mr-2" />
+                        <Eye className="mr-2 h-4 w-4" />
                         Analyze Market
                       </Button>
                     </>
@@ -244,22 +257,24 @@ export const AdvancedAnalyticsDashboard = () => {
                         <div className="text-xs text-gray-600">Market Position</div>
                       </div>
                     </div>
-                    
+
                     <div>
-                      <h4 className="font-medium mb-2">Key Recommendations</h4>
+                      <h4 className="mb-2 font-medium">Key Recommendations</h4>
                       <div className="space-y-1 text-sm">
-                        {marketAnalysis.recommendations.slice(0, 3).map((rec: string, i: number) => (
-                          <div key={i} className="flex items-start gap-2">
-                            <Target className="h-3 w-3 text-blue-600 mt-1 flex-shrink-0" />
-                            <span>{rec}</span>
-                          </div>
-                        ))}
+                        {marketAnalysis.recommendations
+                          .slice(0, 3)
+                          .map((rec: string, i: number) => (
+                            <div key={i} className="flex items-start gap-2">
+                              <Target className="mt-1 h-3 w-3 flex-shrink-0 text-blue-600" />
+                              <span>{rec}</span>
+                            </div>
+                          ))}
                       </div>
                     </div>
                   </div>
                 ) : (
-                  <div className="text-center py-8 text-gray-500">
-                    <Eye className="h-12 w-12 mx-auto mb-4" />
+                  <div className="py-8 text-center text-gray-500">
+                    <Eye className="mx-auto mb-4 h-12 w-12" />
                     <p>Select a city and click "Analyze Market" to see insights</p>
                   </div>
                 )}
@@ -273,17 +288,17 @@ export const AdvancedAnalyticsDashboard = () => {
               <CardTitle>National Price Distribution</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
                 {Object.entries(marketData.cities.lagos.priceRanges).map(([range, data]) => (
-                  <div key={range} className="p-4 border rounded-lg">
-                    <div className="flex justify-between items-center mb-2">
+                  <div key={range} className="rounded-lg border p-4">
+                    <div className="mb-2 flex items-center justify-between">
                       <h4 className="font-medium capitalize">{range} Segment</h4>
                       <Badge variant="outline">{data.percentage}%</Badge>
                     </div>
                     <div className="text-sm text-gray-600">
                       {formatCurrency(data.min)} - {formatCurrency(data.max)}
                     </div>
-                    <Progress value={data.percentage} className="h-2 mt-2" />
+                    <Progress value={data.percentage} className="mt-2 h-2" />
                   </div>
                 ))}
               </div>
@@ -292,7 +307,7 @@ export const AdvancedAnalyticsDashboard = () => {
         </TabsContent>
 
         <TabsContent value="users" className="space-y-6">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
             {/* Demographics */}
             <Card>
               <CardHeader>
@@ -318,9 +333,9 @@ export const AdvancedAnalyticsDashboard = () => {
               </CardHeader>
               <CardContent className="space-y-4">
                 <div>
-                  <h4 className="font-medium mb-3">Device Types</h4>
+                  <h4 className="mb-3 font-medium">Device Types</h4>
                   {Object.entries(userBehavior.deviceUsage).map(([device, percentage]) => (
-                    <div key={device} className="space-y-2 mb-3">
+                    <div key={device} className="mb-3 space-y-2">
                       <div className="flex justify-between text-sm">
                         <span className="capitalize">{device}</span>
                         <span className="font-medium">{percentage}%</span>
@@ -329,11 +344,11 @@ export const AdvancedAnalyticsDashboard = () => {
                     </div>
                   ))}
                 </div>
-                
+
                 <div>
-                  <h4 className="font-medium mb-3">Network Types</h4>
+                  <h4 className="mb-3 font-medium">Network Types</h4>
                   {Object.entries(userBehavior.networkAnalysis).map(([network, percentage]) => (
-                    <div key={network} className="space-y-2 mb-3">
+                    <div key={network} className="mb-3 space-y-2">
                       <div className="flex justify-between text-sm">
                         <span>{network}</span>
                         <span className="font-medium">{percentage}%</span>
@@ -352,15 +367,15 @@ export const AdvancedAnalyticsDashboard = () => {
               <CardTitle>Conversion Funnel Analysis</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+              <div className="grid grid-cols-2 gap-4 md:grid-cols-5">
                 {Object.entries(userBehavior.conversionMetrics).map(([metric, value]) => (
-                  <div key={metric} className="text-center p-4 border rounded-lg">
+                  <div key={metric} className="rounded-lg border p-4 text-center">
                     <div className="text-2xl font-bold text-blue-600">
                       {typeof value === 'number' ? value.toFixed(1) : value}
                       {metric !== 'averageTimeToDecision' ? '%' : ' days'}
                     </div>
-                    <div className="text-xs text-gray-600 mt-1">
-                      {metric.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())}
+                    <div className="mt-1 text-xs text-gray-600">
+                      {metric.replace(/([A-Z])/g, ' $1').replace(/^./, (str) => str.toUpperCase())}
                     </div>
                   </div>
                 ))}
@@ -370,7 +385,7 @@ export const AdvancedAnalyticsDashboard = () => {
         </TabsContent>
 
         <TabsContent value="business" className="space-y-6">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
             {/* Revenue Breakdown */}
             <Card>
               <CardHeader>
@@ -378,7 +393,7 @@ export const AdvancedAnalyticsDashboard = () => {
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="text-center">
-                  <div className="text-3xl font-bold text-green-600 mb-2">
+                  <div className="mb-2 text-3xl font-bold text-green-600">
                     {formatCurrency(businessIntelligence.revenue.total)}
                   </div>
                   <div className="text-gray-600">Total Revenue</div>
@@ -386,18 +401,18 @@ export const AdvancedAnalyticsDashboard = () => {
                     +{formatPercentage(businessIntelligence.revenue.growth)} growth
                   </Badge>
                 </div>
-                
+
                 <div>
-                  <h4 className="font-medium mb-3">Revenue by City</h4>
+                  <h4 className="mb-3 font-medium">Revenue by City</h4>
                   {Object.entries(businessIntelligence.revenue.byCity).map(([city, amount]) => (
-                    <div key={city} className="space-y-2 mb-3">
+                    <div key={city} className="mb-3 space-y-2">
                       <div className="flex justify-between text-sm">
                         <span>{city}</span>
                         <span className="font-medium">{formatCurrency(amount)}</span>
                       </div>
-                      <Progress 
-                        value={(amount / businessIntelligence.revenue.total) * 100} 
-                        className="h-2" 
+                      <Progress
+                        value={(amount / businessIntelligence.revenue.total) * 100}
+                        className="h-2"
                       />
                     </div>
                   ))}
@@ -413,28 +428,37 @@ export const AdvancedAnalyticsDashboard = () => {
               <CardContent className="space-y-4">
                 <div className="grid grid-cols-2 gap-4 text-sm">
                   <div>
-                    <span className="font-medium">Total Customers:</span> {businessIntelligence.customers.total.toLocaleString()}
+                    <span className="font-medium">Total Customers:</span>{' '}
+                    {businessIntelligence.customers.total.toLocaleString()}
                   </div>
                   <div>
-                    <span className="font-medium">Active:</span> {businessIntelligence.customers.active.toLocaleString()}
+                    <span className="font-medium">Active:</span>{' '}
+                    {businessIntelligence.customers.active.toLocaleString()}
                   </div>
                   <div>
-                    <span className="font-medium">Churn Rate:</span> {formatPercentage(businessIntelligence.customers.churnRate)}
+                    <span className="font-medium">Churn Rate:</span>{' '}
+                    {formatPercentage(businessIntelligence.customers.churnRate)}
                   </div>
                   <div>
-                    <span className="font-medium">Satisfaction:</span> {businessIntelligence.customers.satisfaction.toFixed(1)}/5
+                    <span className="font-medium">Satisfaction:</span>{' '}
+                    {businessIntelligence.customers.satisfaction.toFixed(1)}/5
                   </div>
                 </div>
-                
+
                 <div className="space-y-2">
                   <div className="flex justify-between text-sm">
                     <span>Customer Satisfaction</span>
-                    <span className="font-medium">{businessIntelligence.customers.satisfaction.toFixed(1)}/5</span>
+                    <span className="font-medium">
+                      {businessIntelligence.customers.satisfaction.toFixed(1)}/5
+                    </span>
                   </div>
-                  <Progress value={(businessIntelligence.customers.satisfaction / 5) * 100} className="h-2" />
+                  <Progress
+                    value={(businessIntelligence.customers.satisfaction / 5) * 100}
+                    className="h-2"
+                  />
                 </div>
-                
-                <div className="p-3 bg-blue-50 rounded-lg">
+
+                <div className="rounded-lg bg-blue-50 p-3">
                   <div className="text-sm font-medium text-blue-800">Customer Lifetime Value</div>
                   <div className="text-lg font-bold text-blue-600">
                     {formatCurrency(businessIntelligence.customers.lifetimeValue)}
@@ -452,19 +476,25 @@ export const AdvancedAnalyticsDashboard = () => {
               <Card>
                 <CardHeader>
                   <CardTitle>Market Forecasts</CardTitle>
-                  <CardDescription>6-month predictions for Nigerian property market</CardDescription>
+                  <CardDescription>
+                    6-month predictions for Nigerian property market
+                  </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    {predictiveInsights.marketForecasts.priceProjections.slice(0, 3).map((projection, index) => (
-                      <div key={index} className="p-4 border rounded-lg">
-                        <div className="text-sm text-gray-600">{projection.month}</div>
-                        <div className="text-lg font-bold">{formatCurrency(projection.price)}</div>
-                        <div className="text-xs text-green-600">
-                          {projection.confidence}% confidence
+                  <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+                    {predictiveInsights.marketForecasts.priceProjections
+                      .slice(0, 3)
+                      .map((projection, index) => (
+                        <div key={index} className="rounded-lg border p-4">
+                          <div className="text-sm text-gray-600">{projection.month}</div>
+                          <div className="text-lg font-bold">
+                            {formatCurrency(projection.price)}
+                          </div>
+                          <div className="text-xs text-green-600">
+                            {projection.confidence}% confidence
+                          </div>
                         </div>
-                      </div>
-                    ))}
+                      ))}
                   </div>
                 </CardContent>
               </Card>
@@ -477,14 +507,12 @@ export const AdvancedAnalyticsDashboard = () => {
                 <CardContent>
                   <div className="space-y-4">
                     {predictiveInsights.opportunities.slice(0, 3).map((opportunity, index) => (
-                      <div key={index} className="p-4 border rounded-lg">
-                        <div className="flex justify-between items-start mb-2">
+                      <div key={index} className="rounded-lg border p-4">
+                        <div className="mb-2 flex items-start justify-between">
                           <h4 className="font-medium">{opportunity.opportunity}</h4>
-                          <Badge variant="default">
-                            {opportunity.expectedROI}% ROI
-                          </Badge>
+                          <Badge variant="default">{opportunity.expectedROI}% ROI</Badge>
                         </div>
-                        <div className="text-sm text-gray-600 mb-2">
+                        <div className="mb-2 text-sm text-gray-600">
                           Timeframe: {opportunity.timeframe}
                         </div>
                         <div className="space-y-1">

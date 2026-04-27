@@ -14,7 +14,7 @@ import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { createReview, updateReview } from '@/services/shortlet/api/reviews';
 import { Star, Loader2 } from 'lucide-react';
-import { useAuth } from '@/contexts/auth';
+import { useAuthSession } from '@/contexts/auth';
 import type { Review } from '@/services/shortlet/types';
 import { ReviewType } from '@/services/shortlet/types';
 
@@ -35,17 +35,17 @@ interface ReviewFormProps {
   onCancel?: () => void;
 }
 
-export function ReviewForm({ 
-  bookingId, 
+export function ReviewForm({
+  bookingId,
   listingId,
   existingReview,
   reviewType = ReviewType.GUEST,
   revieweeId,
   onSuccess,
-  onCancel 
+  onCancel,
 }: ReviewFormProps) {
   const { toast } = useToast();
-  const { user } = useAuth();
+  const { user } = useAuthSession();
   const [hoveredRating, setHoveredRating] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -60,7 +60,7 @@ export function ReviewForm({
     defaultValues: {
       rating: existingReview?.rating || 0,
       comment: existingReview?.comment || '',
-    }
+    },
   });
 
   const rating = watch('rating');
@@ -75,7 +75,7 @@ export function ReviewForm({
       if (existingReview) {
         await updateReview(existingReview.id, {
           rating: data.rating,
-          comment: data.comment || undefined
+          comment: data.comment || undefined,
         });
         toast({
           title: 'Success',
@@ -88,14 +88,14 @@ export function ReviewForm({
         if (!revieweeId) {
           throw new Error('Reviewee ID is required');
         }
-        
+
         await createReview({
           booking_id: bookingId,
           reviewer_id: user.id,
           reviewee_id: revieweeId,
           review_type: reviewType,
           rating: data.rating,
-          comment: data.comment || undefined
+          comment: data.comment || undefined,
         });
         toast({
           title: 'Success',
@@ -122,7 +122,7 @@ export function ReviewForm({
     return Array.from({ length: 5 }, (_, i) => {
       const value = i + 1;
       const isFilled = value <= (hoveredRating || rating);
-      
+
       return (
         <button
           key={i}
@@ -130,13 +130,11 @@ export function ReviewForm({
           onClick={() => handleRatingClick(value)}
           onMouseEnter={() => setHoveredRating(value)}
           onMouseLeave={() => setHoveredRating(0)}
-          className="focus:outline-none transition-transform hover:scale-110"
+          className="transition-transform hover:scale-110 focus:outline-none"
         >
           <Star
             className={`h-8 w-8 ${
-              isFilled
-                ? 'fill-yellow-400 text-yellow-400'
-                : 'fill-gray-200 text-gray-200'
+              isFilled ? 'fill-yellow-400 text-yellow-400' : 'fill-gray-200 text-gray-200'
             }`}
           />
         </button>
@@ -147,11 +145,9 @@ export function ReviewForm({
   return (
     <Card>
       <CardHeader>
-        <CardTitle>
-          {existingReview ? 'Edit Your Review' : 'Write a Review'}
-        </CardTitle>
+        <CardTitle>{existingReview ? 'Edit Your Review' : 'Write a Review'}</CardTitle>
         <CardDescription>
-          {existingReview 
+          {existingReview
             ? 'Update your review and rating'
             : 'Share your experience with other guests'}
         </CardDescription>
@@ -169,13 +165,8 @@ export function ReviewForm({
                 </span>
               )}
             </div>
-            {errors.rating && (
-              <p className="text-sm text-destructive">{errors.rating.message}</p>
-            )}
-            <input
-              type="hidden"
-              {...register('rating', { valueAsNumber: true })}
-            />
+            {errors.rating && <p className="text-sm text-destructive">{errors.rating.message}</p>}
+            <input type="hidden" {...register('rating', { valueAsNumber: true })} />
           </div>
 
           {/* Comment */}
@@ -187,9 +178,7 @@ export function ReviewForm({
               placeholder="Tell others about your experience..."
               rows={6}
             />
-            {errors.comment && (
-              <p className="text-sm text-destructive">{errors.comment.message}</p>
-            )}
+            {errors.comment && <p className="text-sm text-destructive">{errors.comment.message}</p>}
             <p className="text-xs text-muted-foreground">
               Minimum 10 characters. Share details about your stay, the property, and your host.
             </p>
@@ -205,7 +194,7 @@ export function ReviewForm({
             <Button type="submit" disabled={isSubmitting || rating === 0}>
               {isSubmitting ? (
                 <>
-                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                   Submitting...
                 </>
               ) : existingReview ? (
@@ -220,4 +209,3 @@ export function ReviewForm({
     </Card>
   );
 }
-

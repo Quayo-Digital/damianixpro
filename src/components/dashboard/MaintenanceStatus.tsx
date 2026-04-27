@@ -1,4 +1,3 @@
-
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 
@@ -56,7 +55,7 @@ export function MaintenanceStatus() {
           </div>
         </div>
 
-        <div className="flex items-center justify-between mt-6 pt-4 border-t">
+        <div className="mt-6 flex items-center justify-between border-t pt-4">
           <span className="text-sm font-medium">Total Requests</span>
           <span className="text-sm font-medium">{maintenanceData.total}</span>
         </div>

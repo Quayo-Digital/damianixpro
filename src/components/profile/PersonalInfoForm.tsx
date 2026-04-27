@@ -1,13 +1,12 @@
-
 import { useState, useEffect } from 'react';
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { useToast } from "@/components/ui/use-toast";
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { useToast } from '@/components/ui/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { ProfilePhoto } from './ProfilePhoto';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuthSession } from '@/contexts/AuthContext';
 
 interface ProfileFormData {
   name: string;
@@ -19,21 +18,21 @@ interface ProfileFormData {
 
 export const PersonalInfoForm = () => {
   const { toast } = useToast();
-  const { user } = useAuth();
+  const { user } = useAuthSession();
   const [previewImage, setPreviewImage] = useState<string | null>(null);
   const [isEditing, setIsEditing] = useState(false);
-  
+
   const [profile, setProfile] = useState<ProfileFormData>({
     name: '',
     email: '',
     phone: '+234 801 234 5678',
     address: 'Lagos, Nigeria',
-    image: ''
+    image: '',
   });
 
   useEffect(() => {
     if (user) {
-      setProfile(prev => ({
+      setProfile((prev) => ({
         ...prev,
         name: user.user_metadata?.full_name || user.email?.split('@')[0] || '',
         email: user.email || '',
@@ -45,22 +44,22 @@ export const PersonalInfoForm = () => {
     try {
       if (user) {
         const { error } = await supabase.auth.updateUser({
-          data: { full_name: profile.name }
+          data: { full_name: profile.name },
         });
-        
+
         if (error) throw error;
-        
+
         setIsEditing(false);
         toast({
-          title: "Profile updated",
-          description: "Your profile information has been updated successfully.",
+          title: 'Profile updated',
+          description: 'Your profile information has been updated successfully.',
         });
       }
     } catch (error: any) {
       toast({
-        title: "Update failed",
-        description: error.message || "There was an error updating your profile.",
-        variant: "destructive",
+        title: 'Update failed',
+        description: error.message || 'There was an error updating your profile.',
+        variant: 'destructive',
       });
     }
   };
@@ -85,21 +84,21 @@ export const PersonalInfoForm = () => {
         )}
       </CardHeader>
       <CardContent>
-        <ProfilePhoto 
-          name={profile.name} 
-          previewImage={previewImage} 
-          setPreviewImage={setPreviewImage} 
-          setProfileImage={(url) => setProfile({...profile, image: url})} 
+        <ProfilePhoto
+          name={profile.name}
+          previewImage={previewImage}
+          setPreviewImage={setPreviewImage}
+          setProfileImage={(url) => setProfile({ ...profile, image: url })}
         />
 
         <div className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="name">Full Name</Label>
             {isEditing ? (
-              <Input 
-                id="name" 
-                value={profile.name} 
-                onChange={(e) => setProfile({...profile, name: e.target.value})}
+              <Input
+                id="name"
+                value={profile.name}
+                onChange={(e) => setProfile({ ...profile, name: e.target.value })}
               />
             ) : (
               <p className="text-muted-foreground">{profile.name}</p>
@@ -109,10 +108,10 @@ export const PersonalInfoForm = () => {
           <div className="space-y-2">
             <Label htmlFor="email">Email Address</Label>
             {isEditing ? (
-              <Input 
-                id="email" 
+              <Input
+                id="email"
                 value={profile.email}
-                onChange={(e) => setProfile({...profile, email: e.target.value})}
+                onChange={(e) => setProfile({ ...profile, email: e.target.value })}
                 disabled
               />
             ) : (
@@ -123,10 +122,10 @@ export const PersonalInfoForm = () => {
           <div className="space-y-2">
             <Label htmlFor="phone">Phone Number</Label>
             {isEditing ? (
-              <Input 
-                id="phone" 
+              <Input
+                id="phone"
                 value={profile.phone}
-                onChange={(e) => setProfile({...profile, phone: e.target.value})}
+                onChange={(e) => setProfile({ ...profile, phone: e.target.value })}
               />
             ) : (
               <p className="text-muted-foreground">{profile.phone}</p>
@@ -136,10 +135,10 @@ export const PersonalInfoForm = () => {
           <div className="space-y-2">
             <Label htmlFor="address">Address</Label>
             {isEditing ? (
-              <Input 
-                id="address" 
+              <Input
+                id="address"
                 value={profile.address}
-                onChange={(e) => setProfile({...profile, address: e.target.value})}
+                onChange={(e) => setProfile({ ...profile, address: e.target.value })}
               />
             ) : (
               <p className="text-muted-foreground">{profile.address}</p>

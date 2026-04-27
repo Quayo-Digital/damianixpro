@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/components/ui/sonner';
 import { MaintenanceRequest } from '@/components/communication/maintenance/maintenance-data';
@@ -17,11 +16,10 @@ export async function getMaintenanceUpdates(tenantId: string): Promise<Maintenan
       update_type: 'status_change',
       message: 'Your maintenance request for "AC Repair" has been updated to "In Progress".',
       is_acknowledged: false,
-      created_at: new Date().toISOString()
+      created_at: new Date().toISOString(),
     };
-    
+
     return [mockUpdate];
-    
   } catch (error) {
     console.error('Error getting maintenance updates:', error);
     return [];
@@ -33,26 +31,25 @@ export async function sendMaintenanceUpdateNotification(
   request: MaintenanceRequest,
   updateMessage: string,
   updateType: 'status_change' | 'comment' | 'scheduled',
-  userId: string,
+  userId: string
 ): Promise<boolean> {
   try {
     const { error } = await supabase.from('notifications').insert({
-        user_id: userId,
-        title: `Maintenance: ${request.title}`,
-        description: updateMessage,
-        type: 'maintenance',
-        link: `/maintenance`,
-        metadata: { request_id: request.id, update_type: updateType }
+      user_id: userId,
+      title: `Maintenance: ${request.title}`,
+      description: updateMessage,
+      type: 'maintenance',
+      link: `/maintenance`,
+      metadata: { request_id: request.id, update_type: updateType },
     });
 
     if (error) throw error;
-    
+
     toast.info('Maintenance Update', {
-      description: updateMessage
+      description: updateMessage,
     });
-    
+
     return true;
-    
   } catch (error) {
     console.error('Error sending maintenance update notification:', error);
     return false;

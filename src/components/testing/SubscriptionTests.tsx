@@ -4,28 +4,28 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { 
-  CheckCircle, 
-  XCircle, 
-  AlertTriangle, 
-  Play, 
+import {
+  CheckCircle,
+  XCircle,
+  AlertTriangle,
+  Play,
   Crown,
   CreditCard,
   Users,
   Database,
   Shield,
-  Zap
+  Zap,
 } from 'lucide-react';
 import { SubscriptionService } from '@/services/subscription/subscriptionService';
 import { useSubscription } from '@/hooks/useSubscription';
 import { FeatureGate } from '@/components/subscription/FeatureGate';
 import { SubscriptionPlans } from '@/components/subscription/SubscriptionPlans';
 import { SubscriptionDashboard } from '@/components/subscription/SubscriptionDashboard';
-import { 
-  SubscriptionPlan, 
-  UserSubscription, 
+import {
+  SubscriptionPlan,
+  UserSubscription,
   BillingCycle,
-  SubscriptionTier 
+  SubscriptionTier,
 } from '@/types/subscription';
 
 interface TestResult {
@@ -43,7 +43,7 @@ export const SubscriptionTests: React.FC = () => {
   const { subscriptionPlans, currentSubscription } = useSubscription();
 
   const addResult = (result: TestResult) => {
-    setTestResults(prev => [...prev, result]);
+    setTestResults((prev) => [...prev, result]);
   };
 
   const clearResults = () => {
@@ -56,28 +56,28 @@ export const SubscriptionTests: React.FC = () => {
       name: 'SubscriptionPlan Type',
       status: 'pass',
       message: 'SubscriptionPlan interface is properly defined',
-      details: 'Includes id, name, tier, pricing, limits, features, and metadata'
+      details: 'Includes id, name, tier, pricing, limits, features, and metadata',
     });
 
     addResult({
       name: 'UserSubscription Type',
       status: 'pass',
       message: 'UserSubscription interface is properly defined',
-      details: 'Includes subscription status, billing cycle, and payment tracking'
+      details: 'Includes subscription status, billing cycle, and payment tracking',
     });
 
     addResult({
       name: 'BillingCycle Type',
       status: 'pass',
       message: 'BillingCycle enum is properly defined',
-      details: 'Supports monthly, quarterly, and yearly billing'
+      details: 'Supports monthly, quarterly, and yearly billing',
     });
 
     addResult({
       name: 'SubscriptionTier Type',
       status: 'pass',
       message: 'SubscriptionTier enum is properly defined',
-      details: 'Includes free, starter, professional, enterprise, and white_label tiers'
+      details: 'Includes free, starter, professional, enterprise, and white_label tiers',
     });
   };
 
@@ -90,20 +90,20 @@ export const SubscriptionTests: React.FC = () => {
         name: 'Get Subscription Plans',
         status: plans.length > 0 ? 'pass' : 'fail',
         message: `Retrieved ${plans.length} subscription plans`,
-        details: plans.map(p => p.name).join(', ')
+        details: plans.map((p) => p.name).join(', '),
       });
 
       // Test pricing calculation
-      const starterPlan = plans.find(p => p.tier === 'starter');
+      const starterPlan = plans.find((p) => p.tier === 'starter');
       if (starterPlan) {
         const monthlyPrice = SubscriptionService.calculatePrice(starterPlan, 'monthly');
         const yearlyPrice = SubscriptionService.calculatePrice(starterPlan, 'yearly');
-        
+
         addResult({
           name: 'Pricing Calculation',
           status: monthlyPrice > 0 && yearlyPrice > 0 ? 'pass' : 'fail',
           message: 'Pricing calculation works correctly',
-          details: `Monthly: ₦${monthlyPrice.toLocaleString()}, Yearly: ₦${yearlyPrice.toLocaleString()}`
+          details: `Monthly: ₦${monthlyPrice.toLocaleString()}, Yearly: ₦${yearlyPrice.toLocaleString()}`,
         });
 
         // Test discount calculation
@@ -112,7 +112,7 @@ export const SubscriptionTests: React.FC = () => {
           name: 'Discount Calculation',
           status: discount >= 0 ? 'pass' : 'fail',
           message: `Yearly discount: ${discount}%`,
-          details: 'Discount calculation is working properly'
+          details: 'Discount calculation is working properly',
         });
       }
 
@@ -128,7 +128,7 @@ export const SubscriptionTests: React.FC = () => {
         current_period_end: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
         usage_tracking: { properties: 3, tenants: 15, documents_per_month: 25 },
         created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
+        updated_at: new Date().toISOString(),
       };
 
       const hasFeatureAccess = SubscriptionService.hasFeatureAccess(
@@ -140,7 +140,7 @@ export const SubscriptionTests: React.FC = () => {
         name: 'Feature Access Check',
         status: hasFeatureAccess ? 'pass' : 'fail',
         message: 'Feature access validation works',
-        details: 'Starter plan has access to smart matching feature'
+        details: 'Starter plan has access to smart matching feature',
       });
 
       // Test usage limits
@@ -155,7 +155,7 @@ export const SubscriptionTests: React.FC = () => {
         name: 'Usage Limit Check',
         status: usageCheck.allowed ? 'pass' : 'fail',
         message: 'Usage limit validation works',
-        details: `Current: ${usageCheck.current_usage}, Limit: ${usageCheck.limit}`
+        details: `Current: ${usageCheck.current_usage}, Limit: ${usageCheck.limit}`,
       });
 
       // Test analytics generation
@@ -164,15 +164,14 @@ export const SubscriptionTests: React.FC = () => {
         name: 'Analytics Generation',
         status: analytics.total_subscriptions > 0 ? 'pass' : 'fail',
         message: 'Subscription analytics generation works',
-        details: `MRR: ₦${analytics.mrr.toLocaleString()}, Active: ${analytics.active_subscriptions}`
+        details: `MRR: ₦${analytics.mrr.toLocaleString()}, Active: ${analytics.active_subscriptions}`,
       });
-
     } catch (error) {
       addResult({
         name: 'Subscription Service Error',
         status: 'fail',
         message: 'Error testing subscription service',
-        details: error instanceof Error ? error.message : 'Unknown error'
+        details: error instanceof Error ? error.message : 'Unknown error',
       });
     }
   };
@@ -183,7 +182,7 @@ export const SubscriptionTests: React.FC = () => {
       name: 'useSubscription Hook',
       status: 'pass',
       message: 'Hook is properly initialized',
-      details: 'Provides subscription data and mutation functions'
+      details: 'Provides subscription data and mutation functions',
     });
 
     if (subscriptionPlans && subscriptionPlans.length > 0) {
@@ -191,14 +190,14 @@ export const SubscriptionTests: React.FC = () => {
         name: 'Plans Data Loading',
         status: 'pass',
         message: `Loaded ${subscriptionPlans.length} subscription plans`,
-        details: subscriptionPlans.map(p => p.name).join(', ')
+        details: subscriptionPlans.map((p) => p.name).join(', '),
       });
     } else {
       addResult({
         name: 'Plans Data Loading',
         status: 'warning',
         message: 'No subscription plans loaded',
-        details: 'This might be expected if database is not set up'
+        details: 'This might be expected if database is not set up',
       });
     }
 
@@ -207,14 +206,14 @@ export const SubscriptionTests: React.FC = () => {
         name: 'Current Subscription',
         status: 'pass',
         message: `User has ${currentSubscription.tier} subscription`,
-        details: `Status: ${currentSubscription.status}, Billing: ${currentSubscription.billing_cycle}`
+        details: `Status: ${currentSubscription.status}, Billing: ${currentSubscription.billing_cycle}`,
       });
     } else {
       addResult({
         name: 'Current Subscription',
         status: 'warning',
         message: 'No active subscription found',
-        details: 'User might be on free tier or not logged in'
+        details: 'User might be on free tier or not logged in',
       });
     }
   };
@@ -227,7 +226,7 @@ export const SubscriptionTests: React.FC = () => {
         name: 'SubscriptionPlans Component',
         status: 'pass',
         message: 'Component renders without errors',
-        details: 'Displays subscription plans with pricing and features'
+        details: 'Displays subscription plans with pricing and features',
       });
 
       // Test SubscriptionDashboard component
@@ -235,7 +234,7 @@ export const SubscriptionTests: React.FC = () => {
         name: 'SubscriptionDashboard Component',
         status: 'pass',
         message: 'Component renders without errors',
-        details: 'Shows subscription overview, usage, and billing'
+        details: 'Shows subscription overview, usage, and billing',
       });
 
       // Test FeatureGate component
@@ -243,15 +242,14 @@ export const SubscriptionTests: React.FC = () => {
         name: 'FeatureGate Component',
         status: 'pass',
         message: 'Component renders without errors',
-        details: 'Properly gates features based on subscription tier'
+        details: 'Properly gates features based on subscription tier',
       });
-
     } catch (error) {
       addResult({
         name: 'UI Components Error',
         status: 'fail',
         message: 'Error testing UI components',
-        details: error instanceof Error ? error.message : 'Unknown error'
+        details: error instanceof Error ? error.message : 'Unknown error',
       });
     }
   };
@@ -266,15 +264,15 @@ export const SubscriptionTests: React.FC = () => {
       'payment_transactions',
       'subscription_events',
       'white_label_configs',
-      'feature_usage_tracking'
+      'feature_usage_tracking',
     ];
 
-    requiredTables.forEach(table => {
+    requiredTables.forEach((table) => {
       addResult({
         name: `${table} Table`,
         status: 'pass',
         message: `${table} schema is defined`,
-        details: 'Table structure includes all required fields and constraints'
+        details: 'Table structure includes all required fields and constraints',
       });
     });
 
@@ -282,14 +280,14 @@ export const SubscriptionTests: React.FC = () => {
       name: 'Database Indexes',
       status: 'pass',
       message: 'Performance indexes are defined',
-      details: 'Indexes on user_id, plan_id, status, and date fields'
+      details: 'Indexes on user_id, plan_id, status, and date fields',
     });
 
     addResult({
       name: 'RLS Policies',
       status: 'pass',
       message: 'Row Level Security policies are configured',
-      details: 'Users can only access their own subscription data'
+      details: 'Users can only access their own subscription data',
     });
   };
 
@@ -299,28 +297,28 @@ export const SubscriptionTests: React.FC = () => {
       name: 'Data Isolation',
       status: 'pass',
       message: 'User data is properly isolated',
-      details: 'RLS policies ensure users only see their own data'
+      details: 'RLS policies ensure users only see their own data',
     });
 
     addResult({
       name: 'Payment Security',
       status: 'pass',
       message: 'Payment data is handled securely',
-      details: 'Sensitive payment info is stored with proper encryption'
+      details: 'Sensitive payment info is stored with proper encryption',
     });
 
     addResult({
       name: 'Feature Gating',
       status: 'pass',
       message: 'Features are properly gated by subscription',
-      details: 'Premium features require appropriate subscription tier'
+      details: 'Premium features require appropriate subscription tier',
     });
 
     addResult({
       name: 'Usage Tracking',
       status: 'pass',
       message: 'Usage limits are enforced',
-      details: 'System tracks and enforces subscription limits'
+      details: 'System tracks and enforces subscription limits',
     });
   };
 
@@ -340,7 +338,7 @@ export const SubscriptionTests: React.FC = () => {
         name: 'Test Suite Error',
         status: 'fail',
         message: 'Error running test suite',
-        details: error instanceof Error ? error.message : 'Unknown error'
+        details: error instanceof Error ? error.message : 'Unknown error',
       });
     } finally {
       setIsRunning(false);
@@ -369,33 +367,33 @@ export const SubscriptionTests: React.FC = () => {
     }
   };
 
-  const passCount = testResults.filter(r => r.status === 'pass').length;
-  const failCount = testResults.filter(r => r.status === 'fail').length;
-  const warningCount = testResults.filter(r => r.status === 'warning').length;
+  const passCount = testResults.filter((r) => r.status === 'pass').length;
+  const failCount = testResults.filter((r) => r.status === 'fail').length;
+  const warningCount = testResults.filter((r) => r.status === 'warning').length;
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-2xl font-bold text-gray-900">Subscription System Tests</h2>
-          <p className="text-gray-600 mt-1">
+          <p className="mt-1 text-gray-600">
             Comprehensive testing of subscription management, billing, and feature gating
           </p>
         </div>
-        
-        <Button 
-          onClick={runAllTests} 
+
+        <Button
+          onClick={runAllTests}
           disabled={isRunning}
           className="bg-blue-600 hover:bg-blue-700"
         >
           {isRunning ? (
             <div className="flex items-center space-x-2">
-              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+              <div className="h-4 w-4 animate-spin rounded-full border-b-2 border-primary-foreground"></div>
               <span>Running Tests...</span>
             </div>
           ) : (
             <>
-              <Play className="h-4 w-4 mr-2" />
+              <Play className="mr-2 h-4 w-4" />
               Run All Tests
             </>
           )}
@@ -403,7 +401,7 @@ export const SubscriptionTests: React.FC = () => {
       </div>
 
       {testResults.length > 0 && (
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
           <Card>
             <CardContent className="flex items-center justify-between p-4">
               <div>
@@ -413,7 +411,7 @@ export const SubscriptionTests: React.FC = () => {
               <CheckCircle className="h-8 w-8 text-green-500" />
             </CardContent>
           </Card>
-          
+
           <Card>
             <CardContent className="flex items-center justify-between p-4">
               <div>
@@ -423,7 +421,7 @@ export const SubscriptionTests: React.FC = () => {
               <XCircle className="h-8 w-8 text-red-500" />
             </CardContent>
           </Card>
-          
+
           <Card>
             <CardContent className="flex items-center justify-between p-4">
               <div>
@@ -433,7 +431,7 @@ export const SubscriptionTests: React.FC = () => {
               <AlertTriangle className="h-8 w-8 text-yellow-500" />
             </CardContent>
           </Card>
-          
+
           <Card>
             <CardContent className="flex items-center justify-between p-4">
               <div>
@@ -470,9 +468,19 @@ export const SubscriptionTests: React.FC = () => {
             <CardContent>
               <div className="space-y-3">
                 {testResults
-                  .filter(r => ['SubscriptionPlan Type', 'UserSubscription Type', 'BillingCycle Type', 'SubscriptionTier Type'].includes(r.name))
+                  .filter((r) =>
+                    [
+                      'SubscriptionPlan Type',
+                      'UserSubscription Type',
+                      'BillingCycle Type',
+                      'SubscriptionTier Type',
+                    ].includes(r.name)
+                  )
                   .map((result, index) => (
-                    <div key={index} className={`p-3 rounded-lg border ${getStatusColor(result.status)}`}>
+                    <div
+                      key={index}
+                      className={`rounded-lg border p-3 ${getStatusColor(result.status)}`}
+                    >
                       <div className="flex items-center justify-between">
                         <div className="flex items-center space-x-2">
                           {getStatusIcon(result.status)}
@@ -480,9 +488,9 @@ export const SubscriptionTests: React.FC = () => {
                         </div>
                         <Badge variant="outline">{result.status}</Badge>
                       </div>
-                      <p className="text-sm text-gray-600 mt-1">{result.message}</p>
+                      <p className="mt-1 text-sm text-gray-600">{result.message}</p>
                       {result.details && (
-                        <p className="text-xs text-gray-500 mt-1">{result.details}</p>
+                        <p className="mt-1 text-xs text-gray-500">{result.details}</p>
                       )}
                     </div>
                   ))}
@@ -505,9 +513,21 @@ export const SubscriptionTests: React.FC = () => {
             <CardContent>
               <div className="space-y-3">
                 {testResults
-                  .filter(r => ['Get Subscription Plans', 'Pricing Calculation', 'Discount Calculation', 'Feature Access Check', 'Usage Limit Check', 'Analytics Generation'].includes(r.name))
+                  .filter((r) =>
+                    [
+                      'Get Subscription Plans',
+                      'Pricing Calculation',
+                      'Discount Calculation',
+                      'Feature Access Check',
+                      'Usage Limit Check',
+                      'Analytics Generation',
+                    ].includes(r.name)
+                  )
                   .map((result, index) => (
-                    <div key={index} className={`p-3 rounded-lg border ${getStatusColor(result.status)}`}>
+                    <div
+                      key={index}
+                      className={`rounded-lg border p-3 ${getStatusColor(result.status)}`}
+                    >
                       <div className="flex items-center justify-between">
                         <div className="flex items-center space-x-2">
                           {getStatusIcon(result.status)}
@@ -515,9 +535,9 @@ export const SubscriptionTests: React.FC = () => {
                         </div>
                         <Badge variant="outline">{result.status}</Badge>
                       </div>
-                      <p className="text-sm text-gray-600 mt-1">{result.message}</p>
+                      <p className="mt-1 text-sm text-gray-600">{result.message}</p>
                       {result.details && (
-                        <p className="text-xs text-gray-500 mt-1">{result.details}</p>
+                        <p className="mt-1 text-xs text-gray-500">{result.details}</p>
                       )}
                     </div>
                   ))}
@@ -533,16 +553,21 @@ export const SubscriptionTests: React.FC = () => {
                 <Zap className="h-5 w-5" />
                 <span>React Integration Test</span>
               </CardTitle>
-              <CardDescription>
-                Testing React hooks and component integration
-              </CardDescription>
+              <CardDescription>Testing React hooks and component integration</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-3">
                 {testResults
-                  .filter(r => ['useSubscription Hook', 'Plans Data Loading', 'Current Subscription'].includes(r.name))
+                  .filter((r) =>
+                    ['useSubscription Hook', 'Plans Data Loading', 'Current Subscription'].includes(
+                      r.name
+                    )
+                  )
                   .map((result, index) => (
-                    <div key={index} className={`p-3 rounded-lg border ${getStatusColor(result.status)}`}>
+                    <div
+                      key={index}
+                      className={`rounded-lg border p-3 ${getStatusColor(result.status)}`}
+                    >
                       <div className="flex items-center justify-between">
                         <div className="flex items-center space-x-2">
                           {getStatusIcon(result.status)}
@@ -550,9 +575,9 @@ export const SubscriptionTests: React.FC = () => {
                         </div>
                         <Badge variant="outline">{result.status}</Badge>
                       </div>
-                      <p className="text-sm text-gray-600 mt-1">{result.message}</p>
+                      <p className="mt-1 text-sm text-gray-600">{result.message}</p>
                       {result.details && (
-                        <p className="text-xs text-gray-500 mt-1">{result.details}</p>
+                        <p className="mt-1 text-xs text-gray-500">{result.details}</p>
                       )}
                     </div>
                   ))}
@@ -575,9 +600,12 @@ export const SubscriptionTests: React.FC = () => {
             <CardContent>
               <div className="space-y-4">
                 {testResults
-                  .filter(r => r.name.includes('Component'))
+                  .filter((r) => r.name.includes('Component'))
                   .map((result, index) => (
-                    <div key={index} className={`p-3 rounded-lg border ${getStatusColor(result.status)}`}>
+                    <div
+                      key={index}
+                      className={`rounded-lg border p-3 ${getStatusColor(result.status)}`}
+                    >
                       <div className="flex items-center justify-between">
                         <div className="flex items-center space-x-2">
                           {getStatusIcon(result.status)}
@@ -585,9 +613,9 @@ export const SubscriptionTests: React.FC = () => {
                         </div>
                         <Badge variant="outline">{result.status}</Badge>
                       </div>
-                      <p className="text-sm text-gray-600 mt-1">{result.message}</p>
+                      <p className="mt-1 text-sm text-gray-600">{result.message}</p>
                       {result.details && (
-                        <p className="text-xs text-gray-500 mt-1">{result.details}</p>
+                        <p className="mt-1 text-xs text-gray-500">{result.details}</p>
                       )}
                     </div>
                   ))}
@@ -595,11 +623,11 @@ export const SubscriptionTests: React.FC = () => {
                 {/* Live UI Component Tests */}
                 <div className="mt-6 space-y-4">
                   <h4 className="font-semibold">Live Component Tests:</h4>
-                  
-                  <div className="border rounded-lg p-4">
-                    <h5 className="font-medium mb-2">Feature Gate Test:</h5>
-                    <FeatureGate 
-                      feature="test-feature" 
+
+                  <div className="rounded-lg border p-4">
+                    <h5 className="mb-2 font-medium">Feature Gate Test:</h5>
+                    <FeatureGate
+                      feature="test-feature"
                       requiredTier="professional"
                       className="max-w-md"
                     >
@@ -624,16 +652,22 @@ export const SubscriptionTests: React.FC = () => {
                 <Database className="h-5 w-5" />
                 <span>Database Schema Test</span>
               </CardTitle>
-              <CardDescription>
-                Testing database tables, indexes, and constraints
-              </CardDescription>
+              <CardDescription>Testing database tables, indexes, and constraints</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-3">
                 {testResults
-                  .filter(r => r.name.includes('Table') || r.name.includes('Database') || r.name.includes('RLS'))
+                  .filter(
+                    (r) =>
+                      r.name.includes('Table') ||
+                      r.name.includes('Database') ||
+                      r.name.includes('RLS')
+                  )
                   .map((result, index) => (
-                    <div key={index} className={`p-3 rounded-lg border ${getStatusColor(result.status)}`}>
+                    <div
+                      key={index}
+                      className={`rounded-lg border p-3 ${getStatusColor(result.status)}`}
+                    >
                       <div className="flex items-center justify-between">
                         <div className="flex items-center space-x-2">
                           {getStatusIcon(result.status)}
@@ -641,9 +675,9 @@ export const SubscriptionTests: React.FC = () => {
                         </div>
                         <Badge variant="outline">{result.status}</Badge>
                       </div>
-                      <p className="text-sm text-gray-600 mt-1">{result.message}</p>
+                      <p className="mt-1 text-sm text-gray-600">{result.message}</p>
                       {result.details && (
-                        <p className="text-xs text-gray-500 mt-1">{result.details}</p>
+                        <p className="mt-1 text-xs text-gray-500">{result.details}</p>
                       )}
                     </div>
                   ))}
@@ -659,16 +693,24 @@ export const SubscriptionTests: React.FC = () => {
                 <Shield className="h-5 w-5" />
                 <span>Security & Permissions Test</span>
               </CardTitle>
-              <CardDescription>
-                Testing security measures and access controls
-              </CardDescription>
+              <CardDescription>Testing security measures and access controls</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-3">
                 {testResults
-                  .filter(r => ['Data Isolation', 'Payment Security', 'Feature Gating', 'Usage Tracking'].includes(r.name))
+                  .filter((r) =>
+                    [
+                      'Data Isolation',
+                      'Payment Security',
+                      'Feature Gating',
+                      'Usage Tracking',
+                    ].includes(r.name)
+                  )
                   .map((result, index) => (
-                    <div key={index} className={`p-3 rounded-lg border ${getStatusColor(result.status)}`}>
+                    <div
+                      key={index}
+                      className={`rounded-lg border p-3 ${getStatusColor(result.status)}`}
+                    >
                       <div className="flex items-center justify-between">
                         <div className="flex items-center space-x-2">
                           {getStatusIcon(result.status)}
@@ -676,9 +718,9 @@ export const SubscriptionTests: React.FC = () => {
                         </div>
                         <Badge variant="outline">{result.status}</Badge>
                       </div>
-                      <p className="text-sm text-gray-600 mt-1">{result.message}</p>
+                      <p className="mt-1 text-sm text-gray-600">{result.message}</p>
                       {result.details && (
-                        <p className="text-xs text-gray-500 mt-1">{result.details}</p>
+                        <p className="mt-1 text-xs text-gray-500">{result.details}</p>
                       )}
                     </div>
                   ))}

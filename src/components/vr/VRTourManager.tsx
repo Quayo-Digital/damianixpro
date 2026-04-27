@@ -10,7 +10,13 @@ import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { useVRTours } from '@/hooks/useVRTours';
 import { FeatureGate } from '@/components/subscription/FeatureGate';
 import { cn } from '@/lib/utils';
@@ -27,7 +33,7 @@ import {
   BarChart3,
   Loader2,
   CheckCircle,
-  Share2
+  Share2,
 } from 'lucide-react';
 import { VRTour, TourQuality, TourType, RoomType } from '@/types/vrTours';
 
@@ -44,7 +50,7 @@ export function VRTourManager({
   className,
   onTourCreated,
   onTourUpdated,
-  onTourDeleted
+  onTourDeleted,
 }: VRTourManagerProps) {
   const {
     tours,
@@ -53,7 +59,7 @@ export function VRTourManager({
     deleteTour,
     canCreateTours,
     hasPremiumFeatures,
-    hasVRAccess
+    hasVRAccess,
   } = useVRTours();
 
   // State
@@ -73,14 +79,14 @@ export function VRTourManager({
     squareFootage: 500,
     address: '',
     features: [] as string[],
-    amenities: [] as string[]
+    amenities: [] as string[],
   });
 
   // Tour operations
   const handleCreateTour = useCallback(async () => {
     try {
       setIsCreating(true);
-      
+
       const tourData: Partial<VRTour> = {
         propertyId: propertyId || '',
         title: tourForm.title,
@@ -97,7 +103,7 @@ export function VRTourManager({
             yearBuilt: new Date().getFullYear(),
             features: tourForm.features,
             amenities: tourForm.amenities,
-            neighborhood: ''
+            neighborhood: '',
           },
           captureInfo: {
             captureDate: new Date(),
@@ -106,7 +112,7 @@ export function VRTourManager({
             processingDate: new Date(),
             software: 'VR Tour Builder',
             version: '1.0.0',
-            notes: ''
+            notes: '',
           },
           technicalSpecs: {
             totalScenes: 0,
@@ -121,9 +127,9 @@ export function VRTourManager({
               storage: '1GB',
               bandwidth: '5 Mbps',
               browser: ['Chrome 80+', 'Firefox 75+', 'Safari 13+'],
-              webgl: 'WebGL 2.0'
+              webgl: 'WebGL 2.0',
             },
-            maxConcurrentUsers: 100
+            maxConcurrentUsers: 100,
           },
           seoData: {
             title: tourForm.title,
@@ -132,17 +138,17 @@ export function VRTourManager({
             ogImage: '',
             ogTitle: '',
             ogDescription: '',
-            structuredData: {}
+            structuredData: {},
           },
           tags: [],
-          categories: []
-        }
+          categories: [],
+        },
       };
 
       const newTour = await createTour(tourData);
       setSelectedTour(newTour);
       setIsCreating(false);
-      
+
       if (onTourCreated) {
         onTourCreated(newTour);
       }
@@ -159,7 +165,7 @@ export function VRTourManager({
         squareFootage: 500,
         address: '',
         features: [],
-        amenities: []
+        amenities: [],
       });
     } catch (error) {
       console.error('Failed to create tour:', error);
@@ -172,12 +178,12 @@ export function VRTourManager({
 
     try {
       setIsEditing(true);
-      
+
       const updates: Partial<VRTour> = {
         title: tourForm.title,
         description: tourForm.description,
         tourType: tourForm.tourType,
-        quality: tourForm.quality
+        quality: tourForm.quality,
       };
 
       const updatedTour = await updateTour(selectedTour.id, updates);
@@ -194,19 +200,22 @@ export function VRTourManager({
     }
   }, [selectedTour, tourForm, updateTour, onTourUpdated]);
 
-  const handleDeleteTour = useCallback(async (tourId: string) => {
-    try {
-      await deleteTour(tourId);
-      if (selectedTour?.id === tourId) {
-        setSelectedTour(null);
+  const handleDeleteTour = useCallback(
+    async (tourId: string) => {
+      try {
+        await deleteTour(tourId);
+        if (selectedTour?.id === tourId) {
+          setSelectedTour(null);
+        }
+        if (onTourDeleted) {
+          onTourDeleted(tourId);
+        }
+      } catch (error) {
+        console.error('Failed to delete tour:', error);
       }
-      if (onTourDeleted) {
-        onTourDeleted(tourId);
-      }
-    } catch (error) {
-      console.error('Failed to delete tour:', error);
-    }
-  }, [deleteTour, selectedTour, onTourDeleted]);
+    },
+    [deleteTour, selectedTour, onTourDeleted]
+  );
 
   // Load tour data into form when selected
   const loadTourIntoForm = useCallback((tour: VRTour) => {
@@ -221,24 +230,27 @@ export function VRTourManager({
       squareFootage: tour.metadata.propertyDetails.squareFootage,
       address: tour.metadata.propertyDetails.address,
       features: tour.metadata.propertyDetails.features,
-      amenities: tour.metadata.propertyDetails.amenities
+      amenities: tour.metadata.propertyDetails.amenities,
     });
   }, []);
 
-  const handleTourSelect = useCallback((tour: VRTour) => {
-    setSelectedTour(tour);
-    loadTourIntoForm(tour);
-  }, [loadTourIntoForm]);
+  const handleTourSelect = useCallback(
+    (tour: VRTour) => {
+      setSelectedTour(tour);
+      loadTourIntoForm(tour);
+    },
+    [loadTourIntoForm]
+  );
 
   if (!hasVRAccess) {
     return (
-      <FeatureGate 
+      <FeatureGate
         feature="vr_tours"
         fallback={
           <Card className={className}>
             <CardContent className="p-6">
-              <div className="text-center space-y-4">
-                <Camera className="h-12 w-12 mx-auto text-muted-foreground" />
+              <div className="space-y-4 text-center">
+                <Camera className="mx-auto h-12 w-12 text-muted-foreground" />
                 <h3 className="text-lg font-semibold">VR Tour Management</h3>
                 <p className="text-muted-foreground">
                   Create and manage immersive virtual reality property tours
@@ -255,7 +267,7 @@ export function VRTourManager({
   }
 
   return (
-    <div className={cn("space-y-6", className)}>
+    <div className={cn('space-y-6', className)}>
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
@@ -264,13 +276,13 @@ export function VRTourManager({
         </div>
         {canCreateTours && (
           <Button onClick={() => setSelectedTour(null)}>
-            <Plus className="h-4 w-4 mr-2" />
+            <Plus className="mr-2 h-4 w-4" />
             New Tour
           </Button>
         )}
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         {/* Tour List */}
         <Card>
           <CardHeader>
@@ -278,33 +290,33 @@ export function VRTourManager({
           </CardHeader>
           <CardContent className="space-y-2">
             {tours.length === 0 ? (
-              <div className="text-center py-8 text-muted-foreground">
-                <Camera className="h-8 w-8 mx-auto mb-2" />
+              <div className="py-8 text-center text-muted-foreground">
+                <Camera className="mx-auto mb-2 h-8 w-8" />
                 <p className="text-sm">No tours created yet</p>
               </div>
             ) : (
-              tours.map(tour => (
+              tours.map((tour) => (
                 <div
                   key={tour.id}
                   className={cn(
-                    "p-3 rounded-lg border cursor-pointer hover:bg-muted/50 transition-colors",
-                    selectedTour?.id === tour.id && "bg-muted border-primary"
+                    'cursor-pointer rounded-lg border p-3 transition-colors hover:bg-muted/50',
+                    selectedTour?.id === tour.id && 'border-primary bg-muted'
                   )}
                   onClick={() => handleTourSelect(tour)}
                 >
                   <div className="flex items-center justify-between">
-                    <div className="flex-1 min-w-0">
-                      <p className="font-medium text-sm truncate">{tour.title}</p>
-                      <p className="text-xs text-muted-foreground truncate">{tour.description}</p>
-                      <div className="flex items-center space-x-2 mt-1">
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-sm font-medium">{tour.title}</p>
+                      <p className="truncate text-xs text-muted-foreground">{tour.description}</p>
+                      <div className="mt-1 flex items-center space-x-2">
                         <Badge variant="outline" className="text-xs">
                           {tour.tourType.toUpperCase()}
                         </Badge>
                         <Badge variant="secondary" className="text-xs">
                           {tour.scenes.length} scenes
                         </Badge>
-                        <Badge 
-                          variant={tour.status === 'published' ? 'default' : 'secondary'} 
+                        <Badge
+                          variant={tour.status === 'published' ? 'default' : 'secondary'}
                           className="text-xs"
                         >
                           {tour.status}
@@ -349,7 +361,9 @@ export function VRTourManager({
                       <Input
                         id="title"
                         value={tourForm.title}
-                        onChange={(e) => setTourForm(prev => ({ ...prev, title: e.target.value }))}
+                        onChange={(e) =>
+                          setTourForm((prev) => ({ ...prev, title: e.target.value }))
+                        }
                         placeholder="Enter tour title..."
                       />
                     </div>
@@ -359,7 +373,9 @@ export function VRTourManager({
                       <Textarea
                         id="description"
                         value={tourForm.description}
-                        onChange={(e) => setTourForm(prev => ({ ...prev, description: e.target.value }))}
+                        onChange={(e) =>
+                          setTourForm((prev) => ({ ...prev, description: e.target.value }))
+                        }
                         placeholder="Describe your property..."
                         rows={3}
                       />
@@ -370,7 +386,9 @@ export function VRTourManager({
                         <Label>Tour Type</Label>
                         <Select
                           value={tourForm.tourType}
-                          onValueChange={(value: TourType) => setTourForm(prev => ({ ...prev, tourType: value }))}
+                          onValueChange={(value: TourType) =>
+                            setTourForm((prev) => ({ ...prev, tourType: value }))
+                          }
                         >
                           <SelectTrigger>
                             <SelectValue />
@@ -388,7 +406,9 @@ export function VRTourManager({
                         <Label>Quality</Label>
                         <Select
                           value={tourForm.quality}
-                          onValueChange={(value: TourQuality) => setTourForm(prev => ({ ...prev, quality: value }))}
+                          onValueChange={(value: TourQuality) =>
+                            setTourForm((prev) => ({ ...prev, quality: value }))
+                          }
                         >
                           <SelectTrigger>
                             <SelectValue />
@@ -410,7 +430,9 @@ export function VRTourManager({
                       <Input
                         id="address"
                         value={tourForm.address}
-                        onChange={(e) => setTourForm(prev => ({ ...prev, address: e.target.value }))}
+                        onChange={(e) =>
+                          setTourForm((prev) => ({ ...prev, address: e.target.value }))
+                        }
                         placeholder="Property address..."
                       />
                     </div>
@@ -420,7 +442,9 @@ export function VRTourManager({
                         <Label>Property Type</Label>
                         <Select
                           value={tourForm.propertyType}
-                          onValueChange={(value) => setTourForm(prev => ({ ...prev, propertyType: value }))}
+                          onValueChange={(value) =>
+                            setTourForm((prev) => ({ ...prev, propertyType: value }))
+                          }
                         >
                           <SelectTrigger>
                             <SelectValue />
@@ -441,7 +465,12 @@ export function VRTourManager({
                           type="number"
                           min="0"
                           value={tourForm.bedrooms}
-                          onChange={(e) => setTourForm(prev => ({ ...prev, bedrooms: parseInt(e.target.value) || 0 }))}
+                          onChange={(e) =>
+                            setTourForm((prev) => ({
+                              ...prev,
+                              bedrooms: parseInt(e.target.value) || 0,
+                            }))
+                          }
                         />
                       </div>
 
@@ -452,26 +481,28 @@ export function VRTourManager({
                           type="number"
                           min="0"
                           value={tourForm.bathrooms}
-                          onChange={(e) => setTourForm(prev => ({ ...prev, bathrooms: parseInt(e.target.value) || 0 }))}
+                          onChange={(e) =>
+                            setTourForm((prev) => ({
+                              ...prev,
+                              bathrooms: parseInt(e.target.value) || 0,
+                            }))
+                          }
                         />
                       </div>
                     </div>
                   </TabsContent>
                 </Tabs>
 
-                <div className="flex justify-end space-x-2 mt-6">
-                  <Button
-                    onClick={handleCreateTour}
-                    disabled={!tourForm.title || isCreating}
-                  >
+                <div className="mt-6 flex justify-end space-x-2">
+                  <Button onClick={handleCreateTour} disabled={!tourForm.title || isCreating}>
                     {isCreating ? (
                       <>
-                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                         Creating...
                       </>
                     ) : (
                       <>
-                        <Plus className="h-4 w-4 mr-2" />
+                        <Plus className="mr-2 h-4 w-4" />
                         Create Tour
                       </>
                     )}
@@ -496,11 +527,11 @@ export function VRTourManager({
                       <CardTitle>{selectedTour.title}</CardTitle>
                       <div className="flex items-center space-x-2">
                         <Button size="sm" variant="outline">
-                          <Eye className="h-4 w-4 mr-1" />
+                          <Eye className="mr-1 h-4 w-4" />
                           Preview
                         </Button>
                         <Button size="sm" variant="outline">
-                          <Share2 className="h-4 w-4 mr-1" />
+                          <Share2 className="mr-1 h-4 w-4" />
                           Share
                         </Button>
                       </div>
@@ -510,8 +541,10 @@ export function VRTourManager({
                     <div className="grid grid-cols-2 gap-4">
                       <div>
                         <Label>Status</Label>
-                        <div className="flex items-center space-x-2 mt-1">
-                          <Badge variant={selectedTour.status === 'published' ? 'default' : 'secondary'}>
+                        <div className="mt-1 flex items-center space-x-2">
+                          <Badge
+                            variant={selectedTour.status === 'published' ? 'default' : 'secondary'}
+                          >
                             {selectedTour.status}
                           </Badge>
                           {selectedTour.status === 'published' && (
@@ -521,7 +554,7 @@ export function VRTourManager({
                       </div>
                       <div>
                         <Label>Total Views</Label>
-                        <p className="text-lg font-semibold mt-1">
+                        <p className="mt-1 text-lg font-semibold">
                           {selectedTour.analytics.totalViews.toLocaleString()}
                         </p>
                       </div>
@@ -544,7 +577,9 @@ export function VRTourManager({
                         <Input
                           id="edit-title"
                           value={tourForm.title}
-                          onChange={(e) => setTourForm(prev => ({ ...prev, title: e.target.value }))}
+                          onChange={(e) =>
+                            setTourForm((prev) => ({ ...prev, title: e.target.value }))
+                          }
                         />
                       </div>
 
@@ -553,7 +588,9 @@ export function VRTourManager({
                         <Textarea
                           id="edit-description"
                           value={tourForm.description}
-                          onChange={(e) => setTourForm(prev => ({ ...prev, description: e.target.value }))}
+                          onChange={(e) =>
+                            setTourForm((prev) => ({ ...prev, description: e.target.value }))
+                          }
                           rows={3}
                         />
                       </div>
@@ -562,12 +599,12 @@ export function VRTourManager({
                         <Button onClick={handleUpdateTour} disabled={isEditing}>
                           {isEditing ? (
                             <>
-                              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                               Saving...
                             </>
                           ) : (
                             <>
-                              <Save className="h-4 w-4 mr-2" />
+                              <Save className="mr-2 h-4 w-4" />
                               Save Changes
                             </>
                           )}
@@ -584,30 +621,33 @@ export function VRTourManager({
                     <div className="flex items-center justify-between">
                       <CardTitle>Scenes ({selectedTour.scenes.length})</CardTitle>
                       <Button size="sm">
-                        <Plus className="h-4 w-4 mr-1" />
+                        <Plus className="mr-1 h-4 w-4" />
                         Add Scene
                       </Button>
                     </div>
                   </CardHeader>
                   <CardContent>
                     {selectedTour.scenes.length === 0 ? (
-                      <div className="text-center py-8 text-muted-foreground">
-                        <Layers className="h-8 w-8 mx-auto mb-2" />
+                      <div className="py-8 text-center text-muted-foreground">
+                        <Layers className="mx-auto mb-2 h-8 w-8" />
                         <p className="text-sm">No scenes added yet</p>
                         <p className="text-xs">Upload 360° photos or videos to get started</p>
                       </div>
                     ) : (
                       <div className="space-y-3">
                         {selectedTour.scenes.map((scene) => (
-                          <div key={scene.id} className="flex items-center justify-between p-3 border rounded-lg">
+                          <div
+                            key={scene.id}
+                            className="flex items-center justify-between rounded-lg border p-3"
+                          >
                             <div className="flex items-center space-x-3">
-                              <div className="w-12 h-12 bg-muted rounded-lg flex items-center justify-center">
+                              <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-muted">
                                 <Image className="h-6 w-6 text-muted-foreground" />
                               </div>
                               <div>
                                 <p className="font-medium">{scene.name}</p>
                                 <p className="text-sm text-muted-foreground">{scene.description}</p>
-                                <div className="flex items-center space-x-2 mt-1">
+                                <div className="mt-1 flex items-center space-x-2">
                                   <Badge variant="outline" className="text-xs">
                                     {scene.roomType}
                                   </Badge>
@@ -641,26 +681,31 @@ export function VRTourManager({
                     <div className="flex items-center justify-between">
                       <CardTitle>Hotspots ({selectedTour.hotspots.length})</CardTitle>
                       <Button size="sm">
-                        <Plus className="h-4 w-4 mr-1" />
+                        <Plus className="mr-1 h-4 w-4" />
                         Add Hotspot
                       </Button>
                     </div>
                   </CardHeader>
                   <CardContent>
                     {selectedTour.hotspots.length === 0 ? (
-                      <div className="text-center py-8 text-muted-foreground">
-                        <MapPin className="h-8 w-8 mx-auto mb-2" />
+                      <div className="py-8 text-center text-muted-foreground">
+                        <MapPin className="mx-auto mb-2 h-8 w-8" />
                         <p className="text-sm">No hotspots added yet</p>
-                        <p className="text-xs">Add interactive points to enhance the tour experience</p>
+                        <p className="text-xs">
+                          Add interactive points to enhance the tour experience
+                        </p>
                       </div>
                     ) : (
                       <div className="space-y-3">
-                        {selectedTour.hotspots.map(hotspot => (
-                          <div key={hotspot.id} className="flex items-center justify-between p-3 border rounded-lg">
+                        {selectedTour.hotspots.map((hotspot) => (
+                          <div
+                            key={hotspot.id}
+                            className="flex items-center justify-between rounded-lg border p-3"
+                          >
                             <div>
                               <p className="font-medium">{hotspot.title}</p>
                               <p className="text-sm text-muted-foreground">{hotspot.description}</p>
-                              <Badge variant="outline" className="text-xs mt-1">
+                              <Badge variant="outline" className="mt-1 text-xs">
                                 {hotspot.type}
                               </Badge>
                             </div>
@@ -686,21 +731,27 @@ export function VRTourManager({
                     <CardTitle>Tour Analytics</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
                       <div className="text-center">
                         <p className="text-2xl font-bold">{selectedTour.analytics.totalViews}</p>
                         <p className="text-sm text-muted-foreground">Total Views</p>
                       </div>
                       <div className="text-center">
-                        <p className="text-2xl font-bold">{selectedTour.analytics.uniqueVisitors}</p>
+                        <p className="text-2xl font-bold">
+                          {selectedTour.analytics.uniqueVisitors}
+                        </p>
                         <p className="text-sm text-muted-foreground">Unique Visitors</p>
                       </div>
                       <div className="text-center">
-                        <p className="text-2xl font-bold">{selectedTour.analytics.averageViewTime}m</p>
+                        <p className="text-2xl font-bold">
+                          {selectedTour.analytics.averageViewTime}m
+                        </p>
                         <p className="text-sm text-muted-foreground">Avg. View Time</p>
                       </div>
                       <div className="text-center">
-                        <p className="text-2xl font-bold">{selectedTour.analytics.completionRate}%</p>
+                        <p className="text-2xl font-bold">
+                          {selectedTour.analytics.completionRate}%
+                        </p>
                         <p className="text-sm text-muted-foreground">Completion Rate</p>
                       </div>
                     </div>

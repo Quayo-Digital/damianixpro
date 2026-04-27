@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import {
   Table,
@@ -7,8 +6,8 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
-import { Button } from "@/components/ui/button";
+} from '@/components/ui/table';
+import { Button } from '@/components/ui/button';
 import { formatDistanceToNow } from 'date-fns';
 import { AdminMaintenanceRequest } from '@/hooks/useAdminSupportTickets';
 import { ManageTicketSheet } from './ManageTicketSheet';
@@ -43,11 +42,18 @@ export function SupportTicketsTable({ tickets }: SupportTicketsTableProps) {
                   <div className="text-sm text-muted-foreground">{ticket.property_name}</div>
                 </TableCell>
                 <TableCell>{ticket.tenant_name || 'N/A'}</TableCell>
-                <TableCell>{formatDistanceToNow(new Date(ticket.created_at), { addSuffix: true })}</TableCell>
+                <TableCell>
+                  {formatDistanceToNow(new Date(ticket.created_at), { addSuffix: true })}
+                </TableCell>
                 <TableCell>{getPriorityBadge(ticket.priority)}</TableCell>
                 <TableCell>{getStatusBadge(ticket.status)}</TableCell>
                 <TableCell className="text-right">
-                  <Button variant="outline" size="sm" onClick={() => setSelectedTicket(ticket)}>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="rounded-full border-primary/25 bg-background dark:bg-muted/30"
+                    onClick={() => setSelectedTicket(ticket)}
+                  >
                     Manage
                   </Button>
                 </TableCell>

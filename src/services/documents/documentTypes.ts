@@ -1,5 +1,4 @@
-
-export type DocumentCategory = 
+export type DocumentCategory =
   | 'Contract'
   | 'Inspection'
   | 'Policy'
@@ -17,7 +16,7 @@ export const documentCategories: DocumentCategory[] = [
   'Form',
   'Legal',
   'Financial',
-  'Maintenance'
+  'Maintenance',
 ];
 
 export interface Document {

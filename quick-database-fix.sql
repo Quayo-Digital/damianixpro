@@ -1,4 +1,4 @@
--- Quick Database Fix for Nigeria Homes App
+-- Quick Database Fix for DamianixPro App
 -- Run this in your Supabase SQL Editor
 
 -- Step 1: Check what columns exist in profiles table

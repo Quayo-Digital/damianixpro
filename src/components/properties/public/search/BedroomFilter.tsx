@@ -1,5 +1,10 @@
-
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 
 interface BedroomFilterProps {
   bedroomsFilter: string;
@@ -10,11 +15,11 @@ interface BedroomFilterProps {
 export function BedroomFilter({
   bedroomsFilter,
   setBedroomsFilter,
-  bedroomOptions
+  bedroomOptions,
 }: BedroomFilterProps) {
   return (
     <div>
-      <h4 className="font-medium mb-2">Bedrooms</h4>
+      <h4 className="mb-2 font-medium">Bedrooms</h4>
       <Select value={bedroomsFilter} onValueChange={setBedroomsFilter}>
         <SelectTrigger>
           <SelectValue placeholder="Any number of bedrooms" />
@@ -22,7 +27,9 @@ export function BedroomFilter({
         <SelectContent>
           <SelectItem value="any">Any number of bedrooms</SelectItem>
           {bedroomOptions.map((bedCount) => (
-            <SelectItem key={bedCount} value={bedCount}>{bedCount} bedrooms</SelectItem>
+            <SelectItem key={bedCount} value={bedCount}>
+              {bedCount} bedrooms
+            </SelectItem>
           ))}
         </SelectContent>
       </Select>

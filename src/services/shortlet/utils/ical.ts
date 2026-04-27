@@ -15,33 +15,38 @@ import { createAvailability, getListingAvailability } from '../api/calendar';
  */
 export function generateICal(listingId: string, availabilities: Availability[]): string {
   const now = new Date().toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
-  
-  let ical = [
-    'BEGIN:VCALENDAR',
-    'VERSION:2.0',
-    'PRODID:-//DamianixPro//Short-Let Calendar//EN',
-    'CALSCALE:GREGORIAN',
-    'METHOD:PUBLISH'
-  ].join('\r\n') + '\r\n';
+
+  let ical =
+    [
+      'BEGIN:VCALENDAR',
+      'VERSION:2.0',
+      'PRODID:-//DamianixPro//Short-Let Calendar//EN',
+      'CALSCALE:GREGORIAN',
+      'METHOD:PUBLISH',
+    ].join('\r\n') + '\r\n';
 
   // Add blocked dates as events
   for (const availability of availabilities) {
     if (!availability.available) {
-      const start = new Date(availability.start_date).toISOString()
-        .replace(/[-:]/g, '').split('.')[0] + 'Z';
-      const end = new Date(new Date(availability.end_date).getTime() + 86400000)
-        .toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
+      const start =
+        new Date(availability.start_date).toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
+      const end =
+        new Date(new Date(availability.end_date).getTime() + 86400000)
+          .toISOString()
+          .replace(/[-:]/g, '')
+          .split('.')[0] + 'Z';
 
-      ical += [
-        'BEGIN:VEVENT',
-        `UID:${listingId}-${availability.id}@damianixpro.com`,
-        `DTSTART:${start}`,
-        `DTEND:${end}`,
-        `DTSTAMP:${now}`,
-        `SUMMARY:Blocked - ${availability.notes || 'Unavailable'}`,
-        'STATUS:CONFIRMED',
-        'END:VEVENT'
-      ].join('\r\n') + '\r\n';
+      ical +=
+        [
+          'BEGIN:VEVENT',
+          `UID:${listingId}-${availability.id}@damianixpro.com`,
+          `DTSTART:${start}`,
+          `DTEND:${end}`,
+          `DTSTAMP:${now}`,
+          `SUMMARY:Blocked - ${availability.notes || 'Unavailable'}`,
+          'STATUS:CONFIRMED',
+          'END:VEVENT',
+        ].join('\r\n') + '\r\n';
     }
   }
 
@@ -74,7 +79,7 @@ interface ParsedICalEvent {
 export function parseICal(icalString: string): ParsedICalEvent[] {
   const events: ParsedICalEvent[] = [];
   const lines = icalString.split(/\r?\n/);
-  
+
   let currentEvent: Partial<ParsedICalEvent> | null = null;
   let inEvent = false;
 
@@ -88,17 +93,21 @@ export function parseICal(icalString: string): ParsedICalEvent[] {
           start: currentEvent.start,
           end: currentEvent.end,
           summary: currentEvent.summary,
-          uid: currentEvent.uid
+          uid: currentEvent.uid,
         });
       }
       inEvent = false;
       currentEvent = null;
     } else if (inEvent && currentEvent) {
       if (line.startsWith('DTSTART:')) {
-        const dateStr = line.substring(8).replace(/(\d{4})(\d{2})(\d{2})T(\d{2})(\d{2})(\d{2})Z/, '$1-$2-$3T$4:$5:$6Z');
+        const dateStr = line
+          .substring(8)
+          .replace(/(\d{4})(\d{2})(\d{2})T(\d{2})(\d{2})(\d{2})Z/, '$1-$2-$3T$4:$5:$6Z');
         currentEvent.start = new Date(dateStr);
       } else if (line.startsWith('DTEND:')) {
-        const dateStr = line.substring(6).replace(/(\d{4})(\d{2})(\d{2})T(\d{2})(\d{2})(\d{2})Z/, '$1-$2-$3T$4:$5:$6Z');
+        const dateStr = line
+          .substring(6)
+          .replace(/(\d{4})(\d{2})(\d{2})T(\d{2})(\d{2})(\d{2})Z/, '$1-$2-$3T$4:$5:$6Z');
         currentEvent.end = new Date(dateStr);
       } else if (line.startsWith('SUMMARY:')) {
         currentEvent.summary = line.substring(8);
@@ -138,7 +147,7 @@ export async function importICalToAvailability(
         available: false,
         source: source as any,
         source_id: event.uid,
-        notes: event.summary || `Imported from ${source}`
+        notes: event.summary || `Imported from ${source}`,
       });
 
       imported++;
@@ -169,7 +178,6 @@ export async function syncExternalCalendar(
   return {
     success: false,
     synced: 0,
-    error: 'External calendar sync not yet implemented'
+    error: 'External calendar sync not yet implemented',
   };
 }
-

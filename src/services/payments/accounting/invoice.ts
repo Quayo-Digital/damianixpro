@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/components/ui/sonner';
 import { v4 as uuidv4 } from 'uuid';
@@ -15,17 +14,17 @@ export const generateInvoice = async (
   notes?: string
 ): Promise<Invoice | null> => {
   try {
-    const subtotal = items.reduce((sum, item) => sum + (item.amount * item.quantity), 0);
+    const subtotal = items.reduce((sum, item) => sum + item.amount * item.quantity, 0);
     const taxRate = 0.075; // 7.5% VAT
     const tax = subtotal * taxRate;
     const total = subtotal + tax;
 
-    const invoiceItems = items.map(item => ({
+    const invoiceItems = items.map((item) => ({
       description: item.description,
       category: item.category as any,
       amount: item.amount,
       quantity: item.quantity,
-      total: item.amount * item.quantity
+      total: item.amount * item.quantity,
     }));
 
     const invoiceData = {
@@ -39,26 +38,24 @@ export const generateInvoice = async (
       tax,
       total,
       status: 'sent',
-      notes
+      notes,
     };
 
     // For now, just create a simulated invoice since the table may not be in types yet
     try {
       // Insert directly to invoices table instead of using RPC
-      const { error } = await supabase
-        .from('invoices')
-        .insert({
-          tenant_id: tenantId,
-          property_id: propertyId,
-          due_date: dueDate,
-          amount: total,
-          items: invoiceItems,
-          subtotal,
-          tax,
-          notes,
-          status: 'sent'
-        });
-      
+      const { error } = await supabase.from('invoices').insert({
+        tenant_id: tenantId,
+        property_id: propertyId,
+        due_date: dueDate,
+        amount: total,
+        items: invoiceItems,
+        subtotal,
+        tax,
+        notes,
+        status: 'sent',
+      });
+
       if (error) {
         throw error;
       }

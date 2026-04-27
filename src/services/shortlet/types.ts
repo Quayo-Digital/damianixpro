@@ -14,7 +14,7 @@ export enum BookingStatus {
   CONFIRMED = 'confirmed',
   CANCELLED = 'cancelled',
   COMPLETED = 'completed',
-  REFUNDED = 'refunded'
+  REFUNDED = 'refunded',
 }
 
 export enum TransactionType {
@@ -22,26 +22,26 @@ export enum TransactionType {
   REFUND = 'refund',
   PAYOUT = 'payout',
   DEPOSIT = 'deposit',
-  COMMISSION = 'commission'
+  COMMISSION = 'commission',
 }
 
 export enum TransactionStatus {
   PENDING = 'pending',
   SUCCESS = 'success',
   FAILED = 'failed',
-  REFUNDED = 'refunded'
+  REFUNDED = 'refunded',
 }
 
 export enum ReviewType {
   GUEST = 'guest', // Guest reviews property/owner
-  OWNER = 'owner'  // Owner reviews guest
+  OWNER = 'owner', // Owner reviews guest
 }
 
 export enum DocumentType {
   ID_CARD = 'id_card',
   PASSPORT = 'passport',
   DRIVERS_LICENSE = 'drivers_license',
-  OTHER = 'other'
+  OTHER = 'other',
 }
 
 // ============================================================================
@@ -53,7 +53,7 @@ export const cancellationPolicySchema = z.object({
   full_refund_before_days: z.number().int().min(0),
   partial_refund_before_days: z.number().int().min(0),
   partial_refund_percent: z.number().int().min(0).max(100),
-  no_refund_within_days: z.number().int().min(0)
+  no_refund_within_days: z.number().int().min(0),
 });
 
 export const listingSchema = z.object({
@@ -69,45 +69,49 @@ export const listingSchema = z.object({
   timezone: z.string().default('Africa/Lagos'),
   instant_book: z.boolean().default(false),
   active: z.boolean().default(true),
-  cancellation_policy: cancellationPolicySchema.optional()
-});
-
-export const availabilitySchema = z.object({
-  id: z.string().uuid().optional(),
-  listing_id: z.string().uuid(),
-  start_date: z.string().date(),
-  end_date: z.string().date(),
-  available: z.boolean().default(true),
-  source: z.enum(['manual', 'external', 'blocked']).default('manual'),
-  source_id: z.string().optional(),
-  notes: z.string().optional()
-}).refine(data => new Date(data.end_date) >= new Date(data.start_date), {
-  message: "End date must be after start date"
-});
-
-export const bookingSchema = z.object({
-  id: z.string().uuid().optional(),
-  listing_id: z.string().uuid(),
-  guest_id: z.string().uuid(),
-  owner_id: z.string().uuid(),
-  status: z.nativeEnum(BookingStatus).default(BookingStatus.PENDING),
-  checkin_date: z.string().date(),
-  checkout_date: z.string().date(),
-  nights: z.number().int().min(1),
-  guests_count: z.number().int().min(1).default(1),
-  total_amount: z.number().min(0),
-  payout_amount: z.number().min(0).optional(),
-  commission_amount: z.number().min(0).optional(),
-  currency: z.string().default('NGN'),
-  payment_reference: z.string().optional(),
-  deposit_amount: z.number().min(0).default(0),
   cancellation_policy: cancellationPolicySchema.optional(),
-  metadata: z.record(z.any()).default({}),
-  cancellation_reason: z.string().optional(),
-  cancelled_at: z.string().datetime().optional()
-}).refine(data => new Date(data.checkout_date) > new Date(data.checkin_date), {
-  message: "Checkout date must be after checkin date"
 });
+
+export const availabilitySchema = z
+  .object({
+    id: z.string().uuid().optional(),
+    listing_id: z.string().uuid(),
+    start_date: z.string().date(),
+    end_date: z.string().date(),
+    available: z.boolean().default(true),
+    source: z.enum(['manual', 'external', 'blocked']).default('manual'),
+    source_id: z.string().optional(),
+    notes: z.string().optional(),
+  })
+  .refine((data) => new Date(data.end_date) >= new Date(data.start_date), {
+    message: 'End date must be after start date',
+  });
+
+export const bookingSchema = z
+  .object({
+    id: z.string().uuid().optional(),
+    listing_id: z.string().uuid(),
+    guest_id: z.string().uuid(),
+    owner_id: z.string().uuid(),
+    status: z.nativeEnum(BookingStatus).default(BookingStatus.PENDING),
+    checkin_date: z.string().date(),
+    checkout_date: z.string().date(),
+    nights: z.number().int().min(1),
+    guests_count: z.number().int().min(1).default(1),
+    total_amount: z.number().min(0),
+    payout_amount: z.number().min(0).optional(),
+    commission_amount: z.number().min(0).optional(),
+    currency: z.string().default('NGN'),
+    payment_reference: z.string().optional(),
+    deposit_amount: z.number().min(0).default(0),
+    cancellation_policy: cancellationPolicySchema.optional(),
+    metadata: z.record(z.any()).default({}),
+    cancellation_reason: z.string().optional(),
+    cancelled_at: z.string().datetime().optional(),
+  })
+  .refine((data) => new Date(data.checkout_date) > new Date(data.checkin_date), {
+    message: 'Checkout date must be after checkin date',
+  });
 
 export const transactionSchema = z.object({
   id: z.string().uuid().optional(),
@@ -115,11 +119,11 @@ export const transactionSchema = z.object({
   user_id: z.string().uuid(),
   amount: z.number(),
   type: z.nativeEnum(TransactionType),
-  provider: z.string().default('paystack'),
+  provider: z.string().default('flutterwave'),
   provider_ref: z.string().optional(),
   status: z.nativeEnum(TransactionStatus).default(TransactionStatus.PENDING),
   description: z.string().optional(),
-  metadata: z.record(z.any()).default({})
+  metadata: z.record(z.any()).default({}),
 });
 
 export const walletSchema = z.object({
@@ -128,7 +132,7 @@ export const walletSchema = z.object({
   balance: z.number().min(0).default(0),
   pending_balance: z.number().min(0).default(0),
   total_earned: z.number().min(0).default(0),
-  total_paid_out: z.number().min(0).default(0)
+  total_paid_out: z.number().min(0).default(0),
 });
 
 export const guestDocumentSchema = z.object({
@@ -139,7 +143,7 @@ export const guestDocumentSchema = z.object({
   document_url: z.string().url(),
   verified: z.boolean().default(false),
   verified_by: z.string().uuid().optional(),
-  verified_at: z.string().datetime().optional()
+  verified_at: z.string().datetime().optional(),
 });
 
 export const reviewSchema = z.object({
@@ -151,7 +155,7 @@ export const reviewSchema = z.object({
   rating: z.number().int().min(1).max(5),
   comment: z.string().optional(),
   response: z.string().optional(),
-  response_at: z.string().datetime().optional()
+  response_at: z.string().datetime().optional(),
 });
 
 // ============================================================================
@@ -168,6 +172,8 @@ export type Listing = z.infer<typeof listingSchema> & {
     name: string;
     address: string;
     location: string;
+    /** From `shortlet_details.form_meta` via `mapSupabaseToProperty` */
+    imageUrl?: string;
   };
 };
 export type Availability = z.infer<typeof availabilitySchema> & {
@@ -323,4 +329,3 @@ export interface PayoutRequest {
     account_name: string;
   };
 }
-

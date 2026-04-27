@@ -1,4 +1,3 @@
-
 import {
   Sheet,
   SheetContent,
@@ -92,15 +91,20 @@ export function ManageTicketSheet({ ticket, isOpen, onOpenChange }: ManageTicket
             Update status and add internal notes for this maintenance request.
           </SheetDescription>
         </SheetHeader>
-        <div className="flex-grow py-4 space-y-6 overflow-y-auto">
-          <div className="space-y-2 p-4 border rounded-lg">
+        <div className="flex-grow space-y-6 overflow-y-auto py-4">
+          <div className="space-y-2 rounded-lg border p-4">
             <h4 className="font-semibold">{ticket.title}</h4>
             <p className="text-sm text-muted-foreground">
               From: {ticket.tenant_name || 'N/A'} at {ticket.property_name || 'N/A'}
             </p>
-            <p className="text-sm bg-secondary p-3 rounded-md">{ticket.description}</p>
+            <p className="rounded-md bg-secondary p-3 text-sm">{ticket.description}</p>
             {ticket.image_url && (
-              <a href={ticket.image_url} target="_blank" rel="noopener noreferrer" className="text-sm text-blue-500 hover:underline block pt-2">
+              <a
+                href={ticket.image_url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="block pt-2 text-sm text-blue-500 hover:underline"
+              >
                 View attached image
               </a>
             )}
@@ -130,7 +134,11 @@ export function ManageTicketSheet({ ticket, isOpen, onOpenChange }: ManageTicket
           </div>
         </div>
         <SheetFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)} disabled={mutation.isPending}>
+          <Button
+            variant="outline"
+            onClick={() => onOpenChange(false)}
+            disabled={mutation.isPending}
+          >
             Cancel
           </Button>
           <Button onClick={handleSaveChanges} disabled={mutation.isPending}>

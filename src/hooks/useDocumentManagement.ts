@@ -1,12 +1,11 @@
-
 import { useState, useEffect } from 'react';
 import { toast } from '@/components/ui/sonner';
-import { 
-  Document, 
-  fetchDocuments, 
-  uploadDocument, 
-  deleteDocument, 
-  downloadDocument 
+import {
+  Document,
+  fetchDocuments,
+  uploadDocument,
+  deleteDocument,
+  downloadDocument,
 } from '@/services/documents';
 
 export function useDocumentManagement() {
@@ -30,9 +29,9 @@ export function useDocumentManagement() {
     setIsLoading(true);
     setError(null);
     try {
-      console.log("Fetching documents from Supabase...");
+      console.log('Fetching documents from Supabase...');
       const data = await fetchDocuments();
-      console.log("Documents fetched:", data);
+      console.log('Documents fetched:', data);
       setDocuments(data);
     } catch (error) {
       console.error('Error loading documents:', error);
@@ -45,24 +44,25 @@ export function useDocumentManagement() {
 
   const filterDocuments = () => {
     let filtered = [...documents];
-    
+
     if (searchQuery) {
       const lowerCaseQuery = searchQuery.toLowerCase();
-      filtered = filtered.filter(doc => 
-        doc.name.toLowerCase().includes(lowerCaseQuery) || 
-        doc.description?.toLowerCase().includes(lowerCaseQuery) ||
-        doc.tags?.some(tag => tag.toLowerCase().includes(lowerCaseQuery))
+      filtered = filtered.filter(
+        (doc) =>
+          doc.name.toLowerCase().includes(lowerCaseQuery) ||
+          doc.description?.toLowerCase().includes(lowerCaseQuery) ||
+          doc.tags?.some((tag) => tag.toLowerCase().includes(lowerCaseQuery))
       );
     }
-    
+
     if (selectedCategory && selectedCategory !== 'all') {
-      filtered = filtered.filter(doc => doc.category === selectedCategory);
+      filtered = filtered.filter((doc) => doc.category === selectedCategory);
     }
-    
+
     if (selectedProperty && selectedProperty !== 'all') {
-      filtered = filtered.filter(doc => doc.property_id === selectedProperty);
+      filtered = filtered.filter((doc) => doc.property_id === selectedProperty);
     }
-    
+
     setFilteredDocuments(filtered);
   };
 
@@ -87,7 +87,7 @@ export function useDocumentManagement() {
     try {
       const success = await deleteDocument(id);
       if (success) {
-        setDocuments(documents.filter(doc => doc.id !== id));
+        setDocuments(documents.filter((doc) => doc.id !== id));
         toast.success('Document deleted successfully');
       }
     } catch (error) {
@@ -115,6 +115,6 @@ export function useDocumentManagement() {
     handleUpload,
     handleDelete,
     confirmDelete,
-    handleDownload
+    handleDownload,
   };
 }

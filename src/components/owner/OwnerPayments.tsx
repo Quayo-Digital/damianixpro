@@ -1,33 +1,32 @@
-
 import { useOwnerPayments } from '@/hooks/useOwnerPayments';
 import { PaymentsHeader } from './payments/PaymentsHeader';
 import { StatsGrid } from './payments/StatsGrid';
 import { PaymentTabs } from './payments/PaymentTabs';
 
 export const OwnerPayments = () => {
-  const { 
-    payments, 
-    loading, 
-    activeTab, 
-    setActiveTab, 
-    dateRange, 
-    setDateRange, 
+  const {
+    payments,
+    loading,
+    activeTab,
+    setActiveTab,
+    dateRange,
+    setDateRange,
     loadPayments,
     getTotalAmount,
     getTotalPlatformFees,
-    getTotalAgentCommissions
+    getTotalAgentCommissions,
   } = useOwnerPayments();
-  
+
   return (
     <div className="space-y-6">
-      <PaymentsHeader 
+      <PaymentsHeader
         dateRange={dateRange}
         setDateRange={setDateRange}
         loadPayments={loadPayments}
         loading={loading}
       />
 
-      <StatsGrid 
+      <StatsGrid
         totalReceived={getTotalAmount()}
         platformFees={getTotalPlatformFees()}
         agentCommissions={getTotalAgentCommissions()}

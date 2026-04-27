@@ -13,10 +13,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
 import { getBookingById, updateBookingStatus } from '@/services/shortlet/api/bookings';
 import { format, differenceInDays } from 'date-fns';
-import { 
-  Calendar, 
-  Users, 
-  DollarSign, 
+import {
+  Calendar,
+  Users,
+  DollarSign,
   MapPin,
   CheckCircle2,
   XCircle,
@@ -26,10 +26,11 @@ import {
   Mail,
   FileText,
   CreditCard,
-  Loader2
+  Loader2,
+  Eye,
 } from 'lucide-react';
 import type { Booking, BookingStatus } from '@/services/shortlet/types';
-import { useAuth } from '@/contexts/auth';
+import { useAuthSession } from '@/contexts/auth';
 import { ReviewForm } from './ReviewForm';
 import { ReviewList } from './ReviewList';
 import { getReviewsByBooking } from '@/services/shortlet/api/reviews';
@@ -56,8 +57,8 @@ export function BookingDetails({ bookingId: propBookingId, mode }: BookingDetail
   const { bookingId: paramBookingId } = useParams<{ bookingId: string }>();
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { user, userRole } = useAuth();
-  
+  const { user, userRole } = useAuthSession();
+
   const bookingId = propBookingId || paramBookingId;
   const [booking, setBooking] = useState<Booking | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -128,7 +129,7 @@ export function BookingDetails({ bookingId: propBookingId, mode }: BookingDetail
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center h-64">
+      <div className="flex h-64 items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
       </div>
     );
@@ -140,7 +141,7 @@ export function BookingDetails({ bookingId: propBookingId, mode }: BookingDetail
         <CardContent className="py-12 text-center">
           <p className="text-muted-foreground">Booking not found</p>
           <Button onClick={() => navigate(-1)} className="mt-4">
-            <ArrowLeft className="h-4 w-4 mr-2" />
+            <ArrowLeft className="mr-2 h-4 w-4" />
             Go Back
           </Button>
         </CardContent>
@@ -158,12 +159,12 @@ export function BookingDetails({ bookingId: propBookingId, mode }: BookingDetail
       completed: { variant: 'default' as const, icon: CheckCircle2, label: 'Completed' },
       refunded: { variant: 'secondary' as const, icon: XCircle, label: 'Refunded' },
     };
-    
+
     const config = variants[status] || variants.pending;
     const Icon = config.icon;
-    
+
     return (
-      <Badge variant={config.variant} className="flex items-center gap-1 text-sm px-3 py-1">
+      <Badge variant={config.variant} className="flex items-center gap-1 px-3 py-1 text-sm">
         <Icon className="h-4 w-4" />
         {config.label}
       </Badge>
@@ -171,7 +172,7 @@ export function BookingDetails({ bookingId: propBookingId, mode }: BookingDetail
   };
 
   const canApprove = isOwner && booking.status === 'pending';
-  const canCancel = (booking.status === 'pending' || booking.status === 'confirmed');
+  const canCancel = booking.status === 'pending' || booking.status === 'confirmed';
 
   return (
     <div className="space-y-6">
@@ -189,9 +190,9 @@ export function BookingDetails({ bookingId: propBookingId, mode }: BookingDetail
         {getStatusBadge(booking.status)}
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         {/* Main Content */}
-        <div className="lg:col-span-2 space-y-6">
+        <div className="space-y-6 lg:col-span-2">
           {/* Listing Info */}
           <Card>
             <CardHeader>
@@ -199,8 +200,8 @@ export function BookingDetails({ bookingId: propBookingId, mode }: BookingDetail
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
-                <h3 className="text-xl font-semibold mb-1">{booking.listing?.title}</h3>
-                <p className="text-muted-foreground flex items-center gap-1">
+                <h3 className="mb-1 text-xl font-semibold">{booking.listing?.title}</h3>
+                <p className="flex items-center gap-1 text-muted-foreground">
                   <MapPin className="h-4 w-4" />
                   {booking.listing?.property?.address || 'Location not specified'}
                 </p>
@@ -220,14 +221,18 @@ export function BookingDetails({ bookingId: propBookingId, mode }: BookingDetail
                   </p>
                 </div>
               </div>
-              <div className="grid grid-cols-2 gap-4 pt-2 border-t">
+              <div className="grid grid-cols-2 gap-4 border-t pt-2">
                 <div>
                   <p className="text-sm text-muted-foreground">Duration</p>
-                  <p className="text-base font-semibold">{nights} {nights === 1 ? 'night' : 'nights'}</p>
+                  <p className="text-base font-semibold">
+                    {nights} {nights === 1 ? 'night' : 'nights'}
+                  </p>
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">Guests</p>
-                  <p className="text-base font-semibold">{booking.guests_count || 1} {booking.guests_count === 1 ? 'guest' : 'guests'}</p>
+                  <p className="text-base font-semibold">
+                    {booking.guests_count || 1} {booking.guests_count === 1 ? 'guest' : 'guests'}
+                  </p>
                 </div>
               </div>
             </CardContent>
@@ -248,7 +253,7 @@ export function BookingDetails({ bookingId: propBookingId, mode }: BookingDetail
                   {booking.guest.email && (
                     <div>
                       <p className="text-sm text-muted-foreground">Email</p>
-                      <p className="text-base font-medium flex items-center gap-2">
+                      <p className="flex items-center gap-2 text-base font-medium">
                         <Mail className="h-4 w-4" />
                         {booking.guest.email}
                       </p>
@@ -257,7 +262,7 @@ export function BookingDetails({ bookingId: propBookingId, mode }: BookingDetail
                   {booking.guest.phone && (
                     <div>
                       <p className="text-sm text-muted-foreground">Phone</p>
-                      <p className="text-base font-medium flex items-center gap-2">
+                      <p className="flex items-center gap-2 text-base font-medium">
                         <Phone className="h-4 w-4" />
                         {booking.guest.phone}
                       </p>
@@ -302,7 +307,12 @@ export function BookingDetails({ bookingId: propBookingId, mode }: BookingDetail
                   <span className="text-muted-foreground">
                     ₦{Number(booking.listing?.base_price || 0).toLocaleString()} × {nights} nights
                   </span>
-                  <span>₦{Number(booking.total_amount - (Number(booking.listing?.cleaning_fee || 0))).toLocaleString()}</span>
+                  <span>
+                    ₦
+                    {Number(
+                      booking.total_amount - Number(booking.listing?.cleaning_fee || 0)
+                    ).toLocaleString()}
+                  </span>
                 </div>
                 {booking.listing?.cleaning_fee && Number(booking.listing.cleaning_fee) > 0 && (
                   <div className="flex justify-between text-sm">
@@ -310,14 +320,15 @@ export function BookingDetails({ bookingId: propBookingId, mode }: BookingDetail
                     <span>₦{Number(booking.listing.cleaning_fee).toLocaleString()}</span>
                   </div>
                 )}
-                {booking.listing?.security_deposit && Number(booking.listing.security_deposit) > 0 && (
-                  <div className="flex justify-between text-sm">
-                    <span className="text-muted-foreground">Security Deposit</span>
-                    <span>₦{Number(booking.listing.security_deposit).toLocaleString()}</span>
-                  </div>
-                )}
+                {booking.listing?.security_deposit &&
+                  Number(booking.listing.security_deposit) > 0 && (
+                    <div className="flex justify-between text-sm">
+                      <span className="text-muted-foreground">Security Deposit</span>
+                      <span>₦{Number(booking.listing.security_deposit).toLocaleString()}</span>
+                    </div>
+                  )}
                 <Separator />
-                <div className="flex justify-between font-semibold text-lg">
+                <div className="flex justify-between text-lg font-semibold">
                   <span>Total</span>
                   <span>₦{Number(booking.total_amount).toLocaleString()}</span>
                 </div>
@@ -326,7 +337,7 @@ export function BookingDetails({ bookingId: propBookingId, mode }: BookingDetail
                 <>
                   <Separator />
                   <div className="pt-2">
-                    <p className="text-sm text-muted-foreground mb-1">Your Payout</p>
+                    <p className="mb-1 text-sm text-muted-foreground">Your Payout</p>
                     <p className="text-2xl font-bold text-green-600">
                       ₦{Number(booking.payout_amount).toLocaleString()}
                     </p>
@@ -345,7 +356,7 @@ export function BookingDetails({ bookingId: propBookingId, mode }: BookingDetail
               <CardContent className="space-y-2">
                 <div>
                   <p className="text-sm text-muted-foreground">Payment Reference</p>
-                  <p className="text-sm font-mono">{booking.payment_reference}</p>
+                  <p className="font-mono text-sm">{booking.payment_reference}</p>
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">Status</p>
@@ -367,7 +378,7 @@ export function BookingDetails({ bookingId: propBookingId, mode }: BookingDetail
                 <AlertDialog>
                   <AlertDialogTrigger asChild>
                     <Button className="w-full" disabled={isUpdating}>
-                      <CheckCircle2 className="h-4 w-4 mr-2" />
+                      <CheckCircle2 className="mr-2 h-4 w-4" />
                       Approve Booking
                     </Button>
                   </AlertDialogTrigger>
@@ -375,7 +386,8 @@ export function BookingDetails({ bookingId: propBookingId, mode }: BookingDetail
                     <AlertDialogHeader>
                       <AlertDialogTitle>Approve Booking</AlertDialogTitle>
                       <AlertDialogDescription>
-                        Are you sure you want to approve this booking? The guest will be notified and payment will be processed.
+                        Are you sure you want to approve this booking? The guest will be notified
+                        and payment will be processed.
                       </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
@@ -392,7 +404,7 @@ export function BookingDetails({ bookingId: propBookingId, mode }: BookingDetail
                 <AlertDialog>
                   <AlertDialogTrigger asChild>
                     <Button variant="destructive" className="w-full" disabled={isUpdating}>
-                      <XCircle className="h-4 w-4 mr-2" />
+                      <XCircle className="mr-2 h-4 w-4" />
                       Cancel Booking
                     </Button>
                   </AlertDialogTrigger>
@@ -400,12 +412,14 @@ export function BookingDetails({ bookingId: propBookingId, mode }: BookingDetail
                     <AlertDialogHeader>
                       <AlertDialogTitle>Cancel Booking</AlertDialogTitle>
                       <AlertDialogDescription>
-                        Are you sure you want to cancel this booking? {booking.status === 'confirmed' && 'A refund may be processed according to the cancellation policy.'}
+                        Are you sure you want to cancel this booking?{' '}
+                        {booking.status === 'confirmed' &&
+                          'A refund may be processed according to the cancellation policy.'}
                       </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
                       <AlertDialogCancel>Keep Booking</AlertDialogCancel>
-                      <AlertDialogAction 
+                      <AlertDialogAction
                         onClick={() => handleStatusChange('cancelled')}
                         className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
                       >
@@ -417,12 +431,12 @@ export function BookingDetails({ bookingId: propBookingId, mode }: BookingDetail
               )}
 
               {booking.listing && (
-                <Button 
-                  variant="outline" 
+                <Button
+                  variant="outline"
                   className="w-full"
                   onClick={() => navigate(`/shortlets/${booking.listing?.id}`)}
                 >
-                  <Eye className="h-4 w-4 mr-2" />
+                  <Eye className="mr-2 h-4 w-4" />
                   View Listing
                 </Button>
               )}
@@ -435,7 +449,7 @@ export function BookingDetails({ bookingId: propBookingId, mode }: BookingDetail
               <CardHeader>
                 <CardTitle>Your Review</CardTitle>
                 <CardDescription>
-                  {existingReview 
+                  {existingReview
                     ? 'You have already reviewed this booking'
                     : 'Share your experience'}
                 </CardDescription>
@@ -444,8 +458,8 @@ export function BookingDetails({ bookingId: propBookingId, mode }: BookingDetail
                 {existingReview ? (
                   <div className="space-y-4">
                     <ReviewList bookingId={String(bookingId || '')} showStatistics={false} />
-                    <Button 
-                      variant="outline" 
+                    <Button
+                      variant="outline"
                       className="w-full"
                       onClick={() => setShowReviewForm(true)}
                     >
@@ -453,10 +467,7 @@ export function BookingDetails({ bookingId: propBookingId, mode }: BookingDetail
                     </Button>
                   </div>
                 ) : (
-                  <Button 
-                    className="w-full"
-                    onClick={() => setShowReviewForm(true)}
-                  >
+                  <Button className="w-full" onClick={() => setShowReviewForm(true)}>
                     Write a Review
                   </Button>
                 )}
@@ -466,7 +477,9 @@ export function BookingDetails({ bookingId: propBookingId, mode }: BookingDetail
                       bookingId={String(bookingId || '')}
                       existingReview={existingReview || undefined}
                       reviewType={isOwner ? ReviewType.OWNER : ReviewType.GUEST}
-                      revieweeId={isOwner ? String(booking.guest?.id || '') : String(booking.owner_id || '')}
+                      revieweeId={
+                        isOwner ? String(booking.guest?.id || '') : String(booking.owner_id || '')
+                      }
                       onSuccess={() => {
                         setShowReviewForm(false);
                         loadReview();
@@ -483,4 +496,3 @@ export function BookingDetails({ bookingId: propBookingId, mode }: BookingDetail
     </div>
   );
 }
-

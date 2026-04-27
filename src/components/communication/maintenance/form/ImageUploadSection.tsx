@@ -1,6 +1,5 @@
-
-import { FormLabel } from "@/components/ui/form";
-import { PropertyImageUpload } from "@/components/properties/PropertyImageUpload";
+import { FormLabel } from '@/components/ui/form';
+import { PropertyImageUpload } from '@/components/properties/PropertyImageUpload';
 
 interface ImageUploadSectionProps {
   imageUrl: string | null;
@@ -11,11 +10,10 @@ export function ImageUploadSection({ imageUrl, onImageUploaded }: ImageUploadSec
   return (
     <div className="space-y-2">
       <FormLabel className="font-medium">Issue Image</FormLabel>
-      <PropertyImageUpload 
-        onImageUploaded={onImageUploaded}
-        initialImageUrl={imageUrl}
-      />
-      <p className="text-xs text-muted-foreground">Upload an image of the maintenance issue (optional)</p>
+      <PropertyImageUpload onImageUploaded={onImageUploaded} initialImageUrl={imageUrl} />
+      <p className="text-xs text-muted-foreground">
+        Upload an image of the maintenance issue (optional)
+      </p>
     </div>
   );
 }

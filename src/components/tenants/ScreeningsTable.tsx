@@ -42,7 +42,7 @@ const ScreeningStatusBadge = ({ status }: { status: string }) => {
 
   return (
     <Badge className={config.color}>
-      <Icon className="h-3 w-3 mr-1" />
+      <Icon className="mr-1 h-3 w-3" />
       {config.label}
     </Badge>
   );
@@ -77,18 +77,19 @@ const CreditScoreBadge = ({ score }: { score?: number }) => {
 export const ScreeningsTable = ({ onViewScreening }: ScreeningsTableProps) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
-  
+
   const { screenings, screeningsLoading } = useTenants();
 
   const filteredScreenings = screenings.filter((screening) => {
-    const matchesSearch = 
+    const matchesSearch =
       screening.tenant?.first_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       screening.tenant?.last_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       screening.tenant?.email?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       screening.employment_status?.toLowerCase().includes(searchQuery.toLowerCase());
-    
-    const matchesStatus = statusFilter === 'all' || screening.background_check_status === statusFilter;
-    
+
+    const matchesStatus =
+      statusFilter === 'all' || screening.background_check_status === statusFilter;
+
     return matchesSearch && matchesStatus;
   });
 
@@ -103,7 +104,7 @@ export const ScreeningsTable = ({ onViewScreening }: ScreeningsTableProps) => {
             {Array.from({ length: 3 }).map((_, i) => (
               <div key={i} className="flex items-center space-x-4">
                 <Skeleton className="h-10 w-10 rounded-full" />
-                <div className="space-y-2 flex-1">
+                <div className="flex-1 space-y-2">
                   <Skeleton className="h-4 w-40" />
                   <Skeleton className="h-3 w-60" />
                 </div>
@@ -120,27 +121,27 @@ export const ScreeningsTable = ({ onViewScreening }: ScreeningsTableProps) => {
   return (
     <Card>
       <CardHeader>
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+        <div className="flex flex-col items-start justify-between gap-4 md:flex-row md:items-center">
           <CardTitle className="flex items-center space-x-2">
             <Shield className="h-5 w-5" />
             <span>Background Screenings ({filteredScreenings.length})</span>
           </CardTitle>
-          
-          <div className="flex flex-col sm:flex-row gap-2 w-full md:w-auto">
+
+          <div className="flex w-full flex-col gap-2 sm:flex-row md:w-auto">
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 transform text-muted-foreground" />
               <Input
                 placeholder="Search screenings..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10 w-full sm:w-64"
+                className="w-full pl-10 sm:w-64"
               />
             </div>
-            
+
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
-              className="px-3 py-2 border border-input bg-background rounded-md text-sm"
+              className="rounded-md border border-input bg-background px-3 py-2 text-sm"
             >
               <option value="all">All Status</option>
               <option value="pending">Pending</option>
@@ -150,17 +151,16 @@ export const ScreeningsTable = ({ onViewScreening }: ScreeningsTableProps) => {
           </div>
         </div>
       </CardHeader>
-      
+
       <CardContent>
         {filteredScreenings.length === 0 ? (
-          <div className="text-center py-8 text-muted-foreground">
-            <Shield className="h-12 w-12 mx-auto mb-4 opacity-50" />
+          <div className="py-8 text-center text-muted-foreground">
+            <Shield className="mx-auto mb-4 h-12 w-12 opacity-50" />
             <p className="text-lg font-medium">No screenings found</p>
             <p className="text-sm">
-              {searchQuery || statusFilter !== 'all' 
-                ? 'Try adjusting your search or filters' 
-                : 'No background screenings yet'
-              }
+              {searchQuery || statusFilter !== 'all'
+                ? 'Try adjusting your search or filters'
+                : 'No background screenings yet'}
             </p>
           </div>
         ) : (
@@ -184,7 +184,8 @@ export const ScreeningsTable = ({ onViewScreening }: ScreeningsTableProps) => {
                       <div className="flex items-center space-x-3">
                         <Avatar className="h-10 w-10">
                           <AvatarFallback>
-                            {screening.tenant?.first_name?.[0]}{screening.tenant?.last_name?.[0]}
+                            {screening.tenant?.first_name?.[0]}
+                            {screening.tenant?.last_name?.[0]}
                           </AvatarFallback>
                         </Avatar>
                         <div>
@@ -197,18 +198,18 @@ export const ScreeningsTable = ({ onViewScreening }: ScreeningsTableProps) => {
                         </div>
                       </div>
                     </TableCell>
-                    
+
                     <TableCell>
                       <CreditScoreBadge score={screening.credit_score} />
                     </TableCell>
-                    
+
                     <TableCell>
                       <div className="flex items-center space-x-2">
                         <TrendingUp className="h-4 w-4 text-muted-foreground" />
                         <span className="capitalize">{screening.employment_status}</span>
                       </div>
                     </TableCell>
-                    
+
                     <TableCell>
                       {screening.monthly_income ? (
                         <div className="flex items-center space-x-2">
@@ -219,24 +220,24 @@ export const ScreeningsTable = ({ onViewScreening }: ScreeningsTableProps) => {
                         <span className="text-sm text-muted-foreground">Not provided</span>
                       )}
                     </TableCell>
-                    
+
                     <TableCell>
                       <ScreeningStatusBadge status={screening.background_check_status} />
                     </TableCell>
-                    
+
                     <TableCell>
                       <span className="text-sm">
                         {new Date(screening.created_at).toLocaleDateString()}
                       </span>
                     </TableCell>
-                    
+
                     <TableCell className="text-right">
                       <Button
                         variant="ghost"
                         size="sm"
                         onClick={() => onViewScreening?.(screening)}
                       >
-                        <Eye className="h-4 w-4 mr-1" />
+                        <Eye className="mr-1 h-4 w-4" />
                         View
                       </Button>
                     </TableCell>

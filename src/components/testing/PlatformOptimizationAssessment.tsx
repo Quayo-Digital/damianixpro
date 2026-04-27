@@ -11,14 +11,14 @@ import { MobileResponsivenessChecker } from '@/components/optimization/MobileRes
 import { UXOptimizationTest } from './UXOptimizationTest';
 import { SimplePerformanceTest } from './SimplePerformanceTest';
 import { MobileResponsivenessTest } from './MobileResponsivenessTest';
-import { 
-  CheckCircle, 
-  AlertTriangle, 
-  XCircle, 
-  Clock, 
-  Zap, 
-  Shield, 
-  Smartphone, 
+import {
+  CheckCircle,
+  AlertTriangle,
+  XCircle,
+  Clock,
+  Zap,
+  Shield,
+  Smartphone,
   FileText,
   Users,
   Database,
@@ -26,7 +26,7 @@ import {
   Eye,
   Activity,
   TrendingUp,
-  Gauge
+  Gauge,
 } from 'lucide-react';
 
 interface AssessmentResult {
@@ -57,50 +57,50 @@ export const PlatformOptimizationAssessment: React.FC = () => {
       id: 'performance',
       name: 'Performance & Speed',
       icon: Zap,
-      description: 'Loading times, bundle size, rendering performance'
+      description: 'Loading times, bundle size, rendering performance',
     },
     {
       id: 'mobile',
       name: 'Mobile Responsiveness',
       icon: Smartphone,
-      description: 'Mobile compatibility and responsive design'
+      description: 'Mobile compatibility and responsive design',
     },
     {
       id: 'security',
       name: 'Security & Privacy',
       icon: Shield,
-      description: 'Data protection, authentication, authorization'
+      description: 'Data protection, authentication, authorization',
     },
     {
       id: 'ux',
       name: 'User Experience',
       icon: Users,
-      description: 'Navigation, usability, accessibility'
+      description: 'Navigation, usability, accessibility',
     },
     {
       id: 'database',
       name: 'Database Optimization',
       icon: Database,
-      description: 'Query performance, indexing, data structure'
+      description: 'Query performance, indexing, data structure',
     },
     {
       id: 'seo',
       name: 'SEO & Discoverability',
       icon: Globe,
-      description: 'Search engine optimization, meta tags'
+      description: 'Search engine optimization, meta tags',
     },
     {
       id: 'accessibility',
       name: 'Accessibility',
       icon: Eye,
-      description: 'WCAG compliance, screen reader support'
+      description: 'WCAG compliance, screen reader support',
     },
     {
       id: 'documentation',
       name: 'Documentation',
       icon: FileText,
-      description: 'Code documentation, user guides, API docs'
-    }
+      description: 'Code documentation, user guides, API docs',
+    },
   ];
 
   const runPerformanceAssessment = async () => {
@@ -109,62 +109,62 @@ export const PlatformOptimizationAssessment: React.FC = () => {
 
     // Performance Assessment
     setCurrentTest('Analyzing Performance & Speed...');
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+
     const performanceResult = await assessPerformance();
     results.push(performanceResult);
 
     // Mobile Responsiveness Assessment
     setCurrentTest('Checking Mobile Responsiveness...');
-    await new Promise(resolve => setTimeout(resolve, 800));
-    
+    await new Promise((resolve) => setTimeout(resolve, 800));
+
     const mobileResult = await assessMobileResponsiveness();
     results.push(mobileResult);
 
     // Security Assessment
     setCurrentTest('Evaluating Security & Privacy...');
-    await new Promise(resolve => setTimeout(resolve, 1200));
-    
+    await new Promise((resolve) => setTimeout(resolve, 1200));
+
     const securityResult = await assessSecurity();
     results.push(securityResult);
 
     // UX Assessment
     setCurrentTest('Analyzing User Experience...');
-    await new Promise(resolve => setTimeout(resolve, 900));
-    
+    await new Promise((resolve) => setTimeout(resolve, 900));
+
     const uxResult = await assessUserExperience();
     results.push(uxResult);
 
     // Database Assessment
     setCurrentTest('Optimizing Database Performance...');
-    await new Promise(resolve => setTimeout(resolve, 1100));
-    
+    await new Promise((resolve) => setTimeout(resolve, 1100));
+
     const dbResult = await assessDatabase();
     results.push(dbResult);
 
     // SEO Assessment
     setCurrentTest('Checking SEO & Discoverability...');
-    await new Promise(resolve => setTimeout(resolve, 700));
-    
+    await new Promise((resolve) => setTimeout(resolve, 700));
+
     const seoResult = await assessSEO();
     results.push(seoResult);
 
     // Accessibility Assessment
     setCurrentTest('Evaluating Accessibility...');
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+
     const accessibilityResult = await assessAccessibility();
     results.push(accessibilityResult);
 
     // Documentation Assessment
     setCurrentTest('Reviewing Documentation...');
-    await new Promise(resolve => setTimeout(resolve, 600));
-    
+    await new Promise((resolve) => setTimeout(resolve, 600));
+
     const docsResult = await assessDocumentation();
     results.push(docsResult);
 
     setAssessmentResults(results);
-    
+
     // Calculate overall score
     const totalScore = results.reduce((sum, result) => sum + result.score, 0);
     const avgScore = totalScore / results.length;
@@ -184,7 +184,7 @@ export const PlatformOptimizationAssessment: React.FC = () => {
       loadTime: Math.random() * 3000 + 1000, // 1-4 seconds
       bundleSize: Math.random() * 2000 + 500, // 500KB - 2.5MB
       memoryUsage: Math.random() * 100 + 50, // 50-150MB
-      renderTime: Math.random() * 100 + 20 // 20-120ms
+      renderTime: Math.random() * 100 + 20, // 20-120ms
     };
     setPerformanceMetrics(metrics);
 
@@ -213,10 +213,17 @@ export const PlatformOptimizationAssessment: React.FC = () => {
     return {
       category: 'Performance & Speed',
       score,
-      status: score >= 90 ? 'excellent' : score >= 75 ? 'good' : score >= 60 ? 'needs_improvement' : 'critical',
+      status:
+        score >= 90
+          ? 'excellent'
+          : score >= 75
+            ? 'good'
+            : score >= 60
+              ? 'needs_improvement'
+              : 'critical',
       issues,
       recommendations,
-      priority: score < 70 ? 'high' : score < 85 ? 'medium' : 'low'
+      priority: score < 70 ? 'high' : score < 85 ? 'medium' : 'low',
     };
   };
 
@@ -248,10 +255,17 @@ export const PlatformOptimizationAssessment: React.FC = () => {
     return {
       category: 'Mobile Responsiveness',
       score,
-      status: score >= 90 ? 'excellent' : score >= 75 ? 'good' : score >= 60 ? 'needs_improvement' : 'critical',
+      status:
+        score >= 90
+          ? 'excellent'
+          : score >= 75
+            ? 'good'
+            : score >= 60
+              ? 'needs_improvement'
+              : 'critical',
       issues,
       recommendations,
-      priority: score < 70 ? 'high' : score < 85 ? 'medium' : 'low'
+      priority: score < 70 ? 'high' : score < 85 ? 'medium' : 'low',
     };
   };
 
@@ -281,10 +295,17 @@ export const PlatformOptimizationAssessment: React.FC = () => {
     return {
       category: 'Security & Privacy',
       score,
-      status: score >= 90 ? 'excellent' : score >= 75 ? 'good' : score >= 60 ? 'needs_improvement' : 'critical',
+      status:
+        score >= 90
+          ? 'excellent'
+          : score >= 75
+            ? 'good'
+            : score >= 60
+              ? 'needs_improvement'
+              : 'critical',
       issues,
       recommendations,
-      priority: score < 70 ? 'high' : score < 85 ? 'medium' : 'low'
+      priority: score < 70 ? 'high' : score < 85 ? 'medium' : 'low',
     };
   };
 
@@ -311,17 +332,24 @@ export const PlatformOptimizationAssessment: React.FC = () => {
     return {
       category: 'User Experience',
       score,
-      status: score >= 90 ? 'excellent' : score >= 75 ? 'good' : score >= 60 ? 'needs_improvement' : 'critical',
+      status:
+        score >= 90
+          ? 'excellent'
+          : score >= 75
+            ? 'good'
+            : score >= 60
+              ? 'needs_improvement'
+              : 'critical',
       issues,
       recommendations,
-      priority: score < 70 ? 'high' : score < 85 ? 'medium' : 'low'
+      priority: score < 70 ? 'high' : score < 85 ? 'medium' : 'low',
     };
   };
 
   const assessDatabase = async (): Promise<AssessmentResult> => {
     const issues: string[] = [];
     const recommendations: string[] = [];
-    let score = 75;
+    const score = 75;
 
     // Database optimization recommendations
     recommendations.push('Review and optimize database indexes');
@@ -333,10 +361,17 @@ export const PlatformOptimizationAssessment: React.FC = () => {
     return {
       category: 'Database Optimization',
       score,
-      status: score >= 90 ? 'excellent' : score >= 75 ? 'good' : score >= 60 ? 'needs_improvement' : 'critical',
+      status:
+        score >= 90
+          ? 'excellent'
+          : score >= 75
+            ? 'good'
+            : score >= 60
+              ? 'needs_improvement'
+              : 'critical',
       issues,
       recommendations,
-      priority: score < 70 ? 'high' : score < 85 ? 'medium' : 'low'
+      priority: score < 70 ? 'high' : score < 85 ? 'medium' : 'low',
     };
   };
 
@@ -348,7 +383,7 @@ export const PlatformOptimizationAssessment: React.FC = () => {
     // Check meta tags
     const hasTitle = document.title && document.title.length > 0;
     const hasDescription = document.querySelector('meta[name="description"]');
-    
+
     if (!hasTitle || document.title === 'Vite + React + TS') {
       issues.push('Missing or default page title');
       recommendations.push('Add descriptive page titles for all routes');
@@ -370,10 +405,17 @@ export const PlatformOptimizationAssessment: React.FC = () => {
     return {
       category: 'SEO & Discoverability',
       score,
-      status: score >= 90 ? 'excellent' : score >= 75 ? 'good' : score >= 60 ? 'needs_improvement' : 'critical',
+      status:
+        score >= 90
+          ? 'excellent'
+          : score >= 75
+            ? 'good'
+            : score >= 60
+              ? 'needs_improvement'
+              : 'critical',
       issues,
       recommendations,
-      priority: score < 70 ? 'high' : score < 85 ? 'medium' : 'low'
+      priority: score < 70 ? 'high' : score < 85 ? 'medium' : 'low',
     };
   };
 
@@ -384,7 +426,7 @@ export const PlatformOptimizationAssessment: React.FC = () => {
 
     // Check for alt text on images
     const images = document.querySelectorAll('img');
-    const imagesWithoutAlt = Array.from(images).filter(img => !img.alt);
+    const imagesWithoutAlt = Array.from(images).filter((img) => !img.alt);
     if (imagesWithoutAlt.length > 0) {
       issues.push(`${imagesWithoutAlt.length} images missing alt text`);
       recommendations.push('Add descriptive alt text to all images');
@@ -408,22 +450,29 @@ export const PlatformOptimizationAssessment: React.FC = () => {
     return {
       category: 'Accessibility',
       score,
-      status: score >= 90 ? 'excellent' : score >= 75 ? 'good' : score >= 60 ? 'needs_improvement' : 'critical',
+      status:
+        score >= 90
+          ? 'excellent'
+          : score >= 75
+            ? 'good'
+            : score >= 60
+              ? 'needs_improvement'
+              : 'critical',
       issues,
       recommendations,
-      priority: score < 70 ? 'high' : score < 85 ? 'medium' : 'low'
+      priority: score < 70 ? 'high' : score < 85 ? 'medium' : 'low',
     };
   };
 
   const assessDocumentation = async (): Promise<AssessmentResult> => {
     const issues: string[] = [];
     const recommendations: string[] = [];
-    let score = 65;
+    const score = 65;
 
     // Documentation assessment
     issues.push('Limited API documentation');
     issues.push('Missing user guides and tutorials');
-    
+
     recommendations.push('Create comprehensive API documentation');
     recommendations.push('Write user guides for each role (Owner, Tenant, Agent, Vendor)');
     recommendations.push('Add inline code documentation and comments');
@@ -433,10 +482,17 @@ export const PlatformOptimizationAssessment: React.FC = () => {
     return {
       category: 'Documentation',
       score,
-      status: score >= 90 ? 'excellent' : score >= 75 ? 'good' : score >= 60 ? 'needs_improvement' : 'critical',
+      status:
+        score >= 90
+          ? 'excellent'
+          : score >= 75
+            ? 'good'
+            : score >= 60
+              ? 'needs_improvement'
+              : 'critical',
       issues,
       recommendations,
-      priority: score < 70 ? 'high' : score < 85 ? 'medium' : 'low'
+      priority: score < 70 ? 'high' : score < 85 ? 'medium' : 'low',
     };
   };
 
@@ -489,14 +545,11 @@ export const PlatformOptimizationAssessment: React.FC = () => {
         <div>
           <h2 className="text-2xl font-bold">Platform Optimization Assessment</h2>
           <p className="text-muted-foreground">
-            Comprehensive analysis of platform performance, security, UX, and optimization opportunities
+            Comprehensive analysis of platform performance, security, UX, and optimization
+            opportunities
           </p>
         </div>
-        <Button 
-          onClick={runPerformanceAssessment} 
-          disabled={isRunning}
-          className="min-w-[200px]"
-        >
+        <Button onClick={runPerformanceAssessment} disabled={isRunning} className="min-w-[200px]">
           {isRunning ? (
             <>
               <Clock className="mr-2 h-4 w-4 animate-spin" />
@@ -524,15 +577,16 @@ export const PlatformOptimizationAssessment: React.FC = () => {
               <div className="flex-1">
                 <Progress value={overallScore} className="h-3" />
               </div>
-              <div className="text-2xl font-bold">
-                {overallScore}/100
-              </div>
+              <div className="text-2xl font-bold">{overallScore}/100</div>
             </div>
-            <p className="text-sm text-muted-foreground mt-2">
-              {overallScore >= 90 ? 'Excellent! Platform is production-ready.' :
-               overallScore >= 75 ? 'Good! Minor optimizations recommended.' :
-               overallScore >= 60 ? 'Needs improvement. Several optimizations required.' :
-               'Critical issues found. Immediate attention required.'}
+            <p className="mt-2 text-sm text-muted-foreground">
+              {overallScore >= 90
+                ? 'Excellent! Platform is production-ready.'
+                : overallScore >= 75
+                  ? 'Good! Minor optimizations recommended.'
+                  : overallScore >= 60
+                    ? 'Needs improvement. Several optimizations required.'
+                    : 'Critical issues found. Immediate attention required.'}
             </p>
           </CardContent>
         </Card>
@@ -544,7 +598,7 @@ export const PlatformOptimizationAssessment: React.FC = () => {
             <CardTitle>Performance Metrics</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
               <div className="text-center">
                 <div className="text-2xl font-bold text-blue-600">
                   {(performanceMetrics.loadTime / 1000).toFixed(1)}s
@@ -589,9 +643,9 @@ export const PlatformOptimizationAssessment: React.FC = () => {
           <TabsContent value="overview" className="space-y-4">
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
               {assessmentResults.map((result, index) => {
-                const category = assessmentCategories.find(cat => cat.name === result.category);
+                const category = assessmentCategories.find((cat) => cat.name === result.category);
                 const Icon = category?.icon || Zap;
-                
+
                 return (
                   <Card key={index}>
                     <CardHeader className="pb-3">
@@ -602,7 +656,7 @@ export const PlatformOptimizationAssessment: React.FC = () => {
                       <CardTitle className="text-sm">{result.category}</CardTitle>
                     </CardHeader>
                     <CardContent>
-                      <div className="text-2xl font-bold mb-2">{result.score}/100</div>
+                      <div className="mb-2 text-2xl font-bold">{result.score}/100</div>
                       <div className="flex gap-2">
                         <Badge className={getStatusColor(result.status)}>
                           {result.status.replace('_', ' ')}
@@ -628,9 +682,7 @@ export const PlatformOptimizationAssessment: React.FC = () => {
                       {result.category}
                     </CardTitle>
                     <div className="flex gap-2">
-                      <Badge className={getStatusColor(result.status)}>
-                        {result.score}/100
-                      </Badge>
+                      <Badge className={getStatusColor(result.status)}>{result.score}/100</Badge>
                       <Badge className={getPriorityColor(result.priority)}>
                         {result.priority} priority
                       </Badge>
@@ -640,20 +692,24 @@ export const PlatformOptimizationAssessment: React.FC = () => {
                 <CardContent className="space-y-4">
                   {result.issues.length > 0 && (
                     <div>
-                      <h4 className="font-semibold text-red-600 mb-2">Issues Found:</h4>
-                      <ul className="list-disc list-inside space-y-1">
+                      <h4 className="mb-2 font-semibold text-red-600">Issues Found:</h4>
+                      <ul className="list-inside list-disc space-y-1">
                         {result.issues.map((issue, i) => (
-                          <li key={i} className="text-sm text-red-600">{issue}</li>
+                          <li key={i} className="text-sm text-red-600">
+                            {issue}
+                          </li>
                         ))}
                       </ul>
                     </div>
                   )}
-                  
+
                   <div>
-                    <h4 className="font-semibold text-blue-600 mb-2">Recommendations:</h4>
-                    <ul className="list-disc list-inside space-y-1">
+                    <h4 className="mb-2 font-semibold text-blue-600">Recommendations:</h4>
+                    <ul className="list-inside list-disc space-y-1">
                       {result.recommendations.map((rec, i) => (
-                        <li key={i} className="text-sm text-blue-600">{rec}</li>
+                        <li key={i} className="text-sm text-blue-600">
+                          {rec}
+                        </li>
                       ))}
                     </ul>
                   </div>
@@ -670,7 +726,8 @@ export const PlatformOptimizationAssessment: React.FC = () => {
                   Performance Monitoring Dashboard
                 </CardTitle>
                 <CardDescription>
-                  Monitor system performance metrics in real-time and get actionable optimization recommendations
+                  Monitor system performance metrics in real-time and get actionable optimization
+                  recommendations
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -687,7 +744,8 @@ export const PlatformOptimizationAssessment: React.FC = () => {
                   Performance & Speed Optimization
                 </CardTitle>
                 <CardDescription>
-                  Comprehensive testing of bundle size, caching, image optimization, CDN performance, and Core Web Vitals
+                  Comprehensive testing of bundle size, caching, image optimization, CDN
+                  performance, and Core Web Vitals
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -704,7 +762,8 @@ export const PlatformOptimizationAssessment: React.FC = () => {
                   Security Audit & Vulnerability Assessment
                 </CardTitle>
                 <CardDescription>
-                  Comprehensive security assessment covering authentication, authorization, data protection, and infrastructure security
+                  Comprehensive security assessment covering authentication, authorization, data
+                  protection, and infrastructure security
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -721,7 +780,8 @@ export const PlatformOptimizationAssessment: React.FC = () => {
                   Mobile Responsiveness Testing
                 </CardTitle>
                 <CardDescription>
-                  Comprehensive mobile optimization testing including touch targets, device compatibility, gestures, and Nigerian market optimization
+                  Comprehensive mobile optimization testing including touch targets, device
+                  compatibility, gestures, and Nigerian market optimization
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -738,7 +798,8 @@ export const PlatformOptimizationAssessment: React.FC = () => {
                   User Experience (UX) Optimization
                 </CardTitle>
                 <CardDescription>
-                  Comprehensive UX testing covering loading states, error handling, help systems, form validation, and user interactions
+                  Comprehensive UX testing covering loading states, error handling, help systems,
+                  form validation, and user interactions
                 </CardDescription>
               </CardHeader>
               <CardContent>

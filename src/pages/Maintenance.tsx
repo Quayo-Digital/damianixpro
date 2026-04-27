@@ -1,10 +1,9 @@
-
 import { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Button } from "@/components/ui/button";
-import { AlertTriangle, Clock, Wrench, Plus } from "lucide-react";
-import { useAuth } from "@/contexts/auth";
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Button } from '@/components/ui/button';
+import { AlertTriangle, Clock, Wrench, Plus } from 'lucide-react';
+import { useAuthSession } from '@/contexts/auth';
 import { MaintenanceRequestDialog } from '@/components/maintenance/MaintenanceRequestDialog';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -15,32 +14,35 @@ import { useMaintenanceRequests } from '@/hooks/useMaintenanceRequests';
 import { MaintenanceTable } from '@/components/maintenance/MaintenanceTable';
 
 const Maintenance = () => {
-  const [activeTab, setActiveTab] = useState("all");
+  const [activeTab, setActiveTab] = useState('all');
   const { maintenanceRequests, isLoading, refetch } = useMaintenanceRequests();
-  const { isOwner, isAgent, isTenant, isVendor } = useAuth();
+  const { isOwner, isAgent, isTenant, isVendor } = useAuthSession();
   const { toast } = useToast();
 
-  const handleStatusUpdate = async (id: string, newStatus: 'pending' | 'in_progress' | 'completed') => {
+  const handleStatusUpdate = async (
+    id: string,
+    newStatus: 'pending' | 'in_progress' | 'completed'
+  ) => {
     try {
       const { error } = await supabase
         .from('maintenance_requests')
         .update({ status: newStatus })
         .eq('id', id);
-      
+
       if (error) throw error;
-      
+
       refetch();
-      
+
       toast({
-        title: "Status Updated",
-        description: `Request status updated to ${newStatus.replace('_', ' ')}.`
+        title: 'Status Updated',
+        description: `Request status updated to ${newStatus.replace('_', ' ')}.`,
       });
     } catch (error) {
       console.error('Error updating status:', error);
       toast({
-        title: "Update Failed",
-        description: "Failed to update maintenance request status",
-        variant: "destructive"
+        title: 'Update Failed',
+        description: 'Failed to update maintenance request status',
+        variant: 'destructive',
       });
     }
   };
@@ -49,20 +51,27 @@ const Maintenance = () => {
     refetch();
   };
 
-  const pendingRequests = maintenanceRequests.filter(r => r.status === 'pending');
-  const inProgressRequests = maintenanceRequests.filter(r => r.status === 'in_progress');
+  const pendingRequests = maintenanceRequests.filter((r) => r.status === 'pending');
+  const inProgressRequests = maintenanceRequests.filter((r) => r.status === 'in_progress');
   const isOwnerOrAgent = isOwner() || isAgent();
 
   const renderContent = (requests: MaintenanceRequest[], showPriority: boolean = false) => {
     if (isLoading) {
       return (
-        <div className="flex justify-center items-center p-8">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+        <div className="flex items-center justify-center p-8">
+          <div className="h-8 w-8 animate-spin rounded-full border-b-2 border-primary"></div>
         </div>
       );
     }
-    return <MaintenanceTable requests={requests} isOwnerOrAgent={isOwnerOrAgent} onStatusUpdate={handleStatusUpdate} showPriority={showPriority} />;
-  }
+    return (
+      <MaintenanceTable
+        requests={requests}
+        isOwnerOrAgent={isOwnerOrAgent}
+        onStatusUpdate={handleStatusUpdate}
+        showPriority={showPriority}
+      />
+    );
+  };
 
   return (
     <PageLayout>
@@ -71,9 +80,7 @@ const Maintenance = () => {
         description="View and manage all maintenance requests"
         actions={
           <>
-            {isTenant() && (
-              <MaintenanceRequestDialog onSuccess={handleMaintenanceSuccess} />
-            )}
+            {isTenant() && <MaintenanceRequestDialog onSuccess={handleMaintenanceSuccess} />}
             {isVendor() && (
               <Button>
                 <Plus className="mr-2 h-4 w-4" />
@@ -84,12 +91,12 @@ const Maintenance = () => {
         }
       >
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="grid w-full md:w-auto grid-cols-3">
+          <TabsList className="grid w-full grid-cols-3 md:w-auto">
             <TabsTrigger value="all">All Requests</TabsTrigger>
             <TabsTrigger value="pending">Pending ({pendingRequests.length})</TabsTrigger>
             <TabsTrigger value="inprogress">In Progress ({inProgressRequests.length})</TabsTrigger>
           </TabsList>
-          
+
           <TabsContent value="all">
             <Card>
               <CardHeader>
@@ -98,12 +105,10 @@ const Maintenance = () => {
                   All Maintenance Requests
                 </CardTitle>
               </CardHeader>
-              <CardContent>
-                {renderContent(maintenanceRequests)}
-              </CardContent>
+              <CardContent>{renderContent(maintenanceRequests)}</CardContent>
             </Card>
           </TabsContent>
-          
+
           <TabsContent value="pending">
             <Card>
               <CardHeader>
@@ -112,12 +117,10 @@ const Maintenance = () => {
                   Pending Maintenance Requests
                 </CardTitle>
               </CardHeader>
-              <CardContent>
-                {renderContent(pendingRequests, true)}
-              </CardContent>
+              <CardContent>{renderContent(pendingRequests, true)}</CardContent>
             </Card>
           </TabsContent>
-          
+
           <TabsContent value="inprogress">
             <Card>
               <CardHeader>
@@ -126,9 +129,7 @@ const Maintenance = () => {
                   In Progress Maintenance
                 </CardTitle>
               </CardHeader>
-              <CardContent>
-                {renderContent(inProgressRequests)}
-              </CardContent>
+              <CardContent>{renderContent(inProgressRequests)}</CardContent>
             </Card>
           </TabsContent>
         </Tabs>

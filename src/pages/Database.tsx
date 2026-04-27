@@ -1,17 +1,16 @@
-
 import { PageLayout } from '@/components/layout/PageLayout';
 import { PageContent } from '@/components/layout/PageContent';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Input } from '@/components/ui/input';
-import { 
-  Table, 
-  TableBody, 
-  TableCell, 
-  TableHead, 
-  TableHeader, 
-  TableRow 
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
 } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Download, Upload, Search, RefreshCw, Plus } from 'lucide-react';
@@ -25,7 +24,7 @@ const Database = () => {
     { id: 5, name: 'Documents', records: 62, lastUpdated: '09 May 2025' },
     { id: 6, name: 'Users', records: 12, lastUpdated: '08 May 2025' },
   ];
-  
+
   const backups = [
     { id: 1, date: '12 May 2025', time: '08:00 AM', size: '24.5 MB', status: 'success' },
     { id: 2, date: '11 May 2025', time: '08:00 AM', size: '24.2 MB', status: 'success' },
@@ -36,11 +35,8 @@ const Database = () => {
 
   return (
     <PageLayout>
-      <PageContent 
-        title="Database Management" 
-        description="Manage your application database"
-      >
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 mb-6">
+      <PageContent title="Database Management" description="Manage your application database">
+        <div className="mb-6 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           <Card>
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium">Database Size</CardTitle>
@@ -76,14 +72,10 @@ const Database = () => {
             <TabsTrigger value="backups">Backups</TabsTrigger>
           </TabsList>
           <TabsContent value="tables" className="mt-6">
-            <div className="flex justify-between items-center mb-4">
+            <div className="mb-4 flex items-center justify-between">
               <div className="relative max-w-sm">
                 <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                <Input
-                  type="search"
-                  placeholder="Search tables..."
-                  className="pl-8"
-                />
+                <Input type="search" placeholder="Search tables..." className="pl-8" />
               </div>
               <div className="space-x-2">
                 <Button variant="outline" size="sm">
@@ -114,8 +106,12 @@ const Database = () => {
                       <TableCell>{table.lastUpdated}</TableCell>
                       <TableCell>
                         <div className="flex space-x-2">
-                          <Button variant="ghost" size="sm">View</Button>
-                          <Button variant="ghost" size="sm">Export</Button>
+                          <Button variant="ghost" size="sm">
+                            View
+                          </Button>
+                          <Button variant="ghost" size="sm">
+                            Export
+                          </Button>
                         </div>
                       </TableCell>
                     </TableRow>
@@ -127,7 +123,7 @@ const Database = () => {
           <TabsContent value="backups" className="mt-6">
             <Card>
               <CardHeader>
-                <div className="flex justify-between items-center">
+                <div className="flex items-center justify-between">
                   <CardTitle>Database Backups</CardTitle>
                   <Button size="sm">
                     <Upload className="mr-2 h-4 w-4" />
@@ -154,7 +150,9 @@ const Database = () => {
                           <TableCell>{backup.time}</TableCell>
                           <TableCell>{backup.size}</TableCell>
                           <TableCell>
-                            <Badge variant={backup.status === 'success' ? 'default' : 'destructive'}>
+                            <Badge
+                              variant={backup.status === 'success' ? 'default' : 'destructive'}
+                            >
                               {backup.status === 'success' ? 'Success' : 'Failed'}
                             </Badge>
                           </TableCell>

@@ -1,10 +1,9 @@
-
-import { CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { useAuth } from '@/contexts/AuthContext';
+import { CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { useAuthSession } from '@/contexts/AuthContext';
 
 export const AccountInfo = () => {
-  const { getRoleDisplay } = useAuth();
+  const { getRoleDisplay } = useAuthSession();
 
   return (
     <>
@@ -13,15 +12,15 @@ export const AccountInfo = () => {
       </CardHeader>
       <CardContent className="space-y-4">
         <div>
-          <h3 className="font-medium text-sm">Account Type</h3>
+          <h3 className="text-sm font-medium">Account Type</h3>
           <p className="text-muted-foreground">{getRoleDisplay()}</p>
         </div>
         <div>
-          <h3 className="font-medium text-sm">Member Since</h3>
+          <h3 className="text-sm font-medium">Member Since</h3>
           <p className="text-muted-foreground">January 2023</p>
         </div>
         <div>
-          <h3 className="font-medium text-sm">Last Login</h3>
+          <h3 className="text-sm font-medium">Last Login</h3>
           <p className="text-muted-foreground">May 7, 2025</p>
         </div>
         <div className="pt-4">

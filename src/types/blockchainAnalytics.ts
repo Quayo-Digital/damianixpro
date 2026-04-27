@@ -324,7 +324,10 @@ export interface DashboardPreferences {
 }
 
 // Export utility types
-export type AnalyticsMetric = keyof MarketOverview | keyof PropertyMarketData | keyof PortfolioAnalytics;
+export type AnalyticsMetric =
+  | keyof MarketOverview
+  | keyof PropertyMarketData
+  | keyof PortfolioAnalytics;
 export type TimeFrame = '1h' | '4h' | '1d' | '7d' | '30d' | '90d' | '1y' | 'all';
 export type NetworkType = 'ethereum' | 'polygon' | 'bsc' | 'arbitrum' | 'optimism';
 export type PropertyType = 'residential' | 'commercial' | 'industrial' | 'land' | 'mixed';

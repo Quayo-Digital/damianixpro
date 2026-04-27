@@ -1,15 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { 
-  Users, 
-  UserCheck, 
-  Clock, 
-  FileText, 
-  CheckCircle, 
-  XCircle,
-  AlertCircle 
-} from 'lucide-react';
+import { Users, UserCheck, Clock, FileText, CheckCircle, XCircle, AlertCircle } from 'lucide-react';
 import { useTenantStats } from '@/hooks/useTenants';
 
 export const TenantStats = () => {
@@ -17,7 +9,7 @@ export const TenantStats = () => {
 
   if (isLoading) {
     return (
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+      <div className="mb-6 grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
         {Array.from({ length: 4 }).map((_, i) => (
           <Card key={i}>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -25,7 +17,7 @@ export const TenantStats = () => {
               <Skeleton className="h-4 w-4" />
             </CardHeader>
             <CardContent>
-              <Skeleton className="h-8 w-16 mb-2" />
+              <Skeleton className="mb-2 h-8 w-16" />
               <Skeleton className="h-3 w-24" />
             </CardContent>
           </Card>
@@ -83,24 +75,22 @@ export const TenantStats = () => {
   ];
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+    <div className="mb-6 grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
       {statCards.map((stat) => {
         const Icon = stat.icon;
         return (
-          <Card key={stat.title} className="hover:shadow-md transition-shadow">
+          <Card key={stat.title} className="transition-shadow hover:shadow-md">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium text-muted-foreground">
                 {stat.title}
               </CardTitle>
-              <div className={`p-2 rounded-lg ${stat.bgColor}`}>
+              <div className={`rounded-lg p-2 ${stat.bgColor}`}>
                 <Icon className={`h-4 w-4 ${stat.color}`} />
               </div>
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{stat.value}</div>
-              <p className="text-xs text-muted-foreground mt-1">
-                {stat.description}
-              </p>
+              <p className="mt-1 text-xs text-muted-foreground">{stat.description}</p>
             </CardContent>
           </Card>
         );
@@ -112,9 +102,21 @@ export const TenantStats = () => {
 export const TenantStatusBadge = ({ status }: { status: string }) => {
   const statusConfig = {
     active: { label: 'Active', variant: 'default' as const, color: 'bg-green-100 text-green-800' },
-    inactive: { label: 'Inactive', variant: 'secondary' as const, color: 'bg-gray-100 text-gray-800' },
-    pending: { label: 'Pending', variant: 'outline' as const, color: 'bg-yellow-100 text-yellow-800' },
-    terminated: { label: 'Terminated', variant: 'destructive' as const, color: 'bg-red-100 text-red-800' },
+    inactive: {
+      label: 'Inactive',
+      variant: 'secondary' as const,
+      color: 'bg-gray-100 text-gray-800',
+    },
+    pending: {
+      label: 'Pending',
+      variant: 'outline' as const,
+      color: 'bg-yellow-100 text-yellow-800',
+    },
+    terminated: {
+      label: 'Terminated',
+      variant: 'destructive' as const,
+      color: 'bg-red-100 text-red-800',
+    },
   };
 
   const config = statusConfig[status as keyof typeof statusConfig] || statusConfig.inactive;
@@ -136,9 +138,5 @@ export const ApplicationStatusBadge = ({ status }: { status: string }) => {
 
   const config = statusConfig[status as keyof typeof statusConfig] || statusConfig.pending;
 
-  return (
-    <Badge className={config.color}>
-      {config.label}
-    </Badge>
-  );
+  return <Badge className={config.color}>{config.label}</Badge>;
 };

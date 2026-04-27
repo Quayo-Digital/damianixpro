@@ -1,23 +1,24 @@
 import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/contexts/auth';
+import { useAuthSession } from '@/contexts/auth';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { 
-  CheckCircle, 
-  XCircle, 
-  AlertTriangle, 
-  Users, 
-  Settings, 
+import {
+  CheckCircle,
+  XCircle,
+  AlertTriangle,
+  Users,
+  Settings,
   Database,
   Eye,
   ArrowRight,
-  TestTube
+  TestTube,
 } from 'lucide-react';
+import { profileFullName } from '@/lib/profileDisplayName';
 
 interface TestResult {
   test: string;
@@ -31,7 +32,7 @@ interface TestResult {
  * Tests the complete agent onboarding process from form display to data persistence
  */
 export const AgentOnboardingWorkflowTest: React.FC = () => {
-  const { user, userRole } = useAuth();
+  const { user, userRole } = useAuthSession();
   const [testResults, setTestResults] = useState<TestResult[]>([]);
   const [isRunningTests, setIsRunningTests] = useState(false);
 
@@ -41,12 +42,14 @@ export const AgentOnboardingWorkflowTest: React.FC = () => {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('user_roles')
-        .select(`
+        .select(
+          `
           user_id,
           role,
           profiles!inner(
             id,
-            full_name,
+            first_name,
+            last_name,
             email,
             license_number,
             years_of_experience,
@@ -56,9 +59,10 @@ export const AgentOnboardingWorkflowTest: React.FC = () => {
             availability_hours,
             preferred_contact_method
           )
-        `)
+        `
+        )
         .eq('role', 'agent');
-      
+
       if (error) throw error;
       return data || [];
     },
@@ -70,16 +74,13 @@ export const AgentOnboardingWorkflowTest: React.FC = () => {
     queryKey: ['agents-table-test'],
     queryFn: async () => {
       try {
-        const { data, error } = await supabase
-          .from('agents')
-          .select('*')
-          .limit(5);
-        
+        const { data, error } = await supabase.from('agents').select('*').limit(5);
+
         if (error) {
           // Table might not exist yet
           return { exists: false, error: error.message, data: [] };
         }
-        
+
         return { exists: true, error: null, data: data || [] };
       } catch (error) {
         return { exists: false, error: 'Table access error', data: [] };
@@ -100,14 +101,15 @@ export const AgentOnboardingWorkflowTest: React.FC = () => {
           test: 'AgentOnboardingForm Component',
           status: 'pass',
           message: '✅ AgentOnboardingForm component exists and is importable',
-          details: 'Component successfully imported from @/components/onboarding/AgentOnboardingForm'
+          details:
+            'Component successfully imported from @/components/onboarding/AgentOnboardingForm',
         });
       } catch (error) {
         results.push({
           test: 'AgentOnboardingForm Component',
           status: 'fail',
           message: '🚨 AgentOnboardingForm component not found or has import errors',
-          details: error instanceof Error ? error.message : 'Unknown import error'
+          details: error instanceof Error ? error.message : 'Unknown import error',
         });
       }
 
@@ -118,14 +120,15 @@ export const AgentOnboardingWorkflowTest: React.FC = () => {
           test: 'Onboarding Routing Logic',
           status: 'pass',
           message: '✅ Onboarding page exists with updated routing logic',
-          details: 'Main onboarding page successfully imports and should route agents to AgentOnboardingForm'
+          details:
+            'Main onboarding page successfully imports and should route agents to AgentOnboardingForm',
         });
       } catch (error) {
         results.push({
           test: 'Onboarding Routing Logic',
           status: 'fail',
           message: '🚨 Onboarding page has import issues',
-          details: error instanceof Error ? error.message : 'Unknown import error'
+          details: error instanceof Error ? error.message : 'Unknown import error',
         });
       }
 
@@ -148,13 +151,12 @@ export const AgentOnboardingWorkflowTest: React.FC = () => {
       // Test 7: Test onboarding workflow accessibility
       const workflowAccessTest = testOnboardingWorkflowAccess();
       results.push(workflowAccessTest);
-
     } catch (error) {
       results.push({
         test: 'Test Execution',
         status: 'fail',
         message: '🚨 Error running agent onboarding tests',
-        details: error instanceof Error ? error.message : 'Unknown error'
+        details: error instanceof Error ? error.message : 'Unknown error',
       });
     }
 
@@ -166,7 +168,9 @@ export const AgentOnboardingWorkflowTest: React.FC = () => {
     try {
       const { data, error } = await supabase
         .from('profiles')
-        .select('license_number, years_of_experience, specializations, working_areas, bio, availability_hours, preferred_contact_method')
+        .select(
+          'license_number, years_of_experience, specializations, working_areas, bio, availability_hours, preferred_contact_method'
+        )
         .limit(1);
 
       if (error) {
@@ -174,7 +178,7 @@ export const AgentOnboardingWorkflowTest: React.FC = () => {
           test: 'Profiles Table Schema',
           status: 'fail',
           message: '🚨 Agent-specific fields missing from profiles table',
-          details: `Database error: ${error.message}. Migration may not have been applied.`
+          details: `Database error: ${error.message}. Migration may not have been applied.`,
         };
       }
 
@@ -182,14 +186,15 @@ export const AgentOnboardingWorkflowTest: React.FC = () => {
         test: 'Profiles Table Schema',
         status: 'pass',
         message: '✅ Profiles table has agent-specific fields',
-        details: 'All required agent fields (license_number, years_of_experience, specializations, etc.) are available'
+        details:
+          'All required agent fields (license_number, years_of_experience, specializations, etc.) are available',
       };
     } catch (error) {
       return {
         test: 'Profiles Table Schema',
         status: 'fail',
         message: '🚨 Error checking profiles table schema',
-        details: error instanceof Error ? error.message : 'Unknown database error'
+        details: error instanceof Error ? error.message : 'Unknown database error',
       };
     }
   };
@@ -200,7 +205,7 @@ export const AgentOnboardingWorkflowTest: React.FC = () => {
         test: 'Agents Table Structure',
         status: 'warning',
         message: '⚠️ Agents table data not loaded yet',
-        details: 'Still loading agents table information'
+        details: 'Still loading agents table information',
       };
     }
 
@@ -209,7 +214,7 @@ export const AgentOnboardingWorkflowTest: React.FC = () => {
         test: 'Agents Table Structure',
         status: 'warning',
         message: '⚠️ Agents table does not exist or is not accessible',
-        details: `Error: ${agentsTableData.error}. Database migration may not have been applied yet.`
+        details: `Error: ${agentsTableData.error}. Database migration may not have been applied yet.`,
       };
     }
 
@@ -217,7 +222,7 @@ export const AgentOnboardingWorkflowTest: React.FC = () => {
       test: 'Agents Table Structure',
       status: 'pass',
       message: '✅ Agents table exists and is accessible',
-      details: `Found ${agentsTableData.data.length} agent records in the table`
+      details: `Found ${agentsTableData.data.length} agent records in the table`,
     };
   };
 
@@ -227,7 +232,7 @@ export const AgentOnboardingWorkflowTest: React.FC = () => {
         test: 'Agent Users Data',
         status: 'warning',
         message: '⚠️ Agent users data not loaded yet',
-        details: 'Still loading agent user information'
+        details: 'Still loading agent user information',
       };
     }
 
@@ -236,23 +241,26 @@ export const AgentOnboardingWorkflowTest: React.FC = () => {
         test: 'Agent Users Data',
         status: 'warning',
         message: '⚠️ No agent users found in database',
-        details: 'No users with agent role found. Create test agent users to verify onboarding workflow.'
+        details:
+          'No users with agent role found. Create test agent users to verify onboarding workflow.',
       };
     }
 
-    const agentsWithOnboardingData = agentUsers.filter(agent => 
-      agent.profiles?.license_number || 
-      agent.profiles?.years_of_experience || 
-      agent.profiles?.specializations?.length > 0
+    const agentsWithOnboardingData = agentUsers.filter(
+      (agent) =>
+        agent.profiles?.license_number ||
+        agent.profiles?.years_of_experience ||
+        agent.profiles?.specializations?.length > 0
     );
 
     return {
       test: 'Agent Users Data',
       status: agentsWithOnboardingData.length > 0 ? 'pass' : 'warning',
-      message: agentsWithOnboardingData.length > 0 
-        ? `✅ Found ${agentUsers.length} agent users, ${agentsWithOnboardingData.length} with onboarding data`
-        : `⚠️ Found ${agentUsers.length} agent users, but none have completed onboarding`,
-      details: `Agent users: ${agentUsers.map(a => a.profiles?.full_name || a.profiles?.email).join(', ')}`
+      message:
+        agentsWithOnboardingData.length > 0
+          ? `✅ Found ${agentUsers.length} agent users, ${agentsWithOnboardingData.length} with onboarding data`
+          : `⚠️ Found ${agentUsers.length} agent users, but none have completed onboarding`,
+      details: `Agent users: ${agentUsers.map((a) => profileFullName(a.profiles ?? {}) || a.profiles?.email).join(', ')}`,
     };
   };
 
@@ -268,26 +276,28 @@ export const AgentOnboardingWorkflowTest: React.FC = () => {
           test: 'Agent Role Assignment',
           status: 'fail',
           message: '🚨 Error checking agent role assignments',
-          details: error.message
+          details: error.message,
         };
       }
 
       return {
         test: 'Agent Role Assignment',
         status: data.length > 0 ? 'pass' : 'warning',
-        message: data.length > 0 
-          ? `✅ Found ${data.length} users with agent role`
-          : '⚠️ No users with agent role found',
-        details: data.length > 0 
-          ? 'Agent role assignment is working correctly'
-          : 'Create test agent users to verify role assignment'
+        message:
+          data.length > 0
+            ? `✅ Found ${data.length} users with agent role`
+            : '⚠️ No users with agent role found',
+        details:
+          data.length > 0
+            ? 'Agent role assignment is working correctly'
+            : 'Create test agent users to verify role assignment',
       };
     } catch (error) {
       return {
         test: 'Agent Role Assignment',
         status: 'fail',
         message: '🚨 Error testing agent role assignment',
-        details: error instanceof Error ? error.message : 'Unknown error'
+        details: error instanceof Error ? error.message : 'Unknown error',
       };
     }
   };
@@ -298,7 +308,7 @@ export const AgentOnboardingWorkflowTest: React.FC = () => {
         test: 'Onboarding Workflow Access',
         status: 'pass',
         message: '✅ Current user is an agent - can test onboarding workflow',
-        details: 'Navigate to /onboarding to test the AgentOnboardingForm directly'
+        details: 'Navigate to /onboarding to test the AgentOnboardingForm directly',
       };
     }
 
@@ -306,16 +316,20 @@ export const AgentOnboardingWorkflowTest: React.FC = () => {
       test: 'Onboarding Workflow Access',
       status: 'warning',
       message: `⚠️ Current user role is '${userRole}' - cannot directly test agent onboarding`,
-      details: 'Create an agent user account to test the agent onboarding workflow end-to-end'
+      details: 'Create an agent user account to test the agent onboarding workflow end-to-end',
     };
   };
 
   const getStatusIcon = (status: TestResult['status']) => {
     switch (status) {
-      case 'pass': return <CheckCircle className="h-4 w-4 text-green-500" />;
-      case 'fail': return <XCircle className="h-4 w-4 text-red-500" />;
-      case 'warning': return <AlertTriangle className="h-4 w-4 text-yellow-500" />;
-      case 'skip': return <Eye className="h-4 w-4 text-gray-500" />;
+      case 'pass':
+        return <CheckCircle className="h-4 w-4 text-green-500" />;
+      case 'fail':
+        return <XCircle className="h-4 w-4 text-red-500" />;
+      case 'warning':
+        return <AlertTriangle className="h-4 w-4 text-yellow-500" />;
+      case 'skip':
+        return <Eye className="h-4 w-4 text-gray-500" />;
     }
   };
 
@@ -329,9 +343,9 @@ export const AgentOnboardingWorkflowTest: React.FC = () => {
     return <Badge variant={variants[status]}>{status.toUpperCase()}</Badge>;
   };
 
-  const passedTests = testResults.filter(r => r.status === 'pass').length;
-  const failedTests = testResults.filter(r => r.status === 'fail').length;
-  const warningTests = testResults.filter(r => r.status === 'warning').length;
+  const passedTests = testResults.filter((r) => r.status === 'pass').length;
+  const failedTests = testResults.filter((r) => r.status === 'fail').length;
+  const warningTests = testResults.filter((r) => r.status === 'warning').length;
 
   return (
     <div className="space-y-6">
@@ -342,8 +356,8 @@ export const AgentOnboardingWorkflowTest: React.FC = () => {
             <span>Agent Onboarding Workflow Test</span>
           </CardTitle>
           <CardDescription>
-            Comprehensive test of the Agent Onboarding workflow implementation.
-            Verifies component existence, database schema, routing logic, and data persistence.
+            Comprehensive test of the Agent Onboarding workflow implementation. Verifies component
+            existence, database schema, routing logic, and data persistence.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -351,23 +365,23 @@ export const AgentOnboardingWorkflowTest: React.FC = () => {
           <Alert>
             <Settings className="h-4 w-4" />
             <AlertDescription>
-              <strong>Current User:</strong> {user?.email || 'Not logged in'} | 
-              <strong> Role:</strong> {userRole || 'Unknown'} | 
-              <strong> Agent Users Found:</strong> {agentUsers?.length || 'Loading...'}
+              <strong>Current User:</strong> {user?.email || 'Not logged in'} |
+              <strong> Role:</strong> {userRole || 'Unknown'} |<strong> Agent Users Found:</strong>{' '}
+              {agentUsers?.length || 'Loading...'}
             </AlertDescription>
           </Alert>
 
           {/* Test Controls */}
           <div className="flex items-center space-x-4">
-            <Button 
-              onClick={runAgentOnboardingTests} 
+            <Button
+              onClick={runAgentOnboardingTests}
               disabled={isRunningTests}
               className="flex items-center space-x-2"
             >
               <TestTube className="h-4 w-4" />
               <span>{isRunningTests ? 'Running Tests...' : 'Run Agent Onboarding Tests'}</span>
             </Button>
-            
+
             {testResults.length > 0 && (
               <div className="flex items-center space-x-2">
                 <Badge variant="default">{passedTests} Passed</Badge>
@@ -382,21 +396,27 @@ export const AgentOnboardingWorkflowTest: React.FC = () => {
             <div className="space-y-3">
               <h3 className="text-lg font-semibold">Test Results</h3>
               {testResults.map((result, index) => (
-                <Card key={index} className={`border-l-4 ${
-                  result.status === 'pass' ? 'border-l-green-500' : 
-                  result.status === 'fail' ? 'border-l-red-500' : 
-                  result.status === 'warning' ? 'border-l-yellow-500' :
-                  'border-l-gray-500'
-                }`}>
+                <Card
+                  key={index}
+                  className={`border-l-4 ${
+                    result.status === 'pass'
+                      ? 'border-l-green-500'
+                      : result.status === 'fail'
+                        ? 'border-l-red-500'
+                        : result.status === 'warning'
+                          ? 'border-l-yellow-500'
+                          : 'border-l-gray-500'
+                  }`}
+                >
                   <CardContent className="pt-4">
-                    <div className="flex items-start justify-between mb-3">
+                    <div className="mb-3 flex items-start justify-between">
                       <div className="flex items-start space-x-3">
                         {getStatusIcon(result.status)}
                         <div>
                           <h4 className="font-medium">{result.test}</h4>
-                          <p className="text-sm text-muted-foreground mt-1">{result.message}</p>
+                          <p className="mt-1 text-sm text-muted-foreground">{result.message}</p>
                           {result.details && (
-                            <p className="text-xs text-muted-foreground mt-2 bg-muted p-2 rounded">
+                            <p className="mt-2 rounded bg-muted p-2 text-xs text-muted-foreground">
                               {result.details}
                             </p>
                           )}
@@ -411,35 +431,57 @@ export const AgentOnboardingWorkflowTest: React.FC = () => {
           )}
 
           {/* Manual Testing Instructions */}
-          <Card className="bg-blue-50 border-blue-200">
+          <Card className="border-blue-200 bg-blue-50">
             <CardHeader>
-              <CardTitle className="text-blue-800 flex items-center space-x-2">
+              <CardTitle className="flex items-center space-x-2 text-blue-800">
                 <ArrowRight className="h-4 w-4" />
                 <span>Manual Testing Steps</span>
               </CardTitle>
             </CardHeader>
             <CardContent className="text-blue-700">
-              <ol className="list-decimal list-inside space-y-2">
-                <li><strong>Create Agent User:</strong> Use Manual User Creation tool to create a user with 'agent' role</li>
-                <li><strong>Navigate to Onboarding:</strong> Go to /onboarding as the agent user</li>
-                <li><strong>Verify Form Display:</strong> Confirm AgentOnboardingForm appears (not OwnerOnboardingForm)</li>
-                <li><strong>Fill Agent-Specific Fields:</strong> Complete license, experience, specializations, working areas</li>
-                <li><strong>Submit Form:</strong> Verify successful submission and redirect to dashboard</li>
-                <li><strong>Check Data Persistence:</strong> Verify agent data is saved in profiles/agents tables</li>
+              <ol className="list-inside list-decimal space-y-2">
+                <li>
+                  <strong>Create Agent User:</strong> Use Manual User Creation tool to create a user
+                  with 'agent' role
+                </li>
+                <li>
+                  <strong>Navigate to Onboarding:</strong> Go to /onboarding as the agent user
+                </li>
+                <li>
+                  <strong>Verify Form Display:</strong> Confirm AgentOnboardingForm appears (not
+                  OwnerOnboardingForm)
+                </li>
+                <li>
+                  <strong>Fill Agent-Specific Fields:</strong> Complete license, experience,
+                  specializations, working areas
+                </li>
+                <li>
+                  <strong>Submit Form:</strong> Verify successful submission and redirect to
+                  dashboard
+                </li>
+                <li>
+                  <strong>Check Data Persistence:</strong> Verify agent data is saved in
+                  profiles/agents tables
+                </li>
               </ol>
             </CardContent>
           </Card>
 
           {/* Test Summary */}
           {testResults.length > 0 && (
-            <Alert className={failedTests > 0 ? 'border-red-500 bg-red-50' : 'border-green-500 bg-green-50'}>
+            <Alert
+              className={
+                failedTests > 0 ? 'border-red-500 bg-red-50' : 'border-green-500 bg-green-50'
+              }
+            >
               <TestTube className="h-4 w-4" />
               <AlertDescription>
-                <strong>Test Summary:</strong> {failedTests === 0 ? 
-                  '✅ All automated tests passed! Agent onboarding workflow is ready for manual testing.' :
-                  `🚨 ${failedTests} test(s) failed. Review issues before manual testing.`
-                }
-                {warningTests > 0 && ` ${warningTests} warning(s) noted - may require database migration.`}
+                <strong>Test Summary:</strong>{' '}
+                {failedTests === 0
+                  ? '✅ All automated tests passed! Agent onboarding workflow is ready for manual testing.'
+                  : `🚨 ${failedTests} test(s) failed. Review issues before manual testing.`}
+                {warningTests > 0 &&
+                  ` ${warningTests} warning(s) noted - may require database migration.`}
               </AlertDescription>
             </Alert>
           )}

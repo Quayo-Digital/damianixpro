@@ -1,10 +1,22 @@
-
 import React from 'react';
 import { Control } from 'react-hook-form';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { FormField, FormItem, FormLabel, FormControl, FormMessage, FormDescription } from '@/components/ui/form';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  FormField,
+  FormItem,
+  FormLabel,
+  FormControl,
+  FormMessage,
+  FormDescription,
+} from '@/components/ui/form';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 import { ApplicationFormValues } from './schema';
 
@@ -16,7 +28,7 @@ interface RentalDetailsSectionProps {
 const RentalDetailsSection = ({ control, hasPets }: RentalDetailsSectionProps) => {
   return (
     <div>
-      <h3 className="text-lg font-medium mb-4">Current Address & Rental Details</h3>
+      <h3 className="mb-4 text-lg font-medium">Current Address & Rental Details</h3>
       <div className="grid grid-cols-1 gap-4">
         <FormField
           control={control}
@@ -31,8 +43,8 @@ const RentalDetailsSection = ({ control, hasPets }: RentalDetailsSectionProps) =
             </FormItem>
           )}
         />
-        
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
           <FormField
             control={control}
             name="tenancyPeriod"
@@ -56,7 +68,7 @@ const RentalDetailsSection = ({ control, hasPets }: RentalDetailsSectionProps) =
               </FormItem>
             )}
           />
-          
+
           <FormField
             control={control}
             name="moveInDate"
@@ -70,7 +82,7 @@ const RentalDetailsSection = ({ control, hasPets }: RentalDetailsSectionProps) =
               </FormItem>
             )}
           />
-          
+
           <FormField
             control={control}
             name="occupants"
@@ -96,7 +108,7 @@ const RentalDetailsSection = ({ control, hasPets }: RentalDetailsSectionProps) =
             )}
           />
         </div>
-        
+
         <FormField
           control={control}
           name="pets"
@@ -104,20 +116,15 @@ const RentalDetailsSection = ({ control, hasPets }: RentalDetailsSectionProps) =
             <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
               <div className="space-y-0.5">
                 <FormLabel>Do you have any pets?</FormLabel>
-                <FormDescription>
-                  Some properties may have restrictions on pets
-                </FormDescription>
+                <FormDescription>Some properties may have restrictions on pets</FormDescription>
               </div>
               <FormControl>
-                <Switch
-                  checked={field.value}
-                  onCheckedChange={field.onChange}
-                />
+                <Switch checked={field.value} onCheckedChange={field.onChange} />
               </FormControl>
             </FormItem>
           )}
         />
-        
+
         {hasPets && (
           <FormField
             control={control}
@@ -126,9 +133,9 @@ const RentalDetailsSection = ({ control, hasPets }: RentalDetailsSectionProps) =
               <FormItem>
                 <FormLabel>Pet Details</FormLabel>
                 <FormControl>
-                  <Textarea 
-                    placeholder="Please provide details about your pets (type, breed, age, etc.)" 
-                    {...field} 
+                  <Textarea
+                    placeholder="Please provide details about your pets (type, breed, age, etc.)"
+                    {...field}
                   />
                 </FormControl>
                 <FormMessage />

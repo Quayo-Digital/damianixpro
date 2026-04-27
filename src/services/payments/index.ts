@@ -1,7 +1,13 @@
+/**
+ * Unified Payment Service - Main Export
+ * Single entry point for all payment operations
+ */
 
-// Re-export all payment service functions
-export * from './queries';
+export * from './types';
+export * from './UnifiedPaymentService';
+export * from './providers/FlutterwaveProvider';
+export * from './providers/BankTransferProvider';
 export * from './mutations';
-export * from './payment-reports';
-export * from './payment-statistics';
-export * from './accounting';
+
+// Re-export for convenience
+export { getUnifiedPaymentService } from './UnifiedPaymentService';

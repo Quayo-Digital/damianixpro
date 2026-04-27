@@ -1,4 +1,4 @@
--- Simple Fix for Nigeria Homes App Issues
+-- Simple Fix for DamianixPro App Issues
 -- Run this in your Supabase SQL Editor
 
 -- 1. Create test agent user (you'll need to do this through Supabase Auth dashboard)

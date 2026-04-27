@@ -1,4 +1,3 @@
-
 import {
   Table,
   TableBody,
@@ -6,11 +5,11 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
+} from '@/components/ui/table';
 import { UserProfileWithRole } from '@/hooks/useAdminUsers';
-import { Badge } from "@/components/ui/badge";
+import { Badge } from '@/components/ui/badge';
 import { format } from 'date-fns';
-import { getRoleDisplay } from "@/contexts/auth/authUtils";
+import { getRoleDisplay } from '@/contexts/auth/authUtils';
 
 interface UsersTableProps {
   users: UserProfileWithRole[];
@@ -35,7 +34,9 @@ export function UsersTable({ users }: UsersTableProps) {
                 <div className="text-sm text-muted-foreground">{user.email}</div>
               </TableCell>
               <TableCell>
-                <Badge variant="outline">{getRoleDisplay(user.user_roles[0]?.role || 'user')}</Badge>
+                <Badge variant="outline" className="rounded-full border-primary/25 bg-primary/5">
+                  {getRoleDisplay(user.user_roles[0]?.role || 'user')}
+                </Badge>
               </TableCell>
               <TableCell>{format(new Date(user.created_at), 'PPP')}</TableCell>
             </TableRow>

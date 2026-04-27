@@ -1,11 +1,12 @@
-
-import { useState, useEffect } from 'react';
-import { useParams, Link, useNavigate } from 'react-router-dom';
+import { useState, useEffect, useCallback } from 'react';
+import { useParams, Link, useNavigate, useLocation } from 'react-router-dom';
+import { withSearchParam } from '@/utils/authRedirect';
+import { useQuery } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { ArrowLeft } from 'lucide-react';
 import { RentalApplicationDialog } from '@/components/applications/RentalApplicationDialog';
-import { useAuth } from '@/contexts/auth';
+import { useAuthSession } from '@/contexts/auth';
 import { Property, getPropertyById } from '@/services/property';
 import { PropertyDetailLoading } from '@/components/properties/public/PropertyDetailLoading';
 import { PropertyNotFound } from '@/components/properties/public/PropertyNotFound';
@@ -19,91 +20,116 @@ import { sendViewingRequestNotification } from '@/services/notifications/propert
 const PublicPropertyDetail = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const [property, setProperty] = useState<Property | null>(null);
-  const [loading, setLoading] = useState(true);
+  const location = useLocation();
   const [isApplicationDialogOpen, setIsApplicationDialogOpen] = useState(false);
-  const { isAuthenticated, user } = useAuth();
+  const { isAuthenticated, user } = useAuthSession();
+
+  const goToAuth = useCallback(
+    (withApplyIntent: boolean) => {
+      const from = withApplyIntent ? withSearchParam(location, 'apply', '1') : location;
+      navigate('/auth', { state: { from } });
+    },
+    [location, navigate]
+  );
   const { getMessage } = useMessages();
-  
-  useEffect(() => {
-    const fetchProperty = async () => {
-      setLoading(true);
-      
+
+  // Use React Query for better state management and caching
+  const {
+    data: property,
+    isLoading,
+    isError,
+    error,
+  } = useQuery<Property | null, Error>({
+    queryKey: ['public-property', id],
+    queryFn: async () => {
       if (!id) {
         const message = getMessage('property_id_missing_error', 'Property ID is missing');
         toast.error(message.title);
         navigate('/public/properties');
-        setLoading(false);
-        return;
+        return null;
       }
 
       try {
         const propertyData = await getPropertyById(id);
-        
-        if (propertyData) {
-          setProperty(propertyData);
-        } else {
+
+        if (!propertyData) {
           const message = getMessage('property_not_found_error', 'Property not found');
           toast.error(message.title);
           navigate('/public/properties');
+          return null;
         }
+
+        return propertyData;
       } catch (error) {
         console.error('Failed to fetch property details:', error);
         const message = getMessage('property_fetch_error', 'Could not load property details.');
         toast.error(message.title);
         navigate('/public/properties');
-      } finally {
-        setLoading(false);
+        throw error;
       }
-    };
-    
-    fetchProperty();
-  }, [id, navigate, getMessage]);
+    },
+    enabled: !!id,
+    retry: false,
+    staleTime: 5 * 60 * 1000, // Cache for 5 minutes
+  });
+
+  // After sign-in, URL may include ?apply=1 — open the application form and clean the query
+  useEffect(() => {
+    if (!property || !user) return;
+    const params = new URLSearchParams(location.search.replace(/^\?/, ''));
+    if (params.get('apply') !== '1') return;
+    setIsApplicationDialogOpen(true);
+    params.delete('apply');
+    const qs = params.toString();
+    navigate({ pathname: location.pathname, search: qs ? `?${qs}` : '' }, { replace: true });
+  }, [property?.id, user?.id, location.pathname, location.search, navigate]);
 
   const handleApplyClick = () => {
     if (!isAuthenticated()) {
-      const message = getMessage('apply_unauthenticated_error', 'Please sign in to apply for this property');
-      toast.error(message.title, {
-        action: {
-          label: "Sign In",
-          onClick: () => navigate('/auth')
-        }
+      toast.info('Sign in to apply', {
+        description: 'You’ll return to this property to complete your application.',
       });
+      goToAuth(true);
       return;
     }
-    
+
     setIsApplicationDialogOpen(true);
   };
 
   const handleRequestViewingClick = async () => {
     if (!isAuthenticated() || !user) {
-      const message = getMessage('request_viewing_unauthenticated_error', 'Please sign in to request a viewing');
+      const message = getMessage(
+        'request_viewing_unauthenticated_error',
+        'Please sign in to request a viewing'
+      );
       toast.error(message.title, {
         action: {
-          label: "Sign In",
-          onClick: () => navigate('/auth')
-        }
+          label: 'Sign In',
+          onClick: () => goToAuth(false),
+        },
       });
       return;
     }
 
     if (!property?.agent_id) {
-      toast.error("This property doesn't have an agent assigned and a viewing cannot be requested.");
+      toast.error(
+        "This property doesn't have an agent assigned and a viewing cannot be requested."
+      );
       return;
     }
 
-    const { success } = await sendViewingRequestNotification(
-      property.agent_id,
-      property,
-      user
-    );
+    const { success } = await sendViewingRequestNotification(property.agent_id, property, user);
 
     if (!success) {
-      toast.error("There was an issue sending the viewing request. Please try again.");
+      toast.error('There was an issue sending the viewing request. Please try again.');
       return;
     }
 
-    const message = getMessage('request_viewing_success', 'Viewing request sent!', 'An agent will contact you shortly to schedule a viewing.');
+    const message = getMessage(
+      'request_viewing_success',
+      'Viewing request sent!',
+      'An agent will contact you shortly to schedule a viewing.'
+    );
     toast.success(message.title, {
       description: message.description,
     });
@@ -111,32 +137,41 @@ const PublicPropertyDetail = () => {
 
   const handleContactAgentClick = () => {
     if (!isAuthenticated()) {
-      const message = getMessage('contact_agent_unauthenticated_error', 'Please sign in to contact an agent');
+      const message = getMessage(
+        'contact_agent_unauthenticated_error',
+        'Please sign in to contact an agent'
+      );
       toast.error(message.title, {
         action: {
-          label: "Sign In",
-          onClick: () => navigate('/auth')
-        }
+          label: 'Sign In',
+          onClick: () => goToAuth(false),
+        },
       });
       return;
     }
 
-    const message = getMessage('contact_agent_success', 'An agent will be in touch with you shortly.', 'You can also reach us at support@example.com for any queries.');
+    const message = getMessage(
+      'contact_agent_success',
+      'An agent will be in touch with you shortly.',
+      'You can also reach us at support@example.com for any queries.'
+    );
     toast.info(message.title, {
       description: message.description,
     });
   };
-  
-  if (loading) {
+
+  // Show loading state
+  if (isLoading) {
     return <PropertyDetailLoading />;
   }
 
-  if (!property) {
+  // Show error state
+  if (isError || !property) {
     return <PropertyNotFound />;
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="container mx-auto px-4 py-8 transition-opacity duration-300">
       <div className="mb-6">
         <Button asChild variant="outline" size="sm">
           <Link to="/public/properties">
@@ -145,8 +180,8 @@ const PublicPropertyDetail = () => {
           </Link>
         </Button>
       </div>
-      
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+
+      <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
         <div className="lg:col-span-2">
           <div className="space-y-6">
             <PropertyHeader property={property} />
@@ -154,19 +189,19 @@ const PublicPropertyDetail = () => {
             <PropertyDetailTabs property={property} />
           </div>
         </div>
-        
+
         <div className="lg:col-span-1">
-          <PropertyActionCard 
+          <PropertyActionCard
             property={property}
             onApplyClick={handleApplyClick}
             onRequestViewingClick={handleRequestViewingClick}
             onContactAgentClick={handleContactAgentClick}
           />
-          
+
           {/* More properties suggestion would go here */}
         </div>
       </div>
-      
+
       <RentalApplicationDialog
         propertyId={property.id}
         propertyName={property.name}

@@ -1,16 +1,21 @@
 /**
  * Performance Optimization Service
- * Handles various performance improvements for the Nigeria Homes platform
+ * Handles various performance improvements for the DamianixPro platform
  */
 
 import { supabase } from '@/integrations/supabase/client';
+import { logger } from '@/utils/logger';
 
 // Image optimization utilities
 export class ImageOptimizer {
   /**
    * Compress and optimize images before upload
    */
-  static async compressImage(file: File, maxWidth: number = 1920, quality: number = 0.8): Promise<File> {
+  static async compressImage(
+    file: File,
+    maxWidth: number = 1920,
+    quality: number = 0.8
+  ): Promise<File> {
     return new Promise((resolve) => {
       const canvas = document.createElement('canvas');
       const ctx = canvas.getContext('2d');
@@ -27,7 +32,7 @@ export class ImageOptimizer {
 
         // Draw and compress
         ctx?.drawImage(img, 0, 0, newWidth, newHeight);
-        
+
         canvas.toBlob(
           (blob) => {
             if (blob) {
@@ -77,13 +82,13 @@ export class DatabaseOptimizer {
     batchSize: number = 5
   ): Promise<T[]> {
     const results: T[] = [];
-    
+
     for (let i = 0; i < operations.length; i += batchSize) {
       const batch = operations.slice(i, i + batchSize);
-      const batchResults = await Promise.all(batch.map(op => op()));
+      const batchResults = await Promise.all(batch.map((op) => op()));
       results.push(...batchResults);
     }
-    
+
     return results;
   }
 
@@ -99,11 +104,20 @@ export class DatabaseOptimizer {
     limit?: number;
     offset?: number;
   }) {
-    const { location, minPrice, maxPrice, propertyType, bedrooms, limit = 20, offset = 0 } = filters;
+    const {
+      location,
+      minPrice,
+      maxPrice,
+      propertyType,
+      bedrooms,
+      limit = 20,
+      offset = 0,
+    } = filters;
 
     let query = supabase
       .from('properties')
-      .select(`
+      .select(
+        `
         id,
         name,
         description,
@@ -116,7 +130,8 @@ export class DatabaseOptimizer {
         status,
         images,
         created_at
-      `)
+      `
+      )
       .eq('status', 'available')
       .range(offset, offset + limit - 1);
 
@@ -149,7 +164,8 @@ export class DatabaseOptimizer {
   static async getPropertyWithRelations(propertyId: string) {
     const { data, error } = await supabase
       .from('properties')
-      .select(`
+      .select(
+        `
         *,
         owner:users!properties_owner_id_fkey(id, first_name, last_name, email),
         leases(
@@ -168,7 +184,8 @@ export class DatabaseOptimizer {
           priority,
           created_at
         )
-      `)
+      `
+      )
       .eq('id', propertyId)
       .single();
 
@@ -264,7 +281,7 @@ export class AssetOptimizer {
       const link = document.createElement('link');
       link.rel = 'preload';
       link.href = url;
-      
+
       // Determine resource type
       if (url.match(/\.(woff2?|ttf|eot)$/)) {
         link.as = 'font';
@@ -276,7 +293,7 @@ export class AssetOptimizer {
       } else if (url.match(/\.js$/)) {
         link.as = 'script';
       }
-      
+
       document.head.appendChild(link);
     });
   }
@@ -289,13 +306,13 @@ export class PerformanceMonitor {
    */
   static measurePerformance(name: string, fn: () => Promise<any>): Promise<any> {
     const start = performance.now();
-    
+
     return fn().finally(() => {
       const end = performance.now();
       const duration = end - start;
-      
+
       console.log(`⚡ Performance: ${name} took ${duration.toFixed(2)}ms`);
-      
+
       // Log slow operations (>1000ms)
       if (duration > 1000) {
         console.warn(`🐌 Slow operation detected: ${name} (${duration.toFixed(2)}ms)`);
@@ -309,7 +326,7 @@ export class PerformanceMonitor {
   static logMemoryUsage(): void {
     if ('memory' in performance) {
       const memory = (performance as any).memory;
-      console.log('📊 Memory Usage:', {
+      logger.debug('Memory usage', {
         used: `${(memory.usedJSHeapSize / 1024 / 1024).toFixed(2)} MB`,
         total: `${(memory.totalJSHeapSize / 1024 / 1024).toFixed(2)} MB`,
         limit: `${(memory.jsHeapSizeLimit / 1024 / 1024).toFixed(2)} MB`,
@@ -325,7 +342,7 @@ export class PerformanceMonitor {
       const observer = new PerformanceObserver((list) => {
         list.getEntries().forEach((entry) => {
           if (entry.entryType === 'navigation') {
-            console.log('🚀 Navigation Performance:', {
+            logger.debug('Navigation performance', {
               domContentLoaded: entry.domContentLoadedEventEnd - entry.domContentLoadedEventStart,
               loadComplete: entry.loadEventEnd - entry.loadEventStart,
               totalTime: entry.loadEventEnd - entry.fetchStart,
@@ -343,19 +360,25 @@ export class PerformanceMonitor {
 export const initializePerformanceOptimizations = () => {
   // Setup lazy loading
   AssetOptimizer.setupLazyLoading();
-  
+
   // Setup performance monitoring
   PerformanceMonitor.setupPerformanceObserver();
-  
+
   // Cleanup cache every 10 minutes
-  setInterval(() => {
-    CacheOptimizer.cleanup();
-  }, 10 * 60 * 1000);
-  
+  setInterval(
+    () => {
+      CacheOptimizer.cleanup();
+    },
+    10 * 60 * 1000
+  );
+
   // Log memory usage every 5 minutes in development
   if (process.env.NODE_ENV === 'development') {
-    setInterval(() => {
-      PerformanceMonitor.logMemoryUsage();
-    }, 5 * 60 * 1000);
+    setInterval(
+      () => {
+        PerformanceMonitor.logMemoryUsage();
+      },
+      5 * 60 * 1000
+    );
   }
 };

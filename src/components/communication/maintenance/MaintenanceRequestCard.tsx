@@ -1,6 +1,12 @@
-
 import { useState } from 'react';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
 import { StatusBadge } from './card/StatusBadge';
 import { UrgencyBadge } from './card/UrgencyBadge';
 import { StatusIcon } from './card/StatusIcon';
@@ -19,7 +25,7 @@ interface MaintenanceRequestCardProps {
 export function MaintenanceRequestCard({ request, onStatusUpdate }: MaintenanceRequestCardProps) {
   const [commentDialogOpen, setCommentDialogOpen] = useState(false);
   const [imageDialogOpen, setImageDialogOpen] = useState(false);
-  
+
   const handleViewImage = () => {
     if (request.image_url) {
       setImageDialogOpen(true);
@@ -28,13 +34,15 @@ export function MaintenanceRequestCard({ request, onStatusUpdate }: MaintenanceR
 
   return (
     <Card className="overflow-hidden">
-      <CardHeader className="pb-2 flex flex-row items-start justify-between">
+      <CardHeader className="flex flex-row items-start justify-between pb-2">
         <div>
           <div className="flex items-center gap-2">
             <StatusIcon status={request.status} />
             <CardTitle>{request.title}</CardTitle>
           </div>
-          <CardDescription>Submitted on {new Date(request.created_at || '').toLocaleDateString()}</CardDescription>
+          <CardDescription>
+            Submitted on {new Date(request.created_at || '').toLocaleDateString()}
+          </CardDescription>
         </div>
         <div className="flex gap-2">
           <UrgencyBadge urgency={request.priority as 'low' | 'medium' | 'high'} />
@@ -42,13 +50,13 @@ export function MaintenanceRequestCard({ request, onStatusUpdate }: MaintenanceR
         </div>
       </CardHeader>
       <CardContent className="pb-2">
-        <p className="text-sm mb-4">{request.description}</p>
-        
+        <p className="mb-4 text-sm">{request.description}</p>
+
         <RequestImage imageUrl={request.image_url} onClick={handleViewImage} />
         <UpdatesList updates={request.updates || []} />
       </CardContent>
       <CardFooter className="flex justify-end gap-2 pt-2">
-        <ActionButtons 
+        <ActionButtons
           requestId={request.id}
           status={request.status}
           onStatusUpdate={onStatusUpdate}
@@ -57,9 +65,9 @@ export function MaintenanceRequestCard({ request, onStatusUpdate }: MaintenanceR
       </CardFooter>
 
       {/* Dialogs */}
-      <CommentDialog 
-        open={commentDialogOpen} 
-        onOpenChange={setCommentDialogOpen} 
+      <CommentDialog
+        open={commentDialogOpen}
+        onOpenChange={setCommentDialogOpen}
         requestId={request.id}
         onCommentAdded={() => {
           // Placeholder for comment functionality
@@ -67,10 +75,10 @@ export function MaintenanceRequestCard({ request, onStatusUpdate }: MaintenanceR
         }}
       />
 
-      <ImageDialog 
-        open={imageDialogOpen} 
+      <ImageDialog
+        open={imageDialogOpen}
         onOpenChange={setImageDialogOpen}
-        imageUrl={request.image_url} 
+        imageUrl={request.image_url}
       />
     </Card>
   );

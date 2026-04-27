@@ -1,10 +1,15 @@
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Link } from 'react-router-dom';
+import { DashboardActionItem } from './DashboardActionItem';
 
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Link } from "react-router-dom";
-import { DashboardActionItem } from "./DashboardActionItem";
-
-export function UserManagementCard({ pendingApplicationsCount, pendingScreeningsCount }: { pendingApplicationsCount?: number; pendingScreeningsCount?: number }) {
+export function UserManagementCard({
+  pendingApplicationsCount,
+  pendingScreeningsCount,
+}: {
+  pendingApplicationsCount?: number;
+  pendingScreeningsCount?: number;
+}) {
   return (
     <Card>
       <CardHeader>
@@ -32,11 +37,7 @@ export function UserManagementCard({ pendingApplicationsCount, pendingScreenings
             linkTo="/admin/roles"
           />
         </div>
-        <Button
-          variant="outline"
-          className="w-full mt-4"
-          asChild
-        >
+        <Button variant="outline" className="mt-4 w-full" asChild>
           <Link to="/admin/users">View All Users</Link>
         </Button>
       </CardContent>

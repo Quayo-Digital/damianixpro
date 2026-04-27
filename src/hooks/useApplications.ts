@@ -1,28 +1,30 @@
 import { useState, useEffect } from 'react';
 import { RentalApplication } from '@/services/applications/types';
-import { 
-  getAllApplications, 
+import {
+  getAllApplications,
   getUserApplications,
-  getApplicationsByPropertyId 
+  getApplicationsByPropertyId,
 } from '@/services/applications/applicationApi';
-import { useAuth } from '@/contexts/auth';
+import { useAuthSession } from '@/contexts/auth';
 import { toast } from 'sonner';
 
 export function useApplications(propertyId?: string) {
   const [applications, setApplications] = useState<RentalApplication[]>([]);
   const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState<'all' | 'pending' | 'approved' | 'rejected' | 'more_info'>('all');
-  const { isAgent, isOwner } = useAuth();
-  
+  const [filter, setFilter] = useState<'all' | 'pending' | 'approved' | 'rejected' | 'more_info'>(
+    'all'
+  );
+  const { isAgent, isOwner } = useAuthSession();
+
   useEffect(() => {
     fetchApplications();
   }, [propertyId]);
-  
+
   const fetchApplications = async () => {
     setLoading(true);
     try {
       let fetchedApplications: RentalApplication[] = [];
-      
+
       // If propertyId is provided, fetch applications for that property
       if (propertyId) {
         fetchedApplications = await getApplicationsByPropertyId(propertyId);
@@ -33,7 +35,7 @@ export function useApplications(propertyId?: string) {
         // Otherwise, fetch applications submitted by the current user
         fetchedApplications = await getUserApplications();
       }
-      
+
       setApplications(fetchedApplications);
     } catch (error) {
       console.error('Error fetching applications:', error);
@@ -42,17 +44,16 @@ export function useApplications(propertyId?: string) {
       setLoading(false);
     }
   };
-  
-  const filteredApplications = filter === 'all' 
-    ? applications 
-    : applications.filter(app => app.status === filter);
-  
+
+  const filteredApplications =
+    filter === 'all' ? applications : applications.filter((app) => app.status === filter);
+
   return {
     applications: filteredApplications,
     allApplications: applications,
     loading,
     filter,
     setFilter,
-    refresh: fetchApplications
+    refresh: fetchApplications,
   };
 }

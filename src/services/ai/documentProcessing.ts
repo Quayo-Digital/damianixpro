@@ -11,31 +11,57 @@ import {
   ComplianceCheck,
   ValidationResult,
   ProcessingConfig,
-  DocumentAnalytics
+  DocumentAnalytics,
 } from '@/types/documentProcessing';
+import { performOcr } from './ocrService';
 
 export class IntelligentDocumentProcessor {
   private static readonly DOCUMENT_PATTERNS = {
-    'lease_agreement': [
-      'lease agreement', 'tenancy agreement', 'rental agreement',
-      'landlord', 'tenant', 'monthly rent', 'lease term'
+    lease_agreement: [
+      'lease agreement',
+      'tenancy agreement',
+      'rental agreement',
+      'landlord',
+      'tenant',
+      'monthly rent',
+      'lease term',
     ],
-    'id_card': [
-      'national identity', 'identity card', 'id card', 'nin',
-      'date of birth', 'place of birth', 'nationality'
+    id_card: [
+      'national identity',
+      'identity card',
+      'id card',
+      'nin',
+      'date of birth',
+      'place of birth',
+      'nationality',
     ],
-    'bank_statement': [
-      'bank statement', 'account statement', 'balance',
-      'transaction', 'credit', 'debit', 'account number'
+    bank_statement: [
+      'bank statement',
+      'account statement',
+      'balance',
+      'transaction',
+      'credit',
+      'debit',
+      'account number',
     ],
-    'pay_slip': [
-      'pay slip', 'salary slip', 'payroll', 'gross pay',
-      'net pay', 'deductions', 'allowances'
+    pay_slip: [
+      'pay slip',
+      'salary slip',
+      'payroll',
+      'gross pay',
+      'net pay',
+      'deductions',
+      'allowances',
     ],
-    'utility_bill': [
-      'electricity bill', 'water bill', 'utility bill',
-      'nepa', 'phcn', 'meter number', 'consumption'
-    ]
+    utility_bill: [
+      'electricity bill',
+      'water bill',
+      'utility bill',
+      'nepa',
+      'phcn',
+      'meter number',
+      'consumption',
+    ],
   };
 
   private static readonly NIGERIAN_PATTERNS = {
@@ -43,8 +69,8 @@ export class IntelligentDocumentProcessor {
     phone: /(\+234|0)[789]\d{9}/,
     email: /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/,
     currency: /₦[\d,]+\.?\d*/,
-    date: /\d{1,2}[\/\-]\d{1,2}[\/\-]\d{4}/,
-    account_number: /\d{10}/
+    date: /\d{1,2}[-/]\d{1,2}[-/]\d{4}/,
+    account_number: /\d{10}/,
   };
 
   /**
@@ -79,7 +105,7 @@ export class IntelligentDocumentProcessor {
       document_type: classification.predicted_type,
       status: validation.overall_status === 'passed' ? 'processed' : 'needs_review',
       processing_stage: 'completion',
-      confidence_score: classification.confidence_score
+      confidence_score: classification.confidence_score,
     });
 
     return { metadata, extraction, classification, validation };
@@ -107,7 +133,7 @@ export class IntelligentDocumentProcessor {
       confidence_score: 0,
       is_sensitive: this.isSensitiveDocument(file.name),
       created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString()
+      updated_at: new Date().toISOString(),
     };
   }
 
@@ -120,21 +146,27 @@ export class IntelligentDocumentProcessor {
   ): Promise<DocumentExtraction> {
     const startTime = Date.now();
 
-    // Simulate OCR/AI extraction (in production, integrate with actual OCR service)
-    const extractedText = await this.performOCR(file);
+    // Real OCR: server (OpenAI Vision) or client (Tesseract.js) fallback
+    const ocrResult = await performOcr(file);
+    const extractedText = ocrResult.extractedText || '';
     const structuredData = await this.extractStructuredData(extractedText);
     const keyValuePairs = await this.extractKeyValuePairs(extractedText);
 
     return {
       id: `ext_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
       document_id: metadata.id,
-      extraction_method: 'ai_vision',
+      extraction_method:
+        ocrResult.method === 'openai_vision'
+          ? 'ai_vision'
+          : ocrResult.method === 'tesseract'
+            ? 'ocr'
+            : 'manual',
       extracted_text: extractedText,
       structured_data: structuredData,
       key_value_pairs: keyValuePairs,
       overall_confidence: this.calculateExtractionConfidence(structuredData),
       processing_time_ms: Date.now() - startTime,
-      created_at: new Date().toISOString()
+      created_at: new Date().toISOString(),
     };
   }
 
@@ -156,7 +188,7 @@ export class IntelligentDocumentProcessor {
       confidence_score: topPrediction.confidence,
       alternative_predictions: alternatives,
       classification_features: this.getClassificationFeatures(extractedText, topPrediction.type),
-      created_at: new Date().toISOString()
+      created_at: new Date().toISOString(),
     };
   }
 
@@ -168,11 +200,21 @@ export class IntelligentDocumentProcessor {
     extraction: DocumentExtraction,
     classification: DocumentClassification
   ): Promise<DocumentValidation> {
-    const validationResults = await this.runValidationRules(extraction, classification.predicted_type);
-    const complianceChecks = await this.performComplianceChecks(extraction, classification.predicted_type);
+    const validationResults = await this.runValidationRules(
+      extraction,
+      classification.predicted_type
+    );
+    const complianceChecks = await this.performComplianceChecks(
+      extraction,
+      classification.predicted_type
+    );
     const fraudDetection = await this.detectFraud(extraction);
 
-    const overallStatus = this.determineOverallStatus(validationResults, complianceChecks, fraudDetection);
+    const overallStatus = this.determineOverallStatus(
+      validationResults,
+      complianceChecks,
+      fraudDetection
+    );
 
     return {
       id: `val_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
@@ -183,67 +225,8 @@ export class IntelligentDocumentProcessor {
       compliance_checks: complianceChecks,
       fraud_detection: fraudDetection,
       created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString()
+      updated_at: new Date().toISOString(),
     };
-  }
-
-  /**
-   * Perform OCR text extraction
-   */
-  private static async performOCR(file: File): Promise<string> {
-    // Simulate OCR processing
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    // Mock extracted text based on file type
-    const mockTexts = {
-      'lease_agreement': `
-        LEASE AGREEMENT
-        
-        This Lease Agreement is entered into on January 1, 2024
-        Between: John Doe (Landlord)
-        And: Jane Smith (Tenant)
-        
-        Property Address: 123 Victoria Island, Lagos
-        Monthly Rent: ₦2,500,000
-        Lease Term: 12 months
-        Security Deposit: ₦5,000,000
-        
-        Terms and Conditions:
-        1. Rent is due on the 1st of each month
-        2. No pets allowed
-        3. Tenant responsible for utilities
-      `,
-      'id_card': `
-        FEDERAL REPUBLIC OF NIGERIA
-        NATIONAL IDENTITY CARD
-        
-        Name: ADEBAYO OLUMIDE JOHNSON
-        Date of Birth: 15/03/1985
-        Place of Birth: LAGOS STATE
-        NIN: 12345678901
-        Gender: MALE
-        Address: 45 ALLEN AVENUE, IKEJA, LAGOS
-      `,
-      'bank_statement': `
-        FIRST BANK OF NIGERIA PLC
-        ACCOUNT STATEMENT
-        
-        Account Name: ADEBAYO JOHNSON
-        Account Number: 1234567890
-        Statement Period: 01/01/2024 - 31/01/2024
-        
-        Opening Balance: ₦1,500,000.00
-        
-        TRANSACTIONS:
-        05/01/2024  SALARY CREDIT     ₦750,000.00
-        10/01/2024  RENT PAYMENT      -₦300,000.00
-        15/01/2024  UTILITY BILL      -₦45,000.00
-        
-        Closing Balance: ₦1,905,000.00
-      `
-    };
-
-    return mockTexts['lease_agreement'] || 'Sample document text content...';
   }
 
   /**
@@ -259,7 +242,7 @@ export class IntelligentDocumentProcessor {
         field_name: 'phone_number',
         field_value: phoneMatches[0],
         confidence: 'high',
-        validation_status: 'valid'
+        validation_status: 'valid',
       });
     }
 
@@ -270,7 +253,7 @@ export class IntelligentDocumentProcessor {
         field_name: 'nin',
         field_value: ninMatches[0],
         confidence: 'high',
-        validation_status: 'valid'
+        validation_status: 'valid',
       });
     }
 
@@ -281,7 +264,7 @@ export class IntelligentDocumentProcessor {
         field_name: 'amount',
         field_value: currencyMatches[0],
         confidence: 'medium',
-        validation_status: 'valid'
+        validation_status: 'valid',
       });
     }
 
@@ -292,7 +275,7 @@ export class IntelligentDocumentProcessor {
         field_name: 'date',
         field_value: dateMatches[0],
         confidence: 'medium',
-        validation_status: 'valid'
+        validation_status: 'valid',
       });
     }
 
@@ -304,7 +287,7 @@ export class IntelligentDocumentProcessor {
         field_name: 'full_name',
         field_value: nameMatch[1].trim(),
         confidence: 'high',
-        validation_status: 'valid'
+        validation_status: 'valid',
       });
     }
 
@@ -318,12 +301,9 @@ export class IntelligentDocumentProcessor {
     const pairs: Record<string, any> = {};
 
     // Common patterns for key-value extraction
-    const patterns = [
-      /([A-Za-z\s]+):\s*([^\n\r]+)/g,
-      /([A-Za-z\s]+)\s*-\s*([^\n\r]+)/g
-    ];
+    const patterns = [/([A-Za-z\s]+):\s*([^\n\r]+)/g, /([A-Za-z\s]+)\s*-\s*([^\n\r]+)/g];
 
-    patterns.forEach(pattern => {
+    patterns.forEach((pattern) => {
       let match;
       while ((match = pattern.exec(text)) !== null) {
         const key = match[1].trim().toLowerCase().replace(/\s+/g, '_');
@@ -340,23 +320,25 @@ export class IntelligentDocumentProcessor {
   /**
    * Calculate document type classification scores
    */
-  private static calculateDocumentTypeScores(text: string): Array<{type: DocumentType, confidence: number}> {
-    const scores: Array<{type: DocumentType, confidence: number}> = [];
+  private static calculateDocumentTypeScores(
+    text: string
+  ): Array<{ type: DocumentType; confidence: number }> {
+    const scores: Array<{ type: DocumentType; confidence: number }> = [];
     const lowerText = text.toLowerCase();
 
     Object.entries(this.DOCUMENT_PATTERNS).forEach(([docType, patterns]) => {
       let score = 0;
-      patterns.forEach(pattern => {
+      patterns.forEach((pattern) => {
         if (lowerText.includes(pattern.toLowerCase())) {
           score += 1;
         }
       });
-      
+
       const confidence = Math.min(score / patterns.length, 1);
       if (confidence > 0) {
         scores.push({
           type: docType as DocumentType,
-          confidence
+          confidence,
         });
       }
     });
@@ -380,7 +362,7 @@ export class IntelligentDocumentProcessor {
     const lowerText = text.toLowerCase();
     const patterns = this.DOCUMENT_PATTERNS[documentType] || [];
 
-    patterns.forEach(pattern => {
+    patterns.forEach((pattern) => {
       if (lowerText.includes(pattern.toLowerCase())) {
         features.push(`Contains "${pattern}"`);
       }
@@ -400,13 +382,13 @@ export class IntelligentDocumentProcessor {
 
     // Common validation rules
     if (documentType === 'id_card') {
-      const ninField = extraction.structured_data.find(f => f.field_name === 'nin');
+      const ninField = extraction.structured_data.find((f) => f.field_name === 'nin');
       if (!ninField) {
         results.push({
           rule_id: 'nin_required',
           status: 'failed',
           message: 'NIN is required for ID cards',
-          field_name: 'nin'
+          field_name: 'nin',
         });
       } else if (ninField.field_value.length !== 11) {
         results.push({
@@ -414,19 +396,19 @@ export class IntelligentDocumentProcessor {
           status: 'failed',
           message: 'NIN must be 11 digits',
           field_name: 'nin',
-          actual_value: ninField.field_value
+          actual_value: ninField.field_value,
         });
       }
     }
 
     if (documentType === 'lease_agreement') {
-      const amountField = extraction.structured_data.find(f => f.field_name === 'amount');
+      const amountField = extraction.structured_data.find((f) => f.field_name === 'amount');
       if (!amountField) {
         results.push({
           rule_id: 'rent_amount_required',
           status: 'failed',
           message: 'Rent amount is required in lease agreements',
-          field_name: 'amount'
+          field_name: 'amount',
         });
       }
     }
@@ -450,7 +432,7 @@ export class IntelligentDocumentProcessor {
         check_name: 'NDPR Personal Data Protection',
         regulation: 'Nigerian Data Protection Regulation',
         status: 'compliant',
-        details: 'Document contains personal data and requires proper handling'
+        details: 'Document contains personal data and requires proper handling',
       });
     }
 
@@ -461,7 +443,7 @@ export class IntelligentDocumentProcessor {
         check_name: 'Know Your Customer Requirements',
         regulation: 'CBN KYC Guidelines',
         status: 'compliant',
-        details: 'Financial document meets KYC requirements'
+        details: 'Financial document meets KYC requirements',
       });
     }
 
@@ -477,13 +459,13 @@ export class IntelligentDocumentProcessor {
 
     // Check for suspicious patterns
     const text = extraction.extracted_text;
-    
+
     // Check for altered text patterns
     if (this.hasInconsistentFormatting(text)) {
       anomalies.push({
         anomaly_type: 'inconsistent_fonts' as const,
         description: 'Document shows inconsistent text formatting',
-        confidence: 0.7
+        confidence: 0.7,
       });
       riskScore += 30;
     }
@@ -493,20 +475,19 @@ export class IntelligentDocumentProcessor {
       anomalies.push({
         anomaly_type: 'suspicious_patterns' as const,
         description: 'Document contains suspicious text patterns',
-        confidence: 0.6
+        confidence: 0.6,
       });
       riskScore += 20;
     }
 
-    const riskLevel = riskScore >= 70 ? 'critical' : 
-                     riskScore >= 50 ? 'high' : 
-                     riskScore >= 30 ? 'medium' : 'low';
+    const riskLevel =
+      riskScore >= 70 ? 'critical' : riskScore >= 50 ? 'high' : riskScore >= 30 ? 'medium' : 'low';
 
     return {
       risk_score: riskScore,
       risk_level,
       detected_anomalies: anomalies,
-      verification_recommendations: this.getVerificationRecommendations(riskLevel)
+      verification_recommendations: this.getVerificationRecommendations(riskLevel),
     };
   }
 
@@ -515,18 +496,22 @@ export class IntelligentDocumentProcessor {
    */
   private static isSensitiveDocument(filename: string): boolean {
     const sensitiveTypes = ['id', 'passport', 'bank', 'financial', 'personal'];
-    return sensitiveTypes.some(type => filename.toLowerCase().includes(type));
+    return sensitiveTypes.some((type) => filename.toLowerCase().includes(type));
   }
 
   private static calculateExtractionConfidence(fields: ExtractedField[]): number {
     if (fields.length === 0) return 0;
-    
-    const confidenceValues = fields.map(f => {
+
+    const confidenceValues = fields.map((f) => {
       switch (f.confidence) {
-        case 'high': return 0.9;
-        case 'medium': return 0.7;
-        case 'low': return 0.4;
-        default: return 0.5;
+        case 'high':
+          return 0.9;
+        case 'medium':
+          return 0.7;
+        case 'low':
+          return 0.4;
+        default:
+          return 0.5;
       }
     });
 
@@ -535,7 +520,7 @@ export class IntelligentDocumentProcessor {
 
   private static containsPersonalData(extraction: DocumentExtraction): boolean {
     const personalDataFields = ['nin', 'phone_number', 'full_name', 'address'];
-    return extraction.structured_data.some(field => 
+    return extraction.structured_data.some((field) =>
       personalDataFields.includes(field.field_name)
     );
   }
@@ -543,7 +528,7 @@ export class IntelligentDocumentProcessor {
   private static hasInconsistentFormatting(text: string): boolean {
     // Simple heuristic for detecting formatting inconsistencies
     const lines = text.split('\n');
-    const spacingPatterns = lines.map(line => line.match(/^\s*/)?.[0].length || 0);
+    const spacingPatterns = lines.map((line) => line.match(/^\s*/)?.[0].length || 0);
     const uniqueSpacings = new Set(spacingPatterns);
     return uniqueSpacings.size > 5; // Too many different spacing patterns
   }
@@ -552,18 +537,26 @@ export class IntelligentDocumentProcessor {
     const suspiciousPatterns = [
       /(.{10,})\1{2,}/, // Repeated text
       /[A-Z]{20,}/, // Too many consecutive capitals
-      /\d{15,}/ // Suspiciously long numbers
+      /\d{15,}/, // Suspiciously long numbers
     ];
-    
-    return suspiciousPatterns.some(pattern => pattern.test(text));
+
+    return suspiciousPatterns.some((pattern) => pattern.test(text));
   }
 
   private static getVerificationRecommendations(riskLevel: string): string[] {
     const recommendations = {
       low: ['Standard processing approved'],
       medium: ['Manual review recommended', 'Verify key details'],
-      high: ['Detailed manual review required', 'Contact document issuer', 'Request additional verification'],
-      critical: ['Immediate manual review required', 'Escalate to security team', 'Request original documents']
+      high: [
+        'Detailed manual review required',
+        'Contact document issuer',
+        'Request additional verification',
+      ],
+      critical: [
+        'Immediate manual review required',
+        'Escalate to security team',
+        'Request original documents',
+      ],
     };
 
     return recommendations[riskLevel as keyof typeof recommendations] || [];
@@ -579,21 +572,26 @@ export class IntelligentDocumentProcessor {
     complianceChecks: ComplianceCheck[],
     fraudDetection: FraudDetection
   ): 'passed' | 'failed' | 'warning' {
-    const hasFailures = validationResults.some(r => r.status === 'failed');
-    const hasHighRisk = fraudDetection.risk_level === 'high' || fraudDetection.risk_level === 'critical';
-    const hasComplianceIssues = complianceChecks.some(c => c.status === 'non_compliant');
+    const hasFailures = validationResults.some((r) => r.status === 'failed');
+    const hasHighRisk =
+      fraudDetection.risk_level === 'high' || fraudDetection.risk_level === 'critical';
+    const hasComplianceIssues = complianceChecks.some((c) => c.status === 'non_compliant');
 
     if (hasFailures || hasHighRisk || hasComplianceIssues) {
       return 'failed';
     }
 
-    const hasWarnings = validationResults.some(r => r.status === 'warning') || 
-                       fraudDetection.risk_level === 'medium';
-    
+    const hasWarnings =
+      validationResults.some((r) => r.status === 'warning') ||
+      fraudDetection.risk_level === 'medium';
+
     return hasWarnings ? 'warning' : 'passed';
   }
 
-  private static async updateDocumentMetadata(documentId: string, updates: Partial<DocumentMetadata>) {
+  private static async updateDocumentMetadata(
+    documentId: string,
+    updates: Partial<DocumentMetadata>
+  ) {
     // Update document metadata in database
     console.log(`Updating document ${documentId}:`, updates);
   }
@@ -603,16 +601,22 @@ export class IntelligentDocumentProcessor {
    */
   static generateAnalytics(documents: DocumentMetadata[]): DocumentAnalytics {
     const total = documents.length;
-    
-    const byType = documents.reduce((acc, doc) => {
-      acc[doc.document_type] = (acc[doc.document_type] || 0) + 1;
-      return acc;
-    }, {} as Record<DocumentType, number>);
 
-    const byStatus = documents.reduce((acc, doc) => {
-      acc[doc.status] = (acc[doc.status] || 0) + 1;
-      return acc;
-    }, {} as Record<string, number>);
+    const byType = documents.reduce(
+      (acc, doc) => {
+        acc[doc.document_type] = (acc[doc.document_type] || 0) + 1;
+        return acc;
+      },
+      {} as Record<DocumentType, number>
+    );
+
+    const byStatus = documents.reduce(
+      (acc, doc) => {
+        acc[doc.status] = (acc[doc.status] || 0) + 1;
+        return acc;
+      },
+      {} as Record<string, number>
+    );
 
     return {
       total_documents: total,
@@ -622,19 +626,19 @@ export class IntelligentDocumentProcessor {
         average_processing_time_ms: 2500,
         success_rate: 0.92,
         manual_review_rate: 0.15,
-        fraud_detection_rate: 0.03
+        fraud_detection_rate: 0.03,
       },
       compliance_metrics: {
         compliance_rate: 0.96,
         common_violations: ['Missing required fields', 'Invalid format'],
-        regulatory_updates_needed: 2
+        regulatory_updates_needed: 2,
       },
       efficiency_metrics: {
         automation_rate: 0.85,
         time_saved_hours: 120,
         cost_savings: 450000,
-        error_reduction_percentage: 78
-      }
+        error_reduction_percentage: 78,
+      },
     };
   }
 }

@@ -55,19 +55,19 @@ export class ProductionPerformanceTest {
     return {
       performanceTests: this.testResults,
       overallScore,
-      recommendations
+      recommendations,
     };
   }
 
   private async testDataServicePerformance(): Promise<void> {
     const startTime = Date.now();
-    
+
     try {
       const listingsStart = Date.now();
       const listings = await this.dataService.fetchPropertyListings({
         location: 'Lagos',
         propertyType: 'RESIDENTIAL',
-        limit: 100
+        limit: 100,
       });
       const listingsDuration = Date.now() - listingsStart;
 
@@ -76,7 +76,7 @@ export class ProductionPerformanceTest {
       const economicDuration = Date.now() - economicStart;
 
       const totalDuration = Date.now() - startTime;
-      
+
       let score = 100;
       if (listingsDuration > 2000) score -= 30;
       if (economicDuration > 1000) score -= 20;
@@ -93,11 +93,10 @@ export class ProductionPerformanceTest {
         metrics: {
           listingsCount: listings.length,
           listingsFetchTime: listingsDuration,
-          economicFetchTime: economicDuration
+          economicFetchTime: economicDuration,
         },
-        recommendations: this.getDataServiceRecommendations(listingsDuration, economicDuration)
+        recommendations: this.getDataServiceRecommendations(listingsDuration, economicDuration),
       });
-
     } catch (error) {
       this.testResults.push({
         testName: 'Data Service Performance',
@@ -106,21 +105,26 @@ export class ProductionPerformanceTest {
         score: 0,
         details: `Error: ${error instanceof Error ? error.message : 'Unknown error'}`,
         metrics: {},
-        recommendations: ['Fix data service errors before production deployment']
+        recommendations: ['Fix data service errors before production deployment'],
       });
     }
   }
 
   private async testAnalyticsEnginePerformance(): Promise<void> {
     const startTime = Date.now();
-    
+
     try {
       const insightsStart = Date.now();
       const insights = await this.analyticsEngine.getLiveMarketInsights('Lagos', 'RESIDENTIAL');
       const insightsDuration = Date.now() - insightsStart;
 
       const investmentStart = Date.now();
-      await this.analyticsEngine.getLiveInvestmentAnalysis('test', 25000000, 'Lagos', 'RESIDENTIAL');
+      await this.analyticsEngine.getLiveInvestmentAnalysis(
+        'test',
+        25000000,
+        'Lagos',
+        'RESIDENTIAL'
+      );
       const investmentDuration = Date.now() - investmentStart;
 
       const totalDuration = Date.now() - startTime;
@@ -141,11 +145,10 @@ export class ProductionPerformanceTest {
         metrics: {
           insightsTime: insightsDuration,
           investmentTime: investmentDuration,
-          confidenceScore: insights.dataQuality.confidenceScore
+          confidenceScore: insights.dataQuality.confidenceScore,
         },
-        recommendations: this.getAnalyticsRecommendations(insightsDuration, investmentDuration)
+        recommendations: this.getAnalyticsRecommendations(insightsDuration, investmentDuration),
       });
-
     } catch (error) {
       this.testResults.push({
         testName: 'Analytics Engine Performance',
@@ -154,22 +157,22 @@ export class ProductionPerformanceTest {
         score: 0,
         details: `Error: ${error instanceof Error ? error.message : 'Unknown error'}`,
         metrics: {},
-        recommendations: ['Fix analytics engine errors before production deployment']
+        recommendations: ['Fix analytics engine errors before production deployment'],
       });
     }
   }
 
   private async testDatabasePerformance(): Promise<void> {
     const startTime = Date.now();
-    
+
     try {
       // Simulate database queries
       const queryTimes: number[] = [];
       const queries = ['properties', 'sales_transactions', 'buyers', 'market_data'];
-      
+
       for (const query of queries) {
         const queryStart = Date.now();
-        await new Promise(resolve => setTimeout(resolve, Math.random() * 100 + 50));
+        await new Promise((resolve) => setTimeout(resolve, Math.random() * 100 + 50));
         queryTimes.push(Date.now() - queryStart);
       }
 
@@ -191,11 +194,10 @@ export class ProductionPerformanceTest {
         metrics: {
           queriesExecuted: queries.length,
           averageQueryTime,
-          totalDatabaseTime: totalDuration
+          totalDatabaseTime: totalDuration,
         },
-        recommendations: this.getDatabaseRecommendations(averageQueryTime)
+        recommendations: this.getDatabaseRecommendations(averageQueryTime),
       });
-
     } catch (error) {
       this.testResults.push({
         testName: 'Database Performance',
@@ -204,36 +206,38 @@ export class ProductionPerformanceTest {
         score: 0,
         details: `Error: ${error instanceof Error ? error.message : 'Unknown error'}`,
         metrics: {},
-        recommendations: ['Fix database connectivity and performance issues']
+        recommendations: ['Fix database connectivity and performance issues'],
       });
     }
   }
 
   private async testAPIResponseTimes(): Promise<void> {
     const startTime = Date.now();
-    
+
     try {
       const endpoints = [
         { name: 'Market Trends', expectedTime: 1500 },
         { name: 'Property Listings', expectedTime: 2000 },
-        { name: 'Investment Analysis', expectedTime: 2500 }
+        { name: 'Investment Analysis', expectedTime: 2500 },
       ];
 
       const responseTimes: { [key: string]: number } = {};
-      
+
       for (const endpoint of endpoints) {
         const apiStart = Date.now();
-        const simulatedTime = Math.random() * endpoint.expectedTime * 0.5 + endpoint.expectedTime * 0.75;
-        await new Promise(resolve => setTimeout(resolve, simulatedTime));
+        const simulatedTime =
+          Math.random() * endpoint.expectedTime * 0.5 + endpoint.expectedTime * 0.75;
+        await new Promise((resolve) => setTimeout(resolve, simulatedTime));
         responseTimes[endpoint.name] = Date.now() - apiStart;
       }
 
       const totalDuration = Date.now() - startTime;
-      const averageResponseTime = Object.values(responseTimes).reduce((a, b) => a + b, 0) / endpoints.length;
+      const averageResponseTime =
+        Object.values(responseTimes).reduce((a, b) => a + b, 0) / endpoints.length;
 
       let score = 100;
       Object.entries(responseTimes).forEach(([name, time]) => {
-        const endpoint = endpoints.find(e => e.name === name);
+        const endpoint = endpoints.find((e) => e.name === name);
         if (endpoint && time > endpoint.expectedTime) score -= 20;
       });
 
@@ -247,11 +251,10 @@ export class ProductionPerformanceTest {
         details: `Average API response: ${averageResponseTime.toFixed(1)}ms`,
         metrics: {
           ...responseTimes,
-          averageResponseTime
+          averageResponseTime,
         },
-        recommendations: this.getAPIRecommendations(responseTimes, endpoints)
+        recommendations: this.getAPIRecommendations(responseTimes, endpoints),
       });
-
     } catch (error) {
       this.testResults.push({
         testName: 'API Response Times',
@@ -260,14 +263,14 @@ export class ProductionPerformanceTest {
         score: 0,
         details: `Error: ${error instanceof Error ? error.message : 'Unknown error'}`,
         metrics: {},
-        recommendations: ['Fix API connectivity and response time issues']
+        recommendations: ['Fix API connectivity and response time issues'],
       });
     }
   }
 
   private async testConcurrentUsers(): Promise<void> {
     const startTime = Date.now();
-    
+
     try {
       const userCounts = [10, 25, 50];
       const results: { [users: number]: { avgTime: number; errors: number } } = {};
@@ -294,7 +297,7 @@ export class ProductionPerformanceTest {
 
       let score = 100;
       const baselineTime = results[10].avgTime;
-      
+
       Object.entries(results).forEach(([users, result]) => {
         const degradation = (result.avgTime - baselineTime) / baselineTime;
         if (degradation > 2) score -= 25;
@@ -312,11 +315,10 @@ export class ProductionPerformanceTest {
         metrics: {
           maxUsers: Math.max(...userCounts),
           baselineTime: baselineTime,
-          totalConcurrencyTime: totalDuration
+          totalConcurrencyTime: totalDuration,
         },
-        recommendations: this.getConcurrencyRecommendations(results)
+        recommendations: this.getConcurrencyRecommendations(results),
       });
-
     } catch (error) {
       this.testResults.push({
         testName: 'Concurrent Users',
@@ -325,7 +327,7 @@ export class ProductionPerformanceTest {
         score: 0,
         details: `Error: ${error instanceof Error ? error.message : 'Unknown error'}`,
         metrics: {},
-        recommendations: ['Fix concurrency handling and scalability issues']
+        recommendations: ['Fix concurrency handling and scalability issues'],
       });
     }
   }
@@ -333,7 +335,7 @@ export class ProductionPerformanceTest {
   private async simulateUserSession(): Promise<void> {
     await this.dataService.fetchPropertyListings({ location: 'Lagos', limit: 20 });
     await this.analyticsEngine.getLiveMarketInsights('Lagos', 'RESIDENTIAL');
-    await new Promise(resolve => setTimeout(resolve, Math.random() * 200 + 100));
+    await new Promise((resolve) => setTimeout(resolve, Math.random() * 200 + 100));
   }
 
   private calculateOverallScore(): number {
@@ -344,19 +346,23 @@ export class ProductionPerformanceTest {
 
   private generateRecommendations(): string[] {
     const recommendations: string[] = [];
-    
-    const failedTests = this.testResults.filter(t => t.status === 'FAILED');
-    const warningTests = this.testResults.filter(t => t.status === 'WARNING');
+
+    const failedTests = this.testResults.filter((t) => t.status === 'FAILED');
+    const warningTests = this.testResults.filter((t) => t.status === 'WARNING');
 
     if (failedTests.length > 0) {
-      recommendations.push(`Fix ${failedTests.length} critical performance issues before production`);
+      recommendations.push(
+        `Fix ${failedTests.length} critical performance issues before production`
+      );
     }
 
     if (warningTests.length > 0) {
-      recommendations.push(`Address ${warningTests.length} performance warnings for optimal experience`);
+      recommendations.push(
+        `Address ${warningTests.length} performance warnings for optimal experience`
+      );
     }
 
-    this.testResults.forEach(test => {
+    this.testResults.forEach((test) => {
       recommendations.push(...test.recommendations);
     });
 
@@ -365,67 +371,67 @@ export class ProductionPerformanceTest {
 
   private getDataServiceRecommendations(listingsTime: number, economicTime: number): string[] {
     const recommendations: string[] = [];
-    
+
     if (listingsTime > 2000) {
       recommendations.push('Optimize property listings API calls or implement caching');
     }
     if (economicTime > 1000) {
       recommendations.push('Cache economic indicators data for better performance');
     }
-    
+
     return recommendations;
   }
 
   private getAnalyticsRecommendations(insightsTime: number, investmentTime: number): string[] {
     const recommendations: string[] = [];
-    
+
     if (insightsTime > 3000) {
       recommendations.push('Optimize market insights calculation algorithm');
     }
     if (investmentTime > 2000) {
       recommendations.push('Cache investment analysis results for similar properties');
     }
-    
+
     return recommendations;
   }
 
   private getDatabaseRecommendations(avgTime: number): string[] {
     const recommendations: string[] = [];
-    
+
     if (avgTime > 100) {
       recommendations.push('Add database indexes for frequently queried columns');
       recommendations.push('Consider database connection pooling for better performance');
     }
-    
+
     return recommendations;
   }
 
   private getAPIRecommendations(responseTimes: any, endpoints: any): string[] {
     const recommendations: string[] = [];
-    
+
     Object.entries(responseTimes).forEach(([name, time]) => {
       const endpoint = endpoints.find((e: any) => e.name === name);
       if (endpoint && (time as number) > endpoint.expectedTime) {
         recommendations.push(`Optimize ${name} API endpoint performance`);
       }
     });
-    
+
     return recommendations;
   }
 
   private getConcurrencyRecommendations(results: any): string[] {
     const recommendations: string[] = [];
-    
+
     const highestUserCount = Math.max(...Object.keys(results).map(Number));
     const highestResult = results[highestUserCount];
-    
+
     if (highestResult.errors > 0) {
       recommendations.push('Improve error handling for concurrent requests');
     }
-    
+
     recommendations.push('Consider implementing rate limiting for production');
     recommendations.push('Monitor server resources under high load');
-    
+
     return recommendations;
   }
 }

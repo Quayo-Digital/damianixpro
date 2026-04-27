@@ -4,7 +4,13 @@ import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Slider } from '@/components/ui/slider';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { X, Volume2, Mic, Shield, Zap } from 'lucide-react';
@@ -16,10 +22,7 @@ interface VoiceSettingsProps {
   onClose: () => void;
 }
 
-export const VoiceSettings: React.FC<VoiceSettingsProps> = ({
-  settings,
-  onClose
-}) => {
+export const VoiceSettings: React.FC<VoiceSettingsProps> = ({ settings, onClose }) => {
   const { updateSettings } = useVoiceAssistant();
 
   const handleSettingChange = (key: keyof VoiceSettingsType, value: any) => {
@@ -32,7 +35,7 @@ export const VoiceSettings: React.FC<VoiceSettingsProps> = ({
     { value: 'en-GB', label: 'English (UK)' },
     { value: 'ha-NG', label: 'Hausa (Nigeria)' },
     { value: 'yo-NG', label: 'Yoruba (Nigeria)' },
-    { value: 'ig-NG', label: 'Igbo (Nigeria)' }
+    { value: 'ig-NG', label: 'Igbo (Nigeria)' },
   ];
 
   return (
@@ -58,9 +61,7 @@ export const VoiceSettings: React.FC<VoiceSettingsProps> = ({
           <div className="flex items-center justify-between">
             <div className="space-y-0.5">
               <Label className="text-base">Enable Voice Assistant</Label>
-              <p className="text-sm text-muted-foreground">
-                Turn voice commands on or off
-              </p>
+              <p className="text-sm text-muted-foreground">Turn voice commands on or off</p>
             </div>
             <Switch
               checked={settings.enabled}
@@ -91,7 +92,7 @@ export const VoiceSettings: React.FC<VoiceSettingsProps> = ({
             <Label>Voice Type</Label>
             <Select
               value={settings.voice_type}
-              onValueChange={(value: 'male' | 'female' | 'auto') => 
+              onValueChange={(value: 'male' | 'female' | 'auto') =>
                 handleSettingChange('voice_type', value)
               }
             >
@@ -148,9 +149,7 @@ export const VoiceSettings: React.FC<VoiceSettingsProps> = ({
                 step={0.1}
                 className="w-full"
               />
-              <p className="text-xs text-muted-foreground">
-                Voice pitch level (0.0 - 2.0)
-              </p>
+              <p className="text-xs text-muted-foreground">Voice pitch level (0.0 - 2.0)</p>
             </div>
 
             <div className="space-y-2">
@@ -166,9 +165,7 @@ export const VoiceSettings: React.FC<VoiceSettingsProps> = ({
                 step={0.1}
                 className="w-full"
               />
-              <p className="text-xs text-muted-foreground">
-                Voice output volume (0% - 100%)
-              </p>
+              <p className="text-xs text-muted-foreground">Voice output volume (0% - 100%)</p>
             </div>
           </div>
         </div>
@@ -185,9 +182,7 @@ export const VoiceSettings: React.FC<VoiceSettingsProps> = ({
           <div className="flex items-center justify-between">
             <div className="space-y-0.5">
               <Label>Continuous Listening</Label>
-              <p className="text-sm text-muted-foreground">
-                Keep listening after each command
-              </p>
+              <p className="text-sm text-muted-foreground">Keep listening after each command</p>
             </div>
             <Switch
               checked={settings.continuous_listening}
@@ -198,9 +193,7 @@ export const VoiceSettings: React.FC<VoiceSettingsProps> = ({
           <div className="flex items-center justify-between">
             <div className="space-y-0.5">
               <Label>Wake Word</Label>
-              <p className="text-sm text-muted-foreground">
-                Activate with "Hey Nigeria Homes"
-              </p>
+              <p className="text-sm text-muted-foreground">Activate with "Hey DamianixPro"</p>
             </div>
             <Switch
               checked={settings.wake_word_enabled}
@@ -211,9 +204,7 @@ export const VoiceSettings: React.FC<VoiceSettingsProps> = ({
           <div className="flex items-center justify-between">
             <div className="space-y-0.5">
               <Label>Noise Cancellation</Label>
-              <p className="text-sm text-muted-foreground">
-                Filter background noise
-              </p>
+              <p className="text-sm text-muted-foreground">Filter background noise</p>
             </div>
             <Switch
               checked={settings.noise_cancellation}
@@ -234,9 +225,7 @@ export const VoiceSettings: React.FC<VoiceSettingsProps> = ({
           <div className="flex items-center justify-between">
             <div className="space-y-0.5">
               <Label>Auto-Execute Commands</Label>
-              <p className="text-sm text-muted-foreground">
-                Execute safe commands automatically
-              </p>
+              <p className="text-sm text-muted-foreground">Execute safe commands automatically</p>
             </div>
             <Switch
               checked={settings.auto_execute_commands}
@@ -280,11 +269,11 @@ export const VoiceSettings: React.FC<VoiceSettingsProps> = ({
             />
           </div>
 
-          <div className="bg-blue-50 p-3 rounded-lg">
+          <div className="rounded-lg bg-blue-50 p-3">
             <p className="text-sm text-blue-800">
-              <Shield className="h-4 w-4 inline mr-1" />
-              Your voice data is processed locally and never stored on our servers. 
-              Command history is kept only on your device.
+              <Shield className="mr-1 inline h-4 w-4" />
+              Your voice data is processed locally and never stored on our servers. Command history
+              is kept only on your device.
             </p>
           </div>
         </div>
@@ -295,7 +284,7 @@ export const VoiceSettings: React.FC<VoiceSettingsProps> = ({
             Close
           </Button>
           <div className="space-x-2">
-            <Button 
+            <Button
               variant="outline"
               onClick={() => {
                 // Reset to defaults
@@ -307,12 +296,12 @@ export const VoiceSettings: React.FC<VoiceSettingsProps> = ({
                   speech_pitch: 1.0,
                   speech_volume: 0.8,
                   wake_word_enabled: false,
-                  wake_word: 'Hey Nigeria Homes',
+                  wake_word: 'Hey DamianixPro',
                   continuous_listening: false,
                   auto_execute_commands: false,
                   confirmation_required: true,
                   privacy_mode: false,
-                  noise_cancellation: true
+                  noise_cancellation: true,
                 };
                 Object.entries(defaults).forEach(([key, value]) => {
                   handleSettingChange(key as keyof VoiceSettingsType, value);
@@ -321,9 +310,7 @@ export const VoiceSettings: React.FC<VoiceSettingsProps> = ({
             >
               Reset to Defaults
             </Button>
-            <Button onClick={onClose}>
-              Save Settings
-            </Button>
+            <Button onClick={onClose}>Save Settings</Button>
           </div>
         </div>
       </CardContent>

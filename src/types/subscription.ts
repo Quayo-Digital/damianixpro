@@ -1,15 +1,10 @@
 // Advanced Subscription Models and Monetization Types
 
-export type SubscriptionTier = 
-  | 'free'
-  | 'starter'
-  | 'professional'
-  | 'enterprise'
-  | 'white_label';
+export type SubscriptionTier = 'free' | 'starter' | 'professional' | 'enterprise' | 'white_label';
 
 export type BillingCycle = 'monthly' | 'quarterly' | 'yearly';
 
-export type PaymentStatus = 
+export type PaymentStatus =
   | 'active'
   | 'past_due'
   | 'canceled'
@@ -17,7 +12,7 @@ export type PaymentStatus =
   | 'incomplete'
   | 'trialing';
 
-export type FeatureCategory = 
+export type FeatureCategory =
   | 'properties'
   | 'tenants'
   | 'ai_features'
@@ -261,7 +256,7 @@ export interface SubscriptionEvent {
   id: string;
   user_id: string;
   subscription_id: string;
-  event_type: 
+  event_type:
     | 'subscription_created'
     | 'subscription_updated'
     | 'subscription_canceled'
@@ -403,7 +398,11 @@ export interface NigerianPricingConfig {
 }
 
 export interface MarketSegmentation {
-  segment: 'individual_landlord' | 'property_management_company' | 'real_estate_developer' | 'government_agency';
+  segment:
+    | 'individual_landlord'
+    | 'property_management_company'
+    | 'real_estate_developer'
+    | 'government_agency';
   pricing_multiplier: number;
   features_included: string[];
   support_level: 'basic' | 'priority' | 'dedicated';

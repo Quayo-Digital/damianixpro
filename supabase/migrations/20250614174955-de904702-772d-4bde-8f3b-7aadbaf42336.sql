@@ -1,3 +1,0 @@
-
-ALTER TABLE public.vendors
-ADD COLUMN user_id UUID UNIQUE REFERENCES auth.users(id) ON DELETE SET NULL;

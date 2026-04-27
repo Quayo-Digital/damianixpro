@@ -1,6 +1,11 @@
-
 import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { Search } from 'lucide-react';
 
 interface LeaseFiltersProps {
@@ -17,9 +22,9 @@ export const LeaseFilters = ({
   onStatusChange,
 }: LeaseFiltersProps) => {
   return (
-    <div className="flex flex-col md:flex-row gap-2 pt-2">
+    <div className="flex flex-col gap-2 pt-2 md:flex-row">
       <div className="relative flex-1">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+        <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
         <Input
           placeholder="Search by tenant or property..."
           value={searchQuery}

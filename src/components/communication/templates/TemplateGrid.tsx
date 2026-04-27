@@ -10,12 +10,7 @@ interface TemplateGridProps {
   onDelete: (template: CommunicationTemplate) => void;
 }
 
-export function TemplateGrid({ 
-  templates, 
-  onEdit, 
-  onDuplicate, 
-  onDelete 
-}: TemplateGridProps) {
+export function TemplateGrid({ templates, onEdit, onDuplicate, onDelete }: TemplateGridProps) {
   // In a full implementation, this component would fetch templates from Supabase
   // We're keeping the current implementation for now to avoid breaking changes
   // Example of how we'd fetch from Supabase:
@@ -45,9 +40,9 @@ export function TemplateGrid({
   */
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
       {templates.map((template) => (
-        <TemplateCard 
+        <TemplateCard
           key={template.id}
           template={template}
           onEdit={onEdit}

@@ -1,24 +1,35 @@
-
-import { useState, useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/contexts/auth';
+import { useAuthSession } from '@/contexts/auth';
 import { Notification } from '@/types/notification';
 import { toast } from '@/components/ui/sonner';
 
-async function fetchNotifications(userId: string): Promise<Notification[]> {
+/** Keep first occurrence per id (defensive: duplicate rows or client quirks). */
+function dedupeNotificationsById(rows: Notification[]): Notification[] {
+  const seen = new Set<string>();
+  const out: Notification[] = [];
+  for (const n of rows) {
+    if (!n.id || seen.has(n.id)) continue;
+    seen.add(n.id);
+    out.push(n);
+  }
+  return out;
+}
+
+export async function fetchNotifications(userId: string, limit = 10): Promise<Notification[]> {
   const { data, error } = await supabase
     .from('notifications')
     .select('*')
     .eq('user_id', userId)
     .order('created_at', { ascending: false })
-    .limit(10);
+    .limit(limit);
 
   if (error) {
     throw new Error(error.message);
   }
 
-  return data as Notification[];
+  return dedupeNotificationsById((data ?? []) as Notification[]);
 }
 
 async function markAllNotificationsAsRead(userId: string) {
@@ -33,17 +44,83 @@ async function markAllNotificationsAsRead(userId: string) {
   }
 }
 
+/** Single global subscription (mount via NotificationRealtimeSubscriber in AppContent). */
+export function useNotificationRealtimeSubscription() {
+  const { user } = useAuthSession();
+  const queryClient = useQueryClient();
+  const lastEventRef = useRef<{ id: string; at: number } | null>(null);
+
+  useEffect(() => {
+    if (!user) return;
+
+    let channel: Parameters<typeof supabase.removeChannel>[0] | null = null;
+    const timeoutId = setTimeout(() => {
+      // Per-user channel name avoids collisions; scoped filter already applies.
+      channel = supabase
+        .channel(`realtime-notifications:${user.id}`)
+        .on(
+          'postgres_changes',
+          {
+            event: 'INSERT',
+            schema: 'public',
+            table: 'notifications',
+            filter: `user_id=eq.${user.id}`,
+          },
+          (payload) => {
+            queryClient.invalidateQueries({ queryKey: ['notifications', user.id] });
+
+            const row = payload.new as {
+              id?: string;
+              title?: string | null;
+              description?: string | null;
+            };
+            const title = row?.title;
+            const description = row?.description;
+            const notifId = row?.id;
+
+            // Supabase / dev can occasionally deliver the same INSERT twice; skip duplicate UX.
+            if (notifId) {
+              const now = Date.now();
+              const last = lastEventRef.current;
+              if (last && last.id === notifId && now - last.at < 3000) {
+                return;
+              }
+              lastEventRef.current = { id: notifId, at: now };
+            }
+
+            toast.info(title || 'Notification', {
+              id: notifId ? `db-notification:${notifId}` : undefined,
+              description: description ?? undefined,
+            });
+          }
+        )
+        .subscribe();
+    }, 300);
+
+    return () => {
+      clearTimeout(timeoutId);
+      if (channel) {
+        supabase.removeChannel(channel);
+      }
+    };
+  }, [user?.id, queryClient]);
+}
+
 export function useNotifications() {
-  const { user } = useAuth();
+  const { user } = useAuthSession();
   const queryClient = useQueryClient();
 
-  const { data: notifications = [], isLoading, error } = useQuery({
+  const {
+    data: notifications = [],
+    isLoading,
+    error,
+  } = useQuery({
     queryKey: ['notifications', user?.id],
-    queryFn: () => fetchNotifications(user!.id),
+    queryFn: () => fetchNotifications(user!.id, 10),
     enabled: !!user,
   });
 
-  const unreadCount = notifications.filter(n => !n.is_read).length;
+  const unreadCount = notifications.filter((n) => !n.is_read).length;
 
   const markAllAsReadMutation = useMutation({
     mutationFn: () => markAllNotificationsAsRead(user!.id),
@@ -51,38 +128,10 @@ export function useNotifications() {
       queryClient.invalidateQueries({ queryKey: ['notifications', user?.id] });
     },
     onError: (e) => {
-        toast.error('Failed to mark notifications as read');
-        console.error(e);
-    }
+      toast.error('Failed to mark notifications as read');
+      console.error(e);
+    },
   });
-
-  useEffect(() => {
-    if (!user) return;
-
-    const channel = supabase
-      .channel('realtime-notifications')
-      .on(
-        'postgres_changes',
-        {
-          event: 'INSERT',
-          schema: 'public',
-          table: 'notifications',
-          filter: `user_id=eq.${user.id}`,
-        },
-        (payload) => {
-          console.log('New notification received:', payload);
-          queryClient.invalidateQueries({ queryKey: ['notifications', user.id] });
-          toast.info(payload.new.title, {
-            description: payload.new.description,
-          });
-        }
-      )
-      .subscribe();
-      
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [user, queryClient]);
 
   return {
     notifications,

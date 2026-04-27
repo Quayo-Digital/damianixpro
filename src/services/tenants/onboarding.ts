@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/components/ui/sonner';
 import { getTemplateById } from '@/utils/communicationTemplates';
@@ -30,7 +29,10 @@ export interface LeaseDocument {
   updated_at: string;
 }
 
-export const initializeOnboarding = async (tenantId: string, propertyId: string): Promise<boolean> => {
+export const initializeOnboarding = async (
+  tenantId: string,
+  propertyId: string
+): Promise<boolean> => {
   try {
     // Check if onboarding record already exists
     const { data: existingRecord, error: checkError } = await supabase
@@ -38,28 +40,27 @@ export const initializeOnboarding = async (tenantId: string, propertyId: string)
       .select('*')
       .eq('tenant_id', tenantId)
       .single();
-      
+
     if (existingRecord) {
       console.log('Onboarding record already exists for tenant:', tenantId);
       return true;
     }
-    
-    if (checkError && checkError.code !== 'PGRST116') { // PGRST116 means no rows returned
+
+    if (checkError && checkError.code !== 'PGRST116') {
+      // PGRST116 means no rows returned
       throw checkError;
     }
-    
+
     // Create onboarding record if it doesn't exist
-    const { error } = await supabase
-      .from('tenant_onboarding')
-      .insert({
-        tenant_id: tenantId,
-        welcome_sent: false,
-        lease_generated: false,
-        lease_sent: false,
-        lease_signed: false,
-        move_in_instructions_sent: false,
-        completed: false
-      });
+    const { error } = await supabase.from('tenant_onboarding').insert({
+      tenant_id: tenantId,
+      welcome_sent: false,
+      lease_generated: false,
+      lease_sent: false,
+      lease_signed: false,
+      move_in_instructions_sent: false,
+      completed: false,
+    });
 
     if (error) throw error;
     return true;
@@ -87,13 +88,13 @@ export const getOnboardingStatus = async (tenantId: string): Promise<OnboardingS
           .select('*')
           .eq('tenant_id', tenantId)
           .single();
-          
+
         if (newError) throw newError;
         return newData as OnboardingStatus;
       }
       throw error;
     }
-    
+
     return data as OnboardingStatus;
   } catch (error) {
     console.error('Error fetching onboarding status:', error);
@@ -141,7 +142,7 @@ export const generateLeaseDocument = async (
         category: 'Legal',
         property_id: propertyId,
         tenant_id: tenantId,
-        tags: ['lease', 'contract', 'legal']
+        tags: ['lease', 'contract', 'legal'],
       })
       .select()
       .single();
@@ -156,7 +157,7 @@ export const generateLeaseDocument = async (
         property_id: propertyId,
         document_id: docData.id,
         status: 'draft',
-        expire_date: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString() // 7 days from now
+        expire_date: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(), // 7 days from now
       })
       .select()
       .single();
@@ -166,7 +167,7 @@ export const generateLeaseDocument = async (
     // Update the onboarding status
     await updateOnboardingStatus(tenantId, {
       lease_generated: true,
-      lease_document_id: leaseData.id
+      lease_document_id: leaseData.id,
     });
 
     toast.success('Lease document generated successfully');
@@ -178,7 +179,10 @@ export const generateLeaseDocument = async (
   }
 };
 
-export const sendLeaseForSigning = async (tenantId: string, documentId: string): Promise<boolean> => {
+export const sendLeaseForSigning = async (
+  tenantId: string,
+  documentId: string
+): Promise<boolean> => {
   try {
     // In a real implementation, this would send an email via a service like SendGrid
     // For now, we'll just simulate sending by updating statuses
@@ -213,17 +217,17 @@ export const sendLeaseForSigning = async (tenantId: string, documentId: string):
     // Update lease document status
     const { error: updateError } = await supabase
       .from('lease_documents')
-      .update({ 
+      .update({
         status: 'sent',
-        sent_date: new Date().toISOString()
+        sent_date: new Date().toISOString(),
       })
       .eq('document_id', documentId);
 
     if (updateError) throw updateError;
 
     // Update onboarding status
-    await updateOnboardingStatus(tenantId, { 
-      lease_sent: true
+    await updateOnboardingStatus(tenantId, {
+      lease_sent: true,
     });
 
     // In a real implementation, send actual email here
@@ -243,17 +247,17 @@ export const recordLeaseSigned = async (tenantId: string, documentId: string): P
     // Update lease document status
     const { error: updateError } = await supabase
       .from('lease_documents')
-      .update({ 
+      .update({
         status: 'signed',
-        signed_date: new Date().toISOString()
+        signed_date: new Date().toISOString(),
       })
       .eq('document_id', documentId);
 
     if (updateError) throw updateError;
 
     // Update onboarding status
-    await updateOnboardingStatus(tenantId, { 
-      lease_signed: true
+    await updateOnboardingStatus(tenantId, {
+      lease_signed: true,
     });
 
     toast.success('Lease signing recorded successfully');
@@ -265,12 +269,15 @@ export const recordLeaseSigned = async (tenantId: string, documentId: string): P
   }
 };
 
-export const sendMoveInInstructions = async (tenantId: string, propertyId: string): Promise<boolean> => {
+export const sendMoveInInstructions = async (
+  tenantId: string,
+  propertyId: string
+): Promise<boolean> => {
   try {
     // In a real implementation, this would send an email
     // For now, we'll just update the onboarding status
-    await updateOnboardingStatus(tenantId, { 
-      move_in_instructions_sent: true
+    await updateOnboardingStatus(tenantId, {
+      move_in_instructions_sent: true,
     });
 
     toast.success('Move-in instructions sent successfully');
@@ -284,8 +291,8 @@ export const sendMoveInInstructions = async (tenantId: string, propertyId: strin
 
 export const completeOnboarding = async (tenantId: string): Promise<boolean> => {
   try {
-    await updateOnboardingStatus(tenantId, { 
-      completed: true
+    await updateOnboardingStatus(tenantId, {
+      completed: true,
     });
 
     toast.success('Tenant onboarding completed');
@@ -303,7 +310,7 @@ export const checkRentalMilestones = async (): Promise<void> => {
     const today = new Date();
     const thirtyDaysFromNow = new Date(today);
     thirtyDaysFromNow.setDate(today.getDate() + 30);
-    
+
     const thirtyDayDate = thirtyDaysFromNow.toISOString().split('T')[0];
 
     // Check for lease expirations in the next 30 days
@@ -320,9 +327,8 @@ export const checkRentalMilestones = async (): Promise<void> => {
       console.log('Found expiring leases:', expiringLeases.length);
       // Here you would send notifications for each expiring lease
     }
-    
+
     // Similar checks could be implemented for other milestones
-    
   } catch (error) {
     console.error('Error checking rental milestones:', error);
   }

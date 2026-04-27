@@ -5,10 +5,24 @@ import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { 
-  Brain, TrendingUp, Target, Zap, BarChart3, 
-  RefreshCw, CheckCircle, Lightbulb, Home, Users
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import {
+  Brain,
+  TrendingUp,
+  Target,
+  Zap,
+  BarChart3,
+  RefreshCw,
+  CheckCircle,
+  Lightbulb,
+  Home,
+  Users,
 } from 'lucide-react';
 import { useAdvancedAIML } from '@/utils/advanced-ai-ml-system';
 
@@ -19,7 +33,7 @@ export const SimpleAIMLDashboard = () => {
     generateRecommendations,
     getModelMetrics,
     isTraining,
-    loading
+    loading,
   } = useAdvancedAIML();
 
   const [propertyPrediction, setPropertyPrediction] = useState<any>(null);
@@ -32,7 +46,7 @@ export const SimpleAIMLDashboard = () => {
     size: 150,
     bedrooms: 3,
     bathrooms: 2,
-    age: 5
+    age: 5,
   });
 
   const [selectedMarketCity, setSelectedMarketCity] = useState('lagos');
@@ -80,21 +94,28 @@ export const SimpleAIMLDashboard = () => {
   return (
     <div className="space-y-6">
       {/* AI/ML System Status */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
         {modelMetrics.map((metric, index) => (
           <Card key={index}>
             <CardContent className="p-4">
               <div className="flex items-center gap-2">
                 <Brain className="h-4 w-4 text-purple-600" />
                 <span className="text-sm font-medium">
-                  {index === 0 ? 'Property' : index === 1 ? 'Market' : index === 2 ? 'User' : 'Investment'} AI
+                  {index === 0
+                    ? 'Property'
+                    : index === 1
+                      ? 'Market'
+                      : index === 2
+                        ? 'User'
+                        : 'Investment'}{' '}
+                  AI
                 </span>
               </div>
-              <div className="text-2xl font-bold text-purple-600 mt-1">
+              <div className="mt-1 text-2xl font-bold text-purple-600">
                 {formatPercentage(metric.accuracy * 100)}
               </div>
               <div className="text-xs text-gray-600">Accuracy</div>
-              <Progress value={metric.accuracy * 100} className="h-1 mt-2" />
+              <Progress value={metric.accuracy * 100} className="mt-2 h-1" />
             </CardContent>
           </Card>
         ))}
@@ -112,8 +133,8 @@ export const SimpleAIMLDashboard = () => {
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            <div className="flex items-center justify-between p-3 border rounded-lg">
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
+            <div className="flex items-center justify-between rounded-lg border p-3">
               <div className="flex items-center gap-3">
                 <Home className="h-5 w-5 text-blue-600" />
                 <div>
@@ -124,7 +145,7 @@ export const SimpleAIMLDashboard = () => {
               <Badge variant="default">87%</Badge>
             </div>
 
-            <div className="flex items-center justify-between p-3 border rounded-lg">
+            <div className="flex items-center justify-between rounded-lg border p-3">
               <div className="flex items-center gap-3">
                 <TrendingUp className="h-5 w-5 text-green-600" />
                 <div>
@@ -135,7 +156,7 @@ export const SimpleAIMLDashboard = () => {
               <Badge variant="default">82%</Badge>
             </div>
 
-            <div className="flex items-center justify-between p-3 border rounded-lg">
+            <div className="flex items-center justify-between rounded-lg border p-3">
               <div className="flex items-center gap-3">
                 <Users className="h-5 w-5 text-purple-600" />
                 <div>
@@ -146,7 +167,7 @@ export const SimpleAIMLDashboard = () => {
               <Badge variant="default">79%</Badge>
             </div>
 
-            <div className="flex items-center justify-between p-3 border rounded-lg">
+            <div className="flex items-center justify-between rounded-lg border p-3">
               <div className="flex items-center gap-3">
                 <Target className="h-5 w-5 text-orange-600" />
                 <div>
@@ -161,7 +182,7 @@ export const SimpleAIMLDashboard = () => {
       </Card>
 
       {/* Quick AI Actions */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         {/* Property Price Prediction */}
         <Card>
           <CardHeader>
@@ -174,7 +195,10 @@ export const SimpleAIMLDashboard = () => {
             <div className="grid grid-cols-2 gap-2">
               <div>
                 <Label className="text-xs">City</Label>
-                <Select value={propertyForm.city} onValueChange={(value) => setPropertyForm({...propertyForm, city: value})}>
+                <Select
+                  value={propertyForm.city}
+                  onValueChange={(value) => setPropertyForm({ ...propertyForm, city: value })}
+                >
                   <SelectTrigger className="h-8">
                     <SelectValue />
                   </SelectTrigger>
@@ -191,18 +215,29 @@ export const SimpleAIMLDashboard = () => {
                   className="h-8"
                   type="number"
                   value={propertyForm.size}
-                  onChange={(e) => setPropertyForm({...propertyForm, size: parseInt(e.target.value)})}
+                  onChange={(e) =>
+                    setPropertyForm({ ...propertyForm, size: parseInt(e.target.value) })
+                  }
                 />
               </div>
             </div>
 
-            <Button onClick={handlePropertyPrediction} disabled={loading} className="w-full h-8" size="sm">
-              {loading ? <RefreshCw className="h-3 w-3 mr-2 animate-spin" /> : <Brain className="h-3 w-3 mr-2" />}
+            <Button
+              onClick={handlePropertyPrediction}
+              disabled={loading}
+              className="h-8 w-full"
+              size="sm"
+            >
+              {loading ? (
+                <RefreshCw className="mr-2 h-3 w-3 animate-spin" />
+              ) : (
+                <Brain className="mr-2 h-3 w-3" />
+              )}
               Predict Price
             </Button>
 
             {propertyPrediction && (
-              <div className="p-3 bg-blue-50 rounded-lg">
+              <div className="rounded-lg bg-blue-50 p-3">
                 <div className="text-lg font-bold text-blue-600">
                   {formatCurrency(propertyPrediction.predictedPrice)}
                 </div>
@@ -237,20 +272,30 @@ export const SimpleAIMLDashboard = () => {
               </Select>
             </div>
 
-            <Button onClick={handleMarketPrediction} disabled={loading} className="w-full h-8" size="sm">
-              {loading ? <RefreshCw className="h-3 w-3 mr-2 animate-spin" /> : <BarChart3 className="h-3 w-3 mr-2" />}
-              Analyze {selectedMarketCity.charAt(0).toUpperCase() + selectedMarketCity.slice(1)} Market
+            <Button
+              onClick={handleMarketPrediction}
+              disabled={loading}
+              className="h-8 w-full"
+              size="sm"
+            >
+              {loading ? (
+                <RefreshCw className="mr-2 h-3 w-3 animate-spin" />
+              ) : (
+                <BarChart3 className="mr-2 h-3 w-3" />
+              )}
+              Analyze {selectedMarketCity.charAt(0).toUpperCase() + selectedMarketCity.slice(1)}{' '}
+              Market
             </Button>
 
             {marketPrediction && (
-              <div className="p-3 bg-green-50 rounded-lg">
+              <div className="rounded-lg bg-green-50 p-3">
                 <div className="text-lg font-bold text-green-600">
                   +{formatPercentage(marketPrediction.priceGrowth)}
                 </div>
                 <div className="text-xs text-gray-600">
                   6-month forecast for {marketPrediction.city}
                 </div>
-                <div className="text-xs text-gray-500 mt-1">
+                <div className="mt-1 text-xs text-gray-500">
                   Confidence: {formatPercentage(marketPrediction.confidence * 100)}
                 </div>
               </div>
@@ -267,17 +312,26 @@ export const SimpleAIMLDashboard = () => {
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <Button onClick={handleGenerateRecommendations} disabled={loading} className="w-full h-8" size="sm">
-              {loading ? <RefreshCw className="h-3 w-3 mr-2 animate-spin" /> : <Lightbulb className="h-3 w-3 mr-2" />}
+            <Button
+              onClick={handleGenerateRecommendations}
+              disabled={loading}
+              className="h-8 w-full"
+              size="sm"
+            >
+              {loading ? (
+                <RefreshCw className="mr-2 h-3 w-3 animate-spin" />
+              ) : (
+                <Lightbulb className="mr-2 h-3 w-3" />
+              )}
               Generate Insights
             </Button>
 
             {recommendations.length > 0 && (
               <div className="space-y-2">
                 {recommendations.slice(0, 2).map((rec, index) => (
-                  <div key={index} className="p-3 bg-purple-50 rounded-lg">
-                    <div className="font-medium text-sm text-purple-800">{rec.title}</div>
-                    <div className="text-xs text-purple-600 mt-1">
+                  <div key={index} className="rounded-lg bg-purple-50 p-3">
+                    <div className="text-sm font-medium text-purple-800">{rec.title}</div>
+                    <div className="mt-1 text-xs text-purple-600">
                       ROI: {rec.expectedROI}% | {rec.timeline}
                     </div>
                   </div>
@@ -297,11 +351,13 @@ export const SimpleAIMLDashboard = () => {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+          <div className="flex items-center justify-between rounded-lg bg-gray-50 p-4">
             <div>
               <div className="font-medium">AI Model Status</div>
               <div className="text-sm text-gray-600">
-                {isTraining() ? 'Models are currently being retrained with latest Nigerian market data' : 'All AI models are up to date and ready for predictions'}
+                {isTraining()
+                  ? 'Models are currently being retrained with latest Nigerian market data'
+                  : 'All AI models are up to date and ready for predictions'}
               </div>
             </div>
             <div className="flex items-center gap-2">
@@ -325,11 +381,13 @@ export const SimpleAIMLDashboard = () => {
       <Card>
         <CardHeader>
           <CardTitle>Recent AI Predictions</CardTitle>
-          <CardDescription>Latest AI-generated insights for Nigerian property market</CardDescription>
+          <CardDescription>
+            Latest AI-generated insights for Nigerian property market
+          </CardDescription>
         </CardHeader>
         <CardContent className="space-y-3">
-          <div className="p-3 bg-blue-50 rounded-lg">
-            <div className="flex items-center gap-2 mb-1">
+          <div className="rounded-lg bg-blue-50 p-3">
+            <div className="mb-1 flex items-center gap-2">
               <Home className="h-4 w-4 text-blue-600" />
               <span className="font-medium text-blue-800">Property Valuation</span>
             </div>
@@ -338,8 +396,8 @@ export const SimpleAIMLDashboard = () => {
             </div>
           </div>
 
-          <div className="p-3 bg-green-50 rounded-lg">
-            <div className="flex items-center gap-2 mb-1">
+          <div className="rounded-lg bg-green-50 p-3">
+            <div className="mb-1 flex items-center gap-2">
               <TrendingUp className="h-4 w-4 text-green-600" />
               <span className="font-medium text-green-800">Market Forecast</span>
             </div>
@@ -348,8 +406,8 @@ export const SimpleAIMLDashboard = () => {
             </div>
           </div>
 
-          <div className="p-3 bg-purple-50 rounded-lg">
-            <div className="flex items-center gap-2 mb-1">
+          <div className="rounded-lg bg-purple-50 p-3">
+            <div className="mb-1 flex items-center gap-2">
               <Lightbulb className="h-4 w-4 text-purple-600" />
               <span className="font-medium text-purple-800">AI Recommendation</span>
             </div>
@@ -358,8 +416,8 @@ export const SimpleAIMLDashboard = () => {
             </div>
           </div>
 
-          <div className="p-3 bg-orange-50 rounded-lg">
-            <div className="flex items-center gap-2 mb-1">
+          <div className="rounded-lg bg-orange-50 p-3">
+            <div className="mb-1 flex items-center gap-2">
               <Target className="h-4 w-4 text-orange-600" />
               <span className="font-medium text-orange-800">Investment Score</span>
             </div>

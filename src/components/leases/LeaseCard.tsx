@@ -1,4 +1,3 @@
-
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { format, parseISO } from 'date-fns';
@@ -12,16 +11,18 @@ interface LeaseCardProps {
 
 export function LeaseCard({ lease, onInitiateEviction }: LeaseCardProps) {
   return (
-    <div className="border rounded-lg p-4">
-      <div className="flex items-center justify-between mb-4">
+    <div className="rounded-lg border p-4">
+      <div className="mb-4 flex items-center justify-between">
         <div className="flex items-center gap-2">
           <UserCircle2 className="h-5 w-5 text-primary" />
-          <h3 className="font-semibold">{lease.tenants?.first_name} {lease.tenants?.last_name}</h3>
+          <h3 className="font-semibold">
+            {lease.tenants?.first_name} {lease.tenants?.last_name}
+          </h3>
         </div>
         <LeaseExpiryBadge endDate={lease.end_date} />
       </div>
-      
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-y-2 gap-x-4 text-sm">
+
+      <div className="grid grid-cols-1 gap-x-4 gap-y-2 text-sm md:grid-cols-2">
         <div>
           <span className="text-muted-foreground">Email: </span>
           <span>{lease.tenants?.email}</span>
@@ -47,13 +48,13 @@ export function LeaseCard({ lease, onInitiateEviction }: LeaseCardProps) {
           <span>₦{lease.security_deposit?.toLocaleString()}</span>
         </div>
       </div>
-      
+
       <Separator className="my-4" />
-      
+
       <div className="flex justify-end">
-        <Button 
-          variant="destructive" 
-          size="sm" 
+        <Button
+          variant="destructive"
+          size="sm"
           onClick={() => onInitiateEviction(lease)}
           className="flex items-center gap-1"
         >

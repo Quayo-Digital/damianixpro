@@ -1,13 +1,19 @@
-
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { PlusCircle, Loader2 } from "lucide-react";
-import { useState, useEffect } from "react";
-import { AddScheduleDialog } from "./AddScheduleDialog";
-import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { PlusCircle, Loader2 } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { AddScheduleDialog } from './AddScheduleDialog';
+import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
 
 interface MaintenanceSchedule {
   id: string;
@@ -25,7 +31,7 @@ export function MaintenanceSchedule() {
   const [isLoading, setIsLoading] = useState(true);
   const [vendors, setVendors] = useState<any[]>([]);
   const { toast } = useToast();
-  
+
   // Fetch maintenance schedules and vendors from Supabase
   const fetchMaintenanceSchedules = async () => {
     try {
@@ -34,17 +40,15 @@ export function MaintenanceSchedule() {
         .from('maintenance_schedules')
         .select('*')
         .order('scheduled_date', { ascending: true });
-      
+
       if (error) {
         throw error;
       }
-      
+
       setMaintenanceSchedules(data || []);
 
       // Also fetch vendors data
-      const { data: vendorData, error: vendorError } = await supabase
-        .from('vendors')
-        .select('*');
+      const { data: vendorData, error: vendorError } = await supabase.from('vendors').select('*');
 
       if (vendorError) {
         throw vendorError;
@@ -59,54 +63,54 @@ export function MaintenanceSchedule() {
         email: vendor.email,
         phone: vendor.phone,
         address: vendor.address,
-        rating: vendor.rating
+        rating: vendor.rating,
       }));
-      
+
       setVendors(transformedVendors);
     } catch (error) {
-      console.error("Error fetching maintenance schedules:", error);
+      console.error('Error fetching maintenance schedules:', error);
       toast({
-        title: "Error",
-        description: "Failed to load maintenance schedules",
-        variant: "destructive"
+        title: 'Error',
+        description: 'Failed to load maintenance schedules',
+        variant: 'destructive',
       });
     } finally {
       setIsLoading(false);
     }
   };
-  
+
   useEffect(() => {
     fetchMaintenanceSchedules();
   }, []);
-  
+
   // Format date to a readable string
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', { 
+    return date.toLocaleDateString('en-US', {
       weekday: 'short',
-      month: 'short', 
+      month: 'short',
       day: 'numeric',
       hour: 'numeric',
-      minute: '2-digit'
+      minute: '2-digit',
     });
   };
-  
+
   // Get property name by ID
   const getPropertyName = (propertyId: string) => {
     const properties = [
-      { id: "1", name: "Oak Residence" },
-      { id: "2", name: "Maple Apartments" },
-      { id: "3", name: "Cedar Heights" },
-      { id: "4", name: "Pine Valley Estate" }
+      { id: '1', name: 'Oak Residence' },
+      { id: '2', name: 'Maple Apartments' },
+      { id: '3', name: 'Cedar Heights' },
+      { id: '4', name: 'Pine Valley Estate' },
     ];
-    
-    const property = properties.find(p => p.id === propertyId);
+
+    const property = properties.find((p) => p.id === propertyId);
     return property ? property.name : 'Unknown Property';
   };
-  
+
   // Get vendor name by ID
   const getVendorName = (vendorId: string) => {
-    const vendor = vendors.find(v => v.id === vendorId);
+    const vendor = vendors.find((v) => v.id === vendorId);
     return vendor ? vendor.name : 'Unknown Vendor';
   };
 
@@ -120,8 +124,8 @@ export function MaintenanceSchedule() {
     setIsDialogOpen(false);
     fetchMaintenanceSchedules();
     toast({
-      title: "Success",
-      description: "New maintenance schedule created"
+      title: 'Success',
+      description: 'New maintenance schedule created',
     });
   };
 
@@ -141,7 +145,7 @@ export function MaintenanceSchedule() {
             Loading maintenance schedules...
           </div>
         ) : maintenanceSchedules.length === 0 ? (
-          <div className="text-center py-6 text-muted-foreground">
+          <div className="py-6 text-center text-muted-foreground">
             No upcoming maintenance tasks scheduled
           </div>
         ) : (
@@ -156,7 +160,7 @@ export function MaintenanceSchedule() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {maintenanceSchedules.map(schedule => (
+              {maintenanceSchedules.map((schedule) => (
                 <TableRow key={schedule.id}>
                   <TableCell className="font-medium">
                     {formatDate(schedule.scheduled_date)}
@@ -169,11 +173,14 @@ export function MaintenanceSchedule() {
                   <TableCell>{getVendorName(schedule.vendor_id)}</TableCell>
                   <TableCell>
                     {schedule.status === 'scheduled' ? (
-                      <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
+                      <Badge variant="outline" className="border-blue-200 bg-blue-50 text-blue-700">
                         Scheduled
                       </Badge>
                     ) : (
-                      <Badge variant="outline" className="bg-amber-50 text-amber-700 border-amber-200">
+                      <Badge
+                        variant="outline"
+                        className="border-amber-200 bg-amber-50 text-amber-700"
+                      >
                         In Progress
                       </Badge>
                     )}
@@ -184,12 +191,12 @@ export function MaintenanceSchedule() {
           </Table>
         )}
       </CardContent>
-      
+
       {/* Add Schedule Dialog */}
-      <AddScheduleDialog 
-        open={isDialogOpen} 
+      <AddScheduleDialog
+        open={isDialogOpen}
         onOpenChange={setIsDialogOpen}
-        onScheduleCreated={handleScheduleCreated} 
+        onScheduleCreated={handleScheduleCreated}
         vendors={vendors}
       />
     </Card>

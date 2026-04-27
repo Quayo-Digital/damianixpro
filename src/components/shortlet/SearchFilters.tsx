@@ -10,15 +10,21 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Slider } from '@/components/ui/slider';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
 import { format } from 'date-fns';
-import { 
-  Filter, 
-  X, 
+import {
+  Filter,
+  X,
   Calendar as CalendarIcon,
   DollarSign,
   MapPin,
@@ -27,7 +33,7 @@ import {
   Car,
   UtensilsCrossed,
   Waves,
-  Wind
+  Wind,
 } from 'lucide-react';
 
 export interface SearchFilters {
@@ -48,11 +54,7 @@ interface SearchFiltersProps {
   onReset?: () => void;
 }
 
-export function SearchFiltersComponent({ 
-  filters, 
-  onFiltersChange,
-  onReset 
-}: SearchFiltersProps) {
+export function SearchFiltersComponent({ filters, onFiltersChange, onReset }: SearchFiltersProps) {
   const [showFilters, setShowFilters] = useState(false);
   const [checkinDate, setCheckinDate] = useState<Date | undefined>(
     filters.checkin_date ? new Date(filters.checkin_date) : undefined
@@ -68,7 +70,7 @@ export function SearchFiltersComponent({
   const toggleAmenity = (amenity: string) => {
     const current = filters.amenities || [];
     const updated = current.includes(amenity)
-      ? current.filter(a => a !== amenity)
+      ? current.filter((a) => a !== amenity)
       : [...current, amenity];
     updateFilter('amenities', updated);
   };
@@ -81,21 +83,22 @@ export function SearchFiltersComponent({
   };
 
   const activeFiltersCount = Object.keys(filters).filter(
-    key => filters[key as keyof SearchFilters] !== undefined && 
-           filters[key as keyof SearchFilters] !== null &&
-           (Array.isArray(filters[key as keyof SearchFilters]) 
-             ? (filters[key as keyof SearchFilters] as any[]).length > 0
-             : true)
+    (key) =>
+      filters[key as keyof SearchFilters] !== undefined &&
+      filters[key as keyof SearchFilters] !== null &&
+      (Array.isArray(filters[key as keyof SearchFilters])
+        ? (filters[key as keyof SearchFilters] as any[]).length > 0
+        : true)
   ).length;
 
   return (
     <div className="space-y-4">
       {/* Quick Filters Bar */}
-      <div className="flex items-center gap-2 flex-wrap">
+      <div className="flex flex-wrap items-center gap-2">
         <Popover>
           <PopoverTrigger asChild>
             <Button variant="outline" size="sm">
-              <CalendarIcon className="h-4 w-4 mr-2" />
+              <CalendarIcon className="mr-2 h-4 w-4" />
               Dates
               {checkinDate && checkoutDate && (
                 <Badge variant="secondary" className="ml-2">
@@ -105,7 +108,7 @@ export function SearchFiltersComponent({
             </Button>
           </PopoverTrigger>
           <PopoverContent className="w-auto p-0" align="start">
-            <div className="p-4 space-y-4">
+            <div className="space-y-4 p-4">
               <div>
                 <Label>Check-in</Label>
                 <Calendar
@@ -132,10 +135,7 @@ export function SearchFiltersComponent({
                       updateFilter('checkout_date', format(date, 'yyyy-MM-dd'));
                     }
                   }}
-                  disabled={(date) => 
-                    date < new Date() || 
-                    (checkinDate && date <= checkinDate)
-                  }
+                  disabled={(date) => date < new Date() || (checkinDate && date <= checkinDate)}
                 />
               </div>
             </div>
@@ -145,7 +145,7 @@ export function SearchFiltersComponent({
         <Popover>
           <PopoverTrigger asChild>
             <Button variant="outline" size="sm">
-              <Users className="h-4 w-4 mr-2" />
+              <Users className="mr-2 h-4 w-4" />
               Guests
               {filters.guests && (
                 <Badge variant="secondary" className="ml-2">
@@ -172,11 +172,12 @@ export function SearchFiltersComponent({
         <Popover>
           <PopoverTrigger asChild>
             <Button variant="outline" size="sm">
-              <DollarSign className="h-4 w-4 mr-2" />
+              <DollarSign className="mr-2 h-4 w-4" />
               Price
               {(filters.min_price || filters.max_price) && (
                 <Badge variant="secondary" className="ml-2">
-                  ₦{filters.min_price?.toLocaleString() || '0'} - ₦{filters.max_price?.toLocaleString() || '∞'}
+                  ₦{filters.min_price?.toLocaleString() || '0'} - ₦
+                  {filters.max_price?.toLocaleString() || '∞'}
                 </Badge>
               )}
             </Button>
@@ -215,12 +216,8 @@ export function SearchFiltersComponent({
           </PopoverContent>
         </Popover>
 
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => setShowFilters(!showFilters)}
-        >
-          <Filter className="h-4 w-4 mr-2" />
+        <Button variant="outline" size="sm" onClick={() => setShowFilters(!showFilters)}>
+          <Filter className="mr-2 h-4 w-4" />
           More Filters
           {activeFiltersCount > 0 && (
             <Badge variant="secondary" className="ml-2">
@@ -230,12 +227,8 @@ export function SearchFiltersComponent({
         </Button>
 
         {activeFiltersCount > 0 && (
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={handleReset}
-          >
-            <X className="h-4 w-4 mr-2" />
+          <Button variant="ghost" size="sm" onClick={handleReset}>
+            <X className="mr-2 h-4 w-4" />
             Clear All
           </Button>
         )}
@@ -262,7 +255,7 @@ export function SearchFiltersComponent({
             {/* Amenities */}
             <div className="space-y-2">
               <Label>Amenities</Label>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+              <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
                 {[
                   { key: 'wifi', label: 'WiFi', icon: Wifi },
                   { key: 'parking', label: 'Parking', icon: Car },
@@ -278,7 +271,7 @@ export function SearchFiltersComponent({
                     />
                     <Label
                       htmlFor={key}
-                      className="flex items-center gap-2 cursor-pointer text-sm font-normal"
+                      className="flex cursor-pointer items-center gap-2 text-sm font-normal"
                     >
                       <Icon className="h-4 w-4" />
                       {label}
@@ -324,4 +317,3 @@ export function SearchFiltersComponent({
     </div>
   );
 }
-

@@ -10,18 +10,24 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
 import { Progress } from '@/components/ui/progress';
-import { 
-  Wallet, 
-  Network, 
-  Send, 
-  History, 
-  ExternalLink, 
-  Copy, 
-  CheckCircle, 
-  XCircle, 
+import {
+  Wallet,
+  Network,
+  Send,
+  History,
+  ExternalLink,
+  Copy,
+  CheckCircle,
+  XCircle,
   Clock,
   Shield,
   Zap,
@@ -29,7 +35,7 @@ import {
   Coins,
   TrendingUp,
   Lock,
-  Unlock
+  Unlock,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
@@ -46,7 +52,7 @@ const networkIcons: Record<BlockchainNetwork, React.ComponentType<any>> = {
   polygon: Shield,
   bsc: Zap,
   arbitrum: TrendingUp,
-  optimism: Network
+  optimism: Network,
 };
 
 const networkColors: Record<BlockchainNetwork, string> = {
@@ -54,14 +60,14 @@ const networkColors: Record<BlockchainNetwork, string> = {
   polygon: 'bg-purple-500',
   bsc: 'bg-yellow-500',
   arbitrum: 'bg-blue-400',
-  optimism: 'bg-red-500'
+  optimism: 'bg-red-500',
 };
 
 const walletTypes: { value: WalletType; label: string; icon: React.ComponentType<any> }[] = [
   { value: 'metamask', label: 'MetaMask', icon: Wallet },
   { value: 'walletconnect', label: 'WalletConnect', icon: Network },
   { value: 'coinbase', label: 'Coinbase Wallet', icon: Coins },
-  { value: 'trustwallet', label: 'Trust Wallet', icon: Shield }
+  { value: 'trustwallet', label: 'Trust Wallet', icon: Shield },
 ];
 
 const networks: { value: BlockchainNetwork; label: string; testnet?: boolean }[] = [
@@ -69,13 +75,13 @@ const networks: { value: BlockchainNetwork; label: string; testnet?: boolean }[]
   { value: 'ethereum', label: 'Ethereum (ETH)' },
   { value: 'bsc', label: 'BNB Smart Chain' },
   { value: 'arbitrum', label: 'Arbitrum One' },
-  { value: 'optimism', label: 'Optimism' }
+  { value: 'optimism', label: 'Optimism' },
 ];
 
 export const BlockchainWallet: React.FC<BlockchainWalletProps> = ({
   className,
   compact = false,
-  showTransactionHistory = true
+  showTransactionHistory = true,
 }) => {
   const {
     walletConnection,
@@ -95,7 +101,7 @@ export const BlockchainWallet: React.FC<BlockchainWalletProps> = ({
     getExplorerUrl,
     validateAddress,
     estimateGasCost,
-    getNetworkConfig
+    getNetworkConfig,
   } = useBlockchain();
 
   const [selectedWalletType, setSelectedWalletType] = useState<WalletType>('metamask');
@@ -134,9 +140,9 @@ export const BlockchainWallet: React.FC<BlockchainWalletProps> = ({
       await sendTransaction({
         to: sendToAddress,
         value: sendAmount,
-        gasSpeed
+        gasSpeed,
       });
-      
+
       // Reset form
       setSendToAddress('');
       setSendAmount('');
@@ -182,16 +188,14 @@ export const BlockchainWallet: React.FC<BlockchainWalletProps> = ({
             <Lock className="h-5 w-5" />
             <span>Blockchain Integration</span>
           </CardTitle>
-          <CardDescription>
-            Secure blockchain transactions and smart contracts
-          </CardDescription>
+          <CardDescription>Secure blockchain transactions and smart contracts</CardDescription>
         </CardHeader>
         <CardContent>
           <Alert>
             <AlertTriangle className="h-4 w-4" />
             <AlertDescription>
-              Blockchain features are available with premium subscriptions. 
-              Upgrade to access wallet connections, smart contracts, and secure transactions.
+              Blockchain features are available with premium subscriptions. Upgrade to access wallet
+              connections, smart contracts, and secure transactions.
             </AlertDescription>
           </Alert>
         </CardContent>
@@ -209,14 +213,12 @@ export const BlockchainWallet: React.FC<BlockchainWalletProps> = ({
           </div>
           {isConnected && (
             <Badge variant="outline" className="flex items-center space-x-1">
-              <div className={cn('w-2 h-2 rounded-full', networkColors[currentNetwork])} />
+              <div className={cn('h-2 w-2 rounded-full', networkColors[currentNetwork])} />
               <span>{getNetworkConfig().name}</span>
             </Badge>
           )}
         </CardTitle>
-        <CardDescription>
-          Connect your wallet for secure blockchain transactions
-        </CardDescription>
+        <CardDescription>Connect your wallet for secure blockchain transactions</CardDescription>
       </CardHeader>
 
       <CardContent className="space-y-6">
@@ -225,8 +227,8 @@ export const BlockchainWallet: React.FC<BlockchainWalletProps> = ({
           <div className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="wallet-type">Select Wallet</Label>
-              <Select 
-                value={selectedWalletType} 
+              <Select
+                value={selectedWalletType}
                 onValueChange={(value: WalletType) => setSelectedWalletType(value)}
               >
                 <SelectTrigger>
@@ -248,11 +250,7 @@ export const BlockchainWallet: React.FC<BlockchainWalletProps> = ({
               </Select>
             </div>
 
-            <Button 
-              onClick={handleConnectWallet}
-              disabled={isConnecting}
-              className="w-full"
-            >
+            <Button onClick={handleConnectWallet} disabled={isConnecting} className="w-full">
               {isConnecting ? (
                 <>
                   <Clock className="mr-2 h-4 w-4 animate-spin" />
@@ -279,9 +277,7 @@ export const BlockchainWallet: React.FC<BlockchainWalletProps> = ({
             <TabsList className="grid w-full grid-cols-3">
               <TabsTrigger value="overview">Overview</TabsTrigger>
               <TabsTrigger value="send">Send</TabsTrigger>
-              {showTransactionHistory && (
-                <TabsTrigger value="history">History</TabsTrigger>
-              )}
+              {showTransactionHistory && <TabsTrigger value="history">History</TabsTrigger>}
             </TabsList>
 
             <TabsContent value="overview" className="space-y-4">
@@ -290,7 +286,7 @@ export const BlockchainWallet: React.FC<BlockchainWalletProps> = ({
                 <div className="flex items-center justify-between">
                   <span className="text-sm font-medium">Address</span>
                   <div className="flex items-center space-x-2">
-                    <code className="text-sm bg-muted px-2 py-1 rounded">
+                    <code className="rounded bg-muted px-2 py-1 text-sm">
                       {formatAddress(walletConnection.address)}
                     </code>
                     <Button
@@ -303,7 +299,9 @@ export const BlockchainWallet: React.FC<BlockchainWalletProps> = ({
                     <Button
                       variant="ghost"
                       size="sm"
-                      onClick={() => window.open(getExplorerUrl(walletConnection.address, 'address'), '_blank')}
+                      onClick={() =>
+                        window.open(getExplorerUrl(walletConnection.address, 'address'), '_blank')
+                      }
                     >
                       <ExternalLink className="h-3 w-3" />
                     </Button>
@@ -319,10 +317,7 @@ export const BlockchainWallet: React.FC<BlockchainWalletProps> = ({
 
                 <div className="flex items-center justify-between">
                   <span className="text-sm font-medium">Network</span>
-                  <Select 
-                    value={currentNetwork} 
-                    onValueChange={handleSwitchNetwork}
-                  >
+                  <Select value={currentNetwork} onValueChange={handleSwitchNetwork}>
                     <SelectTrigger className="w-48">
                       <SelectValue />
                     </SelectTrigger>
@@ -356,14 +351,21 @@ export const BlockchainWallet: React.FC<BlockchainWalletProps> = ({
                   <h4 className="text-sm font-medium">Recent Transactions</h4>
                   <div className="space-y-2">
                     {recentTransactions.slice(0, 3).map((tx) => (
-                      <div key={tx.hash} className="flex items-center justify-between p-2 bg-muted rounded">
+                      <div
+                        key={tx.hash}
+                        className="flex items-center justify-between rounded bg-muted p-2"
+                      >
                         <div className="flex items-center space-x-2">
                           {getTransactionStatusIcon(tx.status)}
                           <code className="text-xs">{formatAddress(tx.hash)}</code>
                         </div>
                         <div className="text-right">
-                          <div className="text-sm font-medium">{tx.value} {getNetworkConfig().nativeCurrency.symbol}</div>
-                          <div className="text-xs text-muted-foreground">To: {formatAddress(tx.to)}</div>
+                          <div className="text-sm font-medium">
+                            {tx.value} {getNetworkConfig().nativeCurrency.symbol}
+                          </div>
+                          <div className="text-xs text-muted-foreground">
+                            To: {formatAddress(tx.to)}
+                          </div>
                         </div>
                       </div>
                     ))}
@@ -371,11 +373,7 @@ export const BlockchainWallet: React.FC<BlockchainWalletProps> = ({
                 </div>
               )}
 
-              <Button 
-                variant="outline" 
-                onClick={disconnectWallet}
-                className="w-full"
-              >
+              <Button variant="outline" onClick={disconnectWallet} className="w-full">
                 <Unlock className="mr-2 h-4 w-4" />
                 Disconnect Wallet
               </Button>
@@ -400,7 +398,9 @@ export const BlockchainWallet: React.FC<BlockchainWalletProps> = ({
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="amount">Amount ({getNetworkConfig().nativeCurrency.symbol})</Label>
+                  <Label htmlFor="amount">
+                    Amount ({getNetworkConfig().nativeCurrency.symbol})
+                  </Label>
                   <Input
                     id="amount"
                     type="number"
@@ -449,9 +449,14 @@ export const BlockchainWallet: React.FC<BlockchainWalletProps> = ({
                   </Alert>
                 )}
 
-                <Button 
+                <Button
                   onClick={handleSendTransaction}
-                  disabled={isTransacting || !sendToAddress || !sendAmount || !validateAddress(sendToAddress)}
+                  disabled={
+                    isTransacting ||
+                    !sendToAddress ||
+                    !sendAmount ||
+                    !validateAddress(sendToAddress)
+                  }
                   className="w-full"
                 >
                   {isTransacting ? (
@@ -473,10 +478,10 @@ export const BlockchainWallet: React.FC<BlockchainWalletProps> = ({
               <TabsContent value="history" className="space-y-4">
                 <div className="space-y-3">
                   <h4 className="text-sm font-medium">Transaction History</h4>
-                  
+
                   {recentTransactions.length === 0 ? (
-                    <div className="text-center py-8 text-muted-foreground">
-                      <History className="h-12 w-12 mx-auto mb-2 opacity-50" />
+                    <div className="py-8 text-center text-muted-foreground">
+                      <History className="mx-auto mb-2 h-12 w-12 opacity-50" />
                       <p>No transactions yet</p>
                     </div>
                   ) : (
@@ -503,8 +508,12 @@ export const BlockchainWallet: React.FC<BlockchainWalletProps> = ({
                               </div>
                             </div>
                             <div className="text-right">
-                              <div className="font-medium">{tx.value} {getNetworkConfig().nativeCurrency.symbol}</div>
-                              <div className="text-xs text-muted-foreground capitalize">{tx.status}</div>
+                              <div className="font-medium">
+                                {tx.value} {getNetworkConfig().nativeCurrency.symbol}
+                              </div>
+                              <div className="text-xs capitalize text-muted-foreground">
+                                {tx.status}
+                              </div>
                             </div>
                           </div>
                         </Card>

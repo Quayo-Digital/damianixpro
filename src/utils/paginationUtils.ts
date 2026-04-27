@@ -1,4 +1,3 @@
-
 /**
  * Get paginated items from array
  */
@@ -15,9 +14,6 @@ export const getPaginatedItems = <T>(
 /**
  * Calculate total pages needed for pagination
  */
-export const calculateTotalPages = (
-  totalItems: number,
-  itemsPerPage: number
-): number => {
+export const calculateTotalPages = (totalItems: number, itemsPerPage: number): number => {
   return Math.ceil(totalItems / itemsPerPage);
 };

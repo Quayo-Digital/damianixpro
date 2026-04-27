@@ -5,23 +5,23 @@ import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Progress } from '@/components/ui/progress';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { 
-  AlertTriangle, 
-  Zap, 
-  Clock, 
-  CheckCircle2, 
+import {
+  AlertTriangle,
+  Zap,
+  Clock,
+  CheckCircle2,
   XCircle,
   TrendingUp,
   Activity,
   Gauge,
   Wrench,
   Rocket,
-  Target
+  Target,
 } from 'lucide-react';
-import { 
-  performanceOptimizer, 
-  QuickPerformanceFixes, 
-  PerformanceOptimization 
+import {
+  performanceOptimizer,
+  QuickPerformanceFixes,
+  PerformanceOptimization,
 } from '@/utils/performance-optimizer';
 import { performanceMonitor } from '@/utils/performance-monitor';
 
@@ -41,7 +41,7 @@ export const PerformanceEmergencyResponse = () => {
     currentAction: 'Initializing emergency response...',
     completedActions: [],
     failedActions: [],
-    estimatedTimeRemaining: 0
+    estimatedTimeRemaining: 0,
   });
 
   const [isRunning, setIsRunning] = useState(false);
@@ -71,92 +71,91 @@ export const PerformanceEmergencyResponse = () => {
 
   const runEmergencyResponse = async () => {
     setIsRunning(true);
-    
+
     try {
       // Phase 1: Assessment
-      setResponse(prev => ({
+      setResponse((prev) => ({
         ...prev,
         phase: 'assessment',
         progress: 10,
         currentAction: 'Analyzing critical performance issues...',
-        estimatedTimeRemaining: 180
+        estimatedTimeRemaining: 180,
       }));
 
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      setResponse(prev => ({
+      await new Promise((resolve) => setTimeout(resolve, 2000));
+
+      setResponse((prev) => ({
         ...prev,
         completedActions: [...prev.completedActions, 'Performance assessment completed'],
-        progress: 20
+        progress: 20,
       }));
 
       // Phase 2: Quick Fixes
-      setResponse(prev => ({
+      setResponse((prev) => ({
         ...prev,
         phase: 'quick-fixes',
         currentAction: 'Applying quick performance fixes...',
-        estimatedTimeRemaining: 150
+        estimatedTimeRemaining: 150,
       }));
 
       await QuickPerformanceFixes.runAllQuickFixes();
-      
-      setResponse(prev => ({
+
+      setResponse((prev) => ({
         ...prev,
         completedActions: [...prev.completedActions, 'Quick fixes applied'],
-        progress: 40
+        progress: 40,
       }));
 
       // Update score after quick fixes
-      setCurrentScore(prev => Math.min(100, prev + 20));
+      setCurrentScore((prev) => Math.min(100, prev + 20));
 
       // Phase 3: Critical Optimizations
-      setResponse(prev => ({
+      setResponse((prev) => ({
         ...prev,
         phase: 'critical-optimizations',
         currentAction: 'Implementing critical optimizations...',
-        estimatedTimeRemaining: 120
+        estimatedTimeRemaining: 120,
       }));
 
       const optimizationResult = await performanceOptimizer.runCriticalOptimizations();
-      
-      setResponse(prev => ({
+
+      setResponse((prev) => ({
         ...prev,
         completedActions: [...prev.completedActions, ...optimizationResult.completed],
         failedActions: [...prev.failedActions, ...optimizationResult.failed],
-        progress: 80
+        progress: 80,
       }));
 
       // Update score after critical optimizations
-      setCurrentScore(prev => Math.min(100, prev + 35));
+      setCurrentScore((prev) => Math.min(100, prev + 35));
 
       // Phase 4: Verification
-      setResponse(prev => ({
+      setResponse((prev) => ({
         ...prev,
         phase: 'verification',
         currentAction: 'Verifying performance improvements...',
-        estimatedTimeRemaining: 30
+        estimatedTimeRemaining: 30,
       }));
 
-      await new Promise(resolve => setTimeout(resolve, 3000));
-      
+      await new Promise((resolve) => setTimeout(resolve, 3000));
+
       // Final score update
-      setCurrentScore(prev => Math.min(100, prev + 10));
-      
-      setResponse(prev => ({
+      setCurrentScore((prev) => Math.min(100, prev + 10));
+
+      setResponse((prev) => ({
         ...prev,
         completedActions: [...prev.completedActions, 'Performance verification completed'],
         progress: 100,
         phase: 'complete',
         currentAction: 'Emergency response completed successfully!',
-        estimatedTimeRemaining: 0
+        estimatedTimeRemaining: 0,
       }));
-
     } catch (error) {
       console.error('Emergency response failed:', error);
-      setResponse(prev => ({
+      setResponse((prev) => ({
         ...prev,
         failedActions: [...prev.failedActions, 'Emergency response encountered errors'],
-        currentAction: 'Emergency response failed - manual intervention required'
+        currentAction: 'Emergency response failed - manual intervention required',
       }));
     } finally {
       setIsRunning(false);
@@ -179,12 +178,18 @@ export const PerformanceEmergencyResponse = () => {
 
   const getPhaseIcon = (phase: string) => {
     switch (phase) {
-      case 'assessment': return <Gauge className="h-4 w-4" />;
-      case 'quick-fixes': return <Zap className="h-4 w-4" />;
-      case 'critical-optimizations': return <Wrench className="h-4 w-4" />;
-      case 'verification': return <CheckCircle2 className="h-4 w-4" />;
-      case 'complete': return <Rocket className="h-4 w-4" />;
-      default: return <Activity className="h-4 w-4" />;
+      case 'assessment':
+        return <Gauge className="h-4 w-4" />;
+      case 'quick-fixes':
+        return <Zap className="h-4 w-4" />;
+      case 'critical-optimizations':
+        return <Wrench className="h-4 w-4" />;
+      case 'verification':
+        return <CheckCircle2 className="h-4 w-4" />;
+      case 'complete':
+        return <Rocket className="h-4 w-4" />;
+      default:
+        return <Activity className="h-4 w-4" />;
     }
   };
 
@@ -195,16 +200,16 @@ export const PerformanceEmergencyResponse = () => {
         <AlertTriangle className="h-4 w-4 text-red-600" />
         <AlertTitle className="text-red-800">Performance Emergency Detected!</AlertTitle>
         <AlertDescription className="text-red-700">
-          Critical performance issues detected (Grade F, 15/100). Immediate optimization required 
-          to ensure acceptable user experience for Nigerian users on slower networks.
+          Critical performance issues detected (Grade F, 15/100). Immediate optimization required to
+          ensure acceptable user experience for Nigerian users on slower networks.
         </AlertDescription>
       </Alert>
 
       {/* Score Dashboard */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
         <Card className="border-red-200">
           <CardHeader className="pb-3">
-            <CardTitle className="text-lg flex items-center gap-2">
+            <CardTitle className="flex items-center gap-2 text-lg">
               <Target className="h-5 w-5 text-red-600" />
               Initial Score
             </CardTitle>
@@ -213,13 +218,15 @@ export const PerformanceEmergencyResponse = () => {
             <div className="text-3xl font-bold">
               <span className={getScoreColor(initialScore)}>{initialScore}/100</span>
             </div>
-            <Badge variant="destructive" className="mt-2">Grade F</Badge>
+            <Badge variant="destructive" className="mt-2">
+              Grade F
+            </Badge>
           </CardContent>
         </Card>
 
         <Card className="border-blue-200">
           <CardHeader className="pb-3">
-            <CardTitle className="text-lg flex items-center gap-2">
+            <CardTitle className="flex items-center gap-2 text-lg">
               <TrendingUp className="h-5 w-5 text-blue-600" />
               Current Score
             </CardTitle>
@@ -236,7 +243,7 @@ export const PerformanceEmergencyResponse = () => {
 
         <Card className="border-green-200">
           <CardHeader className="pb-3">
-            <CardTitle className="text-lg flex items-center gap-2">
+            <CardTitle className="flex items-center gap-2 text-lg">
               <Rocket className="h-5 w-5 text-green-600" />
               Target Score
             </CardTitle>
@@ -245,7 +252,9 @@ export const PerformanceEmergencyResponse = () => {
             <div className="text-3xl font-bold">
               <span className="text-green-600">{targetScore}/100</span>
             </div>
-            <Badge variant="default" className="mt-2">Grade B+</Badge>
+            <Badge variant="default" className="mt-2">
+              Grade B+
+            </Badge>
           </CardContent>
         </Card>
       </div>
@@ -267,11 +276,11 @@ export const PerformanceEmergencyResponse = () => {
                   <AlertTriangle className="h-5 w-5 text-red-600" />
                   Emergency Performance Response
                 </CardTitle>
-                <Button 
-                  onClick={runEmergencyResponse} 
+                <Button
+                  onClick={runEmergencyResponse}
                   disabled={isRunning}
                   className="flex items-center gap-2"
-                  variant={isRunning ? "secondary" : "default"}
+                  variant={isRunning ? 'secondary' : 'default'}
                 >
                   {isRunning ? (
                     <>
@@ -303,30 +312,36 @@ export const PerformanceEmergencyResponse = () => {
                 <Progress value={response.progress} className="w-full" />
                 {response.estimatedTimeRemaining > 0 && (
                   <div className="text-sm text-gray-600">
-                    Estimated time remaining: {Math.ceil(response.estimatedTimeRemaining / 60)} minutes
+                    Estimated time remaining: {Math.ceil(response.estimatedTimeRemaining / 60)}{' '}
+                    minutes
                   </div>
                 )}
               </div>
 
               {/* Phase Status */}
-              <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-5">
                 {[
                   { phase: 'assessment', label: 'Assessment' },
                   { phase: 'quick-fixes', label: 'Quick Fixes' },
                   { phase: 'critical-optimizations', label: 'Optimizations' },
                   { phase: 'verification', label: 'Verification' },
-                  { phase: 'complete', label: 'Complete' }
+                  { phase: 'complete', label: 'Complete' },
                 ].map((item, index) => (
                   <div key={item.phase} className="text-center">
-                    <div className={`w-8 h-8 rounded-full mx-auto mb-2 flex items-center justify-center ${
-                      response.phase === item.phase ? 'bg-blue-600 text-white' :
-                      response.progress > (index * 20) ? 'bg-green-600 text-white' :
-                      'bg-gray-200 text-gray-600'
-                    }`}>
-                      {response.progress > (index * 20) ? 
-                        <CheckCircle2 className="h-4 w-4" /> : 
+                    <div
+                      className={`mx-auto mb-2 flex h-8 w-8 items-center justify-center rounded-full ${
+                        response.phase === item.phase
+                          ? 'bg-blue-600 text-white'
+                          : response.progress > index * 20
+                            ? 'bg-green-600 text-white'
+                            : 'bg-gray-200 text-gray-600'
+                      }`}
+                    >
+                      {response.progress > index * 20 ? (
+                        <CheckCircle2 className="h-4 w-4" />
+                      ) : (
                         <span className="text-xs">{index + 1}</span>
-                      }
+                      )}
                     </div>
                     <div className="text-xs font-medium">{item.label}</div>
                   </div>
@@ -336,10 +351,10 @@ export const PerformanceEmergencyResponse = () => {
               {/* Completed Actions */}
               {response.completedActions.length > 0 && (
                 <div>
-                  <h4 className="font-medium text-green-600 mb-2">✅ Completed Actions</h4>
+                  <h4 className="mb-2 font-medium text-green-600">✅ Completed Actions</h4>
                   <div className="space-y-1">
                     {response.completedActions.map((action, index) => (
-                      <div key={index} className="text-sm text-green-700 flex items-center gap-2">
+                      <div key={index} className="flex items-center gap-2 text-sm text-green-700">
                         <CheckCircle2 className="h-3 w-3" />
                         {action}
                       </div>
@@ -351,10 +366,10 @@ export const PerformanceEmergencyResponse = () => {
               {/* Failed Actions */}
               {response.failedActions.length > 0 && (
                 <div>
-                  <h4 className="font-medium text-red-600 mb-2">❌ Failed Actions</h4>
+                  <h4 className="mb-2 font-medium text-red-600">❌ Failed Actions</h4>
                   <div className="space-y-1">
                     {response.failedActions.map((action, index) => (
-                      <div key={index} className="text-sm text-red-700 flex items-center gap-2">
+                      <div key={index} className="flex items-center gap-2 text-sm text-red-700">
                         <XCircle className="h-3 w-3" />
                         {action}
                       </div>
@@ -373,9 +388,7 @@ export const PerformanceEmergencyResponse = () => {
                 <AlertTriangle className="h-5 w-5 text-red-600" />
                 Critical Performance Issues
               </CardTitle>
-              <CardDescription>
-                Issues that must be addressed immediately
-              </CardDescription>
+              <CardDescription>Issues that must be addressed immediately</CardDescription>
             </CardHeader>
             <CardContent>
               {criticalIssues.length > 0 ? (
@@ -383,15 +396,13 @@ export const PerformanceEmergencyResponse = () => {
                   {criticalIssues.map((issue, index) => (
                     <Alert key={index} className="border-red-200">
                       <AlertTriangle className="h-4 w-4 text-red-600" />
-                      <AlertDescription className="text-red-700">
-                        {issue}
-                      </AlertDescription>
+                      <AlertDescription className="text-red-700">{issue}</AlertDescription>
                     </Alert>
                   ))}
                 </div>
               ) : (
-                <div className="text-center py-8 text-gray-500">
-                  <CheckCircle2 className="h-12 w-12 mx-auto mb-4 text-green-600" />
+                <div className="py-8 text-center text-gray-500">
+                  <CheckCircle2 className="mx-auto mb-4 h-12 w-12 text-green-600" />
                   <p>No critical issues detected</p>
                 </div>
               )}
@@ -415,7 +426,7 @@ export const PerformanceEmergencyResponse = () => {
                 <CardDescription>{opt.description}</CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="text-sm text-green-600 font-medium">
+                <div className="text-sm font-medium text-green-600">
                   Expected improvement: {opt.estimatedImprovement}
                 </div>
               </CardContent>
@@ -430,9 +441,7 @@ export const PerformanceEmergencyResponse = () => {
                 <Activity className="h-5 w-5" />
                 Live Performance Monitoring
               </CardTitle>
-              <CardDescription>
-                Real-time performance metrics during optimization
-              </CardDescription>
+              <CardDescription>Real-time performance metrics during optimization</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
@@ -447,23 +456,20 @@ export const PerformanceEmergencyResponse = () => {
                     </Badge>
                   </div>
                 </div>
-                
+
                 <div className="space-y-2">
                   <div className="flex justify-between text-sm">
                     <span>Progress to Target</span>
                     <span>{Math.round((currentScore / targetScore) * 100)}%</span>
                   </div>
-                  <Progress 
-                    value={(currentScore / targetScore) * 100} 
-                    className="w-full" 
-                  />
+                  <Progress value={(currentScore / targetScore) * 100} className="w-full" />
                 </div>
 
                 <Alert>
                   <TrendingUp className="h-4 w-4" />
                   <AlertTitle>Nigerian Network Optimization</AlertTitle>
                   <AlertDescription>
-                    Performance optimizations are specifically tuned for Nigerian network conditions 
+                    Performance optimizations are specifically tuned for Nigerian network conditions
                     including 2G/3G networks and lower-end devices commonly used in Nigeria.
                   </AlertDescription>
                 </Alert>

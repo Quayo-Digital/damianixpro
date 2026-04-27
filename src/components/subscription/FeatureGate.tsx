@@ -1,4 +1,5 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -6,6 +7,9 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Lock, Crown, Zap, Star, Building2, AlertTriangle } from 'lucide-react';
 import { useSubscription } from '@/hooks/useSubscription';
 import { SubscriptionTier } from '@/types/subscription';
+import { subscriptionGrantsOwnerPaidAccess } from '@/services/subscription/subscriptionEntitlements';
+import { useAuthSession } from '@/contexts/auth';
+import { subscriptionBrowsePath } from '@/lib/subscriptionBrowsePaths';
 
 interface FeatureGateProps {
   feature: string;
@@ -23,7 +27,7 @@ const tierIcons = {
   starter: Zap,
   professional: Crown,
   enterprise: Building2,
-  white_label: Building2
+  white_label: Building2,
 };
 
 const tierNames = {
@@ -31,7 +35,7 @@ const tierNames = {
   starter: 'Starter',
   professional: 'Professional',
   enterprise: 'Enterprise',
-  white_label: 'White Label'
+  white_label: 'White Label',
 };
 
 const tierColors = {
@@ -39,7 +43,7 @@ const tierColors = {
   starter: 'bg-blue-100 text-blue-800',
   professional: 'bg-purple-100 text-purple-800',
   enterprise: 'bg-gold-100 text-gold-800',
-  white_label: 'bg-indigo-100 text-indigo-800'
+  white_label: 'bg-indigo-100 text-indigo-800',
 };
 
 export const FeatureGate: React.FC<FeatureGateProps> = ({
@@ -50,21 +54,28 @@ export const FeatureGate: React.FC<FeatureGateProps> = ({
   children,
   fallback,
   showUpgrade = true,
-  className = ''
+  className = '',
 }) => {
+  const navigate = useNavigate();
+  const { userRole } = useAuthSession();
   const {
     hasFeatureAccess,
     checkFeatureUsage,
     currentSubscription,
     subscriptionPlans,
-    createCheckout
+    createCheckout,
+    startSubscriptionTrial,
   } = useSubscription();
 
   // Check if user has access to the feature
-  const hasAccess = requiredFeature 
+  const hasAccess = requiredFeature
     ? hasFeatureAccess(requiredFeature)
-    : requiredTier 
-      ? currentSubscription?.tier && getTierLevel(currentSubscription.tier) >= getTierLevel(requiredTier)
+    : requiredTier
+      ? Boolean(
+          currentSubscription?.tier &&
+          subscriptionGrantsOwnerPaidAccess(currentSubscription) &&
+          getTierLevel(currentSubscription.tier) >= getTierLevel(requiredTier)
+        )
       : true;
 
   // Check usage limits if specified
@@ -83,7 +94,7 @@ export const FeatureGate: React.FC<FeatureGateProps> = ({
   // Default upgrade prompt
   const getRequiredPlan = () => {
     if (!requiredTier) return null;
-    return subscriptionPlans?.find(plan => plan.tier === requiredTier);
+    return subscriptionPlans?.find((plan) => plan.tier === requiredTier);
   };
 
   const requiredPlan = getRequiredPlan();
@@ -91,12 +102,18 @@ export const FeatureGate: React.FC<FeatureGateProps> = ({
 
   const handleUpgrade = async () => {
     if (!requiredPlan) return;
-    
+
     try {
-      await createCheckout.mutateAsync({
-        planId: requiredPlan.id,
-        billingCycle: 'monthly'
-      });
+      const useAppTrial =
+        requiredPlan.trial_days > 0 && !subscriptionGrantsOwnerPaidAccess(currentSubscription);
+      if (useAppTrial) {
+        await startSubscriptionTrial.mutateAsync(requiredPlan.id);
+      } else {
+        await createCheckout.mutateAsync({
+          planId: requiredPlan.id,
+          billingCycle: 'monthly',
+        });
+      }
     } catch (error) {
       console.error('Upgrade error:', error);
     }
@@ -104,65 +121,55 @@ export const FeatureGate: React.FC<FeatureGateProps> = ({
 
   return (
     <div className={className}>
-      <Card className="border-dashed border-2 border-gray-300">
+      <Card className="border-2 border-dashed border-gray-300">
         <CardHeader className="text-center">
-          <div className="flex items-center justify-center mb-2">
+          <div className="mb-2 flex items-center justify-center">
             <div className="relative">
               <TierIcon className="h-12 w-12 text-gray-400" />
-              <Lock className="h-6 w-6 text-gray-500 absolute -bottom-1 -right-1 bg-white rounded-full p-1" />
+              <Lock className="absolute -bottom-1 -right-1 h-6 w-6 rounded-full border border-border bg-card p-1 text-muted-foreground" />
             </div>
           </div>
-          
-          <CardTitle className="text-lg text-gray-700">
-            Premium Feature
-          </CardTitle>
-          
+
+          <CardTitle className="text-lg text-gray-700">Premium Feature</CardTitle>
+
           <CardDescription>
             {!hasAccess ? (
               <>
                 This feature requires a{' '}
                 {requiredTier && (
-                  <Badge className={tierColors[requiredTier]}>
-                    {tierNames[requiredTier]}
-                  </Badge>
+                  <Badge className={tierColors[requiredTier]}>{tierNames[requiredTier]}</Badge>
                 )}{' '}
                 subscription or higher.
               </>
             ) : (
               <>
                 You've reached your usage limit for this feature.{' '}
-                {canUse.reason && (
-                  <span className="text-sm text-gray-600">
-                    ({canUse.reason})
-                  </span>
-                )}
+                {canUse.reason && <span className="text-sm text-gray-600">({canUse.reason})</span>}
               </>
             )}
           </CardDescription>
         </CardHeader>
 
-        <CardContent className="text-center space-y-4">
+        <CardContent className="space-y-4 text-center">
           {!hasAccess && requiredPlan && (
             <div className="space-y-2">
-              <p className="text-sm text-gray-600">
-                Upgrade to unlock this feature and many more:
-              </p>
-              
-              <div className="bg-gray-50 rounded-lg p-3">
-                <div className="flex items-center justify-center space-x-2 mb-2">
+              <p className="text-sm text-gray-600">Upgrade to unlock this feature and many more:</p>
+
+              <div className="rounded-lg bg-gray-50 p-3">
+                <div className="mb-2 flex items-center justify-center space-x-2">
                   <TierIcon className="h-5 w-5 text-blue-600" />
                   <span className="font-semibold">{requiredPlan.name}</span>
                 </div>
-                
-                <div className="text-sm text-gray-600 mb-2">
+
+                <div className="mb-2 text-sm text-gray-600">
                   Starting at{' '}
                   <span className="font-semibold text-blue-600">
                     ₦{(requiredPlan.pricing.monthly || 0).toLocaleString()}/month
                   </span>
                 </div>
-                
+
                 {requiredPlan.trial_days > 0 && (
-                  <Badge variant="outline" className="text-green-600 border-green-600">
+                  <Badge variant="outline" className="border-green-600 text-green-600">
                     {requiredPlan.trial_days}-day free trial
                   </Badge>
                 )}
@@ -189,20 +196,23 @@ export const FeatureGate: React.FC<FeatureGateProps> = ({
           )}
 
           {showUpgrade && (
-            <div className="flex flex-col sm:flex-row gap-2 justify-center">
+            <div className="flex flex-col justify-center gap-2 sm:flex-row">
               {!hasAccess && requiredPlan && (
-                <Button 
+                <Button
                   onClick={handleUpgrade}
-                  disabled={createCheckout.isPending}
+                  disabled={createCheckout.isPending || startSubscriptionTrial.isPending}
                   className="bg-blue-600 hover:bg-blue-700"
                 >
-                  <Crown className="h-4 w-4 mr-2" />
-                  {requiredPlan.trial_days > 0 ? 'Start Free Trial' : 'Upgrade Now'}
+                  <Crown className="mr-2 h-4 w-4" />
+                  {requiredPlan.trial_days > 0 &&
+                  !subscriptionGrantsOwnerPaidAccess(currentSubscription)
+                    ? 'Start free trial'
+                    : 'Upgrade now'}
                 </Button>
               )}
-              
-              <Button variant="outline" onClick={() => window.open('/pricing', '_blank')}>
-                View All Plans
+
+              <Button variant="outline" onClick={() => navigate(subscriptionBrowsePath(userRole))}>
+                View all plans
               </Button>
             </div>
           )}
@@ -219,7 +229,7 @@ function getTierLevel(tier: SubscriptionTier): number {
     starter: 1,
     professional: 2,
     enterprise: 3,
-    white_label: 4
+    white_label: 4,
   };
   return levels[tier] || 0;
 }
@@ -241,14 +251,18 @@ export function withFeatureGate<P extends object>(
 // Hook for programmatic feature checking
 export function useFeatureGate(feature: string, requiredTier?: SubscriptionTier) {
   const { hasFeatureAccess, currentSubscription } = useSubscription();
-  
-  const hasAccess = requiredTier 
-    ? currentSubscription?.tier && getTierLevel(currentSubscription.tier) >= getTierLevel(requiredTier)
+
+  const hasAccess = requiredTier
+    ? Boolean(
+        currentSubscription?.tier &&
+        subscriptionGrantsOwnerPaidAccess(currentSubscription) &&
+        getTierLevel(currentSubscription.tier) >= getTierLevel(requiredTier)
+      )
     : hasFeatureAccess(feature);
-    
+
   return {
     hasAccess,
     currentTier: currentSubscription?.tier,
-    requiredTier
+    requiredTier,
   };
 }

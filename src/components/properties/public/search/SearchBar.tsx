@@ -1,7 +1,12 @@
-
 import { Search } from 'lucide-react';
 import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 
 interface SearchBarProps {
   searchQuery: string;
@@ -20,21 +25,21 @@ export function SearchBar({
   setPropertyType,
   location,
   setLocation,
-  locations
+  locations,
 }: SearchBarProps) {
   return (
-    <div className="flex flex-col sm:flex-row gap-3 max-w-4xl mx-auto mb-4">
+    <div className="mx-auto mb-4 flex max-w-4xl flex-col gap-3 sm:flex-row">
       <div className="relative flex-grow">
         <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-        <Input 
-          placeholder="Search by property name or location" 
-          className="pl-9"
+        <Input
+          placeholder="Search by property name or location"
+          className="rounded-xl border-border bg-background pl-9 dark:bg-card/80"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
         />
       </div>
       <Select value={propertyType} onValueChange={setPropertyType}>
-        <SelectTrigger className="w-full sm:w-[180px]">
+        <SelectTrigger className="w-full rounded-xl border-border bg-background dark:bg-card/80 sm:w-[180px]">
           <SelectValue placeholder="Property Type" />
         </SelectTrigger>
         <SelectContent>
@@ -45,13 +50,15 @@ export function SearchBar({
         </SelectContent>
       </Select>
       <Select value={location} onValueChange={setLocation}>
-        <SelectTrigger className="w-full sm:w-[180px]">
+        <SelectTrigger className="w-full rounded-xl border-border bg-background dark:bg-card/80 sm:w-[180px]">
           <SelectValue placeholder="Location" />
         </SelectTrigger>
         <SelectContent>
           <SelectItem value="all">All Locations</SelectItem>
           {locations.map((loc) => (
-            <SelectItem key={loc} value={loc}>{loc}</SelectItem>
+            <SelectItem key={loc} value={loc}>
+              {loc}
+            </SelectItem>
           ))}
         </SelectContent>
       </Select>

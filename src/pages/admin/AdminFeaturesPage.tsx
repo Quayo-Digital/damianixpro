@@ -1,4 +1,3 @@
-
 import { useEffect } from 'react';
 import { PageLayout } from '@/components/layout/PageLayout';
 import { PageContent } from '@/components/layout/PageContent';
@@ -10,7 +9,11 @@ import { useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 
 export default function AdminFeaturesPage() {
-  const { data: tickets, isLoading, error } = useAdminSupportTickets({ category: 'feature_request' });
+  const {
+    data: tickets,
+    isLoading,
+    error,
+  } = useAdminSupportTickets({ category: 'feature_request' });
   const queryClient = useQueryClient();
 
   useEffect(() => {
@@ -41,16 +44,16 @@ export default function AdminFeaturesPage() {
 
   return (
     <PageLayout>
-      <PageContent 
-        title="Feature Requests" 
+      <PageContent
+        title="Feature Requests"
         description="View and manage feature request tickets."
         actions={<FeatureRequestDialog onSuccess={handleSuccess} />}
       >
-        <div className="bg-background p-6 rounded-lg shadow-sm border">
+        <div className="rounded-lg border bg-background p-6 shadow-sm">
           {isLoading ? (
             <Skeleton className="h-48 w-full" />
           ) : error ? (
-            <p className="text-destructive text-center py-8">{error.message}</p>
+            <p className="py-8 text-center text-destructive">{error.message}</p>
           ) : (
             <SupportTicketsTable tickets={tickets || []} />
           )}
@@ -59,4 +62,3 @@ export default function AdminFeaturesPage() {
     </PageLayout>
   );
 }
-

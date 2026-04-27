@@ -1,11 +1,17 @@
-
 import { useState } from 'react';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
 import { PropertyForm } from './PropertyForm';
 import { PropertyFormValues } from '@/services/property/types';
 import { createProperty } from '@/services/property';
-import { useAuth } from '@/contexts/auth';
+import { useAuthSession } from '@/contexts/auth';
+import { createTourServiceRequest } from '@/services/tourServiceRequests';
 
 interface AddPropertyDialogProps {
   open: boolean;
@@ -16,41 +22,93 @@ interface AddPropertyDialogProps {
 export function AddPropertyDialog({ open, onOpenChange, onPropertyAdded }: AddPropertyDialogProps) {
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const { user } = useAuth();
+  const { user } = useAuthSession();
 
-  const handleSubmit = async (data: PropertyFormValues, imageUrl: string | null, documents: File[]) => {
+  const handleSubmit = async (
+    data: PropertyFormValues,
+    imageUrl: string | null,
+    documents: File[],
+    requestTourAfterSubmit: boolean
+  ) => {
     setIsSubmitting(true);
     try {
       if (!user) {
-        throw new Error("You must be logged in to add a property");
+        throw new Error('You must be logged in to add a property');
       }
-      
+
       // Add owner_id from the current user and handle imageUrl
       const propertyData = {
         ...data,
         owner_id: user.id,
-        imageUrl: imageUrl || undefined
+        imageUrl: imageUrl || undefined,
       };
-      
-      await createProperty(propertyData, documents);
-      
+
+      const property = await createProperty(propertyData, documents);
+
+      if (requestTourAfterSubmit) {
+        await createTourServiceRequest(property.id, user.id);
+      }
+
+      // If an agent is assigned, send notification
+      if (data.agent_id && data.agent_id !== 'none') {
+        try {
+          // Get owner details
+          const { supabase } = await import('@/integrations/supabase/client');
+          const { data: ownerProfile } = await supabase
+            .from('profiles')
+            .select('first_name, last_name, email, phone')
+            .eq('id', user.id)
+            .single();
+
+          const ownerName =
+            [ownerProfile?.first_name, ownerProfile?.last_name].filter(Boolean).join(' ').trim() ||
+            user.email ||
+            'Property Owner';
+          const ownerEmail = ownerProfile?.email || user.email || '';
+          const ownerPhone = ownerProfile?.phone || undefined;
+
+          const { sendAgentAssignmentNotification } =
+            await import('@/services/notifications/agent');
+          await sendAgentAssignmentNotification({
+            agentId: data.agent_id,
+            propertyId: property.id,
+            propertyName: data.name || 'New Property',
+            ownerId: user.id,
+            ownerName: ownerName,
+            ownerEmail: ownerEmail,
+            ownerPhone: ownerPhone,
+            commissionRate: data.agent_commission_rate || '0.03',
+          });
+        } catch (notificationError) {
+          // Log error but don't fail the property creation
+          console.error('Error sending agent assignment notification:', notificationError);
+        }
+      }
+
       toast({
-        title: "Success!",
-        description: "Property has been added successfully.",
+        title: 'Success!',
+        description:
+          data.agent_id && data.agent_id !== 'none'
+            ? requestTourAfterSubmit
+              ? 'Property added, agent notified, and 3D tour request submitted.'
+              : 'Property has been added successfully and the agent has been notified.'
+            : requestTourAfterSubmit
+              ? 'Property added and 3D tour request submitted.'
+              : 'Property has been added successfully.',
       });
-      
+
       // Call the callback if provided
       if (onPropertyAdded) {
         onPropertyAdded();
       }
-      
+
       // Close dialog
       onOpenChange(false);
     } catch (error: any) {
       toast({
-        title: "Error",
-        description: error.message || "Failed to add property. Please try again.",
-        variant: "destructive",
+        title: 'Error',
+        description: error.message || 'Failed to add property. Please try again.',
+        variant: 'destructive',
       });
       console.error('Error adding property:', error);
     } finally {
@@ -64,19 +122,15 @@ export function AddPropertyDialog({ open, onOpenChange, onPropertyAdded }: AddPr
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[650px] max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-[650px]">
         <DialogHeader>
           <DialogTitle>Add New Property</DialogTitle>
           <DialogDescription>
             Enter the details of the new property you want to add to your portfolio.
           </DialogDescription>
         </DialogHeader>
-        
-        <PropertyForm 
-          onSubmit={handleSubmit}
-          onCancel={handleCancel}
-          isSubmitting={isSubmitting}
-        />
+
+        <PropertyForm onSubmit={handleSubmit} onCancel={handleCancel} isSubmitting={isSubmitting} />
       </DialogContent>
     </Dialog>
   );

@@ -1,10 +1,16 @@
-
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
-import { Check, Clock, X, RepeatIcon } from "lucide-react";
-import { Payment, PAYMENT_CATEGORIES } from "@/utils/PaymentTypes";
-import { Skeleton } from "@/components/ui/skeleton";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
+import { Badge } from '@/components/ui/badge';
+import { Check, Clock, X, RepeatIcon } from 'lucide-react';
+import { Payment, PAYMENT_CATEGORIES } from '@/utils/PaymentTypes';
+import { Skeleton } from '@/components/ui/skeleton';
 
 interface PaymentHistoryProps {
   payments: Payment[];
@@ -30,22 +36,24 @@ export const PaymentHistory = ({ payments = [], isLoading = false }: PaymentHist
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'successful':
-        return "bg-green-100 text-green-800 hover:bg-green-100";
+        return 'bg-green-100 text-green-800 hover:bg-green-100';
       case 'pending':
-        return "bg-yellow-100 text-yellow-800 hover:bg-yellow-100";
+        return 'bg-yellow-100 text-yellow-800 hover:bg-yellow-100';
       case 'failed':
-        return "bg-red-100 text-red-800 hover:bg-red-100";
+        return 'bg-red-100 text-red-800 hover:bg-red-100';
       case 'active':
-        return "bg-blue-100 text-blue-800 hover:bg-blue-100";
+        return 'bg-blue-100 text-blue-800 hover:bg-blue-100';
       default:
-        return "";
+        return '';
     }
   };
 
   const getCategoryLabel = (categoryValue?: string) => {
     if (!categoryValue) return 'Other';
-    const category = PAYMENT_CATEGORIES.find(c => c.value === categoryValue);
-    return category ? category.label : categoryValue.charAt(0).toUpperCase() + categoryValue.slice(1);
+    const category = PAYMENT_CATEGORIES.find((c) => c.value === categoryValue);
+    return category
+      ? category.label
+      : categoryValue.charAt(0).toUpperCase() + categoryValue.slice(1);
   };
 
   return (
@@ -80,7 +88,9 @@ export const PaymentHistory = ({ payments = [], isLoading = false }: PaymentHist
                   <TableCell>{getCategoryLabel(payment.category)}</TableCell>
                   <TableCell>₦{payment.amount.toLocaleString()}</TableCell>
                   <TableCell>
-                    <Badge className={`flex w-24 items-center justify-center gap-1 ${getStatusColor(payment.status)}`}>
+                    <Badge
+                      className={`flex w-24 items-center justify-center gap-1 ${getStatusColor(payment.status)}`}
+                    >
                       {getStatusIcon(payment.status)}
                       {payment.status.charAt(0).toUpperCase() + payment.status.slice(1)}
                     </Badge>

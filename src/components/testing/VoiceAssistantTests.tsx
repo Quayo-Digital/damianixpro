@@ -4,17 +4,17 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { 
-  CheckCircle, 
-  XCircle, 
-  AlertTriangle, 
-  Play, 
+import {
+  CheckCircle,
+  XCircle,
+  AlertTriangle,
+  Play,
   Mic,
   Volume2,
   MessageSquare,
   Zap,
   Shield,
-  Globe
+  Globe,
 } from 'lucide-react';
 import { VoiceAssistantService } from '@/services/voice/voiceAssistantService';
 import { useVoiceAssistant } from '@/hooks/useVoiceAssistant';
@@ -32,16 +32,11 @@ export const VoiceAssistantTests: React.FC = () => {
   const [isRunning, setIsRunning] = useState(false);
   const [activeTab, setActiveTab] = useState('browser');
 
-  const {
-    isEnabled,
-    browserSupport,
-    canUseVoiceAssistant,
-    getAvailableCommands,
-    getStatistics
-  } = useVoiceAssistant();
+  const { isEnabled, browserSupport, canUseVoiceAssistant, getAvailableCommands, getStatistics } =
+    useVoiceAssistant();
 
   const addResult = (result: TestResult) => {
-    setTestResults(prev => [...prev, result]);
+    setTestResults((prev) => [...prev, result]);
   };
 
   const clearResults = () => {
@@ -51,33 +46,45 @@ export const VoiceAssistantTests: React.FC = () => {
   // Test 1: Browser Support
   const testBrowserSupport = () => {
     const support = VoiceAssistantService.getBrowserSupport();
-    
+
     addResult({
       name: 'Speech Recognition API',
       status: support.speechRecognition ? 'pass' : 'fail',
-      message: support.speechRecognition ? 'Speech Recognition is supported' : 'Speech Recognition not supported',
-      details: support.speechRecognition ? 'Browser supports Web Speech API' : 'Requires Chrome, Edge, or Safari'
+      message: support.speechRecognition
+        ? 'Speech Recognition is supported'
+        : 'Speech Recognition not supported',
+      details: support.speechRecognition
+        ? 'Browser supports Web Speech API'
+        : 'Requires Chrome, Edge, or Safari',
     });
 
     addResult({
       name: 'Speech Synthesis API',
       status: support.speechSynthesis ? 'pass' : 'fail',
-      message: support.speechSynthesis ? 'Text-to-Speech is supported' : 'Text-to-Speech not supported',
-      details: support.speechSynthesis ? 'Browser supports Speech Synthesis API' : 'Text-to-speech functionality unavailable'
+      message: support.speechSynthesis
+        ? 'Text-to-Speech is supported'
+        : 'Text-to-Speech not supported',
+      details: support.speechSynthesis
+        ? 'Browser supports Speech Synthesis API'
+        : 'Text-to-speech functionality unavailable',
     });
 
     addResult({
       name: 'Media Devices API',
       status: support.mediaDevices ? 'pass' : 'warning',
       message: support.mediaDevices ? 'Media Devices API available' : 'Media Devices API limited',
-      details: support.mediaDevices ? 'Full microphone access available' : 'Limited microphone functionality'
+      details: support.mediaDevices
+        ? 'Full microphone access available'
+        : 'Limited microphone functionality',
     });
 
     addResult({
       name: 'getUserMedia Support',
       status: support.getUserMedia ? 'pass' : 'warning',
       message: support.getUserMedia ? 'Microphone access available' : 'Limited microphone access',
-      details: support.getUserMedia ? 'Can request microphone permissions' : 'May have microphone limitations'
+      details: support.getUserMedia
+        ? 'Can request microphone permissions'
+        : 'May have microphone limitations',
     });
   };
 
@@ -85,12 +92,12 @@ export const VoiceAssistantTests: React.FC = () => {
   const testServiceFunctionality = async () => {
     try {
       const service = VoiceAssistantService.getInstance();
-      
+
       addResult({
         name: 'Service Initialization',
         status: 'pass',
         message: 'Voice Assistant Service initialized successfully',
-        details: 'Singleton pattern working correctly'
+        details: 'Singleton pattern working correctly',
       });
 
       // Test Nigerian features
@@ -99,7 +106,7 @@ export const VoiceAssistantTests: React.FC = () => {
         name: 'Nigerian Localization',
         status: nigerianFeatures.currency_recognition ? 'pass' : 'warning',
         message: 'Nigerian market features configured',
-        details: `Languages: ${nigerianFeatures.local_languages.join(', ')}, Currency: ${nigerianFeatures.currency_recognition ? 'NGN' : 'Not configured'}`
+        details: `Languages: ${nigerianFeatures.local_languages.join(', ')}, Currency: ${nigerianFeatures.currency_recognition ? 'NGN' : 'Not configured'}`,
       });
 
       // Test command processing
@@ -109,14 +116,14 @@ export const VoiceAssistantTests: React.FC = () => {
           name: 'Command Processing',
           status: testResponse.text ? 'pass' : 'fail',
           message: 'Voice command processing works',
-          details: `Response: "${testResponse.text}"`
+          details: `Response: "${testResponse.text}"`,
         });
       } catch (error) {
         addResult({
           name: 'Command Processing',
           status: 'fail',
           message: 'Command processing failed',
-          details: error instanceof Error ? error.message : 'Unknown error'
+          details: error instanceof Error ? error.message : 'Unknown error',
         });
       }
 
@@ -128,14 +135,14 @@ export const VoiceAssistantTests: React.FC = () => {
             name: 'Text-to-Speech',
             status: 'pass',
             message: 'Text-to-speech functionality works',
-            details: 'Successfully generated speech output'
+            details: 'Successfully generated speech output',
           });
         } catch (error) {
           addResult({
             name: 'Text-to-Speech',
             status: 'fail',
             message: 'Text-to-speech failed',
-            details: error instanceof Error ? error.message : 'Speech synthesis error'
+            details: error instanceof Error ? error.message : 'Speech synthesis error',
           });
         }
       } else {
@@ -143,16 +150,15 @@ export const VoiceAssistantTests: React.FC = () => {
           name: 'Text-to-Speech',
           status: 'fail',
           message: 'Text-to-speech not available',
-          details: 'Browser does not support Speech Synthesis API'
+          details: 'Browser does not support Speech Synthesis API',
         });
       }
-
     } catch (error) {
       addResult({
         name: 'Service Functionality Error',
         status: 'fail',
         message: 'Error testing service functionality',
-        details: error instanceof Error ? error.message : 'Unknown error'
+        details: error instanceof Error ? error.message : 'Unknown error',
       });
     }
   };
@@ -163,21 +169,27 @@ export const VoiceAssistantTests: React.FC = () => {
       name: 'useVoiceAssistant Hook',
       status: 'pass',
       message: 'React hook is properly initialized',
-      details: 'Hook provides voice assistant state and actions'
+      details: 'Hook provides voice assistant state and actions',
     });
 
     addResult({
       name: 'Feature Access Control',
       status: canUseVoiceAssistant ? 'pass' : 'warning',
-      message: canUseVoiceAssistant ? 'User has voice assistant access' : 'Voice assistant requires premium subscription',
-      details: canUseVoiceAssistant ? 'Subscription tier allows voice features' : 'Upgrade needed for voice assistant'
+      message: canUseVoiceAssistant
+        ? 'User has voice assistant access'
+        : 'Voice assistant requires premium subscription',
+      details: canUseVoiceAssistant
+        ? 'Subscription tier allows voice features'
+        : 'Upgrade needed for voice assistant',
     });
 
     addResult({
       name: 'Voice Assistant State',
       status: isEnabled ? 'pass' : 'warning',
       message: isEnabled ? 'Voice assistant is enabled' : 'Voice assistant is disabled',
-      details: isEnabled ? 'Ready to accept voice commands' : 'Check browser support and permissions'
+      details: isEnabled
+        ? 'Ready to accept voice commands'
+        : 'Check browser support and permissions',
     });
 
     const commands = getAvailableCommands();
@@ -185,7 +197,10 @@ export const VoiceAssistantTests: React.FC = () => {
       name: 'Available Commands',
       status: commands.length > 0 ? 'pass' : 'fail',
       message: `${commands.length} voice commands available`,
-      details: commands.slice(0, 3).map(cmd => cmd.command).join(', ')
+      details: commands
+        .slice(0, 3)
+        .map((cmd) => cmd.command)
+        .join(', '),
     });
   };
 
@@ -196,29 +211,28 @@ export const VoiceAssistantTests: React.FC = () => {
         name: 'VoiceAssistantWidget Component',
         status: 'pass',
         message: 'Widget component renders without errors',
-        details: 'Main voice assistant interface is functional'
+        details: 'Main voice assistant interface is functional',
       });
 
       addResult({
         name: 'Voice Settings Component',
         status: 'pass',
         message: 'Settings component is available',
-        details: 'Users can customize voice assistant preferences'
+        details: 'Users can customize voice assistant preferences',
       });
 
       addResult({
         name: 'Command History Component',
         status: 'pass',
         message: 'History component is functional',
-        details: 'Voice command history tracking works'
+        details: 'Voice command history tracking works',
       });
-
     } catch (error) {
       addResult({
         name: 'UI Components Error',
         status: 'fail',
         message: 'Error testing UI components',
-        details: error instanceof Error ? error.message : 'Unknown error'
+        details: error instanceof Error ? error.message : 'Unknown error',
       });
     }
   };
@@ -229,61 +243,62 @@ export const VoiceAssistantTests: React.FC = () => {
       name: 'Local Processing',
       status: 'pass',
       message: 'Voice data processed locally',
-      details: 'No voice data sent to external servers'
+      details: 'No voice data sent to external servers',
     });
 
     addResult({
       name: 'Command History Storage',
       status: 'pass',
       message: 'History stored locally only',
-      details: 'Command history kept in browser localStorage'
+      details: 'Command history kept in browser localStorage',
     });
 
     addResult({
       name: 'Microphone Permissions',
       status: 'pass',
       message: 'Proper permission handling',
-      details: 'Microphone access requested only when needed'
+      details: 'Microphone access requested only when needed',
     });
 
     addResult({
       name: 'Privacy Controls',
       status: 'pass',
       message: 'Privacy settings available',
-      details: 'Users can enable privacy mode and control data retention'
+      details: 'Users can enable privacy mode and control data retention',
     });
   };
 
   // Test 6: Performance & Accessibility
   const testPerformanceAccessibility = () => {
     const statistics = getStatistics();
-    
+
     addResult({
       name: 'Response Time',
       status: 'pass',
       message: 'Voice processing is responsive',
-      details: 'Commands processed in real-time'
+      details: 'Commands processed in real-time',
     });
 
     addResult({
       name: 'Command Accuracy',
-      status: statistics.successRate > 80 ? 'pass' : statistics.successRate > 60 ? 'warning' : 'fail',
+      status:
+        statistics.successRate > 80 ? 'pass' : statistics.successRate > 60 ? 'warning' : 'fail',
       message: `${Math.round(statistics.successRate)}% command success rate`,
-      details: `${statistics.successfulCommands}/${statistics.totalCommands} commands successful`
+      details: `${statistics.successfulCommands}/${statistics.totalCommands} commands successful`,
     });
 
     addResult({
       name: 'Accessibility Features',
       status: 'pass',
       message: 'Accessibility features implemented',
-      details: 'Keyboard shortcuts, visual feedback, and screen reader support'
+      details: 'Keyboard shortcuts, visual feedback, and screen reader support',
     });
 
     addResult({
       name: 'Multi-language Support',
       status: 'pass',
       message: 'Nigerian languages supported',
-      details: 'English (Nigeria), Hausa, Yoruba, Igbo support'
+      details: 'English (Nigeria), Hausa, Yoruba, Igbo support',
     });
   };
 
@@ -303,7 +318,7 @@ export const VoiceAssistantTests: React.FC = () => {
         name: 'Test Suite Error',
         status: 'fail',
         message: 'Error running test suite',
-        details: error instanceof Error ? error.message : 'Unknown error'
+        details: error instanceof Error ? error.message : 'Unknown error',
       });
     } finally {
       setIsRunning(false);
@@ -332,33 +347,33 @@ export const VoiceAssistantTests: React.FC = () => {
     }
   };
 
-  const passCount = testResults.filter(r => r.status === 'pass').length;
-  const failCount = testResults.filter(r => r.status === 'fail').length;
-  const warningCount = testResults.filter(r => r.status === 'warning').length;
+  const passCount = testResults.filter((r) => r.status === 'pass').length;
+  const failCount = testResults.filter((r) => r.status === 'fail').length;
+  const warningCount = testResults.filter((r) => r.status === 'warning').length;
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-2xl font-bold text-gray-900">Voice Assistant Tests</h2>
-          <p className="text-gray-600 mt-1">
+          <p className="mt-1 text-gray-600">
             Comprehensive testing of voice assistant functionality and integration
           </p>
         </div>
-        
-        <Button 
-          onClick={runAllTests} 
+
+        <Button
+          onClick={runAllTests}
           disabled={isRunning}
           className="bg-blue-600 hover:bg-blue-700"
         >
           {isRunning ? (
             <div className="flex items-center space-x-2">
-              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+              <div className="h-4 w-4 animate-spin rounded-full border-b-2 border-primary-foreground"></div>
               <span>Running Tests...</span>
             </div>
           ) : (
             <>
-              <Play className="h-4 w-4 mr-2" />
+              <Play className="mr-2 h-4 w-4" />
               Run All Tests
             </>
           )}
@@ -366,7 +381,7 @@ export const VoiceAssistantTests: React.FC = () => {
       </div>
 
       {testResults.length > 0 && (
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
           <Card>
             <CardContent className="flex items-center justify-between p-4">
               <div>
@@ -376,7 +391,7 @@ export const VoiceAssistantTests: React.FC = () => {
               <CheckCircle className="h-8 w-8 text-green-500" />
             </CardContent>
           </Card>
-          
+
           <Card>
             <CardContent className="flex items-center justify-between p-4">
               <div>
@@ -386,7 +401,7 @@ export const VoiceAssistantTests: React.FC = () => {
               <XCircle className="h-8 w-8 text-red-500" />
             </CardContent>
           </Card>
-          
+
           <Card>
             <CardContent className="flex items-center justify-between p-4">
               <div>
@@ -396,7 +411,7 @@ export const VoiceAssistantTests: React.FC = () => {
               <AlertTriangle className="h-8 w-8 text-yellow-500" />
             </CardContent>
           </Card>
-          
+
           <Card>
             <CardContent className="flex items-center justify-between p-4">
               <div>
@@ -426,16 +441,24 @@ export const VoiceAssistantTests: React.FC = () => {
                 <Globe className="h-5 w-5" />
                 <span>Browser Support Test</span>
               </CardTitle>
-              <CardDescription>
-                Testing browser compatibility and Web API support
-              </CardDescription>
+              <CardDescription>Testing browser compatibility and Web API support</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-3">
                 {testResults
-                  .filter(r => ['Speech Recognition API', 'Speech Synthesis API', 'Media Devices API', 'getUserMedia Support'].includes(r.name))
+                  .filter((r) =>
+                    [
+                      'Speech Recognition API',
+                      'Speech Synthesis API',
+                      'Media Devices API',
+                      'getUserMedia Support',
+                    ].includes(r.name)
+                  )
                   .map((result, index) => (
-                    <div key={index} className={`p-3 rounded-lg border ${getStatusColor(result.status)}`}>
+                    <div
+                      key={index}
+                      className={`rounded-lg border p-3 ${getStatusColor(result.status)}`}
+                    >
                       <div className="flex items-center justify-between">
                         <div className="flex items-center space-x-2">
                           {getStatusIcon(result.status)}
@@ -443,9 +466,9 @@ export const VoiceAssistantTests: React.FC = () => {
                         </div>
                         <Badge variant="outline">{result.status}</Badge>
                       </div>
-                      <p className="text-sm text-gray-600 mt-1">{result.message}</p>
+                      <p className="mt-1 text-sm text-gray-600">{result.message}</p>
                       {result.details && (
-                        <p className="text-xs text-gray-500 mt-1">{result.details}</p>
+                        <p className="mt-1 text-xs text-gray-500">{result.details}</p>
                       )}
                     </div>
                   ))}
@@ -468,9 +491,19 @@ export const VoiceAssistantTests: React.FC = () => {
             <CardContent>
               <div className="space-y-3">
                 {testResults
-                  .filter(r => ['Service Initialization', 'Nigerian Localization', 'Command Processing', 'Text-to-Speech'].includes(r.name))
+                  .filter((r) =>
+                    [
+                      'Service Initialization',
+                      'Nigerian Localization',
+                      'Command Processing',
+                      'Text-to-Speech',
+                    ].includes(r.name)
+                  )
                   .map((result, index) => (
-                    <div key={index} className={`p-3 rounded-lg border ${getStatusColor(result.status)}`}>
+                    <div
+                      key={index}
+                      className={`rounded-lg border p-3 ${getStatusColor(result.status)}`}
+                    >
                       <div className="flex items-center justify-between">
                         <div className="flex items-center space-x-2">
                           {getStatusIcon(result.status)}
@@ -478,9 +511,9 @@ export const VoiceAssistantTests: React.FC = () => {
                         </div>
                         <Badge variant="outline">{result.status}</Badge>
                       </div>
-                      <p className="text-sm text-gray-600 mt-1">{result.message}</p>
+                      <p className="mt-1 text-sm text-gray-600">{result.message}</p>
                       {result.details && (
-                        <p className="text-xs text-gray-500 mt-1">{result.details}</p>
+                        <p className="mt-1 text-xs text-gray-500">{result.details}</p>
                       )}
                     </div>
                   ))}
@@ -496,16 +529,24 @@ export const VoiceAssistantTests: React.FC = () => {
                 <MessageSquare className="h-5 w-5" />
                 <span>React Integration Test</span>
               </CardTitle>
-              <CardDescription>
-                Testing React hooks and component integration
-              </CardDescription>
+              <CardDescription>Testing React hooks and component integration</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-3">
                 {testResults
-                  .filter(r => ['useVoiceAssistant Hook', 'Feature Access Control', 'Voice Assistant State', 'Available Commands'].includes(r.name))
+                  .filter((r) =>
+                    [
+                      'useVoiceAssistant Hook',
+                      'Feature Access Control',
+                      'Voice Assistant State',
+                      'Available Commands',
+                    ].includes(r.name)
+                  )
                   .map((result, index) => (
-                    <div key={index} className={`p-3 rounded-lg border ${getStatusColor(result.status)}`}>
+                    <div
+                      key={index}
+                      className={`rounded-lg border p-3 ${getStatusColor(result.status)}`}
+                    >
                       <div className="flex items-center justify-between">
                         <div className="flex items-center space-x-2">
                           {getStatusIcon(result.status)}
@@ -513,9 +554,9 @@ export const VoiceAssistantTests: React.FC = () => {
                         </div>
                         <Badge variant="outline">{result.status}</Badge>
                       </div>
-                      <p className="text-sm text-gray-600 mt-1">{result.message}</p>
+                      <p className="mt-1 text-sm text-gray-600">{result.message}</p>
                       {result.details && (
-                        <p className="text-xs text-gray-500 mt-1">{result.details}</p>
+                        <p className="mt-1 text-xs text-gray-500">{result.details}</p>
                       )}
                     </div>
                   ))}
@@ -538,9 +579,12 @@ export const VoiceAssistantTests: React.FC = () => {
             <CardContent>
               <div className="space-y-3">
                 {testResults
-                  .filter(r => r.name.includes('Component'))
+                  .filter((r) => r.name.includes('Component'))
                   .map((result, index) => (
-                    <div key={index} className={`p-3 rounded-lg border ${getStatusColor(result.status)}`}>
+                    <div
+                      key={index}
+                      className={`rounded-lg border p-3 ${getStatusColor(result.status)}`}
+                    >
                       <div className="flex items-center justify-between">
                         <div className="flex items-center space-x-2">
                           {getStatusIcon(result.status)}
@@ -548,9 +592,9 @@ export const VoiceAssistantTests: React.FC = () => {
                         </div>
                         <Badge variant="outline">{result.status}</Badge>
                       </div>
-                      <p className="text-sm text-gray-600 mt-1">{result.message}</p>
+                      <p className="mt-1 text-sm text-gray-600">{result.message}</p>
                       {result.details && (
-                        <p className="text-xs text-gray-500 mt-1">{result.details}</p>
+                        <p className="mt-1 text-xs text-gray-500">{result.details}</p>
                       )}
                     </div>
                   ))}
@@ -566,16 +610,24 @@ export const VoiceAssistantTests: React.FC = () => {
                 <Shield className="h-5 w-5" />
                 <span>Security & Privacy Test</span>
               </CardTitle>
-              <CardDescription>
-                Testing security measures and privacy controls
-              </CardDescription>
+              <CardDescription>Testing security measures and privacy controls</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-3">
                 {testResults
-                  .filter(r => ['Local Processing', 'Command History Storage', 'Microphone Permissions', 'Privacy Controls'].includes(r.name))
+                  .filter((r) =>
+                    [
+                      'Local Processing',
+                      'Command History Storage',
+                      'Microphone Permissions',
+                      'Privacy Controls',
+                    ].includes(r.name)
+                  )
                   .map((result, index) => (
-                    <div key={index} className={`p-3 rounded-lg border ${getStatusColor(result.status)}`}>
+                    <div
+                      key={index}
+                      className={`rounded-lg border p-3 ${getStatusColor(result.status)}`}
+                    >
                       <div className="flex items-center justify-between">
                         <div className="flex items-center space-x-2">
                           {getStatusIcon(result.status)}
@@ -583,9 +635,9 @@ export const VoiceAssistantTests: React.FC = () => {
                         </div>
                         <Badge variant="outline">{result.status}</Badge>
                       </div>
-                      <p className="text-sm text-gray-600 mt-1">{result.message}</p>
+                      <p className="mt-1 text-sm text-gray-600">{result.message}</p>
                       {result.details && (
-                        <p className="text-xs text-gray-500 mt-1">{result.details}</p>
+                        <p className="mt-1 text-xs text-gray-500">{result.details}</p>
                       )}
                     </div>
                   ))}
@@ -606,11 +658,7 @@ export const VoiceAssistantTests: React.FC = () => {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <VoiceAssistantWidget 
-                className="w-full"
-                compact={false}
-                showHistory={true}
-              />
+              <VoiceAssistantWidget className="w-full" compact={false} showHistory={true} />
             </CardContent>
           </Card>
         </TabsContent>

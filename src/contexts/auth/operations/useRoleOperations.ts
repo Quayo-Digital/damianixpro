@@ -1,85 +1,100 @@
-
-import { useState } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 import { UserRole } from '../types';
 import { supabase } from '@/integrations/supabase/client';
 import { fetchUserRoleFromDb, storeUserRole, isValidUserRole } from '../authUtils';
 import { toast } from 'sonner';
+import { logger } from '@/utils/logger';
+
+const SUPABASE_DOWN_PATTERNS = [
+  '503',
+  'Service Unavailable',
+  'fetch',
+  'network',
+  'Failed to fetch',
+  'internet',
+];
+
+function isSupabaseDown(err: unknown): boolean {
+  if (err instanceof Error && err.name === 'AbortError') return true;
+  const msg = err instanceof Error ? err.message : String(err);
+  return SUPABASE_DOWN_PATTERNS.some((p) => msg.toLowerCase().includes(p.toLowerCase()));
+}
 
 export const useRoleOperations = () => {
   const [userRole, setUserRole] = useState<UserRole | null>(null);
 
-  const fetchUserRole = async (userId: string) => {
+  const fetchUserRole = useCallback(async (userId: string): Promise<UserRole> => {
     try {
-      console.log("Fetching role for user:", userId);
-      // Try to get role from database
+      logger.debug('Fetching role for user', { userId });
       const dbRole = await fetchUserRoleFromDb(userId);
-      
+
       if (dbRole) {
-        console.log("Found role in DB:", dbRole);
         setUserRole(dbRole);
         return dbRole;
       }
-      
-      // If not found in database, try to get from user metadata
+
       const { data: userData, error } = await supabase.auth.getUser();
-      
+
       if (error) {
-        console.error("Error getting user data:", error.message);
-        throw new Error(`Failed to get user data: ${error.message}`);
+        if (isSupabaseDown(error)) {
+          logger.debug('Supabase unavailable, defaulting to user role', { message: error.message });
+          setUserRole('user');
+          return 'user';
+        }
+        logger.warn('Error getting user data', { message: error.message });
+        setUserRole('user');
+        return 'user';
       }
-      
+
       const metadataRole = userData?.user?.user_metadata?.role as UserRole | undefined;
-      
-      console.log("Role from metadata:", metadataRole);
+
       if (metadataRole && isValidUserRole(metadataRole)) {
         setUserRole(metadataRole);
-        
-        // Store role in database for future use
-        try {
-          await storeUserRole(userId, metadataRole);
-          console.log("Stored user role in DB:", metadataRole);
-        } catch (error) {
-          console.error('Error storing user role:', error);
-          // Don't throw error, just log it - this should not block the application
-        }
+        await storeUserRole(userId, metadataRole);
         return metadataRole;
+      }
+
+      setUserRole('user');
+      await storeUserRole(userId, 'user');
+      return 'user';
+    } catch (error) {
+      if (isSupabaseDown(error)) {
+        logger.debug('Supabase unavailable during role fetch', {
+          message: error instanceof Error ? error.message : '',
+        });
       } else {
-        // Default to 'user' if no role is found
-        console.log("No role found, defaulting to 'user'");
-        setUserRole('user');
-        try {
-          await storeUserRole(userId, 'user');
-          console.log("Stored default user role in DB: user");
-        } catch (error) {
-          console.error('Error storing default user role:', error);
-          // Don't throw error, just log it
+        logger.warn('Error fetching user role', error);
+      }
+      setUserRole('user');
+      return 'user';
+    }
+  }, []);
+
+  const refreshUserRole = useCallback(
+    async (userId: string) => {
+      try {
+        const role = await fetchUserRole(userId);
+        return role;
+      } catch (error) {
+        if (!isSupabaseDown(error)) {
+          logger.warn('Error refreshing user role', {
+            message: error instanceof Error ? error.message : '',
+          });
+          toast.error('Failed to refresh user role');
         }
         return 'user';
       }
-    } catch (error) {
-      console.error('Error fetching user role:', error);
-      setUserRole('user'); // Default to user on error
-      return 'user';
-    }
-  };
+    },
+    [fetchUserRole]
+  );
 
-  const refreshUserRole = async (userId: string) => {
-    try {
-      console.log("Manually refreshing user role for:", userId);
-      const role = await fetchUserRole(userId);
-      console.log("Refreshed role:", role);
-      return role;
-    } catch (error) {
-      console.error('Error refreshing user role:', error);
-      toast.error("Failed to refresh user role");
-      return null;
-    }
-  };
-
-  return {
-    userRole,
-    setUserRole,
-    fetchUserRole,
-    refreshUserRole
-  };
+  return useMemo(
+    () => ({
+      userRole,
+      setUserRole,
+      fetchUserRole,
+      refreshUserRole,
+    }),
+    [userRole, fetchUserRole, refreshUserRole]
+  );
 };

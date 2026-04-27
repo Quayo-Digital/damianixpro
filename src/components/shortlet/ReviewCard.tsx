@@ -22,9 +22,7 @@ export function ReviewCard({ review, showListing = false }: ReviewCardProps) {
       <Star
         key={i}
         className={`h-4 w-4 ${
-          i < rating
-            ? 'fill-yellow-400 text-yellow-400'
-            : 'fill-gray-200 text-gray-200'
+          i < rating ? 'fill-yellow-400 text-yellow-400' : 'fill-gray-200 text-gray-200'
         }`}
       />
     ));
@@ -34,7 +32,7 @@ export function ReviewCard({ review, showListing = false }: ReviewCardProps) {
     if (!name) return 'U';
     return name
       .split(' ')
-      .map(n => n[0])
+      .map((n) => n[0])
       .join('')
       .toUpperCase()
       .slice(0, 2);
@@ -46,9 +44,7 @@ export function ReviewCard({ review, showListing = false }: ReviewCardProps) {
         <div className="flex items-start justify-between">
           <div className="flex items-center gap-3">
             <Avatar>
-              <AvatarFallback>
-                {getInitials(review.reviewer?.name)}
-              </AvatarFallback>
+              <AvatarFallback>{getInitials(review.reviewer?.name)}</AvatarFallback>
             </Avatar>
             <div>
               <p className="font-semibold">{review.reviewer?.name || 'Anonymous'}</p>
@@ -57,19 +53,15 @@ export function ReviewCard({ review, showListing = false }: ReviewCardProps) {
               </p>
             </div>
           </div>
-          <div className="flex items-center gap-1">
-            {renderStars(review.rating)}
-          </div>
+          <div className="flex items-center gap-1">{renderStars(review.rating)}</div>
         </div>
       </CardHeader>
       <CardContent>
         {review.comment && (
-          <p className="text-sm text-muted-foreground whitespace-pre-wrap">
-            {review.comment}
-          </p>
+          <p className="whitespace-pre-wrap text-sm text-muted-foreground">{review.comment}</p>
         )}
         {showListing && review.booking?.listing && (
-          <div className="mt-4 pt-4 border-t">
+          <div className="mt-4 border-t pt-4">
             <p className="text-xs text-muted-foreground">
               Review for: {review.booking.listing.title}
             </p>
@@ -79,4 +71,3 @@ export function ReviewCard({ review, showListing = false }: ReviewCardProps) {
     </Card>
   );
 }
-

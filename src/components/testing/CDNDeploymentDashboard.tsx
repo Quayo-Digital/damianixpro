@@ -5,15 +5,21 @@ import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Progress } from '@/components/ui/progress';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { 
-  Globe, Play, CheckCircle2, AlertTriangle, Clock, MapPin, 
-  TrendingUp, Eye, Activity, Server, Settings, Target
+import {
+  Globe,
+  Play,
+  CheckCircle2,
+  AlertTriangle,
+  Clock,
+  MapPin,
+  TrendingUp,
+  Eye,
+  Activity,
+  Server,
+  Settings,
+  Target,
 } from 'lucide-react';
-import { 
-  useCDNDeployment, 
-  CDNProvider, 
-  CDNConfiguration
-} from '@/utils/cdn-deployment-automation';
+import { useCDNDeployment, CDNProvider, CDNConfiguration } from '@/utils/cdn-deployment-automation';
 
 export const CDNDeploymentDashboard = () => {
   const {
@@ -24,7 +30,7 @@ export const CDNDeploymentDashboard = () => {
     deployCD,
     generateConfiguration,
     testPerformance,
-    providers
+    providers,
   } = useCDNDeployment();
 
   const [activeTab, setActiveTab] = useState('overview');
@@ -34,7 +40,7 @@ export const CDNDeploymentDashboard = () => {
     budget: 'medium' as 'low' | 'medium' | 'high',
     performance: 'standard' as 'basic' | 'standard' | 'premium',
     security: 'standard' as 'basic' | 'standard' | 'enterprise',
-    nigerianFocus: true
+    nigerianFocus: true,
   });
   const [performanceResults, setPerformanceResults] = useState<any>(null);
 
@@ -63,10 +69,14 @@ export const CDNDeploymentDashboard = () => {
 
   const getStepIcon = (status: string) => {
     switch (status) {
-      case 'completed': return <CheckCircle2 className="h-4 w-4 text-green-600" />;
-      case 'running': return <Activity className="h-4 w-4 text-blue-600 animate-spin" />;
-      case 'failed': return <AlertTriangle className="h-4 w-4 text-red-600" />;
-      default: return <Clock className="h-4 w-4 text-gray-400" />;
+      case 'completed':
+        return <CheckCircle2 className="h-4 w-4 text-green-600" />;
+      case 'running':
+        return <Activity className="h-4 w-4 animate-spin text-blue-600" />;
+      case 'failed':
+        return <AlertTriangle className="h-4 w-4 text-red-600" />;
+      default:
+        return <Clock className="h-4 w-4 text-gray-400" />;
     }
   };
 
@@ -117,21 +127,22 @@ export const CDNDeploymentDashboard = () => {
           <CheckCircle2 className="h-4 w-4 text-green-600" />
           <AlertTitle className="text-green-800">CDN Deployed Successfully!</AlertTitle>
           <AlertDescription className="text-green-700">
-            CDN active at {deploymentResult.cdnUrl} with {deploymentResult.performanceImprovement}% improvement
+            CDN active at {deploymentResult.cdnUrl} with {deploymentResult.performanceImprovement}%
+            improvement
           </AlertDescription>
         </Alert>
       )}
 
       {/* Quick Stats */}
       {deploymentResult && (
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
           <Card>
             <CardContent className="p-4">
               <div className="flex items-center gap-2">
                 <TrendingUp className="h-4 w-4 text-green-600" />
                 <span className="text-sm font-medium">Performance</span>
               </div>
-              <div className="text-2xl font-bold text-green-600 mt-1">
+              <div className="mt-1 text-2xl font-bold text-green-600">
                 +{deploymentResult.performanceImprovement}%
               </div>
             </CardContent>
@@ -142,7 +153,7 @@ export const CDNDeploymentDashboard = () => {
                 <MapPin className="h-4 w-4 text-blue-600" />
                 <span className="text-sm font-medium">Edge Locations</span>
               </div>
-              <div className="text-2xl font-bold mt-1">{deploymentResult.edgeLocations.length}</div>
+              <div className="mt-1 text-2xl font-bold">{deploymentResult.edgeLocations.length}</div>
             </CardContent>
           </Card>
           <Card>
@@ -151,7 +162,7 @@ export const CDNDeploymentDashboard = () => {
                 <Target className="h-4 w-4 text-purple-600" />
                 <span className="text-sm font-medium">Lagos Latency</span>
               </div>
-              <div className="text-2xl font-bold text-green-600 mt-1">
+              <div className="mt-1 text-2xl font-bold text-green-600">
                 {deploymentResult.nigerianTestResults.lagos.latency}ms
               </div>
             </CardContent>
@@ -162,7 +173,7 @@ export const CDNDeploymentDashboard = () => {
                 <Activity className="h-4 w-4 text-orange-600" />
                 <span className="text-sm font-medium">Throughput</span>
               </div>
-              <div className="text-lg font-bold mt-1">
+              <div className="mt-1 text-lg font-bold">
                 {deploymentResult.nigerianTestResults.lagos.throughput}
               </div>
             </CardContent>
@@ -180,7 +191,7 @@ export const CDNDeploymentDashboard = () => {
         </TabsList>
 
         <TabsContent value="overview" className="space-y-6">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
             {/* Current Status */}
             <Card>
               <CardHeader>
@@ -202,12 +213,14 @@ export const CDNDeploymentDashboard = () => {
                     </div>
                     <div className="flex justify-between">
                       <span>Performance</span>
-                      <span className="font-bold text-green-600">+{deploymentResult.performanceImprovement}%</span>
+                      <span className="font-bold text-green-600">
+                        +{deploymentResult.performanceImprovement}%
+                      </span>
                     </div>
                   </div>
                 ) : (
-                  <div className="text-center py-8 text-gray-500">
-                    <Globe className="h-12 w-12 mx-auto mb-4" />
+                  <div className="py-8 text-center text-gray-500">
+                    <Globe className="mx-auto mb-4 h-12 w-12" />
                     <p>No CDN deployed yet</p>
                   </div>
                 )}
@@ -223,21 +236,21 @@ export const CDNDeploymentDashboard = () => {
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
-                <Button 
-                  onClick={handleDeploy} 
+                <Button
+                  onClick={handleDeploy}
                   className="w-full"
                   disabled={!deploymentConfig || isDeploying}
                 >
-                  <Play className="h-4 w-4 mr-2" />
+                  <Play className="mr-2 h-4 w-4" />
                   {isDeploying ? 'Deploying...' : 'Deploy CDN'}
                 </Button>
-                <Button 
-                  onClick={handleTestPerformance} 
-                  variant="outline" 
+                <Button
+                  onClick={handleTestPerformance}
+                  variant="outline"
                   className="w-full"
                   disabled={!deploymentResult}
                 >
-                  <Eye className="h-4 w-4 mr-2" />
+                  <Eye className="mr-2 h-4 w-4" />
                   Test Performance
                 </Button>
               </CardContent>
@@ -251,11 +264,11 @@ export const CDNDeploymentDashboard = () => {
             </CardHeader>
             <CardContent>
               {selectedProvider ? (
-                <div className="flex items-center justify-between p-4 border rounded-lg">
+                <div className="flex items-center justify-between rounded-lg border p-4">
                   <div>
                     <h3 className="font-medium">{selectedProvider.name}</h3>
                     <p className="text-sm text-gray-600">{selectedProvider.description}</p>
-                    <div className="flex gap-2 mt-2">
+                    <div className="mt-2 flex gap-2">
                       {selectedProvider.nigerianEdgeLocations.map((location) => (
                         <Badge key={location} variant="outline" className="text-xs">
                           {location}
@@ -284,28 +297,30 @@ export const CDNDeploymentDashboard = () => {
               {deploymentSteps.length > 0 ? (
                 <div className="space-y-4">
                   {deploymentSteps.map((step) => (
-                    <div key={step.id} className="flex items-center gap-4 p-3 border rounded-lg">
+                    <div key={step.id} className="flex items-center gap-4 rounded-lg border p-3">
                       {getStepIcon(step.status)}
                       <div className="flex-1">
                         <div className="flex justify-between">
                           <h4 className="font-medium">{step.title}</h4>
                           {step.nigerianSpecific && (
-                            <Badge variant="outline" className="text-xs">🇳🇬</Badge>
+                            <Badge variant="outline" className="text-xs">
+                              🇳🇬
+                            </Badge>
                           )}
                         </div>
                         <p className="text-sm text-gray-600">{step.description}</p>
                         {step.status === 'running' && (
-                          <Progress value={step.progress} className="w-full mt-2" />
+                          <Progress value={step.progress} className="mt-2 w-full" />
                         )}
                       </div>
                     </div>
                   ))}
                 </div>
               ) : (
-                <div className="text-center py-12">
-                  <Play className="h-16 w-16 mx-auto mb-4 text-gray-400" />
-                  <h3 className="text-lg font-medium mb-2">Ready to Deploy</h3>
-                  <p className="text-gray-600 mb-4">Deploy your CDN with Nigerian optimizations</p>
+                <div className="py-12 text-center">
+                  <Play className="mx-auto mb-4 h-16 w-16 text-gray-400" />
+                  <h3 className="mb-2 text-lg font-medium">Ready to Deploy</h3>
+                  <p className="mb-4 text-gray-600">Deploy your CDN with Nigerian optimizations</p>
                   <Button onClick={handleDeploy} disabled={!deploymentConfig || isDeploying}>
                     Start Deployment
                   </Button>
@@ -335,41 +350,43 @@ export const CDNDeploymentDashboard = () => {
               {performanceResults ? (
                 <div className="space-y-6">
                   <div className="text-center">
-                    <div className="text-3xl font-bold text-green-600 mb-2">
+                    <div className="mb-2 text-3xl font-bold text-green-600">
                       {performanceResults.overallScore}/100
                     </div>
                     <div className="text-gray-600">Overall Performance Score</div>
                   </div>
-                  
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {Object.entries(performanceResults.cityResults).map(([city, result]: [string, any]) => (
-                      <Card key={city}>
-                        <CardContent className="p-4">
-                          <div className="flex justify-between mb-2">
-                            <h4 className="font-medium capitalize">{city}</h4>
-                            <Badge variant={result.score >= 80 ? 'default' : 'secondary'}>
-                              {result.score}/100
-                            </Badge>
-                          </div>
-                          <div className="space-y-1 text-sm">
-                            <div className="flex justify-between">
-                              <span>Latency:</span>
-                              <span className="font-medium">{result.latency}ms</span>
+
+                  <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+                    {Object.entries(performanceResults.cityResults).map(
+                      ([city, result]: [string, any]) => (
+                        <Card key={city}>
+                          <CardContent className="p-4">
+                            <div className="mb-2 flex justify-between">
+                              <h4 className="font-medium capitalize">{city}</h4>
+                              <Badge variant={result.score >= 80 ? 'default' : 'secondary'}>
+                                {result.score}/100
+                              </Badge>
                             </div>
-                            <div className="flex justify-between">
-                              <span>Speed:</span>
-                              <span className="font-medium">{result.throughput}</span>
+                            <div className="space-y-1 text-sm">
+                              <div className="flex justify-between">
+                                <span>Latency:</span>
+                                <span className="font-medium">{result.latency}ms</span>
+                              </div>
+                              <div className="flex justify-between">
+                                <span>Speed:</span>
+                                <span className="font-medium">{result.throughput}</span>
+                              </div>
                             </div>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    ))}
+                          </CardContent>
+                        </Card>
+                      )
+                    )}
                   </div>
                 </div>
               ) : (
-                <div className="text-center py-12">
-                  <Eye className="h-16 w-16 mx-auto mb-4 text-gray-400" />
-                  <h3 className="text-lg font-medium mb-2">Performance Testing</h3>
+                <div className="py-12 text-center">
+                  <Eye className="mx-auto mb-4 h-16 w-16 text-gray-400" />
+                  <h3 className="mb-2 text-lg font-medium">Performance Testing</h3>
                   <p className="text-gray-600">Deploy your CDN first to run performance tests</p>
                 </div>
               )}
@@ -387,32 +404,34 @@ export const CDNDeploymentDashboard = () => {
             </CardHeader>
             <CardContent>
               {deploymentResult ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {Object.entries(deploymentResult.nigerianTestResults).map(([city, result]: [string, any]) => (
-                    <Card key={city}>
-                      <CardContent className="p-4">
-                        <div className="flex items-center gap-2 mb-2">
-                          <MapPin className="h-4 w-4 text-blue-600" />
-                          <h5 className="font-medium capitalize">{city}</h5>
-                        </div>
-                        <div className="space-y-1 text-sm">
-                          <div className="flex justify-between">
-                            <span>Latency:</span>
-                            <span className="font-medium">{result.latency}ms</span>
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+                  {Object.entries(deploymentResult.nigerianTestResults).map(
+                    ([city, result]: [string, any]) => (
+                      <Card key={city}>
+                        <CardContent className="p-4">
+                          <div className="mb-2 flex items-center gap-2">
+                            <MapPin className="h-4 w-4 text-blue-600" />
+                            <h5 className="font-medium capitalize">{city}</h5>
                           </div>
-                          <div className="flex justify-between">
-                            <span>Speed:</span>
-                            <span className="font-medium">{result.throughput}</span>
+                          <div className="space-y-1 text-sm">
+                            <div className="flex justify-between">
+                              <span>Latency:</span>
+                              <span className="font-medium">{result.latency}ms</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span>Speed:</span>
+                              <span className="font-medium">{result.throughput}</span>
+                            </div>
                           </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))}
+                        </CardContent>
+                      </Card>
+                    )
+                  )}
                 </div>
               ) : (
-                <div className="text-center py-12">
-                  <Activity className="h-16 w-16 mx-auto mb-4 text-gray-400" />
-                  <h3 className="text-lg font-medium mb-2">No Monitoring Data</h3>
+                <div className="py-12 text-center">
+                  <Activity className="mx-auto mb-4 h-16 w-16 text-gray-400" />
+                  <h3 className="mb-2 text-lg font-medium">No Monitoring Data</h3>
                   <p className="text-gray-600">Deploy your CDN to start monitoring</p>
                 </div>
               )}

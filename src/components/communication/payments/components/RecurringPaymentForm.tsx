@@ -1,10 +1,20 @@
-
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Textarea } from "@/components/ui/textarea";
-import { PaymentCategory, PAYMENT_CATEGORIES, RecurringPaymentType, RECURRING_PAYMENT_OPTIONS } from '@/utils/PaymentTypes';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Textarea } from '@/components/ui/textarea';
+import {
+  PaymentCategory,
+  PAYMENT_CATEGORIES,
+  RecurringPaymentType,
+  RECURRING_PAYMENT_OPTIONS,
+} from '@/utils/PaymentTypes';
 
 interface RecurringPaymentFormProps {
   recurringType: RecurringPaymentType;
@@ -29,14 +39,14 @@ export const RecurringPaymentForm = ({
   recurringDescription,
   setRecurringDescription,
   onSubmit,
-  isProcessing
+  isProcessing,
 }: RecurringPaymentFormProps) => {
   return (
     <div className="grid gap-4">
       <div className="space-y-2">
         <Label htmlFor="recurring-type">Billing Frequency</Label>
-        <Select 
-          value={recurringType} 
+        <Select
+          value={recurringType}
           onValueChange={(value) => setRecurringType(value as RecurringPaymentType)}
         >
           <SelectTrigger id="recurring-type">
@@ -51,11 +61,11 @@ export const RecurringPaymentForm = ({
           </SelectContent>
         </Select>
       </div>
-      
+
       <div className="space-y-2">
         <Label htmlFor="recurring-category">Payment Type</Label>
-        <Select 
-          value={recurringCategory} 
+        <Select
+          value={recurringCategory}
           onValueChange={(value) => setRecurringCategory(value as PaymentCategory)}
         >
           <SelectTrigger id="recurring-category">
@@ -93,9 +103,9 @@ export const RecurringPaymentForm = ({
           className="resize-none"
         />
       </div>
-      
+
       <Button onClick={onSubmit} disabled={isProcessing} className="mt-2">
-        {isProcessing ? "Processing..." : `Set up ${recurringType} payments`}
+        {isProcessing ? 'Processing...' : `Set up ${recurringType} payments`}
       </Button>
     </div>
   );

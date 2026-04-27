@@ -1,10 +1,14 @@
-
 import { useState, useEffect } from 'react';
-import { useAuth } from '@/contexts/auth';
+import { useAuthSession } from '@/contexts/auth';
 import { supabase } from '@/integrations/supabase/client';
+import {
+  isMissingSupabaseRelationError,
+  isPropertyTenantsRelationMissing,
+  markPropertyTenantsRelationMissing,
+} from '@/utils/supabaseErrors';
 
 export const useTenantDetails = () => {
-  const { user } = useAuth();
+  const { user } = useAuthSession();
   const [tenantDetails, setTenantDetails] = useState<{
     tenantId: string | null;
     tenantName: string | null;
@@ -41,8 +45,18 @@ export const useTenantDetails = () => {
         if (tenantError || !tenant) {
           throw new Error('Tenant profile not found.');
         }
-        
+
         const tenantName = `${tenant.first_name} ${tenant.last_name}`;
+
+        if (isPropertyTenantsRelationMissing()) {
+          setTenantDetails({
+            tenantId: tenant.id,
+            tenantName,
+            propertyId: null,
+            propertyName: null,
+          });
+          return;
+        }
 
         // 2. Fetch property_tenant link
         const { data: propertyTenant, error: ptError } = await supabase
@@ -51,8 +65,20 @@ export const useTenantDetails = () => {
           .eq('tenant_id', tenant.id)
           .maybeSingle();
 
-        if (ptError) throw ptError;
-        
+        if (ptError) {
+          if (isMissingSupabaseRelationError(ptError)) {
+            markPropertyTenantsRelationMissing();
+            setTenantDetails({
+              tenantId: tenant.id,
+              tenantName,
+              propertyId: null,
+              propertyName: null,
+            });
+            return;
+          }
+          throw ptError;
+        }
+
         let propertyId: string | null = null;
         let propertyName: string | null = null;
 
@@ -76,10 +102,9 @@ export const useTenantDetails = () => {
           propertyId,
           propertyName,
         });
-
       } catch (err: any) {
         setError(err.message);
-        console.error("Error fetching tenant details:", err);
+        console.error('Error fetching tenant details:', err);
       } finally {
         setIsLoading(false);
       }

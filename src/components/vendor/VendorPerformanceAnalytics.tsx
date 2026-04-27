@@ -2,17 +2,17 @@ import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
-import { 
-  TrendingUp, 
-  TrendingDown, 
-  Star, 
-  Clock, 
-  DollarSign, 
+import {
+  TrendingUp,
+  TrendingDown,
+  Star,
+  Clock,
+  DollarSign,
   Target,
   Award,
   Calendar,
   BarChart3,
-  PieChart
+  PieChart,
 } from 'lucide-react';
 
 interface PerformanceMetrics {
@@ -80,7 +80,7 @@ interface VendorPerformanceAnalyticsProps {
 export const VendorPerformanceAnalytics: React.FC<VendorPerformanceAnalyticsProps> = ({
   metrics,
   vendorName,
-  isLoading = false
+  isLoading = false,
 }) => {
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-NG', {
@@ -115,9 +115,11 @@ export const VendorPerformanceAnalytics: React.FC<VendorPerformanceAnalyticsProp
 
   const getPerformanceLevel = (score: number, max: number = 100) => {
     const percentage = (score / max) * 100;
-    if (percentage >= 90) return { level: 'Excellent', color: 'text-green-600', bgColor: 'bg-green-50' };
+    if (percentage >= 90)
+      return { level: 'Excellent', color: 'text-green-600', bgColor: 'bg-green-50' };
     if (percentage >= 75) return { level: 'Good', color: 'text-blue-600', bgColor: 'bg-blue-50' };
-    if (percentage >= 60) return { level: 'Average', color: 'text-yellow-600', bgColor: 'bg-yellow-50' };
+    if (percentage >= 60)
+      return { level: 'Average', color: 'text-yellow-600', bgColor: 'bg-yellow-50' };
     return { level: 'Needs Improvement', color: 'text-red-600', bgColor: 'bg-red-50' };
   };
 
@@ -140,11 +142,11 @@ export const VendorPerformanceAnalytics: React.FC<VendorPerformanceAnalyticsProp
         {[...Array(4)].map((_, i) => (
           <Card key={i} className="animate-pulse">
             <CardHeader>
-              <div className="h-6 bg-gray-200 rounded w-48"></div>
-              <div className="h-4 bg-gray-200 rounded w-64"></div>
+              <div className="h-6 w-48 rounded bg-gray-200"></div>
+              <div className="h-4 w-64 rounded bg-gray-200"></div>
             </CardHeader>
             <CardContent>
-              <div className="h-32 bg-gray-200 rounded"></div>
+              <div className="h-32 rounded bg-gray-200"></div>
             </CardContent>
           </Card>
         ))}
@@ -158,9 +160,9 @@ export const VendorPerformanceAnalytics: React.FC<VendorPerformanceAnalyticsProp
   return (
     <div className="space-y-6">
       {/* Performance Overview */}
-      <Card className="bg-gradient-to-r from-purple-50 to-pink-50 border-purple-200">
+      <Card className="border-purple-200 bg-gradient-to-r from-purple-50 to-pink-50">
         <CardHeader>
-          <CardTitle className="text-2xl text-purple-900 flex items-center gap-2">
+          <CardTitle className="flex items-center gap-2 text-2xl text-purple-900">
             <BarChart3 className="h-6 w-6" />
             Performance Analytics
           </CardTitle>
@@ -188,10 +190,9 @@ export const VendorPerformanceAnalytics: React.FC<VendorPerformanceAnalyticsProp
             <div className="flex items-center gap-1 text-xs">
               <span className="text-muted-foreground">vs last month:</span>
               <span className={getTrendColor(metrics.monthlyEarnings.trend)}>
-                {metrics.monthlyEarnings.previous > 0 
-                  ? `${((metrics.monthlyEarnings.current - metrics.monthlyEarnings.previous) / metrics.monthlyEarnings.previous * 100).toFixed(1)}%`
-                  : 'N/A'
-                }
+                {metrics.monthlyEarnings.previous > 0
+                  ? `${(((metrics.monthlyEarnings.current - metrics.monthlyEarnings.previous) / metrics.monthlyEarnings.previous) * 100).toFixed(1)}%`
+                  : 'N/A'}
               </span>
             </div>
           </CardContent>
@@ -210,8 +211,10 @@ export const VendorPerformanceAnalytics: React.FC<VendorPerformanceAnalyticsProp
             <div className={`text-2xl font-bold ${completionPerformance.color}`}>
               {metrics.completionRate.current.toFixed(1)}%
             </div>
-            <div className="flex items-center justify-between text-xs mt-1">
-              <span className="text-muted-foreground">Target: {metrics.completionRate.target}%</span>
+            <div className="mt-1 flex items-center justify-between text-xs">
+              <span className="text-muted-foreground">
+                Target: {metrics.completionRate.target}%
+              </span>
               <Badge variant="outline" className={completionPerformance.color}>
                 {completionPerformance.level}
               </Badge>
@@ -229,7 +232,7 @@ export const VendorPerformanceAnalytics: React.FC<VendorPerformanceAnalyticsProp
             <div className={`text-2xl font-bold ${ratingPerformance.color}`}>
               {metrics.averageRating.current.toFixed(1)}
             </div>
-            <div className="flex items-center justify-between text-xs mt-1">
+            <div className="mt-1 flex items-center justify-between text-xs">
               <span className="text-muted-foreground">
                 {metrics.averageRating.totalReviews} reviews
               </span>
@@ -269,9 +272,7 @@ export const VendorPerformanceAnalytics: React.FC<VendorPerformanceAnalyticsProp
               <PieChart className="h-5 w-5 text-purple-600" />
               Customer Satisfaction
             </CardTitle>
-            <CardDescription>
-              Breakdown of customer feedback ratings
-            </CardDescription>
+            <CardDescription>Breakdown of customer feedback ratings</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="text-center">
@@ -280,82 +281,82 @@ export const VendorPerformanceAnalytics: React.FC<VendorPerformanceAnalyticsProp
               </div>
               <p className="text-sm text-muted-foreground">Overall Score</p>
             </div>
-            
+
             <div className="space-y-3">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <div className="w-3 h-3 rounded-full bg-green-500"></div>
+                  <div className="h-3 w-3 rounded-full bg-green-500"></div>
                   <span className="text-sm">Excellent (5★)</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <span className="text-sm font-medium">
                     {metrics.customerSatisfaction.breakdown.excellent}
                   </span>
-                  <div className="w-16 bg-gray-200 rounded-full h-2">
-                    <div 
-                      className="bg-green-500 h-2 rounded-full" 
-                      style={{ 
-                        width: `${(metrics.customerSatisfaction.breakdown.excellent / metrics.averageRating.totalReviews * 100)}%` 
+                  <div className="h-2 w-16 rounded-full bg-gray-200">
+                    <div
+                      className="h-2 rounded-full bg-green-500"
+                      style={{
+                        width: `${(metrics.customerSatisfaction.breakdown.excellent / metrics.averageRating.totalReviews) * 100}%`,
                       }}
                     ></div>
                   </div>
                 </div>
               </div>
-              
+
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <div className="w-3 h-3 rounded-full bg-blue-500"></div>
+                  <div className="h-3 w-3 rounded-full bg-blue-500"></div>
                   <span className="text-sm">Good (4★)</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <span className="text-sm font-medium">
                     {metrics.customerSatisfaction.breakdown.good}
                   </span>
-                  <div className="w-16 bg-gray-200 rounded-full h-2">
-                    <div 
-                      className="bg-blue-500 h-2 rounded-full" 
-                      style={{ 
-                        width: `${(metrics.customerSatisfaction.breakdown.good / metrics.averageRating.totalReviews * 100)}%` 
+                  <div className="h-2 w-16 rounded-full bg-gray-200">
+                    <div
+                      className="h-2 rounded-full bg-blue-500"
+                      style={{
+                        width: `${(metrics.customerSatisfaction.breakdown.good / metrics.averageRating.totalReviews) * 100}%`,
                       }}
                     ></div>
                   </div>
                 </div>
               </div>
-              
+
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <div className="w-3 h-3 rounded-full bg-yellow-500"></div>
+                  <div className="h-3 w-3 rounded-full bg-yellow-500"></div>
                   <span className="text-sm">Average (3★)</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <span className="text-sm font-medium">
                     {metrics.customerSatisfaction.breakdown.average}
                   </span>
-                  <div className="w-16 bg-gray-200 rounded-full h-2">
-                    <div 
-                      className="bg-yellow-500 h-2 rounded-full" 
-                      style={{ 
-                        width: `${(metrics.customerSatisfaction.breakdown.average / metrics.averageRating.totalReviews * 100)}%` 
+                  <div className="h-2 w-16 rounded-full bg-gray-200">
+                    <div
+                      className="h-2 rounded-full bg-yellow-500"
+                      style={{
+                        width: `${(metrics.customerSatisfaction.breakdown.average / metrics.averageRating.totalReviews) * 100}%`,
                       }}
                     ></div>
                   </div>
                 </div>
               </div>
-              
+
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <div className="w-3 h-3 rounded-full bg-red-500"></div>
+                  <div className="h-3 w-3 rounded-full bg-red-500"></div>
                   <span className="text-sm">Poor (≤2★)</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <span className="text-sm font-medium">
                     {metrics.customerSatisfaction.breakdown.poor}
                   </span>
-                  <div className="w-16 bg-gray-200 rounded-full h-2">
-                    <div 
-                      className="bg-red-500 h-2 rounded-full" 
-                      style={{ 
-                        width: `${(metrics.customerSatisfaction.breakdown.poor / metrics.averageRating.totalReviews * 100)}%` 
+                  <div className="h-2 w-16 rounded-full bg-gray-200">
+                    <div
+                      className="h-2 rounded-full bg-red-500"
+                      style={{
+                        width: `${(metrics.customerSatisfaction.breakdown.poor / metrics.averageRating.totalReviews) * 100}%`,
                       }}
                     ></div>
                   </div>
@@ -372,9 +373,7 @@ export const VendorPerformanceAnalytics: React.FC<VendorPerformanceAnalyticsProp
               <BarChart3 className="h-5 w-5 text-green-600" />
               Earnings by Category
             </CardTitle>
-            <CardDescription>
-              Revenue breakdown by service type
-            </CardDescription>
+            <CardDescription>Revenue breakdown by service type</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             {metrics.earningsBreakdown.byCategory.map((category, index) => (
@@ -405,25 +404,19 @@ export const VendorPerformanceAnalytics: React.FC<VendorPerformanceAnalyticsProp
               <Award className="h-5 w-5 text-yellow-600" />
               Recent Achievements
             </CardTitle>
-            <CardDescription>
-              Your latest milestones and accomplishments
-            </CardDescription>
+            <CardDescription>Your latest milestones and accomplishments</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
               {metrics.achievements.slice(0, 6).map((achievement) => (
-                <div 
+                <div
                   key={achievement.id}
-                  className="flex items-start gap-3 p-4 rounded-lg border bg-gradient-to-br from-yellow-50 to-orange-50 border-yellow-200"
+                  className="flex items-start gap-3 rounded-lg border border-yellow-200 bg-gradient-to-br from-yellow-50 to-orange-50 p-4"
                 >
-                  <div className="flex-shrink-0">
-                    {getAchievementIcon(achievement.type)}
-                  </div>
+                  <div className="flex-shrink-0">{getAchievementIcon(achievement.type)}</div>
                   <div className="space-y-1">
-                    <h4 className="font-medium text-sm">{achievement.title}</h4>
-                    <p className="text-xs text-muted-foreground">
-                      {achievement.description}
-                    </p>
+                    <h4 className="text-sm font-medium">{achievement.title}</h4>
+                    <p className="text-xs text-muted-foreground">{achievement.description}</p>
                     <div className="flex items-center gap-2">
                       <Calendar className="h-3 w-3 text-muted-foreground" />
                       <span className="text-xs text-muted-foreground">
@@ -445,22 +438,20 @@ export const VendorPerformanceAnalytics: React.FC<VendorPerformanceAnalyticsProp
             <TrendingUp className="h-5 w-5 text-blue-600" />
             Performance Insights
           </CardTitle>
-          <CardDescription>
-            AI-powered recommendations to improve your business
-          </CardDescription>
+          <CardDescription>AI-powered recommendations to improve your business</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
             {metrics.completionRate.current < metrics.completionRate.target && (
-              <div className="p-4 rounded-lg bg-blue-50 border border-blue-200">
+              <div className="rounded-lg border border-blue-200 bg-blue-50 p-4">
                 <div className="flex items-start gap-3">
-                  <Target className="h-5 w-5 text-blue-600 mt-0.5" />
+                  <Target className="mt-0.5 h-5 w-5 text-blue-600" />
                   <div>
                     <h4 className="font-medium text-blue-900">Improve Completion Rate</h4>
-                    <p className="text-sm text-blue-700 mt-1">
-                      Your completion rate is {metrics.completionRate.current.toFixed(1)}%, 
-                      which is below the target of {metrics.completionRate.target}%. 
-                      Focus on better time management and communication with clients.
+                    <p className="mt-1 text-sm text-blue-700">
+                      Your completion rate is {metrics.completionRate.current.toFixed(1)}%, which is
+                      below the target of {metrics.completionRate.target}%. Focus on better time
+                      management and communication with clients.
                     </p>
                   </div>
                 </div>
@@ -468,15 +459,15 @@ export const VendorPerformanceAnalytics: React.FC<VendorPerformanceAnalyticsProp
             )}
 
             {metrics.responseTime.current > metrics.responseTime.target && (
-              <div className="p-4 rounded-lg bg-orange-50 border border-orange-200">
+              <div className="rounded-lg border border-orange-200 bg-orange-50 p-4">
                 <div className="flex items-start gap-3">
-                  <Clock className="h-5 w-5 text-orange-600 mt-0.5" />
+                  <Clock className="mt-0.5 h-5 w-5 text-orange-600" />
                   <div>
                     <h4 className="font-medium text-orange-900">Faster Response Time</h4>
-                    <p className="text-sm text-orange-700 mt-1">
-                      Your average response time is {metrics.responseTime.current}h, 
-                      which exceeds the target of {metrics.responseTime.target}h. 
-                      Quicker responses lead to more job assignments!
+                    <p className="mt-1 text-sm text-orange-700">
+                      Your average response time is {metrics.responseTime.current}h, which exceeds
+                      the target of {metrics.responseTime.target}h. Quicker responses lead to more
+                      job assignments!
                     </p>
                   </div>
                 </div>
@@ -484,14 +475,14 @@ export const VendorPerformanceAnalytics: React.FC<VendorPerformanceAnalyticsProp
             )}
 
             {metrics.averageRating.current >= 4.5 && (
-              <div className="p-4 rounded-lg bg-green-50 border border-green-200">
+              <div className="rounded-lg border border-green-200 bg-green-50 p-4">
                 <div className="flex items-start gap-3">
-                  <Star className="h-5 w-5 text-green-600 mt-0.5" />
+                  <Star className="mt-0.5 h-5 w-5 text-green-600" />
                   <div>
                     <h4 className="font-medium text-green-900">Excellent Customer Service!</h4>
-                    <p className="text-sm text-green-700 mt-1">
-                      Your {metrics.averageRating.current.toFixed(1)}-star rating shows exceptional service quality. 
-                      Keep up the great work to maintain premium pricing!
+                    <p className="mt-1 text-sm text-green-700">
+                      Your {metrics.averageRating.current.toFixed(1)}-star rating shows exceptional
+                      service quality. Keep up the great work to maintain premium pricing!
                     </p>
                   </div>
                 </div>

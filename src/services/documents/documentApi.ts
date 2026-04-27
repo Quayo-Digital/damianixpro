@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/components/ui/sonner';
 import { Document, DocumentCategory } from './documentTypes';
@@ -8,19 +7,15 @@ import { v4 as uuidv4 } from 'uuid';
 const getFileUrl = async (path: string): Promise<string> => {
   try {
     // Try to get a signed URL first (works for private buckets)
-    const { data, error } = await supabase.storage
-      .from('documents')
-      .createSignedUrl(path, 3600); // 1 hour expiry
-    
+    const { data, error } = await supabase.storage.from('documents').createSignedUrl(path, 3600); // 1 hour expiry
+
     if (error) {
       console.warn('Failed to create signed URL, falling back to public URL:', error);
       // Fallback to public URL
-      const { data: publicData } = supabase.storage
-        .from('documents')
-        .getPublicUrl(path);
+      const { data: publicData } = supabase.storage.from('documents').getPublicUrl(path);
       return publicData.publicUrl;
     }
-    
+
     return data.signedUrl;
   } catch (error) {
     console.error('Error getting file URL:', error);
@@ -56,10 +51,10 @@ export const fetchDocuments = async (): Promise<Document[]> => {
         tags: [], // Not stored in current documents table
         upload_date: doc.created_at, // Use created_at as upload_date
         created_at: doc.created_at,
-        updated_at: doc.updated_at
+        updated_at: doc.updated_at,
       }))
     );
-    
+
     return documentsWithUrls;
   } catch (error) {
     console.error('Error fetching documents:', error);
@@ -81,14 +76,14 @@ export const uploadDocument = async (formData: FormData): Promise<Document | nul
     const description = formData.get('description') as string;
     const property_id = formData.get('property_id') as string;
     const tagsString = formData.get('tags') as string;
-    const tags = tagsString ? tagsString.split(',').map(tag => tag.trim()) : undefined;
+    const tags = tagsString ? tagsString.split(',').map((tag) => tag.trim()) : undefined;
 
     console.log('Extracted file object:', {
       file,
       isFile: file instanceof File,
       isBlob: file instanceof Blob,
       constructor: file?.constructor?.name,
-      type: typeof file
+      type: typeof file,
     });
 
     // Validate file
@@ -102,43 +97,54 @@ export const uploadDocument = async (formData: FormData): Promise<Document | nul
       type: file.type,
       size: file.size,
       lastModified: file.lastModified,
-      category
+      category,
     });
 
+    // Optimize image files before upload
+    let fileToUpload = file;
+    const { isOptimizableImage, optimizeImageForUpload } =
+      await import('@/utils/imageOptimization');
+    if (isOptimizableImage(file)) {
+      fileToUpload = await optimizeImageForUpload(file);
+    }
+
     // Get current user first (needed for file path and database)
-    const { data: { user }, error: userError } = await supabase.auth.getUser();
+    const {
+      data: { user },
+      error: userError,
+    } = await supabase.auth.getUser();
     if (userError || !user) {
       throw new Error('User not authenticated');
     }
 
     // Create unique file path with user ID for storage RLS compliance
-    const fileExt = file.name.split('.').pop();
+    const fileExt = fileToUpload.name.split('.').pop();
     const filePath = `${user.id}/${category.toLowerCase()}/${uuidv4()}.${fileExt}`;
-    
+
     console.log('File path for storage:', filePath);
-    
+
     // Try to read file as ArrayBuffer to verify it's a valid file
     try {
-      const arrayBuffer = await file.arrayBuffer();
+      const arrayBuffer = await fileToUpload.arrayBuffer();
       console.log('File ArrayBuffer size:', arrayBuffer.byteLength);
     } catch (bufferError) {
       console.error('Error reading file as ArrayBuffer:', bufferError);
       throw new Error('File is not readable');
     }
-    
+
     console.log('Attempting Supabase storage upload...');
     console.log('Storage bucket: documents');
     console.log('Upload options:', {
-      contentType: file.type,
-      upsert: false
+      contentType: fileToUpload.type,
+      upsert: false,
     });
-    
+
     // Upload file to Supabase storage with explicit options
     const { data: uploadData, error: uploadError } = await supabase.storage
       .from('documents')
-      .upload(filePath, file, {
-        contentType: file.type,
-        upsert: false
+      .upload(filePath, fileToUpload, {
+        contentType: fileToUpload.type,
+        upsert: false,
       });
 
     console.log('Upload result:', { data: uploadData, error: uploadError });
@@ -146,7 +152,7 @@ export const uploadDocument = async (formData: FormData): Promise<Document | nul
     if (uploadError) {
       console.error('Storage upload error details:', {
         message: uploadError.message,
-        fullError: uploadError
+        fullError: uploadError,
       });
       throw uploadError;
     }
@@ -159,10 +165,10 @@ export const uploadDocument = async (formData: FormData): Promise<Document | nul
         name: name,
         description: description,
         file_path: filePath,
-        file_type: file.type,
-        file_size: file.size,
+        file_type: fileToUpload.type,
+        file_size: fileToUpload.size,
         property_id: property_id || null,
-        category: category
+        category: category,
       })
       .select()
       .single();
@@ -186,7 +192,7 @@ export const uploadDocument = async (formData: FormData): Promise<Document | nul
       category: data.category,
       tags: [], // Not stored in current documents table
       upload_date: data.created_at, // Use created_at as upload_date
-      created_at: data.created_at
+      created_at: data.created_at,
       // updated_at removed as it's not in Document type
     };
   } catch (error) {
@@ -210,10 +216,7 @@ export const deleteDocument = async (id: string): Promise<boolean> => {
     }
 
     // Delete from database first
-    const { error: deleteError } = await supabase
-      .from('documents')
-      .delete()
-      .eq('id', id);
+    const { error: deleteError } = await supabase.from('documents').delete().eq('id', id);
 
     if (deleteError) {
       throw deleteError;
@@ -224,7 +227,7 @@ export const deleteDocument = async (id: string): Promise<boolean> => {
       const { error: storageError } = await supabase.storage
         .from('documents')
         .remove([document.file_path]);
-      
+
       if (storageError) {
         console.warn('Failed to delete file from storage:', storageError);
         // Don't throw here as the database record is already deleted
@@ -246,7 +249,7 @@ export const downloadDocument = async (document: Document): Promise<void> => {
     const { data, error } = await supabase.storage
       .from('documents')
       .createSignedUrl(document.file_path.split('/').pop() || document.file_path, 3600);
-    
+
     if (error) {
       console.error('Error creating signed URL:', error);
       // Fallback to existing file_path
@@ -261,7 +264,7 @@ export const downloadDocument = async (document: Document): Promise<void> => {
       link.click();
       window.document.body.removeChild(link);
     }
-    
+
     toast.success(`Downloading "${document.name}"`);
   } catch (error) {
     console.error('Error downloading document:', error);

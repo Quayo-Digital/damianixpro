@@ -3,7 +3,6 @@
  * Configures production API keys and services for Nigerian real estate platform
  */
 
-import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
@@ -16,13 +15,13 @@ async function configureNigerianAPIs() {
   const configurationSteps = [
     {
       name: 'Payment Gateway Configuration',
-      description: 'Configure Paystack, Flutterwave, and Nigerian payment services',
+      description: 'Configure Flutterwave and Nigerian payment services',
       implementation: async () => {
         console.log('💳 Configuring Nigerian payment gateways...');
         
         const paymentGateways = {
           paystack: {
-            name: 'Paystack',
+            name: 'Legacy Paystack (optional)',
             status: 'CONFIGURED',
             features: ['Cards', 'Bank Transfer', 'USSD', 'Mobile Money'],
             currencies: ['NGN'],
@@ -54,7 +53,7 @@ async function configureNigerianAPIs() {
             status: 'CONFIGURED',
             features: ['Manual Verification', 'Receipt Upload'],
             accountDetails: {
-              accountName: 'Nigeria Homes Limited',
+              accountName: 'Damianix Systems Limited',
               accountNumber: '0123456789',
               bankName: 'First Bank of Nigeria',
               sortCode: '011151003'
@@ -374,8 +373,8 @@ async function configureNigerianAPIs() {
           }
         };
         
-        // Generate .env.production file
-        const envContent = `# Nigerian Real Estate Platform - Production Environment
+        // Example .env.production template (not written — configure via `.env.example` / deployment secrets).
+        const _envContent = `# Nigerian Real Estate Platform - Production Environment
 # Generated: ${new Date().toISOString()}
 
 # Database Configuration
@@ -426,7 +425,7 @@ SUPPORTED_STATES=Lagos,Abuja,Kano,Rivers,Oyo,Kaduna,Ogun,Anambra,Delta,Edo
           score: 95,
           details: 'Production environment variables configured for Nigerian APIs',
           metrics: {
-            'Payment Keys': 'Paystack and Flutterwave configured',
+            'Payment Keys': 'Flutterwave configured',
             'Database Config': 'Supabase production keys',
             'API Endpoints': '5 Nigerian government APIs',
             'Security Keys': 'JWT, encryption, webhook secrets',
@@ -487,7 +486,7 @@ SUPPORTED_STATES=Lagos,Abuja,Kano,Rivers,Oyo,Kaduna,Ogun,Anambra,Delta,Edo
   }
   
   console.log('\n📊 API Integration Summary:');
-  console.log('✅ Payment Gateways: Paystack, Flutterwave, Bank Transfer, USSD');
+  console.log('✅ Payment Gateways: Flutterwave, Bank Transfer, USSD');
   console.log('✅ Central Bank of Nigeria: Exchange rates, economic indicators');
   console.log('✅ Nigerian Bureau of Statistics: Demographics, housing data');
   console.log('✅ Lagos State APIs: Property registration, municipal services');
@@ -505,8 +504,7 @@ SUPPORTED_STATES=Lagos,Abuja,Kano,Rivers,Oyo,Kaduna,Ogun,Anambra,Delta,Edo
   
   console.log('\n=== LIVE API CAPABILITIES ===\n');
   console.log('💳 Payment Processing:');
-  console.log('• Paystack: Cards, Bank Transfer, USSD (15+ Nigerian banks)');
-  console.log('• Flutterwave: Cards, Mobile Money, QR Code payments');
+  console.log('• Flutterwave: Cards, bank transfer, USSD, mobile money, QR (primary)');
   console.log('• Bank Transfer: Direct account verification and receipts');
   console.log('• USSD: *737#, *901#, *919# for major Nigerian banks');
   console.log('• Real-time webhook integration for payment status');

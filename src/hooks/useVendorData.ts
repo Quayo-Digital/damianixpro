@@ -1,11 +1,10 @@
-
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/contexts/auth';
+import { useAuthSession } from '@/contexts/auth';
 import { VendorJob } from '@/components/vendor/vendor-job-data';
 
 export function useVendorData() {
-  const { user } = useAuth();
+  const { user } = useAuthSession();
   const [jobs, setJobs] = useState<VendorJob[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -29,7 +28,9 @@ export function useVendorData() {
           .single();
 
         if (vendorError || !vendorData) {
-          throw new Error('Could not find a vendor profile associated with this user. Please contact an administrator.');
+          throw new Error(
+            'Could not find a vendor profile associated with this user. Please contact an administrator.'
+          );
         }
 
         const vendorId = vendorData.id;

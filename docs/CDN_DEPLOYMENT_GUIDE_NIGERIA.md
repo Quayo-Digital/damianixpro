@@ -1,5 +1,6 @@
 # CDN Deployment Guide for Nigerian Infrastructure
-## Nigeria Homes Property Management Platform
+
+## DamianixPro Property Management Platform
 
 ### 📋 **Executive Summary**
 
@@ -20,6 +21,7 @@ This guide provides a comprehensive roadmap for deploying a Content Delivery Net
 ## 🌍 **Nigerian Market Analysis**
 
 ### **Internet Infrastructure Overview**
+
 - **Primary ISPs**: MTN, Airtel, Glo, 9mobile
 - **Network Types**: 2G (15%), 3G (45%), 4G (35%), 5G (5%)
 - **Peak Usage**: 7-10 PM WAT (West Africa Time)
@@ -27,8 +29,9 @@ This guide provides a comprehensive roadmap for deploying a Content Delivery Net
 - **Device Profile**: 70% mobile, 25% desktop, 5% tablet
 
 ### **Key Nigerian Cities & Infrastructure**
+
 1. **Lagos** (20M+ users) - Primary hub, multiple fiber connections
-2. **Abuja** (3M+ users) - Government center, good infrastructure  
+2. **Abuja** (3M+ users) - Government center, good infrastructure
 3. **Port Harcourt** (2M+ users) - Oil industry hub
 4. **Kano** (4M+ users) - Northern commercial center
 5. **Ibadan** (3M+ users) - Academic and commercial center
@@ -40,6 +43,7 @@ This guide provides a comprehensive roadmap for deploying a Content Delivery Net
 ### **Tier 1: Global CDN Providers with African Presence**
 
 #### **Option A: Cloudflare (Recommended)**
+
 ```yaml
 Provider: Cloudflare
 African POPs: Lagos, Johannesburg, Cairo
@@ -54,6 +58,7 @@ Setup Time: 1-2 days
 ```
 
 #### **Option B: AWS CloudFront**
+
 ```yaml
 Provider: AWS CloudFront
 African Regions: Cape Town, Bahrain (closest)
@@ -67,6 +72,7 @@ Setup Time: 3-5 days
 ```
 
 #### **Option C: Fastly**
+
 ```yaml
 Provider: Fastly
 African POPs: Johannesburg, Cairo
@@ -82,8 +88,9 @@ Setup Time: 2-3 days
 ### **Tier 2: Regional Nigerian CDN Providers**
 
 #### **Option D: Local Nigerian Providers**
+
 ```yaml
-Providers: 
+Providers:
   - MainOne (Lagos-based)
   - IHS Towers (Tower infrastructure)
   - Galaxy Backbone (Government backing)
@@ -106,6 +113,7 @@ Challenges:
 ### **Phase 1: Planning & Setup (Week 1)**
 
 #### **Day 1-2: Provider Selection & Account Setup**
+
 ```bash
 # 1. Sign up for Cloudflare (recommended)
 # Account: business@nigeriahomes.com
@@ -117,6 +125,7 @@ Challenges:
 ```
 
 #### **Day 3-4: DNS Configuration**
+
 ```yaml
 # DNS Records for CDN
 A     cdn.nigeriahomes.com     -> Origin Server IP
@@ -131,31 +140,32 @@ CNAME ph.cdn.nigeriahomes.com      -> cdn.nigeriahomes.com
 ```
 
 #### **Day 5-7: Origin Server Configuration**
+
 ```nginx
 # Nginx configuration for CDN origin
 server {
     listen 80;
     server_name cdn.nigeriahomes.com;
-    
+
     # Enable compression
     gzip on;
     gzip_vary on;
     gzip_min_length 1024;
     gzip_types text/plain text/css application/json application/javascript text/xml application/xml application/xml+rss text/javascript image/svg+xml;
-    
+
     # Cache headers for different content types
     location ~* \.(jpg|jpeg|png|gif|ico|svg)$ {
         expires 30d;
         add_header Cache-Control "public, immutable";
         add_header Vary "Accept-Encoding";
     }
-    
+
     location ~* \.(css|js)$ {
         expires 7d;
         add_header Cache-Control "public";
         add_header Vary "Accept-Encoding";
     }
-    
+
     # API responses
     location /api/ {
         expires 5m;
@@ -167,21 +177,22 @@ server {
 ### **Phase 2: CDN Configuration (Week 2)**
 
 #### **Cloudflare Configuration**
+
 ```yaml
 # Page Rules for Nigerian optimization
 Rules:
-  - Pattern: "*.nigeriahomes.com/images/*"
+  - Pattern: '*.nigeriahomes.com/images/*'
     Settings:
       Cache Level: Cache Everything
       Edge Cache TTL: 30 days
       Browser Cache TTL: 7 days
-      
-  - Pattern: "*.nigeriahomes.com/api/*"
+
+  - Pattern: '*.nigeriahomes.com/api/*'
     Settings:
       Cache Level: Bypass
       Security Level: Medium
-      
-  - Pattern: "*.nigeriahomes.com/static/*"
+
+  - Pattern: '*.nigeriahomes.com/static/*'
     Settings:
       Cache Level: Cache Everything
       Edge Cache TTL: 7 days
@@ -194,7 +205,7 @@ Speed:
   HTTP/2: Enabled
   HTTP/3 (QUIC): Enabled
   Early Hints: Enabled
-  
+
 # Security for Nigerian market
 Security:
   SSL/TLS: Full (Strict)
@@ -205,16 +216,17 @@ Security:
 ```
 
 #### **Geolocation Routing Setup**
+
 ```javascript
 // Cloudflare Worker for geolocation routing
-addEventListener('fetch', event => {
-  event.respondWith(handleRequest(event.request))
-})
+addEventListener('fetch', (event) => {
+  event.respondWith(handleRequest(event.request));
+});
 
 async function handleRequest(request) {
-  const country = request.cf.country
-  const city = request.cf.city
-  
+  const country = request.cf.country;
+  const city = request.cf.city;
+
   // Nigerian city-specific routing
   if (country === 'NG') {
     if (city === 'Lagos') {
@@ -222,49 +234,45 @@ async function handleRequest(request) {
         cf: {
           cacheEverything: true,
           cacheTtl: 86400, // 24 hours for Lagos users
-        }
-      })
+        },
+      });
     } else if (city === 'Abuja') {
       return fetch(request, {
         cf: {
           cacheEverything: true,
           cacheTtl: 43200, // 12 hours for Abuja users
-        }
-      })
+        },
+      });
     }
   }
-  
+
   // Default handling
-  return fetch(request)
+  return fetch(request);
 }
 ```
 
 ### **Phase 3: Application Integration (Week 3)**
 
 #### **Update Application Code**
+
 ```typescript
 // Update nigerian-cdn.ts with real endpoints
 export class NigerianCDN {
   private config: CDNConfig = {
-    primaryNodes: [
-      'https://lagos.cdn.nigeriahomes.com',
-      'https://abuja.cdn.nigeriahomes.com'
-    ],
-    fallbackNodes: [
-      'https://cdn.nigeriahomes.com',
-      'https://assets.nigeriahomes.com'
-    ],
+    primaryNodes: ['https://lagos.cdn.nigeriahomes.com', 'https://abuja.cdn.nigeriahomes.com'],
+    fallbackNodes: ['https://cdn.nigeriahomes.com', 'https://assets.nigeriahomes.com'],
     geolocation: {
       lagos: 'https://lagos.cdn.nigeriahomes.com',
       abuja: 'https://abuja.cdn.nigeriahomes.com',
       portHarcourt: 'https://ph.cdn.nigeriahomes.com',
-      kano: 'https://kano.cdn.nigeriahomes.com'
-    }
-  }
+      kano: 'https://kano.cdn.nigeriahomes.com',
+    },
+  };
 }
 ```
 
 #### **Environment Variables**
+
 ```bash
 # .env.production
 VITE_CDN_BASE_URL=https://cdn.nigeriahomes.com
@@ -275,6 +283,7 @@ VITE_NIGERIAN_OPTIMIZATION=true
 ```
 
 #### **Build Configuration Updates**
+
 ```typescript
 // vite.config.ts
 export default defineConfig({
@@ -283,25 +292,26 @@ export default defineConfig({
       output: {
         assetFileNames: (assetInfo) => {
           // Organize assets for CDN
-          const info = assetInfo.name.split('.')
-          const ext = info[info.length - 1]
+          const info = assetInfo.name.split('.');
+          const ext = info[info.length - 1];
           if (/png|jpe?g|svg|gif|tiff|bmp|ico/i.test(ext)) {
-            return `images/[name]-[hash][extname]`
+            return `images/[name]-[hash][extname]`;
           }
           if (/css/i.test(ext)) {
-            return `styles/[name]-[hash][extname]`
+            return `styles/[name]-[hash][extname]`;
           }
-          return `assets/[name]-[hash][extname]`
-        }
-      }
-    }
-  }
-})
+          return `assets/[name]-[hash][extname]`;
+        },
+      },
+    },
+  },
+});
 ```
 
 ### **Phase 4: Testing & Optimization (Week 4)**
 
 #### **Performance Testing Script**
+
 ```bash
 #!/bin/bash
 # test-cdn-performance.sh
@@ -313,21 +323,22 @@ locations=("lagos" "abuja" "port-harcourt" "kano" "ibadan")
 
 for location in "${locations[@]}"; do
     echo "Testing from $location..."
-    
+
     # Test image loading
     curl -w "@curl-format.txt" -o /dev/null -s "https://images.nigeriahomes.com/test/property-1.jpg"
-    
+
     # Test API response
     curl -w "@curl-format.txt" -o /dev/null -s "https://api.nigeriahomes.com/properties/featured"
-    
+
     # Test static assets
     curl -w "@curl-format.txt" -o /dev/null -s "https://static.nigeriahomes.com/css/main.css"
-    
+
     echo "---"
 done
 ```
 
 #### **Monitoring Setup**
+
 ```yaml
 # monitoring.yml
 monitoring:
@@ -337,14 +348,14 @@ monitoring:
     - GTmetrix
     - WebPageTest (Lagos location)
     - Pingdom (Nigerian endpoints)
-    
+
   metrics:
     - Response time from Nigerian cities
     - Cache hit ratio
     - Bandwidth usage
     - Error rates
     - User satisfaction scores
-    
+
   alerts:
     - Latency > 2000ms from Lagos
     - Availability < 99%
@@ -357,11 +368,12 @@ monitoring:
 ## 💰 **Cost Analysis**
 
 ### **Monthly Cost Breakdown**
+
 ```yaml
 Cloudflare Pro Plan: $20/month
   - Includes: 20GB bandwidth, basic analytics
   - Additional bandwidth: $1/GB over limit
-  
+
 Estimated Nigerian Traffic: 50-100GB/month
 Total Cloudflare Cost: $50-120/month
 
@@ -369,12 +381,13 @@ Additional Costs:
   - SSL certificates: $0 (included)
   - Monitoring tools: $20-50/month
   - Development time: $500-1000 (one-time)
-  
+
 Total Monthly Cost: $70-170/month
 Annual Cost: $840-2040/year
 ```
 
 ### **ROI Calculation**
+
 ```yaml
 Benefits:
   - 60% faster page loads = 25% higher conversion
@@ -391,6 +404,7 @@ ROI: 300-1000% within 6 months
 ## 🔧 **Implementation Checklist**
 
 ### **Pre-Deployment**
+
 - [ ] Domain ownership verification
 - [ ] SSL certificate planning
 - [ ] Origin server optimization
@@ -398,6 +412,7 @@ ROI: 300-1000% within 6 months
 - [ ] Team training on CDN management
 
 ### **Deployment**
+
 - [ ] CDN provider account setup
 - [ ] DNS configuration
 - [ ] Cache rules configuration
@@ -407,6 +422,7 @@ ROI: 300-1000% within 6 months
 - [ ] Environment variables
 
 ### **Post-Deployment**
+
 - [ ] Performance testing from Nigerian locations
 - [ ] Cache hit ratio optimization
 - [ ] Monitoring setup
@@ -419,6 +435,7 @@ ROI: 300-1000% within 6 months
 ## 📊 **Success Metrics**
 
 ### **Performance Targets**
+
 ```yaml
 Latency:
   Lagos: <300ms (currently >2000ms)
@@ -430,9 +447,9 @@ Availability:
   Uptime: 8759+ hours/year
 
 Cache Performance:
-  Hit Ratio: >85%
+  Hit Ratio: >85
   Miss Ratio: <15%
-  
+
 User Experience:
   Page Load Time: <2 seconds
   Time to Interactive: <3 seconds
@@ -440,6 +457,7 @@ User Experience:
 ```
 
 ### **Business Impact**
+
 ```yaml
 Expected Improvements:
   - Overall performance score: 75/100 → 85+/100
@@ -454,6 +472,7 @@ Expected Improvements:
 ## 🚨 **Risk Mitigation**
 
 ### **Common Issues & Solutions**
+
 ```yaml
 Issue: High latency from remote Nigerian cities
 Solution: Add more edge locations or local CDN partnerships
@@ -472,6 +491,7 @@ Solution: Optimize image compression and implement smart caching
 ```
 
 ### **Rollback Plan**
+
 ```yaml
 Emergency Rollback:
   1. Revert DNS changes (TTL: 300 seconds)
@@ -479,7 +499,7 @@ Emergency Rollback:
   3. Direct traffic to origin server
   4. Monitor performance and errors
   5. Communicate with users if necessary
-  
+
 Recovery Time: <15 minutes
 ```
 
@@ -488,19 +508,21 @@ Recovery Time: <15 minutes
 ## 📞 **Support & Maintenance**
 
 ### **Ongoing Tasks**
+
 - **Daily**: Monitor performance metrics and alerts
 - **Weekly**: Review cache hit ratios and optimize rules
 - **Monthly**: Analyze costs and usage patterns
 - **Quarterly**: Performance testing and optimization
 
 ### **Emergency Contacts**
+
 ```yaml
 Cloudflare Support: 24/7 chat and phone
 Nigerian ISP Contacts:
   - MTN: +234-803-000-0123
   - Airtel: +234-802-000-0123
   - Glo: +234-805-000-0123
-  
+
 Internal Team:
   - DevOps Lead: devops@nigeriahomes.com
   - Performance Team: performance@nigeriahomes.com
@@ -531,6 +553,6 @@ Internal Team:
 
 ---
 
-*Last Updated: January 2025*
-*Version: 1.0*
-*Contact: devops@nigeriahomes.com*
+_Last Updated: January 2025_
+_Version: 1.0_
+_Contact: devops@nigeriahomes.com_

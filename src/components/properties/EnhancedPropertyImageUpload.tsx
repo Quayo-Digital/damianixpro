@@ -12,20 +12,21 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { v4 as uuidv4 } from 'uuid';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/contexts/auth';
+import { useAuthSession } from '@/contexts/auth';
 import CameraButton from '@/components/camera/CameraButton';
 import PhotoGallery from '@/components/camera/PhotoGallery';
 import { CapturedPhoto } from '@/services/camera/CameraService';
-import { 
-  Camera, 
-  Upload, 
-  Image as ImageIcon, 
-  Trash2, 
+import { optimizeImagesForUpload } from '@/utils/imageOptimization';
+import {
+  Camera,
+  Upload,
+  Image as ImageIcon,
+  Trash2,
   FileImage,
   Smartphone,
   Loader2,
   CheckCircle,
-  Info
+  Info,
 } from 'lucide-react';
 
 interface EnhancedPropertyImageUploadProps {
@@ -37,13 +38,13 @@ interface EnhancedPropertyImageUploadProps {
   title?: string;
 }
 
-export function EnhancedPropertyImageUpload({ 
-  onImageUploaded, 
+export function EnhancedPropertyImageUpload({
+  onImageUploaded,
   onMultipleImagesUploaded,
   initialImageUrl,
   allowMultiple = false,
   maxImages = 10,
-  title = "Property Images"
+  title = 'Property Images',
 }: EnhancedPropertyImageUploadProps) {
   const { toast } = useToast();
   const [imageUrl, setImageUrl] = useState<string | null>(initialImageUrl || null);
@@ -51,7 +52,7 @@ export function EnhancedPropertyImageUpload({
   const [isUploading, setIsUploading] = useState(false);
   const [capturedPhotos, setCapturedPhotos] = useState<CapturedPhoto[]>([]);
   const [uploadMethod, setUploadMethod] = useState<'file' | 'camera'>('camera');
-  const { user } = useAuth();
+  const { user } = useAuthSession();
 
   // Handle file upload
   const handleFileChange = async (e: ChangeEvent<HTMLInputElement>) => {
@@ -60,22 +61,22 @@ export function EnhancedPropertyImageUpload({
 
     if (!user) {
       toast({
-        title: "Authentication Error",
-        description: "You must be logged in to upload images.",
-        variant: "destructive",
+        title: 'Authentication Error',
+        description: 'You must be logged in to upload images.',
+        variant: 'destructive',
       });
       return;
     }
 
     const filesToProcess = allowMultiple ? Array.from(files) : [files[0]];
-    
+
     // Validate file sizes (10MB max for Nigerian networks)
     for (const file of filesToProcess) {
       if (file.size > 10 * 1024 * 1024) {
         toast({
-          title: "File too large",
+          title: 'File too large',
           description: `${file.name} must be less than 10MB for Nigerian networks`,
-          variant: "destructive",
+          variant: 'destructive',
         });
         return;
       }
@@ -83,12 +84,15 @@ export function EnhancedPropertyImageUpload({
 
     setIsUploading(true);
     const uploadedUrls: string[] = [];
-    
+
     try {
-      for (const file of filesToProcess) {
-        const fileExt = file.name.split('.').pop();
+      // Optimize images before upload (resize + compress for Nigerian networks)
+      const optimizedFiles = await optimizeImagesForUpload(filesToProcess);
+
+      for (const file of optimizedFiles) {
+        const fileExt = file.name.split('.').pop() || 'jpg';
         const fileName = `${user.id}/property_${uuidv4()}.${fileExt}`;
-        
+
         const { data, error: uploadError } = await supabase.storage
           .from('property-images')
           .upload(fileName, file);
@@ -96,38 +100,38 @@ export function EnhancedPropertyImageUpload({
         if (uploadError) {
           throw uploadError;
         }
-        
+
         const { data: publicUrlData } = supabase.storage
           .from('property-images')
           .getPublicUrl(data.path);
-        
+
         const publicUrl = publicUrlData.publicUrl;
         uploadedUrls.push(publicUrl);
 
         // Small delay for Nigerian networks
         if (filesToProcess.length > 1) {
-          await new Promise(resolve => setTimeout(resolve, 500));
+          await new Promise((resolve) => setTimeout(resolve, 500));
         }
       }
-      
+
       if (allowMultiple) {
-        setImageUrls(prev => [...prev, ...uploadedUrls]);
+        setImageUrls((prev) => [...prev, ...uploadedUrls]);
         onMultipleImagesUploaded?.(uploadedUrls);
       } else {
         setImageUrl(uploadedUrls[0]);
         onImageUploaded(uploadedUrls[0]);
       }
-      
+
       toast({
-        title: "Images uploaded",
+        title: 'Images uploaded',
         description: `${uploadedUrls.length} property image(s) uploaded successfully.`,
       });
     } catch (error: any) {
       console.error('Error uploading files:', error);
       toast({
-        title: "Upload failed",
-        description: error.message || "There was a problem uploading your images.",
-        variant: "destructive",
+        title: 'Upload failed',
+        description: error.message || 'There was a problem uploading your images.',
+        variant: 'destructive',
       });
     } finally {
       setIsUploading(false);
@@ -138,22 +142,24 @@ export function EnhancedPropertyImageUpload({
   const handleCameraPhoto = async (photo: CapturedPhoto) => {
     if (!user) {
       toast({
-        title: "Authentication Error",
-        description: "You must be logged in to upload photos.",
-        variant: "destructive",
+        title: 'Authentication Error',
+        description: 'You must be logged in to upload photos.',
+        variant: 'destructive',
       });
       return;
     }
 
     setIsUploading(true);
-    
+
     try {
-      // Convert blob to file for upload
-      const file = new File([photo.blob], photo.filename, { type: photo.blob.type });
-      
-      const fileExt = photo.metadata.format;
+      // Convert blob to file and optimize before upload
+      let file = new File([photo.blob], photo.filename, { type: photo.blob.type });
+      const { optimizeImageForUpload } = await import('@/utils/imageOptimization');
+      file = await optimizeImageForUpload(file);
+
+      const fileExt = file.name.split('.').pop() || photo.metadata.format;
       const fileName = `${user.id}/camera_${photo.id}.${fileExt}`;
-      
+
       const { data, error: uploadError } = await supabase.storage
         .from('property-images')
         .upload(fileName, file);
@@ -161,33 +167,33 @@ export function EnhancedPropertyImageUpload({
       if (uploadError) {
         throw uploadError;
       }
-      
+
       const { data: publicUrlData } = supabase.storage
         .from('property-images')
         .getPublicUrl(data.path);
-      
+
       const publicUrl = publicUrlData.publicUrl;
-      
+
       if (allowMultiple) {
-        setImageUrls(prev => [...prev, publicUrl]);
+        setImageUrls((prev) => [...prev, publicUrl]);
         onMultipleImagesUploaded?.([publicUrl]);
       } else {
         setImageUrl(publicUrl);
         onImageUploaded(publicUrl);
       }
-      
-      setCapturedPhotos(prev => [...prev, photo]);
-      
+
+      setCapturedPhotos((prev) => [...prev, photo]);
+
       toast({
-        title: "Photo uploaded",
+        title: 'Photo uploaded',
         description: `Property photo captured and uploaded (${(photo.size / 1024).toFixed(1)}KB)`,
       });
     } catch (error: any) {
       console.error('Error uploading camera photo:', error);
       toast({
-        title: "Upload failed",
-        description: error.message || "There was a problem uploading your photo.",
-        variant: "destructive",
+        title: 'Upload failed',
+        description: error.message || 'There was a problem uploading your photo.',
+        variant: 'destructive',
       });
     } finally {
       setIsUploading(false);
@@ -207,7 +213,7 @@ export function EnhancedPropertyImageUpload({
     for (const photo of photos) {
       await handleCameraPhoto(photo);
       // Small delay between uploads for Nigerian networks
-      await new Promise(resolve => setTimeout(resolve, 500));
+      await new Promise((resolve) => setTimeout(resolve, 500));
     }
   };
 
@@ -221,10 +227,8 @@ export function EnhancedPropertyImageUpload({
       if (!targetUrl.startsWith('blob:') && !targetUrl.includes('placeholder.svg')) {
         const path = new URL(targetUrl).pathname.split('/property-images/')[1];
         if (path) {
-          const { error } = await supabase.storage
-            .from('property-images')
-            .remove([path]);
-          
+          const { error } = await supabase.storage.from('property-images').remove([path]);
+
           if (error && error.message !== 'The resource was not found') {
             console.warn('Error removing image:', error);
           }
@@ -232,22 +236,22 @@ export function EnhancedPropertyImageUpload({
       }
 
       if (allowMultiple) {
-        setImageUrls(prev => prev.filter(url => url !== targetUrl));
+        setImageUrls((prev) => prev.filter((url) => url !== targetUrl));
       } else {
         setImageUrl(null);
         onImageUploaded(null);
       }
-      
+
       toast({
-        title: "Image Removed",
-        description: "Property image removed successfully.",
+        title: 'Image Removed',
+        description: 'Property image removed successfully.',
       });
     } catch (error: any) {
       console.error('Error removing image:', error);
       toast({
-        title: "Remove failed",
-        description: "There was a problem removing the image.",
-        variant: "destructive",
+        title: 'Remove failed',
+        description: 'There was a problem removing the image.',
+        variant: 'destructive',
       });
     } finally {
       setIsUploading(false);
@@ -256,10 +260,10 @@ export function EnhancedPropertyImageUpload({
 
   // Remove captured photo
   const removeCapturedPhoto = (photoId: string) => {
-    setCapturedPhotos(prev => prev.filter(p => p.id !== photoId));
+    setCapturedPhotos((prev) => prev.filter((p) => p.id !== photoId));
   };
 
-  const totalImages = allowMultiple ? imageUrls.length : (imageUrl ? 1 : 0);
+  const totalImages = allowMultiple ? imageUrls.length : imageUrl ? 1 : 0;
 
   return (
     <Card>
@@ -276,10 +280,13 @@ export function EnhancedPropertyImageUpload({
           )}
         </CardTitle>
       </CardHeader>
-      
+
       <CardContent className="space-y-4">
         {/* Upload Method Tabs */}
-        <Tabs value={uploadMethod} onValueChange={(value) => setUploadMethod(value as 'file' | 'camera')}>
+        <Tabs
+          value={uploadMethod}
+          onValueChange={(value) => setUploadMethod(value as 'file' | 'camera')}
+        >
           <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger value="camera" className="flex items-center gap-2">
               <Camera className="h-4 w-4" />
@@ -296,8 +303,8 @@ export function EnhancedPropertyImageUpload({
             <Alert>
               <Smartphone className="h-4 w-4" />
               <AlertDescription>
-                📱 Capture high-quality property photos directly with your mobile camera. 
-                Optimized for Nigerian networks with smart compression.
+                📱 Capture high-quality property photos directly with your mobile camera. Optimized
+                for Nigerian networks with smart compression.
               </AlertDescription>
             </Alert>
 
@@ -318,7 +325,7 @@ export function EnhancedPropertyImageUpload({
                     onPhotoCapture={handleCameraPhoto}
                     disabled={isUploading || totalImages >= maxImages}
                   />
-                  
+
                   <CameraButton
                     variant="property"
                     mode="multiple"
@@ -327,7 +334,7 @@ export function EnhancedPropertyImageUpload({
                     onPhotosCapture={handleCameraPhotos}
                     disabled={isUploading || totalImages >= maxImages}
                   >
-                    <Camera className="h-4 w-4 mr-2" />
+                    <Camera className="mr-2 h-4 w-4" />
                     Multiple Photos
                   </CameraButton>
                 </>
@@ -351,21 +358,25 @@ export function EnhancedPropertyImageUpload({
             <Alert>
               <Upload className="h-4 w-4" />
               <AlertDescription>
-                Upload property images from your device. Maximum 10MB per file for optimal Nigerian network performance.
+                Upload property images from your device. Maximum 10MB per file for optimal Nigerian
+                network performance.
               </AlertDescription>
             </Alert>
 
-            <div className="flex items-center justify-center w-full">
-              <label htmlFor="property-image-upload" className="flex flex-col items-center justify-center w-full h-32 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100">
-                <div className="flex flex-col items-center justify-center pt-5 pb-6">
+            <div className="flex w-full items-center justify-center">
+              <label
+                htmlFor="property-image-upload"
+                className="flex h-32 w-full cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed border-gray-300 bg-gray-50 hover:bg-gray-100"
+              >
+                <div className="flex flex-col items-center justify-center pb-6 pt-5">
                   {isUploading ? (
                     <>
-                      <Loader2 className="w-8 h-8 mb-4 text-gray-500 animate-spin" />
+                      <Loader2 className="mb-4 h-8 w-8 animate-spin text-gray-500" />
                       <p className="mb-2 text-sm text-gray-500">Uploading...</p>
                     </>
                   ) : (
                     <>
-                      <Upload className="w-8 h-8 mb-4 text-gray-500" />
+                      <Upload className="mb-4 h-8 w-8 text-gray-500" />
                       <p className="mb-2 text-sm text-gray-500">
                         <span className="font-semibold">Click to upload</span> property images
                       </p>
@@ -391,20 +402,20 @@ export function EnhancedPropertyImageUpload({
         {allowMultiple && imageUrls.length > 0 && (
           <div className="space-y-3">
             <h4 className="font-medium">Uploaded Images</h4>
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4">
               {imageUrls.map((url, index) => (
-                <div key={index} className="relative group">
+                <div key={index} className="group relative">
                   <img
                     src={url}
                     alt={`Property image ${index + 1}`}
-                    className="w-full aspect-square object-cover rounded-lg border"
+                    className="aspect-square w-full rounded-lg border object-cover"
                   />
                   <Button
                     variant="destructive"
                     size="sm"
                     onClick={() => handleRemoveImage(url)}
                     disabled={isUploading}
-                    className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity w-8 h-8 p-0"
+                    className="absolute right-2 top-2 h-8 w-8 p-0 opacity-0 transition-opacity group-hover:opacity-100"
                   >
                     <Trash2 className="h-3 w-3" />
                   </Button>
@@ -421,16 +432,16 @@ export function EnhancedPropertyImageUpload({
               <img
                 src={imageUrl}
                 alt="Property"
-                className="w-full max-w-md h-48 object-cover rounded-lg border"
+                className="h-48 w-full max-w-md rounded-lg border object-cover"
               />
               <Button
                 variant="destructive"
                 size="sm"
                 onClick={() => handleRemoveImage()}
                 disabled={isUploading}
-                className="absolute top-2 right-2"
+                className="absolute right-2 top-2"
               >
-                <Trash2 className="h-4 w-4 mr-1" />
+                <Trash2 className="mr-1 h-4 w-4" />
                 Remove
               </Button>
             </div>
@@ -441,8 +452,9 @@ export function EnhancedPropertyImageUpload({
         <Alert>
           <Info className="h-4 w-4" />
           <AlertDescription>
-            🇳🇬 <strong>Nigerian Network Optimized:</strong> Images are automatically compressed 
-            for 2G/3G/4G networks while maintaining quality. Camera photos include location data for property mapping.
+            🇳🇬 <strong>Nigerian Network Optimized:</strong> Images are automatically compressed for
+            2G/3G/4G networks while maintaining quality. Camera photos include location data for
+            property mapping.
           </AlertDescription>
         </Alert>
       </CardContent>

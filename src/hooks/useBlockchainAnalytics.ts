@@ -19,7 +19,7 @@ import {
   AlertConfig,
   AnalyticsDashboardConfig,
   TimeFrame,
-  NetworkType
+  NetworkType,
 } from '@/types/blockchainAnalytics';
 import { toast } from 'sonner';
 
@@ -37,12 +37,12 @@ export function useBlockchainAnalytics(options: UseBlockchainAnalyticsOptions = 
     walletAddress,
     autoRefresh = true,
     refreshInterval = 60000, // 1 minute
-    enableRealTime = true
+    enableRealTime = true,
   } = options;
 
   const queryClient = useQueryClient();
   const { hasFeatureAccess, checkFeatureUsage } = useSubscription();
-  
+
   // State for real-time updates
   const [realTimeUpdates, setRealTimeUpdates] = useState<RealTimeUpdate[]>([]);
   const [isConnected, setIsConnected] = useState(false);
@@ -60,14 +60,14 @@ export function useBlockchainAnalytics(options: UseBlockchainAnalyticsOptions = 
     data: marketAnalytics,
     isLoading: isLoadingMarket,
     error: marketError,
-    refetch: refetchMarket
+    refetch: refetchMarket,
   } = useQuery({
     queryKey: ['blockchain-market-analytics', analyticsFilters, selectedTimeframe],
     queryFn: () => blockchainAnalyticsService.getMarketAnalytics(analyticsFilters),
     enabled: canUseAnalytics,
     refetchInterval: autoRefresh ? refreshInterval : false,
     staleTime: 30000, // 30 seconds
-    retry: 3
+    retry: 3,
   });
 
   // Portfolio Analytics Query
@@ -75,7 +75,7 @@ export function useBlockchainAnalytics(options: UseBlockchainAnalyticsOptions = 
     data: portfolioAnalytics,
     isLoading: isLoadingPortfolio,
     error: portfolioError,
-    refetch: refetchPortfolio
+    refetch: refetchPortfolio,
   } = useQuery({
     queryKey: ['blockchain-portfolio-analytics', userId, walletAddress],
     queryFn: () => {
@@ -87,7 +87,7 @@ export function useBlockchainAnalytics(options: UseBlockchainAnalyticsOptions = 
     enabled: canUseAnalytics && !!userId && !!walletAddress,
     refetchInterval: autoRefresh ? refreshInterval : false,
     staleTime: 60000, // 1 minute
-    retry: 3
+    retry: 3,
   });
 
   // AI Analysis Mutation
@@ -106,16 +106,16 @@ export function useBlockchainAnalytics(options: UseBlockchainAnalyticsOptions = 
     },
     onSuccess: (data: AIAnalysisResponse) => {
       toast.success('AI analysis completed successfully');
-      
+
       // Update relevant queries with new insights
-      queryClient.setQueryData(
-        ['ai-insights', data.type],
-        (oldData: AIAnalysisResponse[] = []) => [data, ...oldData.slice(0, 9)]
-      );
+      queryClient.setQueryData(['ai-insights', data.type], (oldData: AIAnalysisResponse[] = []) => [
+        data,
+        ...oldData.slice(0, 9),
+      ]);
     },
     onError: (error: Error) => {
       toast.error(`AI analysis failed: ${error.message}`);
-    }
+    },
   });
 
   // Real-time Updates Setup
@@ -123,18 +123,18 @@ export function useBlockchainAnalytics(options: UseBlockchainAnalyticsOptions = 
     if (!enableRealTime || !canUseRealTime || !userId) return;
 
     const handleUpdate = (update: RealTimeUpdate) => {
-      setRealTimeUpdates(prev => [update, ...prev.slice(0, 99)]); // Keep last 100 updates
-      
+      setRealTimeUpdates((prev) => [update, ...prev.slice(0, 99)]); // Keep last 100 updates
+
       // Update relevant queries based on update type
       if (update.type === 'price' && update.propertyId) {
         queryClient.invalidateQueries({
-          queryKey: ['blockchain-portfolio-analytics', userId, walletAddress]
+          queryKey: ['blockchain-portfolio-analytics', userId, walletAddress],
         });
       }
-      
+
       if (update.type === 'insight') {
         toast.info('New market insight available', {
-          description: 'Check your analytics dashboard for the latest insights.'
+          description: 'Check your analytics dashboard for the latest insights.',
         });
       }
     };
@@ -159,7 +159,7 @@ export function useBlockchainAnalytics(options: UseBlockchainAnalyticsOptions = 
       type: 'market_analysis',
       data: { timeframe: selectedTimeframe, network: selectedNetwork },
       parameters: { confidence_threshold: 0.7 },
-      userId: userId || 'anonymous'
+      userId: userId || 'anonymous',
     });
   }, [aiAnalysisMutation, canUseAIInsights, selectedTimeframe, selectedNetwork, userId]);
 
@@ -173,7 +173,7 @@ export function useBlockchainAnalytics(options: UseBlockchainAnalyticsOptions = 
       type: 'portfolio_optimization',
       data: { walletAddress, portfolio: portfolioAnalytics },
       parameters: { risk_tolerance: 'medium', optimization_goal: 'balanced' },
-      userId: userId || 'anonymous'
+      userId: userId || 'anonymous',
     });
   }, [aiAnalysisMutation, canUseAIInsights, walletAddress, portfolioAnalytics, userId]);
 
@@ -187,7 +187,7 @@ export function useBlockchainAnalytics(options: UseBlockchainAnalyticsOptions = 
       type: 'risk_assessment',
       data: { market: marketAnalytics, portfolio: portfolioAnalytics },
       parameters: { risk_horizon: '30d', sensitivity: 'high' },
-      userId: userId || 'anonymous'
+      userId: userId || 'anonymous',
     });
   }, [aiAnalysisMutation, canUseAIInsights, marketAnalytics, portfolioAnalytics, userId]);
 
@@ -201,13 +201,13 @@ export function useBlockchainAnalytics(options: UseBlockchainAnalyticsOptions = 
       type: 'opportunity_detection',
       data: { market: marketAnalytics, filters: analyticsFilters },
       parameters: { min_confidence: 0.8, max_risk: 'medium' },
-      userId: userId || 'anonymous'
+      userId: userId || 'anonymous',
     });
   }, [aiAnalysisMutation, canUseAIInsights, marketAnalytics, analyticsFilters, userId]);
 
   // Filter and Settings Management
   const updateFilters = useCallback((newFilters: Partial<AnalyticsFilter>) => {
-    setAnalyticsFilters(prev => ({ ...prev, ...newFilters }));
+    setAnalyticsFilters((prev) => ({ ...prev, ...newFilters }));
   }, []);
 
   const updateTimeframe = useCallback((timeframe: TimeFrame) => {
@@ -221,10 +221,10 @@ export function useBlockchainAnalytics(options: UseBlockchainAnalyticsOptions = 
   // Refresh Functions
   const refreshAll = useCallback(async () => {
     const promises = [];
-    
+
     if (canUseAnalytics) {
       promises.push(refetchMarket());
-      
+
       if (userId && walletAddress) {
         promises.push(refetchPortfolio());
       }
@@ -249,9 +249,9 @@ export function useBlockchainAnalytics(options: UseBlockchainAnalyticsOptions = 
   // Computed Values
   const isLoading = isLoadingMarket || isLoadingPortfolio || aiAnalysisMutation.isPending;
   const hasError = marketError || portfolioError || aiAnalysisMutation.error;
-  
+
   const insights: InvestmentInsight[] = [
-    ...(marketAnalytics?.trends?.map(trend => ({
+    ...(marketAnalytics?.trends?.map((trend) => ({
       id: `trend-${trend.id}`,
       type: trend.changePercentage > 0 ? 'bullish' : 'bearish',
       title: `${trend.metric} ${trend.changePercentage > 0 ? 'Rising' : 'Falling'}`,
@@ -260,13 +260,11 @@ export function useBlockchainAnalytics(options: UseBlockchainAnalyticsOptions = 
       impact: Math.abs(trend.changePercentage) > 5 ? 'high' : 'medium',
       timeframe: 'short',
       propertyIds: [],
-      metrics: [
-        { name: trend.metric, value: trend.value, unit: '', change: trend.change }
-      ],
+      metrics: [{ name: trend.metric, value: trend.value, unit: '', change: trend.change }],
       aiGenerated: false,
-      createdAt: trend.timestamp
+      createdAt: trend.timestamp,
     })) || []),
-    ...(portfolioAnalytics?.recommendations?.map(rec => ({
+    ...(portfolioAnalytics?.recommendations?.map((rec) => ({
       id: `portfolio-${rec.id}`,
       type: rec.type === 'buy' ? 'bullish' : rec.type === 'sell' ? 'bearish' : 'neutral',
       title: rec.title,
@@ -277,8 +275,8 @@ export function useBlockchainAnalytics(options: UseBlockchainAnalyticsOptions = 
       propertyIds: rec.propertyIds,
       metrics: [],
       aiGenerated: rec.aiGenerated,
-      createdAt: rec.createdAt
-    })) || [])
+      createdAt: rec.createdAt,
+    })) || []),
   ];
 
   const opportunities: InvestmentOpportunity[] = marketAnalytics?.opportunities || [];
@@ -296,7 +294,7 @@ export function useBlockchainAnalytics(options: UseBlockchainAnalyticsOptions = 
     sentimentScore: marketAnalytics?.overview?.sentimentScore || 50,
     riskScore: portfolioAnalytics?.riskScore || 50,
     performanceScore: portfolioAnalytics?.performanceScore || 50,
-    diversificationScore: portfolioAnalytics?.diversificationScore || 50
+    diversificationScore: portfolioAnalytics?.diversificationScore || 50,
   };
 
   return {
@@ -335,6 +333,6 @@ export function useBlockchainAnalytics(options: UseBlockchainAnalyticsOptions = 
     clearCache,
 
     // Mutations
-    aiAnalysis: aiAnalysisMutation
+    aiAnalysis: aiAnalysisMutation,
   };
 }

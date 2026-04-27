@@ -5,21 +5,15 @@ import { useForm } from 'react-hook-form';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { 
-  Form, 
-  FormControl, 
-  FormField, 
-  FormItem, 
-  FormLabel, 
-  FormMessage 
-} from '@/components/ui/form';
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/components/ui/form';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   Select,
   SelectContent,
@@ -33,17 +27,42 @@ import { Loader2, CheckCircle, Wrench } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '@/contexts/auth';
+import { useAuthSession, useAuthActions } from '@/contexts/auth';
 
 const SERVICE_CATEGORIES = [
-  'Plumbing', 'Electrical', 'HVAC', 'Carpentry', 'Painting', 'Cleaning',
-  'Security', 'Landscaping', 'Roofing', 'Flooring', 'Appliance Repair',
-  'General Maintenance', 'Pest Control', 'Moving Services', 'Other'
+  'Plumbing',
+  'Electrical',
+  'HVAC',
+  'Carpentry',
+  'Painting',
+  'Cleaning',
+  'Security',
+  'Landscaping',
+  'Roofing',
+  'Flooring',
+  'Appliance Repair',
+  'General Maintenance',
+  'Pest Control',
+  'Moving Services',
+  'Other',
 ] as const;
 
 const NIGERIAN_STATES = [
-  'Lagos', 'Abuja FCT', 'Kano', 'Rivers', 'Oyo', 'Delta', 'Imo', 'Anambra',
-  'Kaduna', 'Akwa Ibom', 'Osun', 'Edo', 'Kwara', 'Ogun', 'Enugu'
+  'Lagos',
+  'Abuja FCT',
+  'Kano',
+  'Rivers',
+  'Oyo',
+  'Delta',
+  'Imo',
+  'Anambra',
+  'Kaduna',
+  'Akwa Ibom',
+  'Osun',
+  'Edo',
+  'Kwara',
+  'Ogun',
+  'Enugu',
 ] as const;
 
 const vendorOnboardingSchema = z.object({
@@ -53,7 +72,7 @@ const vendorOnboardingSchema = z.object({
   phone: z.string().min(10, 'Please enter a valid phone number'),
   address: z.string().min(5, 'Please enter your business address'),
   primaryCategory: z.enum(SERVICE_CATEGORIES, {
-    required_error: 'Please select your primary service category'
+    required_error: 'Please select your primary service category',
   }),
   specialties: z.array(z.string()).min(1, 'Please select at least one specialty'),
   serviceAreas: z.array(z.string()).min(1, 'Please select at least one service area'),
@@ -64,7 +83,7 @@ const vendorOnboardingSchema = z.object({
   insuranceProvider: z.string().optional(),
   availableWeekdays: z.boolean().default(true),
   availableWeekends: z.boolean().default(false),
-  available24Hours: z.boolean().default(false)
+  available24Hours: z.boolean().default(false),
 });
 
 type VendorOnboardingFormData = z.infer<typeof vendorOnboardingSchema>;
@@ -73,7 +92,8 @@ export function VendorOnboardingForm() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [selectedSpecialties, setSelectedSpecialties] = useState<string[]>([]);
   const [selectedServiceAreas, setSelectedServiceAreas] = useState<string[]>([]);
-  const { user, refreshUserRole } = useAuth();
+  const { user } = useAuthSession();
+  const { refreshUserRole } = useAuthActions();
   const navigate = useNavigate();
 
   const form = useForm<VendorOnboardingFormData>({
@@ -93,24 +113,24 @@ export function VendorOnboardingForm() {
       insuranceProvider: '',
       availableWeekdays: true,
       availableWeekends: false,
-      available24Hours: false
-    }
+      available24Hours: false,
+    },
   });
 
   const handleSpecialtyToggle = (specialty: string) => {
     const updated = selectedSpecialties.includes(specialty)
-      ? selectedSpecialties.filter(s => s !== specialty)
+      ? selectedSpecialties.filter((s) => s !== specialty)
       : [...selectedSpecialties, specialty];
-    
+
     setSelectedSpecialties(updated);
     form.setValue('specialties', updated);
   };
 
   const handleServiceAreaToggle = (area: string) => {
     const updated = selectedServiceAreas.includes(area)
-      ? selectedServiceAreas.filter(a => a !== area)
+      ? selectedServiceAreas.filter((a) => a !== area)
       : [...selectedServiceAreas, area];
-    
+
     setSelectedServiceAreas(updated);
     form.setValue('serviceAreas', updated);
   };
@@ -130,54 +150,51 @@ export function VendorOnboardingForm() {
         .update({
           full_name: data.fullName,
           phone: data.phone,
-          onboarding_tour_completed: true
+          onboarding_tour_completed: true,
         })
         .eq('id', user.id);
 
       if (profileError) throw new Error(`Profile update failed: ${profileError.message}`);
 
       // Create vendor record
-      const { error: vendorError } = await supabase
-        .from('vendors')
-        .insert({
-          user_id: user.id,
-          name: data.companyName,
-          category: data.primaryCategory,
-          email: data.email,
-          phone: data.phone,
-          address: data.address,
-          specialties: data.specialties,
-          service_areas: data.serviceAreas,
-          professional_references: data.references,
-          business_license: data.businessLicense,
-          insurance_provider: data.insuranceProvider,
-          years_of_experience: data.yearsOfExperience,
-          hourly_rate: data.hourlyRate,
-          available_weekdays: data.availableWeekdays,
-          available_weekends: data.availableWeekends,
-          available_24_hours: data.available24Hours,
-          description: data.description,
-          rating: 0.0,
-          total_jobs: 0,
-          completed_jobs: 0,
-          active: true
-        });
+      const { error: vendorError } = await supabase.from('vendors').insert({
+        user_id: user.id,
+        name: data.companyName,
+        category: data.primaryCategory,
+        email: data.email,
+        phone: data.phone,
+        address: data.address,
+        specialties: data.specialties,
+        service_areas: data.serviceAreas,
+        professional_references: data.references,
+        business_license: data.businessLicense,
+        insurance_provider: data.insuranceProvider,
+        years_of_experience: data.yearsOfExperience,
+        hourly_rate: data.hourlyRate,
+        available_weekdays: data.availableWeekdays,
+        available_weekends: data.availableWeekends,
+        available_24_hours: data.available24Hours,
+        description: data.description,
+        rating: 0.0,
+        total_jobs: 0,
+        completed_jobs: 0,
+        active: true,
+      });
 
       if (vendorError) throw new Error(`Vendor creation failed: ${vendorError.message}`);
 
       // Update user metadata
       await supabase.auth.updateUser({
-        data: { 
+        data: {
           onboarded: true,
           role: 'vendor',
-          company: data.companyName
-        }
+          company: data.companyName,
+        },
       });
 
       await refreshUserRole(user.id);
       toast.success('Vendor onboarding completed successfully!');
       navigate('/dashboard');
-
     } catch (error) {
       console.error('Vendor onboarding error:', error);
       toast.error(error instanceof Error ? error.message : 'Onboarding failed. Please try again.');
@@ -187,14 +204,14 @@ export function VendorOnboardingForm() {
   };
 
   return (
-    <div className="w-full max-w-4xl mx-auto">
+    <div className="mx-auto w-full max-w-4xl">
       <Card className="border-0 shadow-lg">
         <CardHeader className="text-center">
-          <div className="flex items-center justify-center gap-2 mb-2">
-            <Wrench className="w-8 h-8 text-primary" />
+          <div className="mb-2 flex items-center justify-center gap-2">
+            <Wrench className="h-8 w-8 text-primary" />
             <CardTitle className="text-2xl font-bold">Vendor Onboarding</CardTitle>
           </div>
-          <CardDescription>Join Nigeria Homes as a trusted service provider</CardDescription>
+          <CardDescription>Join DamianixPro as a trusted service provider</CardDescription>
         </CardHeader>
 
         <CardContent>
@@ -203,8 +220,8 @@ export function VendorOnboardingForm() {
               {/* Basic Information */}
               <div className="space-y-4">
                 <h3 className="text-lg font-semibold">Basic Information</h3>
-                
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                   <FormField
                     control={form.control}
                     name="fullName"
@@ -234,7 +251,7 @@ export function VendorOnboardingForm() {
                   />
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                   <FormField
                     control={form.control}
                     name="email"
@@ -282,7 +299,7 @@ export function VendorOnboardingForm() {
               {/* Service Information */}
               <div className="space-y-4">
                 <h3 className="text-lg font-semibold">Service Information</h3>
-                
+
                 <FormField
                   control={form.control}
                   name="primaryCategory"
@@ -309,8 +326,10 @@ export function VendorOnboardingForm() {
                 />
 
                 <div>
-                  <FormLabel className="mb-3 block">Service Specialties (Select all that apply)</FormLabel>
-                  <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+                  <FormLabel className="mb-3 block">
+                    Service Specialties (Select all that apply)
+                  </FormLabel>
+                  <div className="grid grid-cols-2 gap-2 md:grid-cols-3">
                     {SERVICE_CATEGORIES.map((specialty) => (
                       <div key={specialty} className="flex items-center space-x-2">
                         <Checkbox
@@ -318,27 +337,33 @@ export function VendorOnboardingForm() {
                           checked={selectedSpecialties.includes(specialty)}
                           onCheckedChange={() => handleSpecialtyToggle(specialty)}
                         />
-                        <label htmlFor={specialty} className="text-sm">{specialty}</label>
+                        <label htmlFor={specialty} className="text-sm">
+                          {specialty}
+                        </label>
                       </div>
                     ))}
                   </div>
                   {selectedSpecialties.length > 0 && (
                     <div className="mt-3 flex flex-wrap gap-1">
                       {selectedSpecialties.map((specialty) => (
-                        <Badge key={specialty} variant="secondary">{specialty}</Badge>
+                        <Badge key={specialty} variant="secondary">
+                          {specialty}
+                        </Badge>
                       ))}
                     </div>
                   )}
                   {form.formState.errors.specialties && (
-                    <p className="text-sm text-destructive mt-2">
+                    <p className="mt-2 text-sm text-destructive">
                       {form.formState.errors.specialties.message}
                     </p>
                   )}
                 </div>
 
                 <div>
-                  <FormLabel className="mb-3 block">Service Areas (Select states where you operate)</FormLabel>
-                  <div className="grid grid-cols-2 md:grid-cols-3 gap-2 max-h-48 overflow-y-auto">
+                  <FormLabel className="mb-3 block">
+                    Service Areas (Select states where you operate)
+                  </FormLabel>
+                  <div className="grid max-h-48 grid-cols-2 gap-2 overflow-y-auto md:grid-cols-3">
                     {NIGERIAN_STATES.map((state) => (
                       <div key={state} className="flex items-center space-x-2">
                         <Checkbox
@@ -346,19 +371,23 @@ export function VendorOnboardingForm() {
                           checked={selectedServiceAreas.includes(state)}
                           onCheckedChange={() => handleServiceAreaToggle(state)}
                         />
-                        <label htmlFor={state} className="text-sm">{state}</label>
+                        <label htmlFor={state} className="text-sm">
+                          {state}
+                        </label>
                       </div>
                     ))}
                   </div>
                   {selectedServiceAreas.length > 0 && (
                     <div className="mt-3 flex flex-wrap gap-1">
                       {selectedServiceAreas.map((area) => (
-                        <Badge key={area} variant="outline">{area}</Badge>
+                        <Badge key={area} variant="outline">
+                          {area}
+                        </Badge>
                       ))}
                     </div>
                   )}
                   {form.formState.errors.serviceAreas && (
-                    <p className="text-sm text-destructive mt-2">
+                    <p className="mt-2 text-sm text-destructive">
                       {form.formState.errors.serviceAreas.message}
                     </p>
                   )}
@@ -368,8 +397,8 @@ export function VendorOnboardingForm() {
               {/* Business Details */}
               <div className="space-y-4">
                 <h3 className="text-lg font-semibold">Business Details</h3>
-                
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
                   <FormField
                     control={form.control}
                     name="yearsOfExperience"
@@ -377,9 +406,9 @@ export function VendorOnboardingForm() {
                       <FormItem>
                         <FormLabel>Years of Experience</FormLabel>
                         <FormControl>
-                          <Input 
-                            type="number" 
-                            min="0" 
+                          <Input
+                            type="number"
+                            min="0"
                             max="50"
                             {...field}
                             onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
@@ -397,8 +426,8 @@ export function VendorOnboardingForm() {
                       <FormItem>
                         <FormLabel>Hourly Rate (₦)</FormLabel>
                         <FormControl>
-                          <Input 
-                            type="number" 
+                          <Input
+                            type="number"
                             min="0"
                             placeholder="0"
                             {...field}
@@ -446,10 +475,10 @@ export function VendorOnboardingForm() {
                     <FormItem>
                       <FormLabel>Service Description</FormLabel>
                       <FormControl>
-                        <Textarea 
+                        <Textarea
                           placeholder="Describe your services, experience, and what makes you unique..."
                           className="min-h-[120px]"
-                          {...field} 
+                          {...field}
                         />
                       </FormControl>
                       <FormMessage />
@@ -461,7 +490,7 @@ export function VendorOnboardingForm() {
               {/* Availability */}
               <div className="space-y-4">
                 <h3 className="text-lg font-semibold">Availability</h3>
-                
+
                 <div className="space-y-3">
                   <FormField
                     control={form.control}
@@ -517,11 +546,7 @@ export function VendorOnboardingForm() {
               </div>
 
               <div className="flex justify-end pt-6">
-                <Button 
-                  type="submit" 
-                  disabled={isSubmitting}
-                  className="min-w-[200px]"
-                >
+                <Button type="submit" disabled={isSubmitting} className="min-w-[200px]">
                   {isSubmitting ? (
                     <>
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />

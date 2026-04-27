@@ -34,7 +34,7 @@ const PWAInstallPrompt: React.FC = () => {
     const handleBeforeInstallPrompt = (e: Event) => {
       e.preventDefault();
       setDeferredPrompt(e as BeforeInstallPromptEvent);
-      
+
       // Show prompt after a delay for better UX
       setTimeout(() => {
         setShowPrompt(true);
@@ -63,13 +63,13 @@ const PWAInstallPrompt: React.FC = () => {
     try {
       await deferredPrompt.prompt();
       const { outcome } = await deferredPrompt.userChoice;
-      
+
       if (outcome === 'accepted') {
         console.log('PWA installation accepted');
       } else {
         console.log('PWA installation dismissed');
       }
-      
+
       setDeferredPrompt(null);
       setShowPrompt(false);
     } catch (error) {
@@ -85,7 +85,7 @@ const PWAInstallPrompt: React.FC = () => {
 
   // Don't show if already installed or dismissed recently
   if (isInstalled) return null;
-  
+
   const dismissedTime = localStorage.getItem('pwa-install-dismissed');
   if (dismissedTime && Date.now() - parseInt(dismissedTime) < 7 * 24 * 60 * 60 * 1000) {
     return null;
@@ -94,29 +94,24 @@ const PWAInstallPrompt: React.FC = () => {
   if (!showPrompt && !isIOS) return null;
 
   return (
-    <Card className="fixed bottom-4 left-4 right-4 z-50 mx-auto max-w-md shadow-lg border-2 border-blue-200 bg-gradient-to-r from-blue-50 to-indigo-50">
+    <Card className="fixed bottom-4 left-4 right-4 z-50 mx-auto max-w-md border-2 border-blue-200 bg-gradient-to-r from-blue-50 to-indigo-50 shadow-lg">
       <CardContent className="p-4">
-        <div className="flex items-start justify-between mb-3">
+        <div className="mb-3 flex items-start justify-between">
           <div className="flex items-center gap-2">
-            <div className="p-2 bg-blue-100 rounded-full">
+            <div className="rounded-full bg-blue-100 p-2">
               <Smartphone className="h-5 w-5 text-blue-600" />
             </div>
             <div>
-              <h3 className="font-semibold text-gray-900">Install Nigeria Homes</h3>
+              <h3 className="font-semibold text-gray-900">Install DamianixPro</h3>
               <p className="text-sm text-gray-600">Get the app experience</p>
             </div>
           </div>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={handleDismiss}
-            className="h-6 w-6 p-0"
-          >
+          <Button variant="ghost" size="sm" onClick={handleDismiss} className="h-6 w-6 p-0">
             <X className="h-4 w-4" />
           </Button>
         </div>
 
-        <div className="space-y-2 mb-4">
+        <div className="mb-4 space-y-2">
           <div className="flex items-center gap-2 text-sm text-gray-600">
             <Zap className="h-4 w-4 text-green-500" />
             <span>Faster loading & offline access</span>
@@ -133,8 +128,8 @@ const PWAInstallPrompt: React.FC = () => {
 
         {isIOS ? (
           <div className="space-y-2">
-            <p className="text-sm text-gray-700 font-medium">To install on iPhone/iPad:</p>
-            <ol className="text-xs text-gray-600 space-y-1 ml-4">
+            <p className="text-sm font-medium text-gray-700">To install on iPhone/iPad:</p>
+            <ol className="ml-4 space-y-1 text-xs text-gray-600">
               <li>1. Tap the Share button in Safari</li>
               <li>2. Scroll down and tap "Add to Home Screen"</li>
               <li>3. Tap "Add" to install</li>
@@ -147,14 +142,10 @@ const PWAInstallPrompt: React.FC = () => {
               className="flex-1 bg-blue-600 hover:bg-blue-700"
               disabled={!deferredPrompt}
             >
-              <Download className="h-4 w-4 mr-2" />
+              <Download className="mr-2 h-4 w-4" />
               Install App
             </Button>
-            <Button
-              variant="outline"
-              onClick={handleDismiss}
-              className="px-3"
-            >
+            <Button variant="outline" onClick={handleDismiss} className="px-3">
               Later
             </Button>
           </div>

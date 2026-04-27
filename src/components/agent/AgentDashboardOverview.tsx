@@ -3,12 +3,12 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
-import { 
-  TrendingUp, 
-  TrendingDown, 
-  Users, 
-  Home, 
-  DollarSign, 
+import {
+  TrendingUp,
+  TrendingDown,
+  Users,
+  Home,
+  DollarSign,
   Calendar,
   Phone,
   Mail,
@@ -17,7 +17,7 @@ import {
   Award,
   Target,
   BarChart3,
-  Plus
+  Plus,
 } from 'lucide-react';
 import { AgentStats, AgentPerformanceMetrics } from '@/hooks/useEnhancedAgentData';
 
@@ -36,7 +36,7 @@ const AgentDashboardOverview: React.FC<AgentDashboardOverviewProps> = ({
   performanceMetrics,
   onAddLead,
   onViewProperties,
-  onViewClients
+  onViewClients,
 }) => {
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-NG', {
@@ -54,12 +54,12 @@ const AgentDashboardOverview: React.FC<AgentDashboardOverviewProps> = ({
   if (!agentProfile || !stats || !performanceMetrics) {
     return (
       <div className="space-y-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
           {[1, 2, 3, 4].map((i) => (
             <Card key={i} className="animate-pulse">
               <CardContent className="p-6">
-                <div className="h-4 bg-gray-200 rounded mb-2"></div>
-                <div className="h-8 bg-gray-200 rounded"></div>
+                <div className="mb-2 h-4 rounded bg-gray-200"></div>
+                <div className="h-8 rounded bg-gray-200"></div>
               </CardContent>
             </Card>
           ))}
@@ -97,13 +97,13 @@ const AgentDashboardOverview: React.FC<AgentDashboardOverviewProps> = ({
         <CardContent className="p-6">
           <div className="flex items-start justify-between">
             <div className="flex items-center space-x-4">
-              <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white text-xl font-bold">
+              <div className="flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-blue-500 to-purple-600 text-xl font-bold text-white">
                 {agentProfile.name?.charAt(0) || 'A'}
               </div>
               <div>
                 <h2 className="text-2xl font-bold text-gray-900">{agentProfile.name}</h2>
                 <p className="text-gray-600">{agentProfile.specialization}</p>
-                <div className="flex items-center space-x-4 mt-2 text-sm text-gray-500">
+                <div className="mt-2 flex items-center space-x-4 text-sm text-gray-500">
                   <div className="flex items-center space-x-1">
                     <Mail className="h-4 w-4" />
                     <span>{agentProfile.email}</span>
@@ -120,13 +120,15 @@ const AgentDashboardOverview: React.FC<AgentDashboardOverviewProps> = ({
               </div>
             </div>
             <div className="text-right">
-              <div className="flex items-center space-x-2 mb-2">
-                <Star className="h-5 w-5 text-yellow-500 fill-current" />
+              <div className="mb-2 flex items-center space-x-2">
+                <Star className="h-5 w-5 fill-current text-yellow-500" />
                 <span className="text-lg font-semibold">{agentProfile.average_rating}</span>
-                <span className="text-sm text-gray-500">({agentProfile.total_reviews} reviews)</span>
+                <span className="text-sm text-gray-500">
+                  ({agentProfile.total_reviews} reviews)
+                </span>
               </div>
-              <Badge variant={agentProfile.verified ? "default" : "secondary"}>
-                {agentProfile.verified ? "Verified Agent" : "Pending Verification"}
+              <Badge variant={agentProfile.verified ? 'default' : 'secondary'}>
+                {agentProfile.verified ? 'Verified Agent' : 'Pending Verification'}
               </Badge>
             </div>
           </div>
@@ -134,7 +136,7 @@ const AgentDashboardOverview: React.FC<AgentDashboardOverviewProps> = ({
       </Card>
 
       {/* Key Performance Metrics */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
         <Card>
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
@@ -143,11 +145,11 @@ const AgentDashboardOverview: React.FC<AgentDashboardOverviewProps> = ({
                 <p className="text-2xl font-bold text-gray-900">
                   {formatCurrency(stats.totalCommission)}
                 </p>
-                <p className="text-sm text-gray-500 mt-1">
+                <p className="mt-1 text-sm text-gray-500">
                   {formatCurrency(stats.monthlyCommission)} this month
                 </p>
               </div>
-              <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
+              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-green-100">
                 <DollarSign className="h-6 w-6 text-green-600" />
               </div>
             </div>
@@ -160,14 +162,16 @@ const AgentDashboardOverview: React.FC<AgentDashboardOverviewProps> = ({
               <div>
                 <p className="text-sm font-medium text-gray-600">Active Leads</p>
                 <p className="text-2xl font-bold text-gray-900">{stats.activeLeads}</p>
-                <div className="flex items-center space-x-1 mt-1">
+                <div className="mt-1 flex items-center space-x-1">
                   {getTrendIcon(performanceMetrics.leadGeneration.trend)}
-                  <p className={`text-sm ${getTrendColor(performanceMetrics.leadGeneration.trend)}`}>
+                  <p
+                    className={`text-sm ${getTrendColor(performanceMetrics.leadGeneration.trend)}`}
+                  >
                     {performanceMetrics.leadGeneration.thisMonth} this month
                   </p>
                 </div>
               </div>
-              <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
+              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-blue-100">
                 <Users className="h-6 w-6 text-blue-600" />
               </div>
             </div>
@@ -180,11 +184,11 @@ const AgentDashboardOverview: React.FC<AgentDashboardOverviewProps> = ({
               <div>
                 <p className="text-sm font-medium text-gray-600">Active Listings</p>
                 <p className="text-2xl font-bold text-gray-900">{stats.activeListings}</p>
-                <p className="text-sm text-gray-500 mt-1">
+                <p className="mt-1 text-sm text-gray-500">
                   {stats.totalProperties} total properties
                 </p>
               </div>
-              <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center">
+              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-purple-100">
                 <Home className="h-6 w-6 text-purple-600" />
               </div>
             </div>
@@ -196,12 +200,14 @@ const AgentDashboardOverview: React.FC<AgentDashboardOverviewProps> = ({
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">Conversion Rate</p>
-                <p className="text-2xl font-bold text-gray-900">{stats.conversionRate.toFixed(1)}%</p>
-                <p className="text-sm text-gray-500 mt-1">
+                <p className="text-2xl font-bold text-gray-900">
+                  {stats.conversionRate.toFixed(1)}%
+                </p>
+                <p className="mt-1 text-sm text-gray-500">
                   {stats.convertedLeads} of {stats.totalLeads} leads
                 </p>
               </div>
-              <div className="w-12 h-12 bg-orange-100 rounded-full flex items-center justify-center">
+              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-orange-100">
                 <Target className="h-6 w-6 text-orange-600" />
               </div>
             </div>
@@ -218,16 +224,24 @@ const AgentDashboardOverview: React.FC<AgentDashboardOverviewProps> = ({
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
             <Button onClick={onAddLead} className="flex items-center space-x-2">
               <Plus className="h-4 w-4" />
               <span>Add New Lead</span>
             </Button>
-            <Button variant="outline" onClick={onViewProperties} className="flex items-center space-x-2">
+            <Button
+              variant="outline"
+              onClick={onViewProperties}
+              className="flex items-center space-x-2"
+            >
               <Home className="h-4 w-4" />
               <span>Manage Properties</span>
             </Button>
-            <Button variant="outline" onClick={onViewClients} className="flex items-center space-x-2">
+            <Button
+              variant="outline"
+              onClick={onViewClients}
+              className="flex items-center space-x-2"
+            >
               <Users className="h-4 w-4" />
               <span>View Clients</span>
             </Button>
@@ -236,29 +250,35 @@ const AgentDashboardOverview: React.FC<AgentDashboardOverviewProps> = ({
       </Card>
 
       {/* Performance Overview */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         <Card>
           <CardHeader>
             <CardTitle>Sales Performance</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="flex justify-between items-center">
+            <div className="flex items-center justify-between">
               <span className="text-sm font-medium">Properties Sold</span>
-              <span className="text-lg font-bold">{performanceMetrics.salesPerformance.propertiesSold}</span>
+              <span className="text-lg font-bold">
+                {performanceMetrics.salesPerformance.propertiesSold}
+              </span>
             </div>
-            <div className="flex justify-between items-center">
+            <div className="flex items-center justify-between">
               <span className="text-sm font-medium">Properties Rented</span>
-              <span className="text-lg font-bold">{performanceMetrics.salesPerformance.propertiesRented}</span>
+              <span className="text-lg font-bold">
+                {performanceMetrics.salesPerformance.propertiesRented}
+              </span>
             </div>
-            <div className="flex justify-between items-center">
+            <div className="flex items-center justify-between">
               <span className="text-sm font-medium">Total Volume</span>
               <span className="text-lg font-bold">
                 {formatCurrency(performanceMetrics.salesPerformance.totalVolume)}
               </span>
             </div>
-            <div className="flex justify-between items-center">
+            <div className="flex items-center justify-between">
               <span className="text-sm font-medium">Market Share</span>
-              <span className="text-lg font-bold">{performanceMetrics.salesPerformance.marketShare}%</span>
+              <span className="text-lg font-bold">
+                {performanceMetrics.salesPerformance.marketShare}%
+              </span>
             </div>
           </CardContent>
         </Card>
@@ -268,32 +288,41 @@ const AgentDashboardOverview: React.FC<AgentDashboardOverviewProps> = ({
             <CardTitle>Client Metrics</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="flex justify-between items-center">
+            <div className="flex items-center justify-between">
               <span className="text-sm font-medium">Total Clients</span>
-              <span className="text-lg font-bold">{performanceMetrics.clientMetrics.totalClients}</span>
+              <span className="text-lg font-bold">
+                {performanceMetrics.clientMetrics.totalClients}
+              </span>
             </div>
-            <div className="flex justify-between items-center">
+            <div className="flex items-center justify-between">
               <span className="text-sm font-medium">Active Clients</span>
-              <span className="text-lg font-bold">{performanceMetrics.clientMetrics.activeClients}</span>
+              <span className="text-lg font-bold">
+                {performanceMetrics.clientMetrics.activeClients}
+              </span>
             </div>
             <div className="space-y-2">
-              <div className="flex justify-between items-center">
+              <div className="flex items-center justify-between">
                 <span className="text-sm font-medium">Client Satisfaction</span>
                 <span className="text-lg font-bold">
                   {performanceMetrics.clientMetrics.averageSatisfactionScore.toFixed(1)}/5.0
                 </span>
               </div>
-              <Progress 
-                value={(performanceMetrics.clientMetrics.averageSatisfactionScore / 5) * 100} 
+              <Progress
+                value={(performanceMetrics.clientMetrics.averageSatisfactionScore / 5) * 100}
                 className="h-2"
               />
             </div>
             <div className="space-y-2">
-              <div className="flex justify-between items-center">
+              <div className="flex items-center justify-between">
                 <span className="text-sm font-medium">Retention Rate</span>
-                <span className="text-lg font-bold">{performanceMetrics.clientMetrics.clientRetentionRate}%</span>
+                <span className="text-lg font-bold">
+                  {performanceMetrics.clientMetrics.clientRetentionRate}%
+                </span>
               </div>
-              <Progress value={performanceMetrics.clientMetrics.clientRetentionRate} className="h-2" />
+              <Progress
+                value={performanceMetrics.clientMetrics.clientRetentionRate}
+                className="h-2"
+              />
             </div>
           </CardContent>
         </Card>
@@ -308,14 +337,17 @@ const AgentDashboardOverview: React.FC<AgentDashboardOverviewProps> = ({
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
             {performanceMetrics.achievements.map((achievement) => (
-              <div key={achievement.id} className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
+              <div
+                key={achievement.id}
+                className="flex items-center space-x-3 rounded-lg bg-gray-50 p-3"
+              >
                 <div className="text-2xl">{achievement.icon}</div>
                 <div>
-                  <h4 className="font-semibold text-sm">{achievement.title}</h4>
+                  <h4 className="text-sm font-semibold">{achievement.title}</h4>
                   <p className="text-xs text-gray-600">{achievement.description}</p>
-                  <p className="text-xs text-gray-500 mt-1">
+                  <p className="mt-1 text-xs text-gray-500">
                     {new Date(achievement.earnedDate).toLocaleDateString('en-NG')}
                   </p>
                 </div>

@@ -9,10 +9,11 @@ This directory contains the Paystack payment integration for the short-let booki
 Add the following environment variables to your `.env` file:
 
 ```env
-VITE_PAYSTACK_SECRET_KEY=sk_test_your_secret_key
 VITE_PAYSTACK_PUBLIC_KEY=pk_test_your_public_key
 VITE_PAYSTACK_BASE_URL=https://api.paystack.co  # Optional, defaults to this
 ```
+
+`VITE_*` values are public in browser bundles. Keep Paystack secret keys in server-side runtime only (for example, Supabase Edge Function secrets), not in frontend env files.
 
 ## Usage
 
@@ -95,10 +96,10 @@ import { handlePaystackWebhook } from '@/services/shortlet/api/webhooks';
 export async function POST(request: Request) {
   const payload = await request.json();
   const signature = request.headers.get('x-paystack-signature');
-  
+
   // Verify signature (implement proper verification)
   const result = await handlePaystackWebhook(payload);
-  
+
   return Response.json(result);
 }
 ```
@@ -106,21 +107,25 @@ export async function POST(request: Request) {
 ## Features
 
 ### Payment Initialization
+
 - Creates payment intent with Paystack
 - Stores transaction record in database
 - Returns payment URL for redirect
 
 ### Payment Verification
+
 - Verifies payment status with Paystack
 - Updates transaction and booking status
 - Handles automatic booking confirmation
 
 ### Refunds
+
 - Processes full or partial refunds
 - Updates booking status to 'refunded'
 - Creates refund transaction record
 
 ### Payouts (Owner Wallets)
+
 - Creates transfer recipients
 - Initiates transfers to owner bank accounts
 - Verifies transfer status
@@ -136,11 +141,13 @@ export async function POST(request: Request) {
 ## Testing
 
 ### Test Keys
+
 - Use Paystack test keys for development
 - Test with Paystack test cards
 - Verify webhook events in Paystack dashboard
 
 ### Test Cards
+
 - Success: `4084084084084081`
 - Insufficient Funds: `5060666666666666669`
 - Declined: `5060666666666666667`
@@ -166,4 +173,3 @@ Always check `success` before proceeding with payment flow.
 3. Implement retry logic for failed payments
 4. Add payment analytics and reporting
 5. Set up payout approval workflow
-

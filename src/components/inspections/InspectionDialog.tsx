@@ -1,7 +1,13 @@
-
 import { useState } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
 import { InspectionForm } from './InspectionForm';
 import { Clipboard } from 'lucide-react';
 
@@ -13,12 +19,12 @@ interface InspectionDialogProps {
   onSuccess?: () => void;
 }
 
-export const InspectionDialog = ({ 
-  open, 
-  onOpenChange, 
-  propertyId, 
+export const InspectionDialog = ({
+  open,
+  onOpenChange,
+  propertyId,
   inspectionType,
-  onSuccess 
+  onSuccess,
 }: InspectionDialogProps) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -38,15 +44,15 @@ export const InspectionDialog = ({
           </DialogTitle>
           <DialogDescription>
             Complete the inspection checklist for the property.
-            {inspectionType === 'move-in' 
-              ? ' Document the condition before the tenant moves in.' 
+            {inspectionType === 'move-in'
+              ? ' Document the condition before the tenant moves in.'
               : ' Document the condition after the tenant moves out.'}
           </DialogDescription>
         </DialogHeader>
-        
+
         <div className="py-4">
-          <InspectionForm 
-            propertyId={propertyId} 
+          <InspectionForm
+            propertyId={propertyId}
             inspectionType={inspectionType}
             isSubmitting={isSubmitting}
             setIsSubmitting={setIsSubmitting}

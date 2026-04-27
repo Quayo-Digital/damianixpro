@@ -13,7 +13,7 @@ import {
   Invoice,
   PaymentTransaction,
   FeatureAccess,
-  AddOnOption
+  AddOnOption,
 } from '@/types/subscription';
 
 export class SubscriptionService {
@@ -29,7 +29,7 @@ export class SubscriptionService {
         monthly: 0,
         quarterly: 0,
         yearly: 0,
-        currency: 'NGN'
+        currency: 'NGN',
       },
       limits: {
         properties: 1,
@@ -39,7 +39,7 @@ export class SubscriptionService {
         maintenance_alerts: 10,
         storage_gb: 1,
         api_calls_per_month: 0,
-        team_members: 1
+        team_members: 1,
       },
       features: [
         {
@@ -47,14 +47,14 @@ export class SubscriptionService {
           feature_key: 'basic_property_management',
           feature_name: 'Basic Property Management',
           description: 'Add and manage up to 1 property',
-          enabled: true
+          enabled: true,
         },
         {
           category: 'tenants',
           feature_key: 'tenant_management',
           feature_name: 'Tenant Management',
           description: 'Manage up to 3 tenants',
-          enabled: true
+          enabled: true,
         },
         {
           category: 'ai_features',
@@ -62,7 +62,7 @@ export class SubscriptionService {
           feature_name: 'Basic AI Property Matching',
           description: 'Limited AI-powered tenant recommendations',
           enabled: true,
-          usage_limit: 5
+          usage_limit: 5,
         },
         {
           category: 'documents',
@@ -70,20 +70,20 @@ export class SubscriptionService {
           feature_name: 'Document Processing',
           description: 'Process up to 10 documents per month',
           enabled: true,
-          usage_limit: 10
+          usage_limit: 10,
         },
         {
           category: 'support',
           feature_key: 'community_support',
           feature_name: 'Community Support',
           description: 'Access to community forums',
-          enabled: true
-        }
+          enabled: true,
+        },
       ],
       trial_days: 0,
       is_active: true,
       created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString()
+      updated_at: new Date().toISOString(),
     },
     {
       id: 'starter-plan',
@@ -98,7 +98,7 @@ export class SubscriptionService {
         yearly: 162000, // 15% discount
         currency: 'NGN',
         discount_quarterly: 10,
-        discount_yearly: 15
+        discount_yearly: 15,
       },
       limits: {
         properties: 5,
@@ -108,7 +108,7 @@ export class SubscriptionService {
         maintenance_alerts: 100,
         storage_gb: 10,
         api_calls_per_month: 1000,
-        team_members: 3
+        team_members: 3,
       },
       features: [
         {
@@ -116,7 +116,7 @@ export class SubscriptionService {
           feature_key: 'advanced_property_management',
           feature_name: 'Advanced Property Management',
           description: 'Manage up to 5 properties with detailed analytics',
-          enabled: true
+          enabled: true,
         },
         {
           category: 'ai_features',
@@ -124,14 +124,14 @@ export class SubscriptionService {
           feature_name: 'Smart Property Matching',
           description: 'AI-powered tenant recommendations with behavioral learning',
           enabled: true,
-          usage_limit: 50
+          usage_limit: 50,
         },
         {
           category: 'ai_features',
           feature_key: 'predictive_maintenance',
           feature_name: 'Predictive Maintenance',
           description: 'AI-powered maintenance alerts and scheduling',
-          enabled: true
+          enabled: true,
         },
         {
           category: 'documents',
@@ -139,27 +139,34 @@ export class SubscriptionService {
           feature_name: 'Intelligent Document Processing',
           description: 'AI-powered document analysis and extraction',
           enabled: true,
-          usage_limit: 100
+          usage_limit: 100,
         },
         {
           category: 'analytics',
           feature_key: 'basic_analytics',
           feature_name: 'Basic Analytics',
           description: 'Property performance and financial reports',
-          enabled: true
+          enabled: true,
         },
         {
           category: 'support',
           feature_key: 'email_support',
           feature_name: 'Email Support',
           description: '24/7 email support with 24-hour response time',
-          enabled: true
-        }
+          enabled: true,
+        },
+        {
+          category: 'integrations',
+          feature_key: 'nigerian_api_integrations',
+          feature_name: 'Nigerian KYC & verification APIs',
+          description: 'BVN, NIN, CAC, bank and phone verification via integrated providers',
+          enabled: true,
+        },
       ],
       trial_days: 14,
       is_active: true,
       created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString()
+      updated_at: new Date().toISOString(),
     },
     {
       id: 'professional-plan',
@@ -173,7 +180,7 @@ export class SubscriptionService {
         yearly: 459000, // 15% discount
         currency: 'NGN',
         discount_quarterly: 10,
-        discount_yearly: 15
+        discount_yearly: 15,
       },
       limits: {
         properties: 25,
@@ -183,7 +190,7 @@ export class SubscriptionService {
         maintenance_alerts: 500,
         storage_gb: 50,
         api_calls_per_month: 10000,
-        team_members: 10
+        team_members: 10,
       },
       features: [
         {
@@ -191,36 +198,43 @@ export class SubscriptionService {
           feature_key: 'unlimited_property_features',
           feature_name: 'Advanced Property Features',
           description: 'Full property management suite with custom fields',
-          enabled: true
+          enabled: true,
         },
         {
           category: 'ai_features',
           feature_key: 'advanced_ai_suite',
           feature_name: 'Complete AI Suite',
           description: 'All AI features with priority processing',
-          enabled: true
+          enabled: true,
         },
         {
           category: 'analytics',
           feature_key: 'advanced_analytics',
           feature_name: 'Advanced Analytics & Reporting',
           description: 'Comprehensive business intelligence and custom reports',
-          enabled: true
+          enabled: true,
         },
         {
           category: 'integrations',
           feature_key: 'api_access',
           feature_name: 'API Access',
           description: 'Full API access for custom integrations',
-          enabled: true
+          enabled: true,
+        },
+        {
+          category: 'integrations',
+          feature_key: 'nigerian_api_integrations',
+          feature_name: 'Nigerian KYC & verification APIs',
+          description: 'BVN, NIN, CAC, bank and phone verification via integrated providers',
+          enabled: true,
         },
         {
           category: 'support',
           feature_key: 'priority_support',
           feature_name: 'Priority Support',
           description: 'Priority phone and email support with 4-hour response',
-          enabled: true
-        }
+          enabled: true,
+        },
       ],
       add_ons: [
         {
@@ -229,12 +243,12 @@ export class SubscriptionService {
           description: 'Add more properties beyond the plan limit',
           category: 'properties',
           pricing: {
-            monthly: 2000 // ₦2,000 per property
+            monthly: 2000, // ₦2,000 per property
           },
           limits: {
-            properties: 1
+            properties: 1,
           },
-          is_active: true
+          is_active: true,
         },
         {
           id: 'white-label-basic',
@@ -243,15 +257,15 @@ export class SubscriptionService {
           category: 'integrations',
           pricing: {
             monthly: 25000,
-            setup_fee: 100000
+            setup_fee: 100000,
           },
-          is_active: true
-        }
+          is_active: true,
+        },
       ],
       trial_days: 30,
       is_active: true,
       created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString()
+      updated_at: new Date().toISOString(),
     },
     {
       id: 'enterprise-plan',
@@ -265,7 +279,7 @@ export class SubscriptionService {
         yearly: 1530000, // 15% discount
         currency: 'NGN',
         discount_quarterly: 10,
-        discount_yearly: 15
+        discount_yearly: 15,
       },
       limits: {
         properties: 'unlimited',
@@ -275,7 +289,7 @@ export class SubscriptionService {
         maintenance_alerts: 'unlimited',
         storage_gb: 'unlimited',
         api_calls_per_month: 'unlimited',
-        team_members: 'unlimited'
+        team_members: 'unlimited',
       },
       features: [
         {
@@ -283,36 +297,43 @@ export class SubscriptionService {
           feature_key: 'enterprise_property_management',
           feature_name: 'Enterprise Property Management',
           description: 'Unlimited properties with advanced workflows',
-          enabled: true
+          enabled: true,
         },
         {
           category: 'ai_features',
           feature_key: 'enterprise_ai_suite',
           feature_name: 'Enterprise AI Suite',
           description: 'All AI features with custom model training',
-          enabled: true
+          enabled: true,
         },
         {
           category: 'analytics',
           feature_key: 'enterprise_analytics',
           feature_name: 'Enterprise Analytics',
           description: 'Custom dashboards and advanced business intelligence',
-          enabled: true
+          enabled: true,
         },
         {
           category: 'integrations',
           feature_key: 'enterprise_integrations',
           feature_name: 'Enterprise Integrations',
           description: 'Custom integrations and dedicated API support',
-          enabled: true
+          enabled: true,
+        },
+        {
+          category: 'integrations',
+          feature_key: 'nigerian_api_integrations',
+          feature_name: 'Nigerian KYC & verification APIs',
+          description: 'BVN, NIN, CAC, bank and phone verification via integrated providers',
+          enabled: true,
         },
         {
           category: 'support',
           feature_key: 'dedicated_support',
           feature_name: 'Dedicated Account Manager',
           description: 'Dedicated account manager and 24/7 phone support',
-          enabled: true
-        }
+          enabled: true,
+        },
       ],
       add_ons: [
         {
@@ -322,37 +343,142 @@ export class SubscriptionService {
           category: 'integrations',
           pricing: {
             monthly: 200000,
-            setup_fee: 1000000
+            setup_fee: 1000000,
           },
-          is_active: true
-        }
+          is_active: true,
+        },
       ],
       trial_days: 30,
       setup_fee: 500000, // ₦500,000 setup fee
       is_active: true,
       created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString()
-    }
+      updated_at: new Date().toISOString(),
+    },
+    {
+      id: 'white-label-plan',
+      name: 'White Label',
+      tier: 'white_label',
+      description: 'Custom branding, domain, and enterprise-grade isolation for large operators',
+      tagline: 'Your platform, your brand',
+      pricing: {
+        monthly: 350000,
+        quarterly: 945000,
+        yearly: 3570000,
+        currency: 'NGN',
+        discount_quarterly: 10,
+        discount_yearly: 15,
+      },
+      limits: {
+        properties: 'unlimited',
+        tenants: 'unlimited',
+        documents_per_month: 'unlimited',
+        ai_recommendations_per_month: 'unlimited',
+        maintenance_alerts: 'unlimited',
+        storage_gb: 'unlimited',
+        api_calls_per_month: 'unlimited',
+        team_members: 'unlimited',
+      },
+      features: [
+        {
+          category: 'integrations',
+          feature_key: 'white_label_branding',
+          feature_name: 'Custom branding & domain',
+          description: 'Branded web app, custom domain, and theme controls',
+          enabled: true,
+        },
+        {
+          category: 'integrations',
+          feature_key: 'enterprise_integrations',
+          feature_name: 'Enterprise integrations',
+          description: 'Dedicated integration support and custom connectors',
+          enabled: true,
+        },
+        {
+          category: 'integrations',
+          feature_key: 'nigerian_api_integrations',
+          feature_name: 'Nigerian KYC & verification APIs',
+          description: 'BVN, NIN, CAC, bank and phone verification via integrated providers',
+          enabled: true,
+        },
+        {
+          category: 'support',
+          feature_key: 'dedicated_support',
+          feature_name: 'Dedicated account team',
+          description: 'Named contacts, SLA-backed support',
+          enabled: true,
+        },
+      ],
+      trial_days: 14,
+      setup_fee: 250000,
+      is_active: true,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    },
   ];
 
   /**
    * Get all available subscription plans
    */
   static getSubscriptionPlans(): SubscriptionPlan[] {
-    return this.SUBSCRIPTION_PLANS.filter(plan => plan.is_active);
+    return this.SUBSCRIPTION_PLANS.filter((plan) => plan.is_active);
   }
 
   /**
    * Get a specific subscription plan by ID
    */
   static getSubscriptionPlan(planId: string): SubscriptionPlan | null {
-    return this.SUBSCRIPTION_PLANS.find(plan => plan.id === planId) || null;
+    return this.SUBSCRIPTION_PLANS.find((plan) => plan.id === planId) || null;
+  }
+
+  /** Resolve in-app plan definition when DB stores UUID plan_id (Flutterwave webhook upsert). */
+  static getSubscriptionPlanByTier(tier: SubscriptionTier): SubscriptionPlan | null {
+    return this.SUBSCRIPTION_PLANS.find((plan) => plan.tier === tier) || null;
+  }
+
+  /**
+   * No `user_subscriptions` row: treat user as on the Free plan for client-side entitlements
+   * (`hasFeatureAccess`, usage limits). Does not create a DB row — see `implicitFreeTier` in `useSubscription`.
+   * Server-side owner gates (e.g. `assertOwnerSubscriptionForPaidFeatures`) may still require a paid row.
+   */
+  static buildImplicitFreeSubscription(userId: string): UserSubscription {
+    const now = new Date().toISOString();
+    const periodEnd = new Date(Date.now() + 10 * 365 * 24 * 60 * 60 * 1000).toISOString();
+    return {
+      id: 'implicit-free',
+      user_id: userId,
+      plan_id: 'free-tier',
+      tier: 'free',
+      status: 'active',
+      billing_cycle: 'monthly',
+      current_period_start: now,
+      current_period_end: periodEnd,
+      cancel_at_period_end: false,
+      add_ons: [],
+      usage_tracking: {
+        current_period: {
+          properties_used: 0,
+          tenants_managed: 0,
+          documents_processed: 0,
+          ai_recommendations_generated: 0,
+          maintenance_alerts_sent: 0,
+          storage_used_gb: 0,
+          api_calls_made: 0,
+        },
+        historical: [],
+        last_updated: now,
+      },
+      created_at: now,
+      updated_at: now,
+    };
   }
 
   /**
    * Calculate pricing with discounts
    */
-  static calculatePricing(plan: SubscriptionPlan, billingCycle: BillingCycle): {
+  static calculatePricing(
+    plan: SubscriptionPlan,
+    billingCycle: BillingCycle
+  ): {
     basePrice: number;
     discountAmount: number;
     finalPrice: number;
@@ -374,7 +500,7 @@ export class SubscriptionService {
       basePrice,
       discountAmount,
       finalPrice,
-      discountPercentage
+      discountPercentage,
     };
   }
 
@@ -386,7 +512,7 @@ export class SubscriptionService {
     plan: SubscriptionPlan,
     featureKey: string
   ): boolean {
-    const feature = plan.features.find(f => f.feature_key === featureKey);
+    const feature = plan.features.find((f) => f.feature_key === featureKey);
     return feature?.enabled || false;
   }
 
@@ -398,9 +524,9 @@ export class SubscriptionService {
     plan: SubscriptionPlan,
     featureKey: string
   ): FeatureUsageLimit {
-    const feature = plan.features.find(f => f.feature_key === featureKey);
+    const feature = plan.features.find((f) => f.feature_key === featureKey);
     const usage = subscription.usage_tracking.current_period;
-    
+
     let currentUsage = 0;
     let limit: number | 'unlimited' = 'unlimited';
 
@@ -447,7 +573,7 @@ export class SubscriptionService {
       current_usage: currentUsage,
       percentage_used: Math.min(percentageUsed, 100),
       is_exceeded: isExceeded,
-      overage_allowed: plan.tier === 'professional' || plan.tier === 'enterprise'
+      overage_allowed: plan.tier === 'professional' || plan.tier === 'enterprise',
     };
   }
 
@@ -467,10 +593,9 @@ export class SubscriptionService {
   } {
     const currentPricing = this.calculatePricing(currentPlan, billingCycle);
     const newPricing = this.calculatePricing(newPlan, billingCycle);
-    
-    const daysInCycle = billingCycle === 'monthly' ? 30 : 
-                       billingCycle === 'quarterly' ? 90 : 365;
-    
+
+    const daysInCycle = billingCycle === 'monthly' ? 30 : billingCycle === 'quarterly' ? 90 : 365;
+
     const prorationCredit = (currentPricing.finalPrice / daysInCycle) * daysRemainingInPeriod;
     const newChargeAmount = newPricing.finalPrice;
     const netAmount = newChargeAmount - prorationCredit;
@@ -479,7 +604,7 @@ export class SubscriptionService {
       prorationCredit,
       newChargeAmount,
       netAmount: Math.max(netAmount, 0),
-      effectiveDate: new Date().toISOString()
+      effectiveDate: new Date().toISOString(),
     };
   }
 
@@ -487,18 +612,21 @@ export class SubscriptionService {
    * Generate subscription analytics
    */
   static generateAnalytics(subscriptions: UserSubscription[]): SubscriptionAnalytics {
-    const activeSubscriptions = subscriptions.filter(s => s.status === 'active');
-    
+    const activeSubscriptions = subscriptions.filter((s) => s.status === 'active');
+
     // Calculate MRR (Monthly Recurring Revenue)
     const mrr = activeSubscriptions.reduce((total, sub) => {
       const plan = this.getSubscriptionPlan(sub.plan_id);
       if (!plan) return total;
-      
+
       const pricing = this.calculatePricing(plan, sub.billing_cycle);
-      const monthlyAmount = sub.billing_cycle === 'monthly' ? pricing.finalPrice :
-                           sub.billing_cycle === 'quarterly' ? pricing.finalPrice / 3 :
-                           pricing.finalPrice / 12;
-      
+      const monthlyAmount =
+        sub.billing_cycle === 'monthly'
+          ? pricing.finalPrice
+          : sub.billing_cycle === 'quarterly'
+            ? pricing.finalPrice / 3
+            : pricing.finalPrice / 12;
+
       return total + monthlyAmount;
     }, 0);
 
@@ -506,24 +634,33 @@ export class SubscriptionService {
     const arr = mrr * 12;
 
     // Subscribers by tier
-    const subscribersByTier = activeSubscriptions.reduce((acc, sub) => {
-      acc[sub.tier] = (acc[sub.tier] || 0) + 1;
-      return acc;
-    }, {} as Record<SubscriptionTier, number>);
+    const subscribersByTier = activeSubscriptions.reduce(
+      (acc, sub) => {
+        acc[sub.tier] = (acc[sub.tier] || 0) + 1;
+        return acc;
+      },
+      {} as Record<SubscriptionTier, number>
+    );
 
     // Revenue by tier
-    const revenueByTier = activeSubscriptions.reduce((acc, sub) => {
-      const plan = this.getSubscriptionPlan(sub.plan_id);
-      if (!plan) return acc;
-      
-      const pricing = this.calculatePricing(plan, sub.billing_cycle);
-      const monthlyAmount = sub.billing_cycle === 'monthly' ? pricing.finalPrice :
-                           sub.billing_cycle === 'quarterly' ? pricing.finalPrice / 3 :
-                           pricing.finalPrice / 12;
-      
-      acc[sub.tier] = (acc[sub.tier] || 0) + monthlyAmount;
-      return acc;
-    }, {} as Record<SubscriptionTier, number>);
+    const revenueByTier = activeSubscriptions.reduce(
+      (acc, sub) => {
+        const plan = this.getSubscriptionPlan(sub.plan_id);
+        if (!plan) return acc;
+
+        const pricing = this.calculatePricing(plan, sub.billing_cycle);
+        const monthlyAmount =
+          sub.billing_cycle === 'monthly'
+            ? pricing.finalPrice
+            : sub.billing_cycle === 'quarterly'
+              ? pricing.finalPrice / 3
+              : pricing.finalPrice / 12;
+
+        acc[sub.tier] = (acc[sub.tier] || 0) + monthlyAmount;
+        return acc;
+      },
+      {} as Record<SubscriptionTier, number>
+    );
 
     return {
       mrr,
@@ -540,17 +677,17 @@ export class SubscriptionService {
         { reason: 'Too expensive', count: 12, percentage: 40 },
         { reason: 'Not enough features', count: 8, percentage: 27 },
         { reason: 'Technical issues', count: 5, percentage: 17 },
-        { reason: 'Found alternative', count: 5, percentage: 16 }
+        { reason: 'Found alternative', count: 5, percentage: 16 },
       ],
       growth_metrics: {
         new_subscribers: 25,
         churned_subscribers: 5,
         net_growth: 20,
         growth_rate: 0.08, // 8% growth rate
-        revenue_growth: 0.12 // 12% revenue growth
+        revenue_growth: 0.12, // 12% revenue growth
       },
       period_start: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(),
-      period_end: new Date().toISOString()
+      period_end: new Date().toISOString(),
     };
   }
 
@@ -569,13 +706,13 @@ export class SubscriptionService {
     suggestedPlan?: string;
   } {
     const usage = this.checkFeatureUsage(subscription, plan, resourceType);
-    
+
     if (usage.is_exceeded && !usage.overage_allowed) {
       return {
         allowed: false,
         reason: `You've reached your ${resourceType} limit of ${usage.limit}`,
         upgradeRequired: true,
-        suggestedPlan: this.suggestUpgradePlan(plan.tier)
+        suggestedPlan: this.suggestUpgradePlan(plan.tier),
       };
     }
 
@@ -586,16 +723,22 @@ export class SubscriptionService {
    * Suggest upgrade plan based on current tier
    */
   private static suggestUpgradePlan(currentTier: SubscriptionTier): string {
-    const tierHierarchy: SubscriptionTier[] = ['free', 'starter', 'professional', 'enterprise'];
+    const tierHierarchy: SubscriptionTier[] = [
+      'free',
+      'starter',
+      'professional',
+      'enterprise',
+      'white_label',
+    ];
     const currentIndex = tierHierarchy.indexOf(currentTier);
-    
+
     if (currentIndex < tierHierarchy.length - 1) {
       const nextTier = tierHierarchy[currentIndex + 1];
-      const plan = this.SUBSCRIPTION_PLANS.find(p => p.tier === nextTier);
+      const plan = this.SUBSCRIPTION_PLANS.find((p) => p.tier === nextTier);
       return plan?.id || 'professional-plan';
     }
-    
-    return 'enterprise-plan';
+
+    return 'white-label-plan';
   }
 
   /**
@@ -608,7 +751,7 @@ export class SubscriptionService {
   } {
     const exchangeRate = 800; // USD to NGN (should be fetched from API)
     const vatRate = 0.075; // 7.5% VAT in Nigeria
-    
+
     const ngnPrice = baseUsdPrice * exchangeRate;
     const vatAmount = ngnPrice * vatRate;
     const totalPrice = ngnPrice + vatAmount;
@@ -616,7 +759,7 @@ export class SubscriptionService {
     return {
       ngnPrice,
       vatAmount,
-      totalPrice: Math.round(totalPrice)
+      totalPrice: Math.round(totalPrice),
     };
   }
 
@@ -628,10 +771,10 @@ export class SubscriptionService {
     plans: Record<SubscriptionTier, Record<string, boolean | string>>;
   } {
     const allFeatures = new Set<string>();
-    
+
     // Collect all unique features
-    this.SUBSCRIPTION_PLANS.forEach(plan => {
-      plan.features.forEach(feature => {
+    this.SUBSCRIPTION_PLANS.forEach((plan) => {
+      plan.features.forEach((feature) => {
         allFeatures.add(feature.feature_name);
       });
     });
@@ -639,15 +782,15 @@ export class SubscriptionService {
     const features = Array.from(allFeatures);
     const plans: Record<SubscriptionTier, Record<string, boolean | string>> = {} as any;
 
-    this.SUBSCRIPTION_PLANS.forEach(plan => {
+    this.SUBSCRIPTION_PLANS.forEach((plan) => {
       plans[plan.tier] = {};
-      
-      features.forEach(featureName => {
-        const feature = plan.features.find(f => f.feature_name === featureName);
+
+      features.forEach((featureName) => {
+        const feature = plan.features.find((f) => f.feature_name === featureName);
         if (feature) {
-          plans[plan.tier][featureName] = feature.usage_limit ? 
-            `${feature.usage_limit} per month` : 
-            feature.enabled;
+          plans[plan.tier][featureName] = feature.usage_limit
+            ? `${feature.usage_limit} per month`
+            : feature.enabled;
         } else {
           plans[plan.tier][featureName] = false;
         }

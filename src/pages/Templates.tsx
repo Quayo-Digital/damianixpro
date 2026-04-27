@@ -1,4 +1,3 @@
-
 import { PageLayout } from '@/components/layout/PageLayout';
 import { PageContent } from '@/components/layout/PageContent';
 import { TemplatesManager } from '@/components/communication/TemplatesManager';

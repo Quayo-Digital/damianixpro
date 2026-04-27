@@ -5,35 +5,43 @@ import { z } from 'zod';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Card, CardContent } from '@/components/ui/card';
 import { FileText, Shield, AlertCircle, Building } from 'lucide-react';
 import { useNigerianApis } from '@/hooks/useNigerianApis';
 import { CACVerificationRequest } from '@/types/nigerianApis';
+import { logger } from '@/utils/logger';
 
 const cacSchema = z.object({
   search_term: z.string().min(2, 'Search term is required'),
-  search_type: z.enum(['rc_number', 'company_name', 'business_name'])
+  search_type: z.enum(['rc_number', 'company_name', 'business_name']),
 });
 
 type CACFormData = z.infer<typeof cacSchema>;
 
 export const CACVerificationForm: React.FC = () => {
-  const { verifyCAC, isCacVerifying, canPerformVerification } = useNigerianApis();
-  
+  const { verifyCAC, isCacVerifying, canPerformVerification, getVerificationUnavailableReason } =
+    useNigerianApis();
+
   const {
     register,
     handleSubmit,
     formState: { errors },
     reset,
     setValue,
-    watch
+    watch,
   } = useForm<CACFormData>({
     resolver: zodResolver(cacSchema),
     defaultValues: {
-      search_type: 'rc_number'
-    }
+      search_type: 'rc_number',
+    },
   });
 
   const searchType = watch('search_type');
@@ -43,13 +51,13 @@ export const CACVerificationForm: React.FC = () => {
     try {
       const request: CACVerificationRequest = {
         search_term: data.search_term,
-        search_type: data.search_type
+        search_type: data.search_type,
       };
 
       await verifyCAC(request);
       reset();
     } catch (error) {
-      console.error('CAC verification failed:', error);
+      logger.error('CAC verification failed', error);
     }
   };
 
@@ -70,9 +78,7 @@ export const CACVerificationForm: React.FC = () => {
     return (
       <Alert>
         <AlertCircle className="h-4 w-4" />
-        <AlertDescription>
-          CAC verification service is currently unavailable. Please check your subscription or try again later.
-        </AlertDescription>
+        <AlertDescription>{getVerificationUnavailableReason('cac')}</AlertDescription>
       </Alert>
     );
   }
@@ -83,13 +89,16 @@ export const CACVerificationForm: React.FC = () => {
         <div className="space-y-6">
           <div className="flex items-center space-x-2 text-blue-600">
             <FileText className="h-5 w-5" />
-            <h3 className="text-lg font-semibold">Corporate Affairs Commission (CAC) Verification</h3>
+            <h3 className="text-lg font-semibold">
+              Corporate Affairs Commission (CAC) Verification
+            </h3>
           </div>
 
           <Alert>
             <Shield className="h-4 w-4" />
             <AlertDescription>
-              Verify business registration with the Corporate Affairs Commission. This helps confirm the legitimacy of business entities.
+              Verify business registration with the Corporate Affairs Commission. This helps confirm
+              the legitimacy of business entities.
             </AlertDescription>
           </Alert>
 
@@ -98,7 +107,7 @@ export const CACVerificationForm: React.FC = () => {
               <Label htmlFor="search_type">Search Type *</Label>
               <Select
                 value={searchType}
-                onValueChange={(value: 'rc_number' | 'company_name' | 'business_name') => 
+                onValueChange={(value: 'rc_number' | 'company_name' | 'business_name') =>
                   setValue('search_type', value)
                 }
               >
@@ -132,19 +141,19 @@ export const CACVerificationForm: React.FC = () => {
               {errors.search_term && (
                 <p className="text-sm text-red-600">{errors.search_term.message}</p>
               )}
-              
+
               {searchType === 'rc_number' && (
                 <p className="text-xs text-gray-500">
                   RC numbers typically start with "RC" followed by digits (e.g., RC123456)
                 </p>
               )}
-              
+
               {searchType === 'company_name' && (
                 <p className="text-xs text-gray-500">
                   Enter the full registered company name as it appears on CAC documents
                 </p>
               )}
-              
+
               {searchType === 'business_name' && (
                 <p className="text-xs text-gray-500">
                   Enter the business name for sole proprietorships or partnerships
@@ -152,12 +161,12 @@ export const CACVerificationForm: React.FC = () => {
               )}
             </div>
 
-            <div className="bg-green-50 p-3 rounded-lg">
+            <div className="rounded-lg bg-green-50 p-3">
               <div className="flex items-start space-x-2">
-                <Building className="h-4 w-4 text-green-600 mt-0.5" />
+                <Building className="mt-0.5 h-4 w-4 text-green-600" />
                 <div className="text-sm text-green-800">
                   <p className="font-medium">What you'll get:</p>
-                  <ul className="mt-1 space-y-1 list-disc list-inside">
+                  <ul className="mt-1 list-inside list-disc space-y-1">
                     <li>Company registration status</li>
                     <li>Registration date and type</li>
                     <li>Registered address</li>
@@ -168,26 +177,22 @@ export const CACVerificationForm: React.FC = () => {
               </div>
             </div>
 
-            <Button 
-              type="submit" 
-              disabled={isCacVerifying}
-              className="w-full"
-            >
+            <Button type="submit" disabled={isCacVerifying} className="w-full">
               {isCacVerifying ? (
                 <div className="flex items-center space-x-2">
-                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                  <div className="h-4 w-4 animate-spin rounded-full border-b-2 border-primary-foreground"></div>
                   <span>Verifying CAC Registration...</span>
                 </div>
               ) : (
                 <>
-                  <Shield className="h-4 w-4 mr-2" />
+                  <Shield className="mr-2 h-4 w-4" />
                   Verify CAC Registration
                 </>
               )}
             </Button>
           </form>
 
-          <div className="text-xs text-gray-500 space-y-1">
+          <div className="space-y-1 text-xs text-gray-500">
             <p>• CAC verification typically takes 10-30 seconds</p>
             <p>• Results include current registration status</p>
             <p>• Verification helps confirm business legitimacy</p>

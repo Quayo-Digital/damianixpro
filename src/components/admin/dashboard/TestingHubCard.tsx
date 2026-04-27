@@ -7,18 +7,18 @@ import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { 
-  TestTube, 
-  BarChart3, 
-  Globe, 
-  Shield, 
-  Smartphone, 
-  Zap, 
-  CreditCard, 
-  Users, 
+import {
+  TestTube,
+  BarChart3,
+  Globe,
+  Shield,
+  Smartphone,
+  Zap,
+  CreditCard,
+  Users,
   Building,
   ExternalLink,
-  Activity
+  Activity,
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
@@ -42,7 +42,7 @@ const TestingHubCard: React.FC = () => {
       path: '/testing',
       icon: <TestTube className="h-4 w-4" />,
       category: 'Core',
-      status: 'Active'
+      status: 'Active',
     },
     {
       title: 'Minimal Testing',
@@ -50,7 +50,7 @@ const TestingHubCard: React.FC = () => {
       path: '/testing-minimal',
       icon: <Activity className="h-4 w-4" />,
       category: 'Core',
-      status: 'Active'
+      status: 'Active',
     },
 
     // Analytics Testing
@@ -60,7 +60,7 @@ const TestingHubCard: React.FC = () => {
       path: '/analytics-testing',
       icon: <BarChart3 className="h-4 w-4" />,
       category: 'Analytics',
-      status: 'Active'
+      status: 'Active',
     },
     {
       title: 'Live Data Demo',
@@ -68,7 +68,7 @@ const TestingHubCard: React.FC = () => {
       path: '/live-data-demo',
       icon: <Globe className="h-4 w-4" />,
       category: 'Analytics',
-      status: 'New'
+      status: 'New',
     },
     {
       title: 'Production Testing',
@@ -76,7 +76,7 @@ const TestingHubCard: React.FC = () => {
       path: '/production-testing',
       icon: <Zap className="h-4 w-4" />,
       category: 'Analytics',
-      status: 'New'
+      status: 'New',
     },
 
     // Performance & Security
@@ -86,7 +86,7 @@ const TestingHubCard: React.FC = () => {
       path: '/security-performance',
       icon: <Shield className="h-4 w-4" />,
       category: 'Security',
-      status: 'Active'
+      status: 'Active',
     },
     {
       title: 'Platform Optimization',
@@ -94,7 +94,7 @@ const TestingHubCard: React.FC = () => {
       path: '/platform-optimization',
       icon: <Zap className="h-4 w-4" />,
       category: 'Performance',
-      status: 'Active'
+      status: 'Active',
     },
     {
       title: 'Optimization QA',
@@ -102,17 +102,17 @@ const TestingHubCard: React.FC = () => {
       path: '/comprehensive-optimization-qa',
       icon: <Activity className="h-4 w-4" />,
       category: 'Performance',
-      status: 'Updated'
+      status: 'Updated',
     },
 
     // Feature Testing
     {
       title: 'Payment Testing',
-      description: 'Payment processing, Paystack integration, and transaction testing',
+      description: 'Payment processing, Flutterwave integration, and transaction testing',
       path: '/payment-testing',
       icon: <CreditCard className="h-4 w-4" />,
       category: 'Features',
-      status: 'Active'
+      status: 'Active',
     },
     {
       title: 'Mobile Demo',
@@ -120,7 +120,7 @@ const TestingHubCard: React.FC = () => {
       path: '/mobile-demo',
       icon: <Smartphone className="h-4 w-4" />,
       category: 'Performance',
-      status: 'Active'
+      status: 'Active',
     },
     {
       title: 'Mobile Demo Simple',
@@ -128,37 +128,50 @@ const TestingHubCard: React.FC = () => {
       path: '/mobile-demo-simple',
       icon: <Smartphone className="h-4 w-4" />,
       category: 'Performance',
-      status: 'Active'
-    }
+      status: 'Active',
+    },
   ];
 
   const getCategoryColor = (category: string) => {
     switch (category) {
-      case 'Core': return 'bg-blue-100 text-blue-800';
-      case 'Analytics': return 'bg-green-100 text-green-800';
-      case 'Performance': return 'bg-purple-100 text-purple-800';
-      case 'Security': return 'bg-red-100 text-red-800';
-      case 'Features': return 'bg-orange-100 text-orange-800';
-      default: return 'bg-gray-100 text-gray-800';
+      case 'Core':
+        return 'bg-blue-100 text-blue-800';
+      case 'Analytics':
+        return 'bg-green-100 text-green-800';
+      case 'Performance':
+        return 'bg-purple-100 text-purple-800';
+      case 'Security':
+        return 'bg-red-100 text-red-800';
+      case 'Features':
+        return 'bg-orange-100 text-orange-800';
+      default:
+        return 'bg-gray-100 text-gray-800';
     }
   };
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'New': return 'bg-green-500';
-      case 'Updated': return 'bg-blue-500';
-      case 'Active': return 'bg-gray-400';
-      default: return 'bg-gray-400';
+      case 'New':
+        return 'bg-green-500';
+      case 'Updated':
+        return 'bg-blue-500';
+      case 'Active':
+        return 'bg-gray-400';
+      default:
+        return 'bg-gray-400';
     }
   };
 
-  const groupedPages = testingPages.reduce((acc, page) => {
-    if (!acc[page.category]) {
-      acc[page.category] = [];
-    }
-    acc[page.category].push(page);
-    return acc;
-  }, {} as Record<string, TestingPage[]>);
+  const groupedPages = testingPages.reduce(
+    (acc, page) => {
+      if (!acc[page.category]) {
+        acc[page.category] = [];
+      }
+      acc[page.category].push(page);
+      return acc;
+    },
+    {} as Record<string, TestingPage[]>
+  );
 
   const handleNavigate = (path: string) => {
     navigate(path);
@@ -180,41 +193,41 @@ const TestingHubCard: React.FC = () => {
           {Object.entries(groupedPages).map(([category, pages]) => (
             <div key={category} className="space-y-3">
               <div className="flex items-center gap-2">
-                <h3 className="font-semibold text-sm">{category} Testing</h3>
+                <h3 className="text-sm font-semibold">{category} Testing</h3>
                 <Badge variant="outline" className={getCategoryColor(category)}>
                   {pages.length} {pages.length === 1 ? 'test' : 'tests'}
                 </Badge>
               </div>
-              
+
               <div className="grid gap-2">
                 {pages.map((page, index) => (
-                  <div 
+                  <div
                     key={index}
-                    className="flex items-center justify-between p-3 border rounded-lg hover:bg-gray-50 transition-colors"
+                    className="group flex items-center justify-between rounded-lg border border-border bg-card p-3 transition-colors hover:bg-muted hover:text-foreground"
                   >
-                    <div className="flex items-center gap-3 flex-1">
-                      <div className="flex items-center gap-2">
+                    <div className="flex flex-1 items-center gap-3">
+                      <div className="flex items-center gap-2 text-muted-foreground transition-colors group-hover:text-foreground">
                         {page.icon}
                         <div className="relative">
-                          <span className="font-medium text-sm">{page.title}</span>
+                          <span className="text-sm font-medium text-foreground">{page.title}</span>
                           {page.status !== 'Active' && (
-                            <div 
-                              className={`absolute -top-1 -right-1 w-2 h-2 rounded-full ${getStatusColor(page.status)}`}
+                            <div
+                              className={`absolute -right-1 -top-1 h-2 w-2 rounded-full ${getStatusColor(page.status)}`}
                               title={page.status}
                             />
                           )}
                         </div>
                       </div>
-                      <p className="text-xs text-muted-foreground line-clamp-1 flex-1">
+                      <p className="line-clamp-1 flex-1 text-xs text-muted-foreground transition-colors group-hover:text-foreground/90">
                         {page.description}
                       </p>
                     </div>
-                    
+
                     <Button
                       variant="ghost"
                       size="sm"
                       onClick={() => handleNavigate(page.path)}
-                      className="flex items-center gap-1 text-xs"
+                      className="shrink-0 text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground group-hover:text-foreground"
                     >
                       Open
                       <ExternalLink className="h-3 w-3" />
@@ -227,8 +240,8 @@ const TestingHubCard: React.FC = () => {
         </div>
 
         {/* Quick Stats */}
-        <div className="mt-6 pt-4 border-t">
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-4 text-center">
+        <div className="mt-6 border-t pt-4">
+          <div className="grid grid-cols-2 gap-4 text-center md:grid-cols-5">
             {Object.entries(groupedPages).map(([category, pages]) => (
               <div key={category} className="space-y-1">
                 <div className="text-lg font-bold">{pages.length}</div>

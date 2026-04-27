@@ -20,7 +20,7 @@ export function BlockchainPredictions({
   predictions,
   onGenerateAnalysis,
   canUseAIInsights,
-  isLoading
+  isLoading,
 }: BlockchainPredictionsProps) {
   // Format currency values
   const formatCurrency = (value: number) => {
@@ -28,7 +28,7 @@ export function BlockchainPredictions({
       style: 'currency',
       currency: 'USD',
       minimumFractionDigits: 0,
-      maximumFractionDigits: 0
+      maximumFractionDigits: 0,
     }).format(value);
   };
 
@@ -37,43 +37,46 @@ export function BlockchainPredictions({
       {predictions.map((prediction) => (
         <Card key={prediction.id}>
           <CardContent className="p-4">
-            <div className="flex items-center justify-between mb-3">
+            <div className="mb-3 flex items-center justify-between">
               <h4 className="font-semibold">{prediction.metric}</h4>
-              <Badge variant="outline">
-                {prediction.confidence}% confidence
-              </Badge>
+              <Badge variant="outline">{prediction.confidence}% confidence</Badge>
             </div>
-            
-            <div className="grid grid-cols-2 gap-4 mb-4">
+
+            <div className="mb-4 grid grid-cols-2 gap-4">
               <div>
                 <div className="text-sm text-muted-foreground">Current Value</div>
-                <div className="text-xl font-bold">
-                  {formatCurrency(prediction.currentValue)}
-                </div>
+                <div className="text-xl font-bold">{formatCurrency(prediction.currentValue)}</div>
               </div>
               <div>
                 <div className="text-sm text-muted-foreground">Predicted Value</div>
-                <div className={cn(
-                  "text-xl font-bold",
-                  prediction.predictedValue > prediction.currentValue ? "text-green-600" : "text-red-600"
-                )}>
+                <div
+                  className={cn(
+                    'text-xl font-bold',
+                    prediction.predictedValue > prediction.currentValue
+                      ? 'text-green-600'
+                      : 'text-red-600'
+                  )}
+                >
                   {formatCurrency(prediction.predictedValue)}
                 </div>
               </div>
             </div>
-            
+
             <div className="mb-4">
-              <div className="text-sm font-medium mb-2">Key Factors</div>
+              <div className="mb-2 text-sm font-medium">Key Factors</div>
               <div className="space-y-2">
                 {prediction.factors.map((factor, index) => (
                   <div key={index} className="flex items-center justify-between text-sm">
                     <span>{factor.name}</span>
                     <div className="flex items-center space-x-2">
-                      <Badge variant="outline" className={cn(
-                        factor.impact === 'positive' && "text-green-600 border-green-200",
-                        factor.impact === 'negative' && "text-red-600 border-red-200",
-                        factor.impact === 'neutral' && "text-gray-600 border-gray-200"
-                      )}>
+                      <Badge
+                        variant="outline"
+                        className={cn(
+                          factor.impact === 'positive' && 'border-green-200 text-green-600',
+                          factor.impact === 'negative' && 'border-red-200 text-red-600',
+                          factor.impact === 'neutral' && 'border-gray-200 text-gray-600'
+                        )}
+                      >
                         {factor.impact}
                       </Badge>
                       <span className="text-muted-foreground">
@@ -84,7 +87,7 @@ export function BlockchainPredictions({
                 ))}
               </div>
             </div>
-            
+
             <div className="text-xs text-muted-foreground">
               Methodology: {prediction.methodology}
             </div>
@@ -95,16 +98,13 @@ export function BlockchainPredictions({
       {predictions.length === 0 && (
         <Card>
           <CardContent className="p-8 text-center">
-            <Activity className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-            <h3 className="text-lg font-semibold mb-2">No Predictions Available</h3>
-            <p className="text-muted-foreground mb-4">
+            <Activity className="mx-auto mb-4 h-12 w-12 text-muted-foreground" />
+            <h3 className="mb-2 text-lg font-semibold">No Predictions Available</h3>
+            <p className="mb-4 text-muted-foreground">
               AI predictions will appear here based on market analysis and historical data.
             </p>
-            <Button
-              onClick={onGenerateAnalysis}
-              disabled={!canUseAIInsights || isLoading}
-            >
-              <Brain className="h-4 w-4 mr-2" />
+            <Button onClick={onGenerateAnalysis} disabled={!canUseAIInsights || isLoading}>
+              <Brain className="mr-2 h-4 w-4" />
               Generate Predictions
             </Button>
           </CardContent>

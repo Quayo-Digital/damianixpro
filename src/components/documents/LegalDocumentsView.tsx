@@ -1,12 +1,11 @@
-
-import { useState, useEffect } from "react";
-import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { FileText, Receipt, IdCard, List } from "lucide-react";
-import { Document } from "@/services/documents";
-import { DocumentCard } from "./DocumentCard";
-import { DocumentsHeader } from "./DocumentsHeader";
-import { filterDocumentsByType } from "@/services/documents/documentUtils";
+import { useState, useEffect } from 'react';
+import { Card, CardContent } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { FileText, Receipt, IdCard, List } from 'lucide-react';
+import { Document } from '@/services/documents';
+import { DocumentCard } from './DocumentCard';
+import { DocumentsHeader } from './DocumentsHeader';
+import { filterDocumentsByType } from '@/services/documents/documentUtils';
 
 interface LegalDocumentsViewProps {
   documents: Document[];
@@ -25,10 +24,10 @@ export function LegalDocumentsView({
   onDelete,
   showUploadButton = true,
   onUpload,
-  documentType
+  documentType,
 }: LegalDocumentsViewProps) {
   const [filteredDocs, setFilteredDocs] = useState<Document[]>([]);
-  
+
   useEffect(() => {
     // Documents are already filtered at the parent component level now
     setFilteredDocs(documents);
@@ -39,28 +38,28 @@ export function LegalDocumentsView({
     switch (documentType) {
       case 'lease':
         return {
-          title: "Lease Agreements",
-          description: "Manage your lease agreements and contracts"
+          title: 'Lease Agreements',
+          description: 'Manage your lease agreements and contracts',
         };
       case 'receipt':
         return {
-          title: "Payment Receipts",
-          description: "View and manage payment receipts and financial records"
+          title: 'Payment Receipts',
+          description: 'View and manage payment receipts and financial records',
         };
       case 'identity':
         return {
-          title: "Identity Verification",
-          description: "Manage identity verification documents and tenant records"
+          title: 'Identity Verification',
+          description: 'Manage identity verification documents and tenant records',
         };
       case 'maintenance':
         return {
-          title: "Maintenance Logs",
-          description: "Track maintenance requests and repair documentation"
+          title: 'Maintenance Logs',
+          description: 'Track maintenance requests and repair documentation',
         };
       default:
         return {
-          title: "Legal Documents",
-          description: "Manage your legal documents and records"
+          title: 'Legal Documents',
+          description: 'Manage your legal documents and records',
         };
     }
   };
@@ -71,22 +70,22 @@ export function LegalDocumentsView({
       return (
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {[1, 2, 3].map((i) => (
-            <div 
-              key={i} 
-              className="border rounded-lg p-6 shadow-sm animate-pulse bg-muted/50 h-64"
+            <div
+              key={i}
+              className="h-64 animate-pulse rounded-lg border bg-muted/50 p-6 shadow-sm"
             />
           ))}
         </div>
       );
     }
-    
+
     if (filteredDocs.length === 0) {
       return (
         <Card className="bg-muted/30">
           <CardContent className="py-8 text-center">
             <p className="text-muted-foreground">No {documentType || 'legal'} documents found</p>
             {showUploadButton && onUpload && (
-              <button 
+              <button
                 onClick={onUpload}
                 className="mt-4 text-sm text-primary underline underline-offset-4"
               >
@@ -97,7 +96,7 @@ export function LegalDocumentsView({
         </Card>
       );
     }
-    
+
     return (
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
         {filteredDocs.map((doc) => (
@@ -118,13 +117,13 @@ export function LegalDocumentsView({
 
   return (
     <div className="space-y-6">
-      <DocumentsHeader 
-        title={headerContent.title} 
-        description={headerContent.description} 
+      <DocumentsHeader
+        title={headerContent.title}
+        description={headerContent.description}
         onUpload={onUpload}
         showUploadButton={showUploadButton}
       />
-      
+
       {renderContent()}
     </div>
   );

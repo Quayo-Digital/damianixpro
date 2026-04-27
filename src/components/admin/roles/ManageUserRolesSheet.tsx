@@ -25,22 +25,17 @@ interface ManageUserRolesSheetProps {
 
 const allRoles: UserRole[] = ['admin', 'owner', 'agent', 'tenant', 'vendor', 'user', 'manager'];
 
-async function updateUserRoles({ userId, roles }: { userId: string, roles: UserRole[] }) {
+async function updateUserRoles({ userId, roles }: { userId: string; roles: UserRole[] }) {
   const rolesToSet: UserRole[] = roles.length > 0 ? roles : ['user'];
 
-  const { error: deleteError } = await supabase
-    .from('user_roles')
-    .delete()
-    .eq('user_id', userId);
+  const { error: deleteError } = await supabase.from('user_roles').delete().eq('user_id', userId);
 
   if (deleteError) {
     throw new Error(`Failed to delete old roles: ${deleteError.message}`);
   }
 
-  const newRoles = rolesToSet.map(role => ({ user_id: userId, role }));
-  const { error: insertError } = await supabase
-    .from('user_roles')
-    .insert(newRoles);
+  const newRoles = rolesToSet.map((role) => ({ user_id: userId, role }));
+  const { error: insertError } = await supabase.from('user_roles').insert(newRoles);
 
   if (insertError) {
     throw new Error(`Failed to insert new roles: ${insertError.message}`);
@@ -55,25 +50,25 @@ export function ManageUserRolesSheet({ user, isOpen, onOpenChange }: ManageUserR
 
   useEffect(() => {
     if (user) {
-      setSelectedRoles(user.user_roles.map(r => r.role).filter(isValidUserRole));
+      setSelectedRoles(user.user_roles.map((r) => r.role).filter(isValidUserRole));
     }
   }, [user]);
 
   const mutation = useMutation({
     mutationFn: updateUserRoles,
     onSuccess: () => {
-      toast.success("User roles updated successfully.");
+      toast.success('User roles updated successfully.');
       queryClient.invalidateQueries({ queryKey: ['admin-users'] });
       onOpenChange(false);
     },
     onError: (error) => {
       toast.error(`Error updating roles: ${error.message}`);
-    }
+    },
   });
 
   const handleRoleToggle = (role: UserRole) => {
-    setSelectedRoles(prev =>
-      prev.includes(role) ? prev.filter(r => r !== role) : [...prev, role]
+    setSelectedRoles((prev) =>
+      prev.includes(role) ? prev.filter((r) => r !== role) : [...prev, role]
     );
   };
 
@@ -90,10 +85,10 @@ export function ManageUserRolesSheet({ user, isOpen, onOpenChange }: ManageUserR
             Assign or remove roles for this user. Changes will take effect immediately.
           </SheetDescription>
         </SheetHeader>
-        <div className="flex-grow py-4 space-y-4 overflow-y-auto">
+        <div className="flex-grow space-y-4 overflow-y-auto py-4">
           <h4 className="font-medium">Available Roles</h4>
           <div className="grid grid-cols-2 gap-4">
-            {allRoles.map(role => (
+            {allRoles.map((role) => (
               <div key={role} className="flex items-center space-x-2">
                 <Checkbox
                   id={`role-${role}-${user.id}`}
@@ -108,7 +103,9 @@ export function ManageUserRolesSheet({ user, isOpen, onOpenChange }: ManageUserR
           </div>
         </div>
         <SheetFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
+          <Button variant="outline" onClick={() => onOpenChange(false)}>
+            Cancel
+          </Button>
           <Button onClick={handleSaveChanges} disabled={mutation.isPending}>
             {mutation.isPending ? 'Saving...' : 'Save Changes'}
           </Button>

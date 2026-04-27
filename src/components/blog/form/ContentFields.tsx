@@ -1,13 +1,6 @@
-
 import React from 'react';
 import { UseFormReturn } from 'react-hook-form';
-import { 
-  FormField, 
-  FormItem, 
-  FormLabel, 
-  FormControl, 
-  FormMessage 
-} from '@/components/ui/form';
+import { FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { BlogFormValues } from './BlogFormSchema';
@@ -32,7 +25,7 @@ export const ContentFields = ({ form }: ContentFieldsProps) => {
           </FormItem>
         )}
       />
-      
+
       <FormField
         control={form.control}
         name="excerpt"
@@ -40,16 +33,13 @@ export const ContentFields = ({ form }: ContentFieldsProps) => {
           <FormItem>
             <FormLabel>Excerpt</FormLabel>
             <FormControl>
-              <Textarea 
-                placeholder="Brief summary of your post" 
-                {...field} 
-              />
+              <Textarea placeholder="Brief summary of your post" {...field} />
             </FormControl>
             <FormMessage />
           </FormItem>
         )}
       />
-      
+
       <FormField
         control={form.control}
         name="content"
@@ -57,10 +47,10 @@ export const ContentFields = ({ form }: ContentFieldsProps) => {
           <FormItem>
             <FormLabel>Content</FormLabel>
             <FormControl>
-              <Textarea 
-                placeholder="Write your blog post content here" 
+              <Textarea
+                placeholder="Write your blog post content here"
                 {...field}
-                className="min-h-[300px]" 
+                className="min-h-[300px]"
               />
             </FormControl>
             <FormMessage />

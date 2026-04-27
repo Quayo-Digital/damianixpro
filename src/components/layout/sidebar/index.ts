@@ -1,4 +1,3 @@
-
 export { SidebarNav } from './SidebarNav';
 export { NavItem } from './NavItem';
 export { createNavItems } from './navigation-data';

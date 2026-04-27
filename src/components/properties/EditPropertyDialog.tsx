@@ -1,10 +1,17 @@
-
 import { useState } from 'react';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
 import { PropertyForm } from './PropertyForm';
 import { Property, PropertyFormValues } from '@/services/property/types';
 import { updateProperty } from '@/services/property';
+import { useAuthSession } from '@/contexts/auth';
+import { createTourServiceRequest } from '@/services/tourServiceRequests';
 
 interface EditPropertyDialogProps {
   open: boolean;
@@ -13,39 +20,101 @@ interface EditPropertyDialogProps {
   onPropertyUpdated?: () => void; // Make this prop optional
 }
 
-export function EditPropertyDialog({ open, onOpenChange, property, onPropertyUpdated }: EditPropertyDialogProps) {
+export function EditPropertyDialog({
+  open,
+  onOpenChange,
+  property,
+  onPropertyUpdated,
+}: EditPropertyDialogProps) {
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const { user } = useAuthSession();
 
-  const handleSubmit = async (data: PropertyFormValues, imageUrl: string | null, documents: File[]) => {
+  const handleSubmit = async (
+    data: PropertyFormValues,
+    imageUrl: string | null,
+    documents: File[],
+    requestTourAfterSubmit: boolean
+  ) => {
     setIsSubmitting(true);
     try {
       // Preserve the owner_id from the existing property
       const updatedPropertyData = {
         ...data,
         owner_id: property.owner_id,
-        imageUrl: imageUrl || data.imageUrl
+        imageUrl: imageUrl || data.imageUrl,
       };
-      
+
+      const previousAgentId = property.agent_id;
+      const newAgentId = data.agent_id === 'none' ? null : data.agent_id;
+      const agentChanged = previousAgentId !== newAgentId;
+
       const updatedProperty = await updateProperty(property.id, updatedPropertyData, documents);
-      
+
+      if (requestTourAfterSubmit && user) {
+        await createTourServiceRequest(property.id, user.id);
+      }
+
+      // If agent was changed/assigned, send notification
+      if (agentChanged && newAgentId && user) {
+        try {
+          // Get owner details
+          const { supabase } = await import('@/integrations/supabase/client');
+          const { profileFullName } = await import('@/lib/profileDisplayName');
+          const { data: ownerProfile } = await supabase
+            .from('profiles')
+            .select('first_name, last_name, email, phone')
+            .eq('id', user.id)
+            .single();
+
+          const ownerName =
+            (ownerProfile && profileFullName(ownerProfile)) || user.email || 'Property Owner';
+          const ownerEmail = ownerProfile?.email || user.email || '';
+          const ownerPhone = ownerProfile?.phone || undefined;
+
+          const { sendAgentAssignmentNotification } =
+            await import('@/services/notifications/agent');
+          await sendAgentAssignmentNotification({
+            agentId: newAgentId,
+            propertyId: property.id,
+            propertyName: data.name || property.name || 'Property',
+            ownerId: user.id,
+            ownerName: ownerName,
+            ownerEmail: ownerEmail,
+            ownerPhone: ownerPhone,
+            commissionRate:
+              data.agent_commission_rate || property.agent_commission_rate?.toString() || '0.03',
+          });
+        } catch (notificationError) {
+          // Log error but don't fail the property update
+          console.error('Error sending agent assignment notification:', notificationError);
+        }
+      }
+
       toast({
-        title: "Success!",
-        description: "Property has been updated successfully.",
+        title: 'Success!',
+        description:
+          agentChanged && newAgentId
+            ? requestTourAfterSubmit
+              ? 'Property updated, agent notified, and 3D tour request submitted.'
+              : 'Property has been updated successfully and the agent has been notified.'
+            : requestTourAfterSubmit
+              ? 'Property updated and 3D tour request submitted.'
+              : 'Property has been updated successfully.',
       });
-      
+
       // Call the callback if provided
       if (onPropertyUpdated) {
         onPropertyUpdated();
       }
-      
+
       // Close dialog
       onOpenChange(false);
     } catch (error: any) {
       toast({
-        title: "Error",
-        description: error.message || "Failed to update property. Please try again.",
-        variant: "destructive",
+        title: 'Error',
+        description: error.message || 'Failed to update property. Please try again.',
+        variant: 'destructive',
       });
       console.error('Error updating property:', error);
     } finally {
@@ -59,15 +128,13 @@ export function EditPropertyDialog({ open, onOpenChange, property, onPropertyUpd
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[650px] max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-[650px]">
         <DialogHeader>
           <DialogTitle>Edit Property</DialogTitle>
-          <DialogDescription>
-            Update the details of your property.
-          </DialogDescription>
+          <DialogDescription>Update the details of your property.</DialogDescription>
         </DialogHeader>
-        
-        <PropertyForm 
+
+        <PropertyForm
           onSubmit={handleSubmit}
           onCancel={handleCancel}
           initialData={property}

@@ -25,7 +25,7 @@ import {
 } from '@/components/ui/dialog';
 import { Progress } from '@/components/ui/progress';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { 
+import {
   Plus,
   Edit,
   Trash2,
@@ -38,7 +38,7 @@ import {
   BarChart3,
   Camera,
   FileText,
-  Settings
+  Settings,
 } from 'lucide-react';
 import { usePredictiveMaintenance } from '@/hooks/usePredictiveMaintenance';
 import { EquipmentData } from '@/types/predictiveMaintenance';
@@ -50,59 +50,66 @@ interface EquipmentManagementProps {
 
 export const EquipmentManagement: React.FC<EquipmentManagementProps> = ({
   propertyId,
-  className = ''
+  className = '',
 }) => {
   const [selectedEquipment, setSelectedEquipment] = useState<EquipmentData | null>(null);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('overview');
 
-  const {
-    equipment,
-    alerts,
-    isLoading,
-    updateEquipment,
-    isUpdatingEquipment
-  } = usePredictiveMaintenance({ propertyId });
+  const { equipment, alerts, isLoading, updateEquipment, isUpdatingEquipment } =
+    usePredictiveMaintenance({ propertyId });
 
   const getConditionColor = (condition: string) => {
     switch (condition) {
-      case 'excellent': return 'bg-green-100 text-green-800 border-green-200';
-      case 'good': return 'bg-blue-100 text-blue-800 border-blue-200';
-      case 'fair': return 'bg-yellow-100 text-yellow-800 border-yellow-200';
-      case 'poor': return 'bg-orange-100 text-orange-800 border-orange-200';
-      case 'critical': return 'bg-red-100 text-red-800 border-red-200';
-      default: return 'bg-gray-100 text-gray-800 border-gray-200';
+      case 'excellent':
+        return 'bg-green-100 text-green-800 border-green-200';
+      case 'good':
+        return 'bg-blue-100 text-blue-800 border-blue-200';
+      case 'fair':
+        return 'bg-yellow-100 text-yellow-800 border-yellow-200';
+      case 'poor':
+        return 'bg-orange-100 text-orange-800 border-orange-200';
+      case 'critical':
+        return 'bg-red-100 text-red-800 border-red-200';
+      default:
+        return 'bg-gray-100 text-gray-800 border-gray-200';
     }
   };
 
   const getConditionScore = (condition: string) => {
     switch (condition) {
-      case 'excellent': return 95;
-      case 'good': return 80;
-      case 'fair': return 60;
-      case 'poor': return 40;
-      case 'critical': return 20;
-      default: return 50;
+      case 'excellent':
+        return 95;
+      case 'good':
+        return 80;
+      case 'fair':
+        return 60;
+      case 'poor':
+        return 40;
+      case 'critical':
+        return 20;
+      default:
+        return 50;
     }
   };
 
   const getEquipmentIcon = (type: string) => {
     const iconMap: Record<string, string> = {
-      'hvac_system': '❄️',
-      'water_heater': '🔥',
-      'refrigerator': '🧊',
-      'washing_machine': '👕',
-      'dishwasher': '🍽️',
-      'air_conditioner': '❄️',
-      'generator': '⚡',
-      'elevator': '🛗',
-      'security_system': '🔒',
-      'plumbing_fixtures': '🚿',
-      'electrical_panel': '⚡',
-      'roof': '🏠',
-      'windows': '🪟',
-      'doors': '🚪'
+      hvac_system: '❄️',
+      water_heater: '🔥',
+      refrigerator: '🧊',
+      washing_machine: '👕',
+      dishwasher: '🍽️',
+      air_conditioner: '❄️',
+      generator: '⚡',
+      elevator: '🛗',
+      security_system: '🔒',
+      plumbing_fixtures: '🚿',
+      electrical_panel: '⚡',
+      roof: '🏠',
+      windows: '🪟',
+      doors: '🚪',
     };
     return iconMap[type] || '🔧';
   };
@@ -111,7 +118,7 @@ export const EquipmentManagement: React.FC<EquipmentManagementProps> = ({
     return new Date(dateString).toLocaleDateString('en-NG', {
       year: 'numeric',
       month: 'short',
-      day: 'numeric'
+      day: 'numeric',
     });
   };
 
@@ -123,26 +130,26 @@ export const EquipmentManagement: React.FC<EquipmentManagementProps> = ({
   };
 
   const getEquipmentAlerts = (equipmentId: string) => {
-    return alerts.filter(alert => alert.equipment_id === equipmentId);
+    return alerts.filter((alert) => alert.equipment_id === equipmentId);
   };
 
   const EquipmentCard: React.FC<{ equipment: EquipmentData }> = ({ equipment }) => {
     const equipmentAlerts = getEquipmentAlerts(equipment.id);
-    const criticalAlerts = equipmentAlerts.filter(a => a.priority === 'critical').length;
+    const criticalAlerts = equipmentAlerts.filter((a) => a.priority === 'critical').length;
     const age = getEquipmentAge(equipment.installation_date);
     const conditionScore = getConditionScore(equipment.current_condition);
 
     return (
-      <Card className="cursor-pointer hover:shadow-md transition-shadow" 
-            onClick={() => setSelectedEquipment(equipment)}>
+      <Card
+        className="cursor-pointer transition-shadow hover:shadow-md"
+        onClick={() => setSelectedEquipment(equipment)}
+      >
         <CardContent className="p-6">
-          <div className="flex items-start justify-between mb-4">
+          <div className="mb-4 flex items-start justify-between">
             <div className="flex items-center space-x-3">
-              <div className="text-2xl">
-                {getEquipmentIcon(equipment.equipment_type)}
-              </div>
+              <div className="text-2xl">{getEquipmentIcon(equipment.equipment_type)}</div>
               <div>
-                <h3 className="font-semibold text-lg">
+                <h3 className="text-lg font-semibold">
                   {equipment.equipment_type.replace('_', ' ').toUpperCase()}
                 </h3>
                 <p className="text-sm text-muted-foreground">
@@ -164,7 +171,7 @@ export const EquipmentManagement: React.FC<EquipmentManagementProps> = ({
 
           <div className="space-y-3">
             <div>
-              <div className="flex justify-between text-sm mb-1">
+              <div className="mb-1 flex justify-between text-sm">
                 <span>Health Score</span>
                 <span className="font-medium">{conditionScore}%</span>
               </div>
@@ -183,10 +190,7 @@ export const EquipmentManagement: React.FC<EquipmentManagementProps> = ({
               <div>
                 <p className="text-muted-foreground">Last Service</p>
                 <p className="font-medium">
-                  {equipment.last_service_date 
-                    ? formatDate(equipment.last_service_date)
-                    : 'Never'
-                  }
+                  {equipment.last_service_date ? formatDate(equipment.last_service_date) : 'Never'}
                 </p>
               </div>
               <div>
@@ -196,11 +200,9 @@ export const EquipmentManagement: React.FC<EquipmentManagementProps> = ({
             </div>
 
             {equipmentAlerts.length > 0 && (
-              <div className="pt-2 border-t">
-                <p className="text-xs text-muted-foreground mb-1">Recent Alert:</p>
-                <p className="text-xs font-medium">
-                  {equipmentAlerts[0].title}
-                </p>
+              <div className="border-t pt-2">
+                <p className="mb-1 text-xs text-muted-foreground">Recent Alert:</p>
+                <p className="text-xs font-medium">{equipmentAlerts[0].title}</p>
               </div>
             )}
           </div>
@@ -217,9 +219,7 @@ export const EquipmentManagement: React.FC<EquipmentManagementProps> = ({
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-3">
-            <div className="text-3xl">
-              {getEquipmentIcon(equipment.equipment_type)}
-            </div>
+            <div className="text-3xl">{getEquipmentIcon(equipment.equipment_type)}</div>
             <div>
               <h2 className="text-2xl font-bold">
                 {equipment.equipment_type.replace('_', ' ').toUpperCase()}
@@ -230,23 +230,22 @@ export const EquipmentManagement: React.FC<EquipmentManagementProps> = ({
             </div>
           </div>
           <div className="flex space-x-2">
-            <Button
-              variant="outline"
-              onClick={() => setIsEditDialogOpen(true)}
-            >
-              <Edit className="h-4 w-4 mr-2" />
+            <Button variant="outline" onClick={() => setIsEditDialogOpen(true)}>
+              <Edit className="mr-2 h-4 w-4" />
               Edit
             </Button>
             <Button
               variant="outline"
-              onClick={() => updateEquipment({
-                equipmentId: equipment.id,
-                condition: equipment.current_condition,
-                notes: 'Manual inspection performed'
-              })}
+              onClick={() =>
+                updateEquipment({
+                  equipmentId: equipment.id,
+                  condition: equipment.current_condition,
+                  notes: 'Manual inspection performed',
+                })
+              }
               disabled={isUpdatingEquipment}
             >
-              <Activity className="h-4 w-4 mr-2" />
+              <Activity className="mr-2 h-4 w-4" />
               Update Status
             </Button>
           </div>
@@ -284,14 +283,13 @@ export const EquipmentManagement: React.FC<EquipmentManagementProps> = ({
                 <div>
                   <Label className="text-sm text-muted-foreground">Last Service</Label>
                   <p className="font-medium">
-                    {equipment.last_service_date 
+                    {equipment.last_service_date
                       ? formatDate(equipment.last_service_date)
-                      : 'Never serviced'
-                    }
+                      : 'Never serviced'}
                   </p>
                 </div>
               </div>
-              
+
               {equipment.warranty_expiry && (
                 <div>
                   <Label className="text-sm text-muted-foreground">Warranty Expires</Label>
@@ -307,9 +305,11 @@ export const EquipmentManagement: React.FC<EquipmentManagementProps> = ({
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
-                <div className="flex justify-between text-sm mb-2">
+                <div className="mb-2 flex justify-between text-sm">
                   <span>Health Score</span>
-                  <span className="font-medium">{getConditionScore(equipment.current_condition)}%</span>
+                  <span className="font-medium">
+                    {getConditionScore(equipment.current_condition)}%
+                  </span>
                 </div>
                 <Progress value={getConditionScore(equipment.current_condition)} className="h-3" />
               </div>
@@ -319,13 +319,22 @@ export const EquipmentManagement: React.FC<EquipmentManagementProps> = ({
                 {equipmentAlerts.length > 0 ? (
                   <div className="space-y-2">
                     {equipmentAlerts.slice(0, 3).map((alert) => (
-                      <div key={alert.id} className="flex items-center justify-between p-2 bg-gray-50 rounded">
+                      <div
+                        key={alert.id}
+                        className="flex items-center justify-between rounded bg-gray-50 p-2"
+                      >
                         <div className="flex items-center space-x-2">
-                          <AlertTriangle className={`h-4 w-4 ${
-                            alert.priority === 'critical' ? 'text-red-600' :
-                            alert.priority === 'high' ? 'text-orange-600' :
-                            alert.priority === 'medium' ? 'text-yellow-600' : 'text-green-600'
-                          }`} />
+                          <AlertTriangle
+                            className={`h-4 w-4 ${
+                              alert.priority === 'critical'
+                                ? 'text-red-600'
+                                : alert.priority === 'high'
+                                  ? 'text-orange-600'
+                                  : alert.priority === 'medium'
+                                    ? 'text-yellow-600'
+                                    : 'text-green-600'
+                            }`}
+                          />
                           <span className="text-sm">{alert.title}</span>
                         </div>
                         <Badge variant="outline" className="text-xs">
@@ -353,30 +362,43 @@ export const EquipmentManagement: React.FC<EquipmentManagementProps> = ({
             {equipment.maintenance_history && equipment.maintenance_history.length > 0 ? (
               <div className="space-y-3">
                 {equipment.maintenance_history.slice(0, 5).map((record) => (
-                  <div key={record.id} className="flex items-center justify-between p-3 border rounded-lg">
+                  <div
+                    key={record.id}
+                    className="flex items-center justify-between rounded-lg border p-3"
+                  >
                     <div className="flex items-center space-x-3">
-                      <div className={`p-2 rounded-full ${
-                        record.maintenance_type === 'emergency' ? 'bg-red-100' :
-                        record.maintenance_type === 'corrective' ? 'bg-orange-100' :
-                        record.maintenance_type === 'preventive' ? 'bg-green-100' : 'bg-blue-100'
-                      }`}>
-                        <Wrench className={`h-4 w-4 ${
-                          record.maintenance_type === 'emergency' ? 'text-red-600' :
-                          record.maintenance_type === 'corrective' ? 'text-orange-600' :
-                          record.maintenance_type === 'preventive' ? 'text-green-600' : 'text-blue-600'
-                        }`} />
+                      <div
+                        className={`rounded-full p-2 ${
+                          record.maintenance_type === 'emergency'
+                            ? 'bg-red-100'
+                            : record.maintenance_type === 'corrective'
+                              ? 'bg-orange-100'
+                              : record.maintenance_type === 'preventive'
+                                ? 'bg-green-100'
+                                : 'bg-blue-100'
+                        }`}
+                      >
+                        <Wrench
+                          className={`h-4 w-4 ${
+                            record.maintenance_type === 'emergency'
+                              ? 'text-red-600'
+                              : record.maintenance_type === 'corrective'
+                                ? 'text-orange-600'
+                                : record.maintenance_type === 'preventive'
+                                  ? 'text-green-600'
+                                  : 'text-blue-600'
+                          }`}
+                        />
                       </div>
                       <div>
-                        <p className="font-medium text-sm">{record.description}</p>
+                        <p className="text-sm font-medium">{record.description}</p>
                         <p className="text-xs text-muted-foreground">
                           {formatDate(record.performed_date)} • {record.performed_by}
                         </p>
                       </div>
                     </div>
                     <div className="text-right">
-                      <p className="font-medium text-sm">
-                        ₦{record.cost.toLocaleString()}
-                      </p>
+                      <p className="text-sm font-medium">₦{record.cost.toLocaleString()}</p>
                       <Badge variant="outline" className="text-xs">
                         {record.maintenance_type}
                       </Badge>
@@ -385,8 +407,8 @@ export const EquipmentManagement: React.FC<EquipmentManagementProps> = ({
                 ))}
               </div>
             ) : (
-              <div className="text-center py-8 text-muted-foreground">
-                <FileText className="h-8 w-8 mx-auto mb-2" />
+              <div className="py-8 text-center text-muted-foreground">
+                <FileText className="mx-auto mb-2 h-8 w-8" />
                 <p>No maintenance history available</p>
               </div>
             )}
@@ -404,9 +426,9 @@ export const EquipmentManagement: React.FC<EquipmentManagementProps> = ({
             <Card key={i}>
               <CardContent className="p-6">
                 <div className="animate-pulse space-y-3">
-                  <div className="h-4 bg-gray-200 rounded w-3/4"></div>
-                  <div className="h-8 bg-gray-200 rounded w-1/2"></div>
-                  <div className="h-2 bg-gray-200 rounded w-full"></div>
+                  <div className="h-4 w-3/4 rounded bg-gray-200"></div>
+                  <div className="h-8 w-1/2 rounded bg-gray-200"></div>
+                  <div className="h-2 w-full rounded bg-gray-200"></div>
                 </div>
               </CardContent>
             </Card>
@@ -420,11 +442,7 @@ export const EquipmentManagement: React.FC<EquipmentManagementProps> = ({
     <div className={`space-y-6 ${className}`}>
       {selectedEquipment ? (
         <div>
-          <Button
-            variant="outline"
-            onClick={() => setSelectedEquipment(null)}
-            className="mb-4"
-          >
+          <Button variant="outline" onClick={() => setSelectedEquipment(null)} className="mb-4">
             ← Back to Equipment List
           </Button>
           <EquipmentDetails equipment={selectedEquipment} />
@@ -434,12 +452,10 @@ export const EquipmentManagement: React.FC<EquipmentManagementProps> = ({
           <div className="flex items-center justify-between">
             <div>
               <h2 className="text-2xl font-bold tracking-tight">Equipment Management</h2>
-              <p className="text-muted-foreground">
-                Monitor and manage all property equipment
-              </p>
+              <p className="text-muted-foreground">Monitor and manage all property equipment</p>
             </div>
             <Button onClick={() => setIsAddDialogOpen(true)}>
-              <Plus className="h-4 w-4 mr-2" />
+              <Plus className="mr-2 h-4 w-4" />
               Add Equipment
             </Button>
           </div>
@@ -453,13 +469,13 @@ export const EquipmentManagement: React.FC<EquipmentManagementProps> = ({
           {equipment.length === 0 && (
             <Card>
               <CardContent className="p-12 text-center">
-                <Settings className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-                <h3 className="text-lg font-semibold mb-2">No Equipment Found</h3>
-                <p className="text-muted-foreground mb-4">
+                <Settings className="mx-auto mb-4 h-12 w-12 text-muted-foreground" />
+                <h3 className="mb-2 text-lg font-semibold">No Equipment Found</h3>
+                <p className="mb-4 text-muted-foreground">
                   Start by adding equipment to enable predictive maintenance features.
                 </p>
                 <Button onClick={() => setIsAddDialogOpen(true)}>
-                  <Plus className="h-4 w-4 mr-2" />
+                  <Plus className="mr-2 h-4 w-4" />
                   Add Your First Equipment
                 </Button>
               </CardContent>
@@ -548,9 +564,7 @@ export const EquipmentManagement: React.FC<EquipmentManagementProps> = ({
             <Button variant="outline" onClick={() => setIsAddDialogOpen(false)}>
               Cancel
             </Button>
-            <Button onClick={() => setIsAddDialogOpen(false)}>
-              Add Equipment
-            </Button>
+            <Button onClick={() => setIsAddDialogOpen(false)}>Add Equipment</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

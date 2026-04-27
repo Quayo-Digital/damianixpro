@@ -1,7 +1,13 @@
-
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
 import { MaintenanceRequestForm } from './request-form/MaintenanceRequestForm';
 import { Plus } from 'lucide-react';
 import { MaintenanceRequest } from '@/components/communication/maintenance/maintenance-data';
@@ -35,6 +41,10 @@ export function MaintenanceRequestDialog({ onSuccess }: MaintenanceRequestDialog
       <DialogContent className="sm:max-w-[725px]">
         <DialogHeader>
           <DialogTitle>New Maintenance Request</DialogTitle>
+          <DialogDescription>
+            Submit a new maintenance request for your property. Include photos and detailed
+            description to help us assist you quickly.
+          </DialogDescription>
         </DialogHeader>
         <MaintenanceRequestForm onClose={handleClose} onSuccess={handleSuccess} />
       </DialogContent>

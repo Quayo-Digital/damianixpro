@@ -1,4 +1,3 @@
-
 import { Property } from '@/services/property';
 
 interface PropertyImageProps {
@@ -7,11 +6,12 @@ interface PropertyImageProps {
 
 export const PropertyImage = ({ property }: PropertyImageProps) => {
   return (
-    <div className="aspect-video rounded-lg overflow-hidden bg-muted">
+    <div className="aspect-video overflow-hidden rounded-lg bg-muted">
       <img
         src={property.imageUrl || '/placeholder.svg'}
         alt={property.name}
-        className="w-full h-full object-cover"
+        decoding="async"
+        className="h-full w-full object-cover"
       />
     </div>
   );

@@ -1,42 +1,27 @@
-
 import { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from "@/components/ui/table";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Clipboard, FileCheck } from "lucide-react";
-import { InspectionDialog } from "./InspectionDialog";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import {
+  Table,
+  TableHeader,
+  TableRow,
+  TableHead,
+  TableBody,
+  TableCell,
+} from '@/components/ui/table';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Clipboard, FileCheck } from 'lucide-react';
+import { InspectionDialog } from './InspectionDialog';
 
-// Mock data for inspections
-const mockInspections = [
-  {
-    id: '1',
-    propertyId: '101',
-    propertyName: 'Palm View Apartments #101',
-    type: 'move-in',
-    date: '2025-04-15',
-    inspector: 'John Doe',
-    status: 'pass',
-  },
-  {
-    id: '2',
-    propertyId: '102',
-    propertyName: 'Sunlight Residences #304',
-    type: 'move-out',
-    date: '2025-04-02',
-    inspector: 'Sarah Johnson',
-    status: 'conditional',
-  },
-  {
-    id: '3',
-    propertyId: '103',
-    propertyName: 'Green Acres #7B',
-    type: 'move-in',
-    date: '2025-03-28',
-    inspector: 'Michael Brown',
-    status: 'fail',
-  },
-];
+const inspections: {
+  id: string;
+  propertyId: string;
+  propertyName: string;
+  type: 'move-in' | 'move-out';
+  date: string;
+  inspector: string;
+  status: string;
+}[] = [];
 
 export const InspectionList = () => {
   const [inspectionOpen, setInspectionOpen] = useState(false);
@@ -47,8 +32,8 @@ export const InspectionList = () => {
 
   const handleCreateInspection = (type: 'move-in' | 'move-out') => {
     setSelectedInspection({
-      propertyId: '',  // This would typically be filled with the selected property
-      type
+      propertyId: '', // This would typically be filled with the selected property
+      type,
     });
     setInspectionOpen(true);
   };
@@ -72,11 +57,9 @@ export const InspectionList = () => {
         <CardHeader className="flex flex-row items-center justify-between pb-2">
           <div>
             <CardTitle className="text-xl font-bold">
-              <Clipboard className="inline mr-2 h-5 w-5" /> Inspection Records
+              <Clipboard className="mr-2 inline h-5 w-5" /> Inspection Records
             </CardTitle>
-            <CardDescription>
-              View and manage property inspection records
-            </CardDescription>
+            <CardDescription>View and manage property inspection records</CardDescription>
           </div>
           <div className="flex space-x-2">
             <Button size="sm" onClick={() => handleCreateInspection('move-in')}>
@@ -102,25 +85,27 @@ export const InspectionList = () => {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {mockInspections.length > 0 ? (
-                mockInspections.map((inspection) => (
+              {inspections.length > 0 ? (
+                inspections.map((inspection) => (
                   <TableRow key={inspection.id}>
                     <TableCell className="font-medium">{inspection.propertyName}</TableCell>
-                    <TableCell>
-                      {inspection.type === 'move-in' ? 'Move-In' : 'Move-Out'}
-                    </TableCell>
+                    <TableCell>{inspection.type === 'move-in' ? 'Move-In' : 'Move-Out'}</TableCell>
                     <TableCell>{new Date(inspection.date).toLocaleDateString()}</TableCell>
                     <TableCell>{inspection.inspector}</TableCell>
                     <TableCell>{getStatusBadge(inspection.status)}</TableCell>
                     <TableCell className="text-right">
-                      <Button variant="ghost" size="sm">View</Button>
-                      <Button variant="ghost" size="sm">Edit</Button>
+                      <Button variant="ghost" size="sm">
+                        View
+                      </Button>
+                      <Button variant="ghost" size="sm">
+                        Edit
+                      </Button>
                     </TableCell>
                   </TableRow>
                 ))
               ) : (
                 <TableRow>
-                  <TableCell colSpan={6} className="text-center py-6">
+                  <TableCell colSpan={6} className="py-6 text-center">
                     No inspection records found. Create a new inspection to get started.
                   </TableCell>
                 </TableRow>
@@ -129,7 +114,7 @@ export const InspectionList = () => {
           </Table>
         </CardContent>
       </Card>
-      
+
       {selectedInspection && (
         <InspectionDialog
           open={inspectionOpen}
@@ -138,7 +123,7 @@ export const InspectionList = () => {
           inspectionType={selectedInspection.type}
           onSuccess={() => {
             // In a real app, you would refresh the list of inspections here
-            console.log("Inspection created successfully");
+            console.log('Inspection created successfully');
           }}
         />
       )}

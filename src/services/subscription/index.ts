@@ -1,3 +1,2 @@
-
 export * from './types';
-export * from './subscriptionApi';
+/** @see subscriptionApi.ts — legacy `subscriptions` table helpers; not used by the app (Flutterwave + `user_subscriptions`). */

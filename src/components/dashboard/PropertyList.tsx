@@ -1,11 +1,18 @@
-
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Property } from '@/services/property';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useNavigate } from 'react-router-dom';
 import { Home } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 interface PropertyListProps {
   properties?: Property[];
@@ -17,16 +24,16 @@ export function PropertyList({ properties = [], isLoading = false }: PropertyLis
 
   if (isLoading) {
     return (
-      <div className="bg-white rounded-lg shadow-sm border">
-        <div className="flex items-center justify-between p-4 border-b">
+      <div className="rounded-lg border border-border bg-card text-card-foreground shadow-sm">
+        <div className="flex flex-wrap items-center justify-between gap-2 border-b p-4">
           <h3 className="font-semibold">Your Properties</h3>
-          <Button variant="outline" size="sm" disabled>View All</Button>
+          <span className="text-sm text-muted-foreground">Loading…</span>
         </div>
-        <div className="p-4 space-y-4">
+        <div className="space-y-4 p-4">
           {[...Array(4)].map((_, i) => (
             <div key={i} className="flex items-center space-x-4">
               <Skeleton className="h-10 w-10 rounded-md" />
-              <div className="space-y-2 flex-1">
+              <div className="flex-1 space-y-2">
                 <Skeleton className="h-4 w-3/4" />
                 <Skeleton className="h-4 w-1/2" />
               </div>
@@ -36,23 +43,28 @@ export function PropertyList({ properties = [], isLoading = false }: PropertyLis
       </div>
     );
   }
-  
+
   if (properties.length === 0) {
     return (
-      <div className="bg-white rounded-lg shadow-sm border text-center p-10">
-        <h3 className="font-medium text-lg mb-2">No properties found</h3>
+      <div className="rounded-lg border border-border bg-card p-10 text-center text-card-foreground shadow-sm">
+        <h3 className="mb-2 text-lg font-medium">No properties found</h3>
         <p className="text-muted-foreground">You have not added any properties yet.</p>
       </div>
     );
   }
 
   return (
-    <div className="bg-white rounded-lg shadow-sm border">
-      <div className="flex items-center justify-between p-4 border-b">
+    <div className="rounded-lg border border-border bg-card text-card-foreground shadow-sm">
+      <div className="flex flex-wrap items-center justify-between gap-2 border-b p-4">
         <h3 className="font-semibold">Your Properties</h3>
-        <Button variant="outline" size="sm" onClick={() => navigate('/properties')}>View All</Button>
+        <Link
+          to="/properties"
+          className="text-sm font-medium text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
+        >
+          View all in properties
+        </Link>
       </div>
-      <div className="p-4 overflow-auto">
+      <div className="overflow-auto p-4">
         <Table>
           <TableHeader>
             <TableRow>
@@ -60,7 +72,7 @@ export function PropertyList({ properties = [], isLoading = false }: PropertyLis
               <TableHead>Location</TableHead>
               <TableHead>Type</TableHead>
               <TableHead>Status</TableHead>
-              <TableHead className="text-right">Actions</TableHead>
+              <TableHead className="w-[140px] text-right">Action</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -75,7 +87,7 @@ export function PropertyList({ properties = [], isLoading = false }: PropertyLis
                         className="h-10 w-10 rounded-md object-cover"
                       />
                     ) : (
-                      <div className="h-10 w-10 rounded-md bg-muted flex items-center justify-center">
+                      <div className="flex h-10 w-10 items-center justify-center rounded-md bg-muted">
                         <Home className="h-5 w-5 text-muted-foreground" />
                       </div>
                     )}
@@ -90,7 +102,14 @@ export function PropertyList({ properties = [], isLoading = false }: PropertyLis
                   </Badge>
                 </TableCell>
                 <TableCell className="text-right">
-                  <Button variant="ghost" size="sm" onClick={() => navigate(`/properties/${property.id}`)}>Manage</Button>
+                  <Button
+                    type="button"
+                    size="sm"
+                    className="min-w-[8rem]"
+                    onClick={() => navigate(`/properties/${property.id}`)}
+                  >
+                    Open listing
+                  </Button>
                 </TableCell>
               </TableRow>
             ))}

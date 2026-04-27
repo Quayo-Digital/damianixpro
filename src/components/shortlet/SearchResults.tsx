@@ -7,7 +7,13 @@ import React, { useState, useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { ShortletListingCard } from './ShortletListingCard';
 import { SearchFiltersComponent, SearchFilters } from './SearchFilters';
 import { searchListings } from '@/services/shortlet/api/listings';
@@ -51,19 +57,23 @@ export function SearchResults({ initialFilters, onListingClick }: SearchResultsP
         instant_book: filters.instant_book,
         sort_by: filters.sort_by || 'popular',
         page,
-        page_size: pageSize
+        page_size: pageSize,
       });
 
       if (page === 1) {
         setListings(result.listings);
       } else {
-        setListings(prev => [...prev, ...result.listings]);
+        setListings((prev) => [...prev, ...result.listings]);
       }
 
-      setTotalCount(result.total);
+      setTotalCount(result.total ?? result.listings.length);
       setHasMore(result.listings.length === pageSize);
     } catch (error) {
       console.error('Error searching listings:', error);
+      if (page === 1) {
+        setListings([]);
+        setTotalCount(0);
+      }
     } finally {
       setIsLoading(false);
     }
@@ -83,7 +93,7 @@ export function SearchResults({ initialFilters, onListingClick }: SearchResultsP
   };
 
   const handleLoadMore = () => {
-    setPage(prev => prev + 1);
+    setPage((prev) => prev + 1);
   };
 
   return (
@@ -92,8 +102,8 @@ export function SearchResults({ initialFilters, onListingClick }: SearchResultsP
       <Card>
         <CardContent className="pt-6">
           <div className="flex gap-2">
-            <div className="flex-1 relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 transform text-muted-foreground" />
               <Input
                 placeholder="Search by location, property name, or amenities..."
                 value={searchQuery}
@@ -132,9 +142,7 @@ export function SearchResults({ initialFilters, onListingClick }: SearchResultsP
           <h2 className="text-2xl font-bold">
             {totalCount > 0 ? `${totalCount} listings found` : 'No listings found'}
           </h2>
-          {filters.location && (
-            <p className="text-muted-foreground">in {filters.location}</p>
-          )}
+          {filters.location && <p className="text-muted-foreground">in {filters.location}</p>}
         </div>
         <div className="flex items-center gap-2">
           <Button
@@ -156,30 +164,35 @@ export function SearchResults({ initialFilters, onListingClick }: SearchResultsP
 
       {/* Results */}
       {isLoading && listings.length === 0 ? (
-        <div className="flex items-center justify-center h-64">
+        <div className="flex h-64 items-center justify-center">
           <Loader2 className="h-8 w-8 animate-spin text-primary" />
         </div>
       ) : listings.length === 0 ? (
         <Card>
           <CardContent className="py-12 text-center">
-            <p className="text-muted-foreground mb-4">No listings match your search criteria</p>
-            <Button variant="outline" onClick={() => {
-              setFilters({});
-              setSearchQuery('');
-              setPage(1);
-            }}>
+            <p className="mb-4 text-muted-foreground">No listings match your search criteria</p>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setFilters({});
+                setSearchQuery('');
+                setPage(1);
+              }}
+            >
               Clear Filters
             </Button>
           </CardContent>
         </Card>
       ) : (
         <>
-          <div className={
-            viewMode === 'grid'
-              ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6'
-              : 'space-y-4'
-          }>
-            {listings.map(listing => (
+          <div
+            className={
+              viewMode === 'grid'
+                ? 'grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3'
+                : 'space-y-4'
+            }
+          >
+            {listings.map((listing) => (
               <ShortletListingCard
                 key={listing.id}
                 listing={listing}
@@ -192,14 +205,10 @@ export function SearchResults({ initialFilters, onListingClick }: SearchResultsP
           {/* Load More */}
           {hasMore && (
             <div className="flex justify-center pt-6">
-              <Button
-                variant="outline"
-                onClick={handleLoadMore}
-                disabled={isLoading}
-              >
+              <Button variant="outline" onClick={handleLoadMore} disabled={isLoading}>
                 {isLoading ? (
                   <>
-                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                     Loading...
                   </>
                 ) : (
@@ -213,4 +222,3 @@ export function SearchResults({ initialFilters, onListingClick }: SearchResultsP
     </div>
   );
 }
-

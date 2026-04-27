@@ -1,4 +1,4 @@
-// Service Worker for Nigeria Homes Platform
+// Service Worker for DamianixPro Platform
 // Provides caching, offline functionality, and performance optimization
 
 const CACHE_NAME = 'nigeria-homes-v1.0.0';
@@ -115,6 +115,17 @@ self.addEventListener('fetch', (event) => {
   
   // Skip non-GET requests
   if (request.method !== 'GET') {
+    return;
+  }
+
+  // Vite dev module graph — must not hit navigation/cache handlers (would return HTML → broken import()).
+  const p = url.pathname;
+  if (
+    p.startsWith('/src/') ||
+    p.startsWith('/@') ||
+    p.startsWith('/node_modules/') ||
+    p.includes('/.vite/')
+  ) {
     return;
   }
   
@@ -316,7 +327,7 @@ async function handleNavigationRequest(request) {
       <!DOCTYPE html>
       <html>
         <head>
-          <title>Nigeria Homes - Offline</title>
+          <title>DamianixPro - Offline</title>
           <meta name="viewport" content="width=device-width, initial-scale=1">
           <style>
             body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; 
@@ -334,7 +345,7 @@ async function handleNavigationRequest(request) {
           <div class="container">
             <div class="icon">🏠</div>
             <h1>You're Offline</h1>
-            <p>Nigeria Homes is not available right now. Please check your internet connection and try again.</p>
+            <p>DamianixPro is not available right now. Please check your internet connection and try again.</p>
             <button onclick="window.location.reload()">Try Again</button>
           </div>
         </body>
@@ -441,7 +452,7 @@ self.addEventListener('push', (event) => {
   console.log('[SW] Push received:', event);
   
   const options = {
-    body: 'You have a new notification from Nigeria Homes',
+    body: 'You have a new notification from DamianixPro',
     icon: '/icons/icon-192x192.png',
     badge: '/icons/badge-72x72.png',
     vibrate: [100, 50, 100],
@@ -470,7 +481,7 @@ self.addEventListener('push', (event) => {
   }
   
   event.waitUntil(
-    self.registration.showNotification('Nigeria Homes', options)
+    self.registration.showNotification('DamianixPro', options)
   );
 });
 

@@ -24,7 +24,7 @@ import {
   Clock,
   Zap,
   Sparkles,
-  RefreshCw
+  RefreshCw,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
@@ -54,12 +54,12 @@ export function BlockchainAnalyticsTests() {
     assessRisks,
     detectOpportunities,
     refreshAll,
-    aiAnalysis
+    aiAnalysis,
   } = useBlockchainAnalytics({
     userId: 'test-user',
     walletAddress: walletAddress || undefined,
     enableRealTime: true,
-    autoRefresh: false
+    autoRefresh: false,
   });
 
   // Test Categories
@@ -68,38 +68,38 @@ export function BlockchainAnalyticsTests() {
       id: 'feature-access',
       name: 'Feature Access',
       description: 'Test subscription-based feature access controls',
-      icon: Shield
+      icon: Shield,
     },
     {
       id: 'data-loading',
       name: 'Data Loading',
       description: 'Test analytics data loading and caching',
-      icon: Activity
+      icon: Activity,
     },
     {
       id: 'ai-insights',
       name: 'AI Insights',
       description: 'Test AI-powered analysis and recommendations',
-      icon: Brain
+      icon: Brain,
     },
     {
       id: 'real-time',
       name: 'Real-time Updates',
       description: 'Test live data streaming and updates',
-      icon: Zap
+      icon: Zap,
     },
     {
       id: 'market-analysis',
       name: 'Market Analysis',
       description: 'Test market trends and predictions',
-      icon: TrendingUp
+      icon: TrendingUp,
     },
     {
       id: 'portfolio-optimization',
       name: 'Portfolio Optimization',
       description: 'Test portfolio analysis and optimization',
-      icon: Target
-    }
+      icon: Target,
+    },
   ];
 
   // Individual Tests
@@ -115,7 +115,7 @@ export function BlockchainAnalyticsTests() {
           } else {
             return { success: false, message: 'Analytics access denied - check subscription' };
           }
-        }
+        },
       },
       {
         id: 'ai-insights-access',
@@ -127,7 +127,7 @@ export function BlockchainAnalyticsTests() {
           } else {
             return { success: false, message: 'AI insights access denied - upgrade required' };
           }
-        }
+        },
       },
       {
         id: 'real-time-access',
@@ -139,8 +139,8 @@ export function BlockchainAnalyticsTests() {
           } else {
             return { success: false, message: 'Real-time updates access denied - premium feature' };
           }
-        }
-      }
+        },
+      },
     ],
     'data-loading': [
       {
@@ -149,19 +149,24 @@ export function BlockchainAnalyticsTests() {
         description: 'Test market analytics data loading',
         test: async () => {
           if (marketAnalytics) {
-            const hasOverview = marketAnalytics.overview && marketAnalytics.overview.totalMarketCap > 0;
+            const hasOverview =
+              marketAnalytics.overview && marketAnalytics.overview.totalMarketCap > 0;
             const hasTrends = marketAnalytics.trends && marketAnalytics.trends.length > 0;
-            const hasOpportunities = marketAnalytics.opportunities && marketAnalytics.opportunities.length >= 0;
-            
+            const hasOpportunities =
+              marketAnalytics.opportunities && marketAnalytics.opportunities.length >= 0;
+
             if (hasOverview && hasTrends) {
-              return { success: true, message: `Market data loaded: $${marketAnalytics.overview.totalMarketCap.toLocaleString()} market cap, ${marketAnalytics.trends.length} trends` };
+              return {
+                success: true,
+                message: `Market data loaded: $${marketAnalytics.overview.totalMarketCap.toLocaleString()} market cap, ${marketAnalytics.trends.length} trends`,
+              };
             } else {
               return { success: false, message: 'Market data incomplete or missing' };
             }
           } else {
             return { success: false, message: 'Market analytics data not loaded' };
           }
-        }
+        },
       },
       {
         id: 'portfolio-data',
@@ -170,18 +175,26 @@ export function BlockchainAnalyticsTests() {
         test: async () => {
           if (portfolioAnalytics) {
             const hasValue = portfolioAnalytics.totalValue >= 0;
-            const hasProperties = portfolioAnalytics.properties && portfolioAnalytics.properties.length >= 0;
-            const hasScores = portfolioAnalytics.performanceScore >= 0 && portfolioAnalytics.riskScore >= 0;
-            
+            const hasProperties =
+              portfolioAnalytics.properties && portfolioAnalytics.properties.length >= 0;
+            const hasScores =
+              portfolioAnalytics.performanceScore >= 0 && portfolioAnalytics.riskScore >= 0;
+
             if (hasValue && hasScores) {
-              return { success: true, message: `Portfolio loaded: $${portfolioAnalytics.totalValue.toLocaleString()} value, ${portfolioAnalytics.properties.length} properties` };
+              return {
+                success: true,
+                message: `Portfolio loaded: $${portfolioAnalytics.totalValue.toLocaleString()} value, ${portfolioAnalytics.properties.length} properties`,
+              };
             } else {
               return { success: false, message: 'Portfolio data incomplete' };
             }
           } else {
-            return { success: false, message: 'Portfolio analytics not available - wallet connection required' };
+            return {
+              success: false,
+              message: 'Portfolio analytics not available - wallet connection required',
+            };
           }
-        }
+        },
       },
       {
         id: 'analytics-summary',
@@ -189,23 +202,28 @@ export function BlockchainAnalyticsTests() {
         description: 'Test analytics summary calculations',
         test: async () => {
           if (analyticsSummary) {
-            const hasMetrics = analyticsSummary.totalValue >= 0 && 
-                              analyticsSummary.marketCap >= 0 && 
-                              analyticsSummary.volume24h >= 0;
-            const hasScores = analyticsSummary.performanceScore >= 0 && 
-                             analyticsSummary.riskScore >= 0 && 
-                             analyticsSummary.diversificationScore >= 0;
-            
+            const hasMetrics =
+              analyticsSummary.totalValue >= 0 &&
+              analyticsSummary.marketCap >= 0 &&
+              analyticsSummary.volume24h >= 0;
+            const hasScores =
+              analyticsSummary.performanceScore >= 0 &&
+              analyticsSummary.riskScore >= 0 &&
+              analyticsSummary.diversificationScore >= 0;
+
             if (hasMetrics && hasScores) {
-              return { success: true, message: `Summary calculated: ${analyticsSummary.performanceScore}/100 performance, ${analyticsSummary.sentiment} sentiment` };
+              return {
+                success: true,
+                message: `Summary calculated: ${analyticsSummary.performanceScore}/100 performance, ${analyticsSummary.sentiment} sentiment`,
+              };
             } else {
               return { success: false, message: 'Analytics summary incomplete' };
             }
           } else {
             return { success: false, message: 'Analytics summary not available' };
           }
-        }
-      }
+        },
+      },
     ],
     'ai-insights': [
       {
@@ -216,21 +234,25 @@ export function BlockchainAnalyticsTests() {
           if (!canUseAIInsights) {
             return { success: false, message: 'AI insights not available in current plan' };
           }
-          
+
           try {
             await generateMarketAnalysis();
-            await new Promise(resolve => setTimeout(resolve, 2000)); // Wait for processing
-            
+            await new Promise((resolve) => setTimeout(resolve, 2000)); // Wait for processing
+
             if (insights.length > 0) {
-              const avgConfidence = insights.reduce((sum, insight) => sum + insight.confidence, 0) / insights.length;
-              return { success: true, message: `Generated ${insights.length} insights with ${avgConfidence.toFixed(1)}% avg confidence` };
+              const avgConfidence =
+                insights.reduce((sum, insight) => sum + insight.confidence, 0) / insights.length;
+              return {
+                success: true,
+                message: `Generated ${insights.length} insights with ${avgConfidence.toFixed(1)}% avg confidence`,
+              };
             } else {
               return { success: false, message: 'No insights generated' };
             }
           } catch (error) {
             return { success: false, message: `AI insight generation failed: ${error.message}` };
           }
-        }
+        },
       },
       {
         id: 'portfolio-optimization',
@@ -238,22 +260,28 @@ export function BlockchainAnalyticsTests() {
         description: 'Test AI portfolio optimization',
         test: async () => {
           if (!canUseAIInsights || !walletAddress) {
-            return { success: false, message: 'Portfolio optimization requires AI access and wallet connection' };
+            return {
+              success: false,
+              message: 'Portfolio optimization requires AI access and wallet connection',
+            };
           }
-          
+
           try {
             await optimizePortfolio();
-            await new Promise(resolve => setTimeout(resolve, 1500));
-            
+            await new Promise((resolve) => setTimeout(resolve, 1500));
+
             if (portfolioAnalytics && portfolioAnalytics.recommendations.length > 0) {
-              return { success: true, message: `Generated ${portfolioAnalytics.recommendations.length} optimization recommendations` };
+              return {
+                success: true,
+                message: `Generated ${portfolioAnalytics.recommendations.length} optimization recommendations`,
+              };
             } else {
               return { success: false, message: 'No optimization recommendations generated' };
             }
           } catch (error) {
             return { success: false, message: `Portfolio optimization failed: ${error.message}` };
           }
-        }
+        },
       },
       {
         id: 'risk-assessment',
@@ -263,22 +291,27 @@ export function BlockchainAnalyticsTests() {
           if (!canUseAIInsights) {
             return { success: false, message: 'Risk assessment requires AI insights access' };
           }
-          
+
           try {
             await assessRisks();
-            await new Promise(resolve => setTimeout(resolve, 1500));
-            
+            await new Promise((resolve) => setTimeout(resolve, 1500));
+
             if (risks.length >= 0) {
-              const highRisks = risks.filter(risk => risk.severity === 'high' || risk.severity === 'critical').length;
-              return { success: true, message: `Assessed ${risks.length} risk factors, ${highRisks} high priority` };
+              const highRisks = risks.filter(
+                (risk) => risk.severity === 'high' || risk.severity === 'critical'
+              ).length;
+              return {
+                success: true,
+                message: `Assessed ${risks.length} risk factors, ${highRisks} high priority`,
+              };
             } else {
               return { success: false, message: 'Risk assessment incomplete' };
             }
           } catch (error) {
             return { success: false, message: `Risk assessment failed: ${error.message}` };
           }
-        }
-      }
+        },
+      },
     ],
     'real-time': [
       {
@@ -291,7 +324,7 @@ export function BlockchainAnalyticsTests() {
           } else {
             return { success: false, message: 'Real-time analytics disconnected' };
           }
-        }
+        },
       },
       {
         id: 'data-refresh',
@@ -300,14 +333,14 @@ export function BlockchainAnalyticsTests() {
         test: async () => {
           try {
             await refreshAll();
-            await new Promise(resolve => setTimeout(resolve, 2000));
-            
+            await new Promise((resolve) => setTimeout(resolve, 2000));
+
             return { success: true, message: 'Data refresh completed successfully' };
           } catch (error) {
             return { success: false, message: `Data refresh failed: ${error.message}` };
           }
-        }
-      }
+        },
+      },
     ],
     'market-analysis': [
       {
@@ -316,14 +349,21 @@ export function BlockchainAnalyticsTests() {
         description: 'Test market trend analysis',
         test: async () => {
           if (marketAnalytics && marketAnalytics.trends) {
-            const positiveTrends = marketAnalytics.trends.filter(trend => trend.changePercentage > 0).length;
-            const negativeTrends = marketAnalytics.trends.filter(trend => trend.changePercentage < 0).length;
-            
-            return { success: true, message: `Analyzed ${marketAnalytics.trends.length} trends: ${positiveTrends} positive, ${negativeTrends} negative` };
+            const positiveTrends = marketAnalytics.trends.filter(
+              (trend) => trend.changePercentage > 0
+            ).length;
+            const negativeTrends = marketAnalytics.trends.filter(
+              (trend) => trend.changePercentage < 0
+            ).length;
+
+            return {
+              success: true,
+              message: `Analyzed ${marketAnalytics.trends.length} trends: ${positiveTrends} positive, ${negativeTrends} negative`,
+            };
           } else {
             return { success: false, message: 'Market trends data not available' };
           }
-        }
+        },
       },
       {
         id: 'opportunity-detection',
@@ -333,21 +373,24 @@ export function BlockchainAnalyticsTests() {
           if (!canUseAIInsights) {
             return { success: false, message: 'Opportunity detection requires AI insights' };
           }
-          
+
           try {
             await detectOpportunities();
-            await new Promise(resolve => setTimeout(resolve, 1500));
-            
+            await new Promise((resolve) => setTimeout(resolve, 1500));
+
             if (opportunities.length >= 0) {
-              const highConfidenceOpps = opportunities.filter(opp => opp.confidence > 80).length;
-              return { success: true, message: `Detected ${opportunities.length} opportunities, ${highConfidenceOpps} high confidence` };
+              const highConfidenceOpps = opportunities.filter((opp) => opp.confidence > 80).length;
+              return {
+                success: true,
+                message: `Detected ${opportunities.length} opportunities, ${highConfidenceOpps} high confidence`,
+              };
             } else {
               return { success: false, message: 'No opportunities detected' };
             }
           } catch (error) {
             return { success: false, message: `Opportunity detection failed: ${error.message}` };
           }
-        }
+        },
       },
       {
         id: 'predictions',
@@ -355,15 +398,21 @@ export function BlockchainAnalyticsTests() {
         description: 'Test AI market predictions',
         test: async () => {
           if (predictions && predictions.length > 0) {
-            const avgConfidence = predictions.reduce((sum, pred) => sum + pred.confidence, 0) / predictions.length;
-            const bullishPredictions = predictions.filter(pred => pred.predictedValue > pred.currentValue).length;
-            
-            return { success: true, message: `Generated ${predictions.length} predictions, ${avgConfidence.toFixed(1)}% avg confidence, ${bullishPredictions} bullish` };
+            const avgConfidence =
+              predictions.reduce((sum, pred) => sum + pred.confidence, 0) / predictions.length;
+            const bullishPredictions = predictions.filter(
+              (pred) => pred.predictedValue > pred.currentValue
+            ).length;
+
+            return {
+              success: true,
+              message: `Generated ${predictions.length} predictions, ${avgConfidence.toFixed(1)}% avg confidence, ${bullishPredictions} bullish`,
+            };
           } else {
             return { success: false, message: 'No market predictions available' };
           }
-        }
-      }
+        },
+      },
     ],
     'portfolio-optimization': [
       {
@@ -375,59 +424,62 @@ export function BlockchainAnalyticsTests() {
             const scores = {
               performance: analyticsSummary.performanceScore,
               risk: analyticsSummary.riskScore,
-              diversification: analyticsSummary.diversificationScore
+              diversification: analyticsSummary.diversificationScore,
             };
-            
-            const validScores = Object.values(scores).every(score => score >= 0 && score <= 100);
-            
+
+            const validScores = Object.values(scores).every((score) => score >= 0 && score <= 100);
+
             if (validScores) {
-              return { success: true, message: `Scores calculated: Performance ${scores.performance}/100, Risk ${scores.risk}/100, Diversification ${scores.diversification}/100` };
+              return {
+                success: true,
+                message: `Scores calculated: Performance ${scores.performance}/100, Risk ${scores.risk}/100, Diversification ${scores.diversification}/100`,
+              };
             } else {
               return { success: false, message: 'Invalid performance scores calculated' };
             }
           } else {
             return { success: false, message: 'Performance scoring not available' };
           }
-        }
-      }
-    ]
+        },
+      },
+    ],
   };
 
   // Run individual test
   const runTest = async (categoryId: string, testId: string) => {
     setActiveTest(`${categoryId}-${testId}`);
-    setTestResults(prev => ({ ...prev, [`${categoryId}-${testId}`]: 'pending' }));
-    
+    setTestResults((prev) => ({ ...prev, [`${categoryId}-${testId}`]: 'pending' }));
+
     try {
-      const test = tests[categoryId]?.find(t => t.id === testId);
+      const test = tests[categoryId]?.find((t) => t.id === testId);
       if (!test) {
         throw new Error('Test not found');
       }
-      
+
       const result = await test.test();
-      
-      setTestResults(prev => ({ 
-        ...prev, 
-        [`${categoryId}-${testId}`]: result.success ? 'pass' : 'fail' 
+
+      setTestResults((prev) => ({
+        ...prev,
+        [`${categoryId}-${testId}`]: result.success ? 'pass' : 'fail',
       }));
-      setTestDetails(prev => ({ 
-        ...prev, 
-        [`${categoryId}-${testId}`]: result.message 
+      setTestDetails((prev) => ({
+        ...prev,
+        [`${categoryId}-${testId}`]: result.message,
       }));
-      
+
       if (result.success) {
         toast.success(`Test passed: ${test.name}`);
       } else {
         toast.error(`Test failed: ${test.name}`);
       }
     } catch (error) {
-      setTestResults(prev => ({ 
-        ...prev, 
-        [`${categoryId}-${testId}`]: 'fail' 
+      setTestResults((prev) => ({
+        ...prev,
+        [`${categoryId}-${testId}`]: 'fail',
       }));
-      setTestDetails(prev => ({ 
-        ...prev, 
-        [`${categoryId}-${testId}`]: error.message 
+      setTestDetails((prev) => ({
+        ...prev,
+        [`${categoryId}-${testId}`]: error.message,
       }));
       toast.error(`Test error: ${error.message}`);
     } finally {
@@ -438,10 +490,10 @@ export function BlockchainAnalyticsTests() {
   // Run all tests in category
   const runCategoryTests = async (categoryId: string) => {
     const categoryTests = tests[categoryId] || [];
-    
+
     for (const test of categoryTests) {
       await runTest(categoryId, test.id);
-      await new Promise(resolve => setTimeout(resolve, 500)); // Brief delay between tests
+      await new Promise((resolve) => setTimeout(resolve, 500)); // Brief delay between tests
     }
   };
 
@@ -461,12 +513,12 @@ export function BlockchainAnalyticsTests() {
   // Get category summary
   const getCategorySummary = (categoryId: string) => {
     const categoryTests = tests[categoryId] || [];
-    const results = categoryTests.map(test => getTestStatus(categoryId, test.id));
-    const passed = results.filter(r => r === 'pass').length;
-    const failed = results.filter(r => r === 'fail').length;
-    const pending = results.filter(r => r === 'pending').length;
+    const results = categoryTests.map((test) => getTestStatus(categoryId, test.id));
+    const passed = results.filter((r) => r === 'pass').length;
+    const failed = results.filter((r) => r === 'fail').length;
+    const pending = results.filter((r) => r === 'pending').length;
     const total = results.length;
-    
+
     return { passed, failed, pending, total };
   };
 
@@ -485,7 +537,7 @@ export function BlockchainAnalyticsTests() {
             disabled={!!activeTest}
             className="flex items-center space-x-2"
           >
-            <RefreshCw className={cn("h-4 w-4", activeTest && "animate-spin")} />
+            <RefreshCw className={cn('h-4 w-4', activeTest && 'animate-spin')} />
             <span>Run All Tests</span>
           </Button>
         </div>
@@ -500,34 +552,41 @@ export function BlockchainAnalyticsTests() {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
             <div className="flex items-center space-x-2">
-              <div className={cn(
-                "w-2 h-2 rounded-full",
-                isConnected ? "bg-green-500" : "bg-red-500"
-              )} />
+              <div
+                className={cn('h-2 w-2 rounded-full', isConnected ? 'bg-green-500' : 'bg-red-500')}
+              />
               <span className="text-sm">Wallet {isConnected ? 'Connected' : 'Disconnected'}</span>
             </div>
             <div className="flex items-center space-x-2">
-              <div className={cn(
-                "w-2 h-2 rounded-full",
-                analyticsConnected ? "bg-green-500" : "bg-yellow-500"
-              )} />
+              <div
+                className={cn(
+                  'h-2 w-2 rounded-full',
+                  analyticsConnected ? 'bg-green-500' : 'bg-yellow-500'
+                )}
+              />
               <span className="text-sm">Analytics {analyticsConnected ? 'Live' : 'Offline'}</span>
             </div>
             <div className="flex items-center space-x-2">
-              <div className={cn(
-                "w-2 h-2 rounded-full",
-                canUseAnalytics ? "bg-green-500" : "bg-red-500"
-              )} />
+              <div
+                className={cn(
+                  'h-2 w-2 rounded-full',
+                  canUseAnalytics ? 'bg-green-500' : 'bg-red-500'
+                )}
+              />
               <span className="text-sm">Analytics {canUseAnalytics ? 'Enabled' : 'Disabled'}</span>
             </div>
             <div className="flex items-center space-x-2">
-              <div className={cn(
-                "w-2 h-2 rounded-full",
-                canUseAIInsights ? "bg-green-500" : "bg-red-500"
-              )} />
-              <span className="text-sm">AI Insights {canUseAIInsights ? 'Enabled' : 'Disabled'}</span>
+              <div
+                className={cn(
+                  'h-2 w-2 rounded-full',
+                  canUseAIInsights ? 'bg-green-500' : 'bg-red-500'
+                )}
+              />
+              <span className="text-sm">
+                AI Insights {canUseAIInsights ? 'Enabled' : 'Disabled'}
+              </span>
             </div>
           </div>
         </CardContent>
@@ -538,7 +597,7 @@ export function BlockchainAnalyticsTests() {
         {testCategories.map((category) => {
           const summary = getCategorySummary(category.id);
           const categoryTests = tests[category.id] || [];
-          
+
           return (
             <Card key={category.id}>
               <CardHeader>
@@ -565,10 +624,7 @@ export function BlockchainAnalyticsTests() {
                   </div>
                 </div>
                 {summary.total > 0 && (
-                  <Progress 
-                    value={(summary.passed / summary.total) * 100} 
-                    className="mt-2"
-                  />
+                  <Progress value={(summary.passed / summary.total) * 100} className="mt-2" />
                 )}
               </CardHeader>
               <CardContent>
@@ -577,26 +633,37 @@ export function BlockchainAnalyticsTests() {
                     const status = getTestStatus(category.id, test.id);
                     const detail = testDetails[`${category.id}-${test.id}`];
                     const isActive = activeTest === `${category.id}-${test.id}`;
-                    
+
                     return (
-                      <div key={test.id} className="flex items-center justify-between p-2 border rounded">
+                      <div
+                        key={test.id}
+                        className="flex items-center justify-between rounded border p-2"
+                      >
                         <div className="flex items-center space-x-2">
                           <div className="flex items-center space-x-2">
-                            {status === 'pass' && <CheckCircle className="h-4 w-4 text-green-600" />}
+                            {status === 'pass' && (
+                              <CheckCircle className="h-4 w-4 text-green-600" />
+                            )}
                             {status === 'fail' && <XCircle className="h-4 w-4 text-red-600" />}
-                            {status === 'pending' && <Clock className="h-4 w-4 text-yellow-600 animate-spin" />}
-                            {status === 'idle' && <div className="w-4 h-4 border rounded-full border-muted-foreground" />}
+                            {status === 'pending' && (
+                              <Clock className="h-4 w-4 animate-spin text-yellow-600" />
+                            )}
+                            {status === 'idle' && (
+                              <div className="h-4 w-4 rounded-full border border-muted-foreground" />
+                            )}
                           </div>
                           <div>
-                            <div className="font-medium text-sm">{test.name}</div>
+                            <div className="text-sm font-medium">{test.name}</div>
                             <div className="text-xs text-muted-foreground">{test.description}</div>
                             {detail && (
-                              <div className={cn(
-                                "text-xs mt-1",
-                                status === 'pass' && "text-green-600",
-                                status === 'fail' && "text-red-600",
-                                status === 'pending' && "text-yellow-600"
-                              )}>
+                              <div
+                                className={cn(
+                                  'mt-1 text-xs',
+                                  status === 'pass' && 'text-green-600',
+                                  status === 'fail' && 'text-red-600',
+                                  status === 'pending' && 'text-yellow-600'
+                                )}
+                              >
                                 {detail}
                               </div>
                             )}
@@ -608,11 +675,7 @@ export function BlockchainAnalyticsTests() {
                           onClick={() => runTest(category.id, test.id)}
                           disabled={!!activeTest}
                         >
-                          {isActive ? (
-                            <RefreshCw className="h-3 w-3 animate-spin" />
-                          ) : (
-                            'Run'
-                          )}
+                          {isActive ? <RefreshCw className="h-3 w-3 animate-spin" /> : 'Run'}
                         </Button>
                       </div>
                     );

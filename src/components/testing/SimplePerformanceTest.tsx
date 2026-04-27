@@ -4,14 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { 
-  Zap, 
-  Clock, 
-  CheckCircle2,
-  AlertCircle,
-  XCircle,
-  Activity
-} from 'lucide-react';
+import { Zap, Clock, CheckCircle2, AlertCircle, XCircle, Activity } from 'lucide-react';
 
 interface TestResult {
   category: string;
@@ -37,74 +30,80 @@ export const SimplePerformanceTest = () => {
     try {
       // Test 1: Browser Performance API
       setCurrentTest('Testing Performance API...');
-      await new Promise(resolve => setTimeout(resolve, 800));
-      
+      await new Promise((resolve) => setTimeout(resolve, 800));
+
       const hasPerformanceAPI = typeof performance !== 'undefined';
       results.push({
         category: 'Browser Support',
         test: 'Performance API Available',
         status: hasPerformanceAPI ? 'pass' : 'fail',
         score: hasPerformanceAPI ? 100 : 0,
-        message: hasPerformanceAPI ? 'Performance API is available' : 'Performance API not supported'
+        message: hasPerformanceAPI
+          ? 'Performance API is available'
+          : 'Performance API not supported',
       });
 
       // Test 2: Service Worker Support
       setCurrentTest('Testing Service Worker Support...');
-      await new Promise(resolve => setTimeout(resolve, 800));
-      
+      await new Promise((resolve) => setTimeout(resolve, 800));
+
       const hasServiceWorker = 'serviceWorker' in navigator;
       results.push({
         category: 'Caching Strategy',
         test: 'Service Worker Support',
         status: hasServiceWorker ? 'pass' : 'warning',
         score: hasServiceWorker ? 100 : 60,
-        message: hasServiceWorker ? 'Service Worker is supported' : 'Service Worker not supported'
+        message: hasServiceWorker ? 'Service Worker is supported' : 'Service Worker not supported',
       });
 
       // Test 3: WebP Image Support
       setCurrentTest('Testing WebP Support...');
-      await new Promise(resolve => setTimeout(resolve, 800));
-      
+      await new Promise((resolve) => setTimeout(resolve, 800));
+
       const webpSupported = await testWebPSupport();
       results.push({
         category: 'Image Optimization',
         test: 'WebP Format Support',
         status: webpSupported ? 'pass' : 'warning',
         score: webpSupported ? 100 : 75,
-        message: webpSupported ? 'WebP format is supported' : 'WebP not supported, using fallbacks'
+        message: webpSupported ? 'WebP format is supported' : 'WebP not supported, using fallbacks',
       });
 
       // Test 4: Lazy Loading Support
       setCurrentTest('Testing Lazy Loading...');
-      await new Promise(resolve => setTimeout(resolve, 800));
-      
+      await new Promise((resolve) => setTimeout(resolve, 800));
+
       const hasLazyLoading = 'loading' in HTMLImageElement.prototype;
       results.push({
         category: 'Image Optimization',
         test: 'Native Lazy Loading',
         status: hasLazyLoading ? 'pass' : 'warning',
         score: hasLazyLoading ? 100 : 80,
-        message: hasLazyLoading ? 'Native lazy loading supported' : 'Using JavaScript lazy loading'
+        message: hasLazyLoading ? 'Native lazy loading supported' : 'Using JavaScript lazy loading',
       });
 
       // Test 5: Connection Information
       setCurrentTest('Testing Network Information...');
-      await new Promise(resolve => setTimeout(resolve, 800));
-      
+      await new Promise((resolve) => setTimeout(resolve, 800));
+
       const hasNetworkInfo = 'connection' in navigator;
-      const connectionType = hasNetworkInfo ? (navigator as any).connection?.effectiveType || 'unknown' : 'unknown';
+      const connectionType = hasNetworkInfo
+        ? (navigator as any).connection?.effectiveType || 'unknown'
+        : 'unknown';
       results.push({
         category: 'Network Optimization',
         test: 'Network Information API',
         status: hasNetworkInfo ? 'pass' : 'warning',
         score: hasNetworkInfo ? 100 : 70,
-        message: hasNetworkInfo ? `Connection type: ${connectionType}` : 'Network info not available'
+        message: hasNetworkInfo
+          ? `Connection type: ${connectionType}`
+          : 'Network info not available',
       });
 
       // Test 6: Bundle Size Estimation
       setCurrentTest('Estimating Bundle Size...');
-      await new Promise(resolve => setTimeout(resolve, 800));
-      
+      await new Promise((resolve) => setTimeout(resolve, 800));
+
       // Simple bundle size estimation based on script tags
       const scripts = document.querySelectorAll('script[src]');
       const estimatedSize = scripts.length * 0.3; // Rough estimate in MB
@@ -113,39 +112,38 @@ export const SimplePerformanceTest = () => {
         test: 'Estimated Bundle Size',
         status: estimatedSize <= 2 ? 'pass' : estimatedSize <= 3 ? 'warning' : 'fail',
         score: estimatedSize <= 2 ? 100 : estimatedSize <= 3 ? 75 : 50,
-        message: `Estimated bundle size: ${estimatedSize.toFixed(1)}MB`
+        message: `Estimated bundle size: ${estimatedSize.toFixed(1)}MB`,
       });
 
       // Test 7: Memory Usage
       setCurrentTest('Checking Memory Usage...');
-      await new Promise(resolve => setTimeout(resolve, 800));
-      
+      await new Promise((resolve) => setTimeout(resolve, 800));
+
       const hasMemoryInfo = 'memory' in performance;
       let memoryScore = 100;
       let memoryMessage = 'Memory info not available';
-      
+
       if (hasMemoryInfo) {
         const memory = (performance as any).memory;
         const usedMB = Math.round(memory.usedJSHeapSize / 1024 / 1024);
         memoryScore = usedMB <= 50 ? 100 : usedMB <= 100 ? 75 : 50;
         memoryMessage = `Using ${usedMB}MB of JavaScript heap`;
       }
-      
+
       results.push({
         category: 'Memory & Resources',
         test: 'JavaScript Memory Usage',
         status: memoryScore >= 75 ? 'pass' : memoryScore >= 50 ? 'warning' : 'fail',
         score: memoryScore,
-        message: memoryMessage
+        message: memoryMessage,
       });
 
       // Calculate overall score
       const totalScore = results.reduce((sum, result) => sum + result.score, 0);
       const avgScore = Math.round(totalScore / results.length);
-      
+
       setTestResults(results);
       setOverallScore(avgScore);
-
     } catch (error) {
       console.error('Performance test failed:', error);
       results.push({
@@ -153,7 +151,7 @@ export const SimplePerformanceTest = () => {
         test: 'Test Execution',
         status: 'fail',
         score: 0,
-        message: 'Test encountered an error'
+        message: 'Test encountered an error',
       });
       setTestResults(results);
       setOverallScore(0);
@@ -168,7 +166,8 @@ export const SimplePerformanceTest = () => {
     return new Promise((resolve) => {
       const webP = new Image();
       webP.onload = webP.onerror = () => resolve(webP.height === 2);
-      webP.src = 'data:image/webp;base64,UklGRjoAAABXRUJQVlA4IC4AAACyAgCdASoCAAIALmk0mk0iIiIiIgBoSygABc6WWgAA/veff/0PP8bA//LwYAAA';
+      webP.src =
+        'data:image/webp;base64,UklGRjoAAABXRUJQVlA4IC4AAACyAgCdASoCAAIALmk0mk0iIiIiIgBoSygABc6WWgAA/veff/0PP8bA//LwYAAA';
     });
   };
 
@@ -188,10 +187,14 @@ export const SimplePerformanceTest = () => {
 
   const getStatusIcon = (status: string) => {
     switch (status) {
-      case 'pass': return <CheckCircle2 className="h-4 w-4 text-green-600" />;
-      case 'warning': return <AlertCircle className="h-4 w-4 text-yellow-600" />;
-      case 'fail': return <XCircle className="h-4 w-4 text-red-600" />;
-      default: return <AlertCircle className="h-4 w-4 text-gray-600" />;
+      case 'pass':
+        return <CheckCircle2 className="h-4 w-4 text-green-600" />;
+      case 'warning':
+        return <AlertCircle className="h-4 w-4 text-yellow-600" />;
+      case 'fail':
+        return <XCircle className="h-4 w-4 text-red-600" />;
+      default:
+        return <AlertCircle className="h-4 w-4 text-gray-600" />;
     }
   };
 
@@ -202,7 +205,8 @@ export const SimplePerformanceTest = () => {
         <div>
           <h2 className="text-2xl font-bold">Performance & Speed Tests</h2>
           <p className="text-muted-foreground">
-            Simple and reliable performance testing for browser capabilities and optimization features
+            Simple and reliable performance testing for browser capabilities and optimization
+            features
           </p>
         </div>
         <div className="flex items-center space-x-4">
@@ -247,15 +251,16 @@ export const SimplePerformanceTest = () => {
             <CardHeader>
               <CardTitle className="flex items-center justify-between">
                 Overall Performance Score
-                <Badge className={getScoreBadge(overallScore)}>
-                  {overallScore}/100
-                </Badge>
+                <Badge className={getScoreBadge(overallScore)}>{overallScore}/100</Badge>
               </CardTitle>
               <CardDescription>
-                {overallScore >= 90 ? 'Excellent! Your platform has great performance capabilities.' :
-                 overallScore >= 75 ? 'Good performance with modern browser support.' :
-                 overallScore >= 60 ? 'Moderate performance. Some optimizations may not be available.' :
-                 'Limited performance features. Consider browser compatibility.'}
+                {overallScore >= 90
+                  ? 'Excellent! Your platform has great performance capabilities.'
+                  : overallScore >= 75
+                    ? 'Good performance with modern browser support.'
+                    : overallScore >= 60
+                      ? 'Moderate performance. Some optimizations may not be available.'
+                      : 'Limited performance features. Consider browser compatibility.'}
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -274,12 +279,8 @@ export const SimplePerformanceTest = () => {
                       {result.test}
                     </CardTitle>
                     <div className="flex gap-2">
-                      <Badge className={getScoreBadge(result.score)}>
-                        {result.score}/100
-                      </Badge>
-                      <Badge variant="outline">
-                        {result.category}
-                      </Badge>
+                      <Badge className={getScoreBadge(result.score)}>{result.score}/100</Badge>
+                      <Badge variant="outline">{result.category}</Badge>
                     </div>
                   </div>
                 </CardHeader>
@@ -301,43 +302,46 @@ export const SimplePerformanceTest = () => {
             <CardContent className="space-y-4">
               <div className="space-y-3">
                 <div className="flex items-start space-x-3">
-                  <CheckCircle2 className="h-5 w-5 text-green-600 mt-0.5" />
+                  <CheckCircle2 className="mt-0.5 h-5 w-5 text-green-600" />
                   <div>
                     <h4 className="font-medium text-green-900">Performance Monitoring Active</h4>
                     <p className="text-sm text-green-700">
-                      Browser performance APIs are available for real-time monitoring and optimization.
+                      Browser performance APIs are available for real-time monitoring and
+                      optimization.
                     </p>
                   </div>
                 </div>
-                
+
                 <div className="flex items-start space-x-3">
-                  <CheckCircle2 className="h-5 w-5 text-green-600 mt-0.5" />
+                  <CheckCircle2 className="mt-0.5 h-5 w-5 text-green-600" />
                   <div>
                     <h4 className="font-medium text-green-900">Modern Browser Features</h4>
                     <p className="text-sm text-green-700">
-                      Your browser supports modern performance optimization features like service workers and lazy loading.
+                      Your browser supports modern performance optimization features like service
+                      workers and lazy loading.
                     </p>
                   </div>
                 </div>
-                
+
                 <div className="flex items-start space-x-3">
-                  <CheckCircle2 className="h-5 w-5 text-green-600 mt-0.5" />
+                  <CheckCircle2 className="mt-0.5 h-5 w-5 text-green-600" />
                   <div>
                     <h4 className="font-medium text-green-900">Image Optimization Ready</h4>
                     <p className="text-sm text-green-700">
-                      WebP format support and lazy loading capabilities are available for optimal image performance.
+                      WebP format support and lazy loading capabilities are available for optimal
+                      image performance.
                     </p>
                   </div>
                 </div>
               </div>
-              
+
               <Alert>
                 <CheckCircle2 className="h-4 w-4" />
                 <AlertTitle>Performance Testing Complete</AlertTitle>
                 <AlertDescription>
-                  Your platform has good performance capabilities. The optimization systems we've implemented 
-                  (bundle optimization, service worker caching, image optimization, CDN integration) are ready 
-                  to provide significant performance improvements.
+                  Your platform has good performance capabilities. The optimization systems we've
+                  implemented (bundle optimization, service worker caching, image optimization, CDN
+                  integration) are ready to provide significant performance improvements.
                 </AlertDescription>
               </Alert>
             </CardContent>
@@ -345,10 +349,10 @@ export const SimplePerformanceTest = () => {
         </>
       ) : (
         <Card>
-          <CardContent className="text-center py-8">
-            <Zap className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
-            <h3 className="text-lg font-semibold mb-2">No Performance Tests Run Yet</h3>
-            <p className="text-muted-foreground mb-4">
+          <CardContent className="py-8 text-center">
+            <Zap className="mx-auto mb-4 h-12 w-12 text-muted-foreground" />
+            <h3 className="mb-2 text-lg font-semibold">No Performance Tests Run Yet</h3>
+            <p className="mb-4 text-muted-foreground">
               Click "Run Performance Tests" to analyze your browser's performance capabilities.
             </p>
             <Button onClick={runSimpleTests}>

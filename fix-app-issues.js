@@ -1,17 +1,40 @@
 #!/usr/bin/env node
 
 /**
- * Fix Nigeria Homes App Issues
+ * Fix DamianixPro App Issues
  * This script addresses the agent role and property creation issues
+ *
+ * Requires env (e.g. from repo root `.env`):
+ *   SUPABASE_SERVICE_ROLE_KEY
+ *   SUPABASE_URL  (or VITE_SUPABASE_URL as fallback for local dev)
  */
 
+import 'dotenv/config';
 import { createClient } from '@supabase/supabase-js';
 
-// Supabase configuration
-const SUPABASE_URL = "https://qbazneoxrgbttbzrsjho.supabase.co";
-const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || "your-service-role-key-here";
+function requireEnv(name, value) {
+  const v = (value ?? '').trim();
+  if (!v) {
+    console.error(
+      `Missing required env: ${name}\n` +
+        'Set it in .env at the repo root or export it before running:\n' +
+        '  node fix-app-issues.js',
+    );
+    process.exit(1);
+  }
+  return v;
+}
 
-console.log('🔧 Fixing Nigeria Homes App Issues...\n');
+const SUPABASE_URL = requireEnv(
+  'SUPABASE_URL (or VITE_SUPABASE_URL)',
+  process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL,
+);
+const SUPABASE_SERVICE_ROLE_KEY = requireEnv(
+  'SUPABASE_SERVICE_ROLE_KEY',
+  process.env.SUPABASE_SERVICE_ROLE_KEY,
+);
+
+console.log('🔧 Fixing DamianixPro App Issues...\n');
 
 async function fixAppIssues() {
   try {
@@ -57,7 +80,7 @@ async function fixAppIssues() {
     console.log('\n2. Creating test users...');
     
     // Create test agent user
-    const { data: agentUser, error: agentError } = await supabase.auth.admin.createUser({
+    const { error: agentError } = await supabase.auth.admin.createUser({
       email: 'agent@nigeriahomes.com',
       password: 'password123',
       email_confirm: true,
@@ -74,7 +97,7 @@ async function fixAppIssues() {
     }
     
     // Create test owner user
-    const { data: ownerUser, error: ownerError } = await supabase.auth.admin.createUser({
+    const { error: ownerError } = await supabase.auth.admin.createUser({
       email: 'owner@nigeriahomes.com',
       password: 'password123',
       email_confirm: true,

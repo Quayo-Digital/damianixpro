@@ -1,6 +1,11 @@
-
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { MaintenanceScheduleForm } from "./MaintenanceScheduleForm";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import { MaintenanceScheduleForm } from './MaintenanceScheduleForm';
 
 interface Vendor {
   id: string;
@@ -20,15 +25,20 @@ interface AddScheduleDialogProps {
   vendors: Vendor[];
 }
 
-export function AddScheduleDialog({ open, onOpenChange, onScheduleCreated, vendors }: AddScheduleDialogProps) {
+export function AddScheduleDialog({
+  open,
+  onOpenChange,
+  onScheduleCreated,
+  vendors,
+}: AddScheduleDialogProps) {
   const handleSubmit = (formData: any) => {
     // In a real app, save this to database
     console.log(formData);
-    
+
     // Reset form and close dialog
     onScheduleCreated();
   };
-  
+
   const handleCancel = () => {
     onOpenChange(false);
   };
@@ -38,8 +48,11 @@ export function AddScheduleDialog({ open, onOpenChange, onScheduleCreated, vendo
       <DialogContent className="sm:max-w-[550px]">
         <DialogHeader>
           <DialogTitle>Schedule Maintenance</DialogTitle>
+          <DialogDescription>
+            Schedule a maintenance task with a vendor. Select the vendor, date, and task details.
+          </DialogDescription>
         </DialogHeader>
-        <MaintenanceScheduleForm 
+        <MaintenanceScheduleForm
           vendors={vendors}
           onSubmit={handleSubmit}
           onCancel={handleCancel}

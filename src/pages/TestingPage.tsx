@@ -34,63 +34,115 @@ import { ComprehensiveOptimizationQA } from '@/components/testing/ComprehensiveO
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { TestTube, Users, Database, Settings, Activity, Brain, Zap, FileText, Smartphone, Headphones, Globe, Lock, BarChart3, Eye, Shield, AlertTriangle, Briefcase, Layout, CreditCard, TrendingUp } from 'lucide-react';
+import {
+  TestTube,
+  Users,
+  Database,
+  Settings,
+  Activity,
+  Brain,
+  Zap,
+  FileText,
+  Smartphone,
+  Headphones,
+  Globe,
+  Lock,
+  BarChart3,
+  Eye,
+  Shield,
+  AlertTriangle,
+  Briefcase,
+  Layout,
+  CreditCard,
+  TrendingUp,
+} from 'lucide-react';
 
 const TestingPage: React.FC = () => {
   return (
     <PageLayout>
-      <PageContent 
-        title="System Testing" 
+      <PageContent
+        title="System Testing"
         description="Comprehensive testing suite for AI-powered features"
       >
         <div className="space-y-6">
           <Alert>
             <AlertTriangle className="h-4 w-4" />
             <AlertDescription>
-              This testing suite validates both the AI-powered property matching system and the predictive maintenance system.
-              Run these tests to ensure all features are working correctly before production deployment.
+              This testing suite validates both the AI-powered property matching system and the
+              predictive maintenance system. Run these tests to ensure all features are working
+              correctly before production deployment.
             </AlertDescription>
           </Alert>
 
           <Tabs defaultValue="comprehensive" className="w-full">
-            <TabsList className="flex w-full overflow-x-auto scrollbar-hide gap-1 p-1">
-              <TabsTrigger value="comprehensive" className="flex items-center space-x-2 whitespace-nowrap px-3 py-2">
+            <TabsList className="scrollbar-hide flex w-full gap-1 overflow-x-auto p-1">
+              <TabsTrigger
+                value="comprehensive"
+                className="flex items-center space-x-2 whitespace-nowrap px-3 py-2"
+              >
                 <TestTube className="h-4 w-4" />
                 <span>Comprehensive Tests</span>
               </TabsTrigger>
-              <TabsTrigger value="platform-optimization" className="flex items-center space-x-2 whitespace-nowrap px-3 py-2">
+              <TabsTrigger
+                value="platform-optimization"
+                className="flex items-center space-x-2 whitespace-nowrap px-3 py-2"
+              >
                 <TrendingUp className="h-4 w-4" />
                 <span>Platform Optimization</span>
               </TabsTrigger>
-              <TabsTrigger value="comprehensive-qa" className="flex items-center space-x-2 whitespace-nowrap px-3 py-2">
+              <TabsTrigger
+                value="comprehensive-qa"
+                className="flex items-center space-x-2 whitespace-nowrap px-3 py-2"
+              >
                 <Shield className="h-4 w-4" />
                 <span>Comprehensive QA</span>
               </TabsTrigger>
-              <TabsTrigger value="payment-functionality" className="flex items-center space-x-2 whitespace-nowrap px-3 py-2">
+              <TabsTrigger
+                value="payment-functionality"
+                className="flex items-center space-x-2 whitespace-nowrap px-3 py-2"
+              >
                 <CreditCard className="h-4 w-4" />
                 <span>Payment System</span>
               </TabsTrigger>
-              <TabsTrigger value="vendor-onboarding" className="flex items-center space-x-2 whitespace-nowrap px-3 py-2">
+              <TabsTrigger
+                value="vendor-onboarding"
+                className="flex items-center space-x-2 whitespace-nowrap px-3 py-2"
+              >
                 <Briefcase className="h-4 w-4" />
                 <span>Vendor Onboarding</span>
               </TabsTrigger>
-              <TabsTrigger value="vendor-dashboard" className="flex items-center space-x-2 whitespace-nowrap px-3 py-2">
+              <TabsTrigger
+                value="vendor-dashboard"
+                className="flex items-center space-x-2 whitespace-nowrap px-3 py-2"
+              >
                 <Layout className="h-4 w-4" />
                 <span>Vendor Dashboard</span>
               </TabsTrigger>
-              <TabsTrigger value="agent-dashboard" className="flex items-center space-x-2 whitespace-nowrap px-3 py-2">
+              <TabsTrigger
+                value="agent-dashboard"
+                className="flex items-center space-x-2 whitespace-nowrap px-3 py-2"
+              >
                 <Users className="h-4 w-4" />
                 <span>Agent Dashboard</span>
               </TabsTrigger>
-              <TabsTrigger value="owner-dashboard" className="flex items-center space-x-2 whitespace-nowrap px-3 py-2">
+              <TabsTrigger
+                value="owner-dashboard"
+                className="flex items-center space-x-2 whitespace-nowrap px-3 py-2"
+              >
                 <Layout className="h-4 w-4" />
                 <span>Owner Dashboard</span>
               </TabsTrigger>
-              <TabsTrigger value="tenant-dashboard" className="flex items-center space-x-2 whitespace-nowrap px-3 py-2">
+              <TabsTrigger
+                value="tenant-dashboard"
+                className="flex items-center space-x-2 whitespace-nowrap px-3 py-2"
+              >
                 <Users className="h-4 w-4" />
                 <span>Tenant Dashboard</span>
               </TabsTrigger>
-              <TabsTrigger value="security-audit" className="flex items-center space-x-2 whitespace-nowrap px-3 py-2">
+              <TabsTrigger
+                value="security-audit"
+                className="flex items-center space-x-2 whitespace-nowrap px-3 py-2"
+              >
                 <Shield className="h-4 w-4" />
                 <span>Security & Performance</span>
               </TabsTrigger>
@@ -180,7 +232,8 @@ const TestingPage: React.FC = () => {
                     Platform Optimization & Polish
                   </CardTitle>
                   <CardDescription>
-                    Comprehensive assessment of platform performance, security, UX, and optimization opportunities
+                    Comprehensive assessment of platform performance, security, UX, and optimization
+                    opportunities
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -197,7 +250,8 @@ const TestingPage: React.FC = () => {
                     Comprehensive Optimization QA
                   </CardTitle>
                   <CardDescription>
-                    Complete validation of all optimization features including security, performance, AI/ML, caching, and analytics
+                    Complete validation of all optimization features including security,
+                    performance, AI/ML, caching, and analytics
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -214,7 +268,8 @@ const TestingPage: React.FC = () => {
                     Vendor Onboarding End-to-End Tests
                   </CardTitle>
                   <CardDescription>
-                    Complete vendor onboarding workflow testing including user creation, profile setup, and job management
+                    Complete vendor onboarding workflow testing including user creation, profile
+                    setup, and job management
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -231,7 +286,8 @@ const TestingPage: React.FC = () => {
                     Enhanced Vendor Dashboard Tests
                   </CardTitle>
                   <CardDescription>
-                    Comprehensive testing of the enhanced vendor dashboard features including overview, job management, analytics, and profile management
+                    Comprehensive testing of the enhanced vendor dashboard features including
+                    overview, job management, analytics, and profile management
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -248,7 +304,8 @@ const TestingPage: React.FC = () => {
                     <span>Enhanced Owner Dashboard Testing</span>
                   </CardTitle>
                   <CardDescription>
-                    Comprehensive testing suite for the Enhanced Owner Dashboard with advanced property management features
+                    Comprehensive testing suite for the Enhanced Owner Dashboard with advanced
+                    property management features
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -265,7 +322,8 @@ const TestingPage: React.FC = () => {
                     <span>Enhanced Tenant Dashboard Testing</span>
                   </CardTitle>
                   <CardDescription>
-                    Comprehensive testing of the enhanced tenant dashboard features including overview, payment management, maintenance support, and document management
+                    Comprehensive testing of the enhanced tenant dashboard features including
+                    overview, payment management, maintenance support, and document management
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -282,7 +340,8 @@ const TestingPage: React.FC = () => {
                     <span>Payment Functionality Testing</span>
                   </CardTitle>
                   <CardDescription>
-                    Comprehensive testing of the enhanced payment processing system with multiple payment methods including Paystack, Flutterwave, bank transfers, and USSD codes
+                    Comprehensive testing of the enhanced payment processing system with multiple
+                    payment methods including Flutterwave, bank transfers, and USSD codes
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -299,7 +358,9 @@ const TestingPage: React.FC = () => {
                     Enhanced Agent Dashboard Tests
                   </CardTitle>
                   <CardDescription>
-                    Comprehensive testing of the enhanced agent dashboard features including lead management, performance analytics, commission tracking, and client relationship management
+                    Comprehensive testing of the enhanced agent dashboard features including lead
+                    management, performance analytics, commission tracking, and client relationship
+                    management
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -316,7 +377,9 @@ const TestingPage: React.FC = () => {
                     Enhanced Owner Dashboard Tests
                   </CardTitle>
                   <CardDescription>
-                    Comprehensive testing of the enhanced owner dashboard features including property portfolio management, financial analytics, tenant relationship management, and business intelligence
+                    Comprehensive testing of the enhanced owner dashboard features including
+                    property portfolio management, financial analytics, tenant relationship
+                    management, and business intelligence
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -361,7 +424,7 @@ const TestingPage: React.FC = () => {
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center">
-                    <Settings className="h-5 w-5 mr-2 text-orange-600" />
+                    <Settings className="mr-2 h-5 w-5 text-orange-600" />
                     Predictive Maintenance Testing
                   </CardTitle>
                   <CardDescription>
@@ -369,10 +432,15 @@ const TestingPage: React.FC = () => {
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-center py-8 text-muted-foreground">
-                    <Settings className="h-12 w-12 mx-auto mb-4" />
-                    <p>Predictive maintenance testing is integrated into the comprehensive test suite.</p>
-                    <p className="text-sm mt-2">Switch to the "Comprehensive Tests" tab to run all tests.</p>
+                  <div className="py-8 text-center text-muted-foreground">
+                    <Settings className="mx-auto mb-4 h-12 w-12" />
+                    <p>
+                      Predictive maintenance testing is integrated into the comprehensive test
+                      suite.
+                    </p>
+                    <p className="mt-2 text-sm">
+                      Switch to the "Comprehensive Tests" tab to run all tests.
+                    </p>
                   </div>
                 </CardContent>
               </Card>
@@ -402,24 +470,24 @@ const TestingPage: React.FC = () => {
               <DatabaseCleanupTests />
             </TabsContent>
 
-<TabsContent value="security-test">
-  <AgentPropertyVisibilityTest />
-</TabsContent>
+            <TabsContent value="security-test">
+              <AgentPropertyVisibilityTest />
+            </TabsContent>
 
-<TabsContent value="workflow-results">
-  <WorkflowAssessmentResults />
-</TabsContent>
+            <TabsContent value="workflow-results">
+              <WorkflowAssessmentResults />
+            </TabsContent>
 
-<TabsContent value="agent-onboarding-test">
-  <div className="space-y-6">
-    <AgentOnboardingWorkflowTest />
-    <AgentOnboardingManualTest />
-  </div>
-</TabsContent>
+            <TabsContent value="agent-onboarding-test">
+              <div className="space-y-6">
+                <AgentOnboardingWorkflowTest />
+                <AgentOnboardingManualTest />
+              </div>
+            </TabsContent>
 
-<TabsContent value="comprehensive-agent-test">
-  <ComprehensiveAgentWorkflowTest />
-</TabsContent>
+            <TabsContent value="comprehensive-agent-test">
+              <ComprehensiveAgentWorkflowTest />
+            </TabsContent>
             <TabsContent value="workflow-assessment">
               <WorkflowAssessment />
             </TabsContent>

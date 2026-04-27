@@ -58,7 +58,7 @@ class AdvancedCachingSystem {
       compressionEnabled: true,
       offlineMode: true,
       nigerianOptimizations: true,
-      ...config
+      ...config,
     };
 
     this.metrics = {
@@ -69,7 +69,7 @@ class AdvancedCachingSystem {
       compressionRatio: 0,
       dataSavings: 0,
       offlineHits: 0,
-      networkTypeDistribution: {}
+      networkTypeDistribution: {},
     };
 
     this.initializeNetworkMonitoring();
@@ -92,7 +92,7 @@ class AdvancedCachingSystem {
     if ('connection' in navigator) {
       const connection = (navigator as any).connection;
       this.networkType = connection.effectiveType || 'unknown';
-      
+
       connection.addEventListener('change', () => {
         this.networkType = connection.effectiveType || 'unknown';
         this.adjustCachingStrategy();
@@ -101,6 +101,8 @@ class AdvancedCachingSystem {
   }
 
   private initializeOfflineSupport(): void {
+    // Never register legacy sw.js in Vite dev — it intercepts navigations and breaks SPA / lazy chunks.
+    if (!import.meta.env.PROD) return;
     if ('serviceWorker' in navigator && this.config.offlineMode) {
       navigator.serviceWorker.register('/sw.js').catch(console.error);
     }
@@ -137,7 +139,7 @@ class AdvancedCachingSystem {
       // Simple compression simulation (in production, use actual compression library)
       const compressed = this.simpleCompress(original);
       const ratio = original.length / compressed.length;
-      
+
       return { compressed, ratio };
     } catch (error) {
       console.warn('Compression failed:', error);
@@ -200,15 +202,20 @@ class AdvancedCachingSystem {
 
     this.metrics.totalSize = totalSize;
     this.metrics.entryCount = totalEntries;
-    this.metrics.compressionRatio = compressedEntries > 0 ? totalCompressionRatio / compressedEntries : 1;
-    this.metrics.dataSavings = (1 - 1/this.metrics.compressionRatio) * 100;
+    this.metrics.compressionRatio =
+      compressedEntries > 0 ? totalCompressionRatio / compressedEntries : 1;
+    this.metrics.dataSavings = (1 - 1 / this.metrics.compressionRatio) * 100;
   }
 
-  set<T>(key: string, data: T, options: Partial<{
-    ttl: number;
-    priority: 'low' | 'medium' | 'high' | 'critical';
-    compress: boolean;
-  }> = {}): void {
+  set<T>(
+    key: string,
+    data: T,
+    options: Partial<{
+      ttl: number;
+      priority: 'low' | 'medium' | 'high' | 'critical';
+      compress: boolean;
+    }> = {}
+  ): void {
     const now = Date.now();
     const ttl = options.ttl || this.config.ttl;
     const priority = options.priority || 'medium';
@@ -219,13 +226,13 @@ class AdvancedCachingSystem {
       this.evictLRU();
     }
 
-    const { compressed, ratio } = shouldCompress ? 
-      this.compressData(data) : 
-      { compressed: JSON.stringify(data), ratio: 1 };
+    const { compressed, ratio } = shouldCompress
+      ? this.compressData(data)
+      : { compressed: JSON.stringify(data), ratio: 1 };
 
     const entry: CacheEntry<T> = {
       key,
-      data: shouldCompress ? compressed as any : data,
+      data: shouldCompress ? (compressed as any) : data,
       timestamp: now,
       ttl,
       compressed: shouldCompress,
@@ -233,7 +240,7 @@ class AdvancedCachingSystem {
       accessCount: 0,
       lastAccessed: now,
       priority,
-      networkType: this.networkType as any
+      networkType: this.networkType as any,
     };
 
     this.cache.set(key, entry);
@@ -242,14 +249,14 @@ class AdvancedCachingSystem {
 
   get<T>(key: string): T | null {
     const entry = this.cache.get(key) as CacheEntry<T>;
-    
+
     if (!entry) {
       this.metrics.missRate++;
       return null;
     }
 
     const now = Date.now();
-    
+
     // Check if entry has expired
     if (now - entry.timestamp > entry.ttl) {
       this.cache.delete(key);
@@ -301,7 +308,7 @@ class AdvancedCachingSystem {
       id: `offline_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
       timestamp: Date.now(),
       retryCount: 0,
-      ...action
+      ...action,
     };
 
     this.offlineQueue.push(queueItem);
@@ -319,7 +326,7 @@ class AdvancedCachingSystem {
         await this.processOfflineItem(item);
       } catch (error) {
         console.warn('Failed to sync offline item:', error);
-        
+
         if (item.retryCount < item.maxRetries) {
           item.retryCount++;
           this.offlineQueue.push(item);
@@ -375,7 +382,7 @@ class AdvancedCachingSystem {
 
   getNetworkOptimizedData<T>(key: string, fallback: () => Promise<T>): Promise<T> {
     const cached = this.get<T>(key);
-    
+
     if (cached) {
       return Promise.resolve(cached);
     }
@@ -387,13 +394,13 @@ class AdvancedCachingSystem {
 
     // Fetch with network-aware timeout
     const timeout = this.getNetworkTimeout();
-    
+
     return Promise.race([
       fallback(),
-      new Promise<never>((_, reject) => 
+      new Promise<never>((_, reject) =>
         setTimeout(() => reject(new Error('Network timeout')), timeout)
-      )
-    ]).then(data => {
+      ),
+    ]).then((data) => {
       this.set(key, data);
       return data;
     });
@@ -401,10 +408,14 @@ class AdvancedCachingSystem {
 
   private getNetworkTimeout(): number {
     switch (this.networkType) {
-      case '2g': return 30000; // 30 seconds for 2G
-      case '3g': return 15000; // 15 seconds for 3G
-      case '4g': return 5000;  // 5 seconds for 4G
-      default: return 10000;   // 10 seconds default
+      case '2g':
+        return 30000; // 30 seconds for 2G
+      case '3g':
+        return 15000; // 15 seconds for 3G
+      case '4g':
+        return 5000; // 5 seconds for 4G
+      default:
+        return 10000; // 10 seconds default
     }
   }
 
@@ -414,7 +425,7 @@ class AdvancedCachingSystem {
     for (const [key, entry] of this.cache.entries()) {
       exported[key] = {
         ...entry,
-        data: entry.compressed ? this.decompressData(entry.data as string) : entry.data
+        data: entry.compressed ? this.decompressData(entry.data as string) : entry.data,
       };
     }
     return exported;
@@ -427,7 +438,7 @@ export const nigerianCache = new AdvancedCachingSystem({
   maxSize: 100, // 100MB
   compressionEnabled: true,
   offlineMode: true,
-  nigerianOptimizations: true
+  nigerianOptimizations: true,
 });
 
 // React hook for advanced caching
@@ -506,6 +517,6 @@ export const useAdvancedCache = <T>(
     fromCache,
     invalidate,
     refresh,
-    metrics: nigerianCache.getCacheMetrics()
+    metrics: nigerianCache.getCacheMetrics(),
   };
 };
