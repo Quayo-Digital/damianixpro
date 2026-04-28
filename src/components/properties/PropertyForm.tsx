@@ -15,7 +15,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
 
-import { PropertyImageUpload } from './PropertyImageUpload';
+import { EnhancedPropertyImageUpload } from './EnhancedPropertyImageUpload';
 import { PropertyBasicInfo } from './PropertyBasicInfo';
 import { PropertyDetails } from './PropertyDetails';
 import { PropertyAmenities } from './PropertyAmenities';
@@ -39,7 +39,8 @@ interface PropertyFormProps {
     data: PropertyFormValues,
     imageUrl: string | null,
     documents: File[],
-    requestTourAfterSubmit: boolean
+    requestTourAfterSubmit: boolean,
+    pendingVideos: File[]
   ) => Promise<void>;
   onCancel: () => void;
   initialData?: Property;
@@ -51,6 +52,7 @@ export function PropertyForm({ onSubmit, onCancel, initialData, isSubmitting }: 
   const [imageUrl, setImageUrl] = useState<string | null>(initialData?.imageUrl || null);
   const [documents, setDocuments] = useState<File[]>([]);
   const [isGeocoding, setIsGeocoding] = useState(false);
+  const [pendingVideos, setPendingVideos] = useState<File[]>([]);
   const [requestTourAfterSubmit, setRequestTourAfterSubmit] = useState(false);
   const [isCreatingTourRequest, setIsCreatingTourRequest] = useState(false);
   const [isLoadingTourRequest, setIsLoadingTourRequest] = useState(false);
@@ -186,7 +188,7 @@ export function PropertyForm({ onSubmit, onCancel, initialData, isSubmitting }: 
   };
 
   const handleSubmit = async (data: PropertyFormValues) => {
-    await onSubmit(data, imageUrl, documents, requestTourAfterSubmit);
+    await onSubmit(data, imageUrl, documents, requestTourAfterSubmit, pendingVideos);
   };
 
   const handleImageUploaded = (url: string | null) => {
@@ -202,9 +204,12 @@ export function PropertyForm({ onSubmit, onCancel, initialData, isSubmitting }: 
       <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
         <div className="space-y-4">
           {/* Property Image Upload */}
-          <PropertyImageUpload
+          <EnhancedPropertyImageUpload
             onImageUploaded={handleImageUploaded}
             initialImageUrl={initialData?.imageUrl}
+            onPendingVideosChange={setPendingVideos}
+            propertyId={initialData?.id}
+            title="Property Media"
           />
 
           {/* Basic Information */}

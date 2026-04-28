@@ -16,6 +16,7 @@ import { PropertyDetailTabs } from '@/components/properties/public/PropertyDetai
 import { PropertyActionCard } from '@/components/properties/public/PropertyActionCard';
 import { useMessages } from '@/hooks/useMessages';
 import { sendViewingRequestNotification } from '@/services/notifications/property';
+import { listPropertyMedia } from '@/services/property/mediaService';
 
 const PublicPropertyDetail = () => {
   const { id } = useParams<{ id: string }>();
@@ -32,6 +33,7 @@ const PublicPropertyDetail = () => {
     [location, navigate]
   );
   const { getMessage } = useMessages();
+  const [videoUrls, setVideoUrls] = useState<Array<{ url: string; posterUrl?: string | null }>>([]);
 
   // Use React Query for better state management and caching
   const {
@@ -83,6 +85,28 @@ const PublicPropertyDetail = () => {
     const qs = params.toString();
     navigate({ pathname: location.pathname, search: qs ? `?${qs}` : '' }, { replace: true });
   }, [property?.id, user?.id, location.pathname, location.search, navigate]);
+
+  useEffect(() => {
+    if (!property?.id) return;
+    let cancelled = false;
+    const loadMedia = async () => {
+      try {
+        const items = await listPropertyMedia(property.id, true);
+        if (cancelled) return;
+        setVideoUrls(
+          items
+            .filter((item) => item.mediaType === 'video' && Boolean(item.deliveryUrl))
+            .map((item) => ({ url: item.deliveryUrl as string, posterUrl: item.posterUrl }))
+        );
+      } catch {
+        if (!cancelled) setVideoUrls([]);
+      }
+    };
+    void loadMedia();
+    return () => {
+      cancelled = true;
+    };
+  }, [property?.id]);
 
   const handleApplyClick = () => {
     if (!isAuthenticated()) {
@@ -186,7 +210,7 @@ const PublicPropertyDetail = () => {
           <div className="space-y-6">
             <PropertyHeader property={property} />
             <PropertyImage property={property} />
-            <PropertyDetailTabs property={property} />
+            <PropertyDetailTabs property={property} videoUrls={videoUrls} />
           </div>
         </div>
 

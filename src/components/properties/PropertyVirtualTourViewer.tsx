@@ -16,6 +16,7 @@ import {
   Move,
   X,
   ImageIcon,
+  Video,
 } from 'lucide-react';
 
 // Check if image is likely equirectangular (2:1 aspect = 360° panorama)
@@ -29,6 +30,7 @@ function isLikelyPanorama(url: string, width?: number, height?: number): boolean
 
 interface PropertyVirtualTourViewerProps {
   images: string[];
+  videos?: Array<{ url: string; posterUrl?: string | null }>;
   tourUrl?: string | null;
   propertyName?: string;
   className?: string;
@@ -36,18 +38,20 @@ interface PropertyVirtualTourViewerProps {
 
 export function PropertyVirtualTourViewer({
   images,
+  videos = [],
   tourUrl,
   propertyName = 'Property',
   className,
 }: PropertyVirtualTourViewerProps) {
   const [panoramaImages, setPanoramaImages] = useState<string[]>([]);
   const [regularImages, setRegularImages] = useState<string[]>([]);
-  const [mode, setMode] = useState<'gallery' | 'panorama' | 'embed'>('gallery');
+  const [mode, setMode] = useState<'gallery' | 'panorama' | 'embed' | 'video'>('gallery');
   const [currentIndex, setCurrentIndex] = useState(0);
   const [panoramaIndex, setPanoramaIndex] = useState(0);
   const containerRef = useRef<HTMLDivElement>(null);
 
   const hasEmbedTour = !!tourUrl;
+  const hasVideos = videos.length > 0;
 
   useEffect(() => {
     const checkImages = async () => {
@@ -85,10 +89,11 @@ export function PropertyVirtualTourViewer({
 
   // Set initial mode when data is ready
   useEffect(() => {
-    if (hasEmbedTour) setMode('embed');
+    if (hasVideos) setMode('video');
+    else if (hasEmbedTour) setMode('embed');
     else if (hasPanoramas) setMode('panorama');
     else setMode('gallery');
-  }, [hasEmbedTour, hasPanoramas]);
+  }, [hasVideos, hasEmbedTour, hasPanoramas]);
 
   return (
     <div className={cn('space-y-4', className)}>
@@ -122,7 +127,21 @@ export function PropertyVirtualTourViewer({
             Virtual Tour
           </Button>
         )}
+        {hasVideos && (
+          <Button
+            variant={mode === 'video' ? 'default' : 'outline'}
+            size="sm"
+            onClick={() => setMode('video')}
+          >
+            <Video className="mr-1.5 h-4 w-4" />
+            Videos
+          </Button>
+        )}
       </div>
+
+      {mode === 'video' && hasVideos && (
+        <VideoGallery videos={videos} propertyName={propertyName} />
+      )}
 
       {/* Embed mode - external tour (Matterport, Kuula, etc.) */}
       {mode === 'embed' && tourUrl && (
@@ -158,6 +177,57 @@ export function PropertyVirtualTourViewer({
           onIndexChange={setCurrentIndex}
           propertyName={propertyName}
         />
+      )}
+    </div>
+  );
+}
+
+function VideoGallery({
+  videos,
+  propertyName,
+}: {
+  videos: Array<{ url: string; posterUrl?: string | null }>;
+  propertyName: string;
+}) {
+  const [videoIndex, setVideoIndex] = useState(0);
+  const current = videos[videoIndex];
+  if (!current) {
+    return (
+      <div className="flex aspect-video items-center justify-center rounded-lg bg-muted text-muted-foreground">
+        No videos available
+      </div>
+    );
+  }
+
+  const prev = () => setVideoIndex((i) => (i - 1 + videos.length) % videos.length);
+  const next = () => setVideoIndex((i) => (i + 1) % videos.length);
+
+  return (
+    <div className="space-y-3">
+      <div className="overflow-hidden rounded-lg border bg-black">
+        <video
+          src={current.url}
+          poster={current.posterUrl ?? undefined}
+          controls
+          className="aspect-video w-full"
+        >
+          Your browser does not support the video tag.
+        </video>
+      </div>
+      {videos.length > 1 && (
+        <div className="flex items-center justify-between">
+          <Button size="sm" variant="outline" onClick={prev}>
+            <ChevronLeft className="mr-1 h-4 w-4" />
+            Previous
+          </Button>
+          <span className="text-sm text-muted-foreground">
+            {propertyName} video {videoIndex + 1} / {videos.length}
+          </span>
+          <Button size="sm" variant="outline" onClick={next}>
+            Next
+            <ChevronRight className="ml-1 h-4 w-4" />
+          </Button>
+        </div>
       )}
     </div>
   );

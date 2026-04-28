@@ -12,6 +12,10 @@ import { Property, PropertyFormValues } from '@/services/property/types';
 import { updateProperty } from '@/services/property';
 import { useAuthSession } from '@/contexts/auth';
 import { createTourServiceRequest } from '@/services/tourServiceRequests';
+import {
+  completePropertyMediaUpload,
+  initPropertyMediaUpload,
+} from '@/services/property/mediaService';
 
 interface EditPropertyDialogProps {
   open: boolean;
@@ -34,7 +38,8 @@ export function EditPropertyDialog({
     data: PropertyFormValues,
     imageUrl: string | null,
     documents: File[],
-    requestTourAfterSubmit: boolean
+    requestTourAfterSubmit: boolean,
+    pendingVideos: File[]
   ) => {
     setIsSubmitting(true);
     try {
@@ -50,6 +55,28 @@ export function EditPropertyDialog({
       const agentChanged = previousAgentId !== newAgentId;
 
       const updatedProperty = await updateProperty(property.id, updatedPropertyData, documents);
+
+      if (pendingVideos.length > 0) {
+        for (const file of pendingVideos) {
+          const init = await initPropertyMediaUpload({
+            propertyId: property.id,
+            mediaType: 'video',
+            filename: file.name,
+            mimeType: file.type || 'video/mp4',
+            fileSize: file.size,
+          });
+
+          const uploadResp = await fetch(init.upload.signedUploadUrl, {
+            method: 'PUT',
+            headers: { 'content-type': file.type || 'application/octet-stream' },
+            body: file,
+          });
+          if (!uploadResp.ok) {
+            throw new Error(`Failed to upload video ${file.name}`);
+          }
+          await completePropertyMediaUpload({ mediaId: init.media.id });
+        }
+      }
 
       if (requestTourAfterSubmit && user) {
         await createTourServiceRequest(property.id, user.id);
@@ -100,7 +127,9 @@ export function EditPropertyDialog({
               : 'Property has been updated successfully and the agent has been notified.'
             : requestTourAfterSubmit
               ? 'Property updated and 3D tour request submitted.'
-              : 'Property has been updated successfully.',
+              : pendingVideos.length > 0
+                ? `Property updated successfully with ${pendingVideos.length} new video(s).`
+                : 'Property has been updated successfully.',
       });
 
       // Call the callback if provided

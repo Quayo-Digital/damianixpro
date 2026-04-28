@@ -16,6 +16,7 @@ import { useAuthSession } from '@/contexts/auth';
 import { PageLoader } from '@/components/ui/PageLoader';
 import { PropertyAnnouncementsManager } from '@/components/resident/PropertyAnnouncementsManager';
 import { fetchUnitsForProperty } from '@/services/property/unitsApi';
+import { listPropertyMedia } from '@/services/property/mediaService';
 
 const PropertyDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -23,6 +24,7 @@ const PropertyDetail: React.FC = () => {
   const { userRole, isLoading: authLoading } = useAuthSession();
   const queryClient = useQueryClient();
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [videoUrls, setVideoUrls] = useState<Array<{ url: string; posterUrl?: string | null }>>([]);
 
   // Redirect tenants away from property management pages
   useEffect(() => {
@@ -60,6 +62,28 @@ const PropertyDetail: React.FC = () => {
   const unitsCount = unitRows.length;
   const occupiedCount = unitRows.filter((u) => u.status === 'occupied').length;
   const occupancyRate = unitsCount > 0 ? Math.round((occupiedCount / unitsCount) * 100) : 0;
+
+  useEffect(() => {
+    if (!id) return;
+    let cancelled = false;
+    const loadMedia = async () => {
+      try {
+        const items = await listPropertyMedia(id, true);
+        if (cancelled) return;
+        setVideoUrls(
+          items
+            .filter((item) => item.mediaType === 'video' && Boolean(item.deliveryUrl))
+            .map((item) => ({ url: item.deliveryUrl as string, posterUrl: item.posterUrl }))
+        );
+      } catch {
+        if (!cancelled) setVideoUrls([]);
+      }
+    };
+    void loadMedia();
+    return () => {
+      cancelled = true;
+    };
+  }, [id]);
 
   // Show loader while checking auth
   if (authLoading) {
@@ -126,6 +150,7 @@ const PropertyDetail: React.FC = () => {
               <h3 className="mb-4 text-2xl font-semibold">Property View</h3>
               <PropertyVirtualTourViewer
                 images={property.images || (property.imageUrl ? [property.imageUrl] : [])}
+                videos={videoUrls}
                 tourUrl={property.tourUrl}
                 propertyName={property.name}
               />

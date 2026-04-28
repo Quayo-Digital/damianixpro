@@ -6,18 +6,19 @@ import { Bed, Bath, Calendar, Home, Check, BadgeCheck } from 'lucide-react';
 
 interface PropertyDetailTabsProps {
   property: Property;
+  videoUrls?: Array<{ url: string; posterUrl?: string | null }>;
 }
 
-export const PropertyDetailTabs = ({ property }: PropertyDetailTabsProps) => {
+export const PropertyDetailTabs = ({ property, videoUrls = [] }: PropertyDetailTabsProps) => {
+  const hasTourContent =
+    (property.images && property.images.length > 0) || property.tourUrl || videoUrls.length > 0;
   return (
     <Tabs defaultValue="details">
       <TabsList>
         <TabsTrigger value="details">Details</TabsTrigger>
         <TabsTrigger value="features">Features</TabsTrigger>
         <TabsTrigger value="location">Location</TabsTrigger>
-        {((property.images && property.images.length > 0) || property.tourUrl) && (
-          <TabsTrigger value="tour">Virtual Tour</TabsTrigger>
-        )}
+        {hasTourContent && <TabsTrigger value="tour">Virtual Tour</TabsTrigger>}
       </TabsList>
 
       <TabsContent value="details" className="space-y-4">
@@ -107,11 +108,12 @@ export const PropertyDetailTabs = ({ property }: PropertyDetailTabsProps) => {
         </div>
       </TabsContent>
 
-      {((property.images && property.images.length > 0) || property.tourUrl) && (
+      {hasTourContent && (
         <TabsContent value="tour">
           <div className="py-4">
             <PropertyVirtualTourViewer
               images={property.images || (property.imageUrl ? [property.imageUrl] : [])}
+              videos={videoUrls}
               tourUrl={property.tourUrl}
               propertyName={property.name}
             />

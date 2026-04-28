@@ -3,7 +3,7 @@
  * Combines file upload and mobile camera capture for property photos
  */
 
-import { useState, ChangeEvent } from 'react';
+import { useEffect, useState, ChangeEvent } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -18,32 +18,44 @@ import PhotoGallery from '@/components/camera/PhotoGallery';
 import { CapturedPhoto } from '@/services/camera/CameraService';
 import { optimizeImagesForUpload } from '@/utils/imageOptimization';
 import {
+  deletePropertyMedia,
+  initPropertyMediaUpload,
+  listPropertyMedia,
+  completePropertyMediaUpload,
+  type PropertyMediaItem,
+} from '@/services/property/mediaService';
+import {
   Camera,
   Upload,
   Image as ImageIcon,
   Trash2,
-  FileImage,
   Smartphone,
   Loader2,
-  CheckCircle,
   Info,
+  Video,
 } from 'lucide-react';
 
 interface EnhancedPropertyImageUploadProps {
   onImageUploaded: (url: string | null) => void;
   onMultipleImagesUploaded?: (urls: string[]) => void;
+  onPendingVideosChange?: (files: File[]) => void;
   initialImageUrl?: string | null;
+  propertyId?: string;
   allowMultiple?: boolean;
   maxImages?: number;
+  maxVideos?: number;
   title?: string;
 }
 
 export function EnhancedPropertyImageUpload({
   onImageUploaded,
   onMultipleImagesUploaded,
+  onPendingVideosChange,
   initialImageUrl,
+  propertyId,
   allowMultiple = false,
   maxImages = 10,
+  maxVideos = 3,
   title = 'Property Images',
 }: EnhancedPropertyImageUploadProps) {
   const { toast } = useToast();
@@ -51,8 +63,36 @@ export function EnhancedPropertyImageUpload({
   const [imageUrls, setImageUrls] = useState<string[]>(initialImageUrl ? [initialImageUrl] : []);
   const [isUploading, setIsUploading] = useState(false);
   const [capturedPhotos, setCapturedPhotos] = useState<CapturedPhoto[]>([]);
-  const [uploadMethod, setUploadMethod] = useState<'file' | 'camera'>('camera');
+  const [uploadMethod, setUploadMethod] = useState<'file' | 'camera' | 'video'>('camera');
+  const [videoItems, setVideoItems] = useState<PropertyMediaItem[]>([]);
+  const [pendingVideos, setPendingVideos] = useState<File[]>([]);
+  const [isLoadingVideos, setIsLoadingVideos] = useState(false);
   const { user } = useAuthSession();
+
+  useEffect(() => {
+    onPendingVideosChange?.(pendingVideos);
+  }, [pendingVideos, onPendingVideosChange]);
+
+  useEffect(() => {
+    if (!propertyId) return;
+    let cancelled = false;
+    const run = async () => {
+      setIsLoadingVideos(true);
+      try {
+        const items = await listPropertyMedia(propertyId, true);
+        if (cancelled) return;
+        setVideoItems(items.filter((item) => item.mediaType === 'video'));
+      } catch (error) {
+        console.warn('Could not load existing property videos', error);
+      } finally {
+        if (!cancelled) setIsLoadingVideos(false);
+      }
+    };
+    void run();
+    return () => {
+      cancelled = true;
+    };
+  }, [propertyId]);
 
   // Handle file upload
   const handleFileChange = async (e: ChangeEvent<HTMLInputElement>) => {
@@ -135,6 +175,109 @@ export function EnhancedPropertyImageUpload({
       });
     } finally {
       setIsUploading(false);
+    }
+  };
+
+  const handleVideoChange = async (e: ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+    const selected = Array.from(files);
+
+    for (const file of selected) {
+      if (file.size > 200 * 1024 * 1024) {
+        toast({
+          title: 'Video too large',
+          description: `${file.name} must be less than 200MB.`,
+          variant: 'destructive',
+        });
+        return;
+      }
+    }
+
+    if (!propertyId) {
+      const remaining = Math.max(0, maxVideos - pendingVideos.length);
+      const toAdd = selected.slice(0, remaining);
+      if (toAdd.length < selected.length) {
+        toast({
+          title: 'Video limit reached',
+          description: `Only ${maxVideos} videos are allowed per property.`,
+        });
+      }
+      setPendingVideos((prev) => [...prev, ...toAdd]);
+      return;
+    }
+
+    setIsUploading(true);
+    try {
+      const currentVideos = await listPropertyMedia(propertyId, true);
+      const currentCount = currentVideos.filter((item) => item.mediaType === 'video').length;
+      if (currentCount >= maxVideos) {
+        toast({
+          title: 'Video limit reached',
+          description: `Only ${maxVideos} videos are allowed per property.`,
+          variant: 'destructive',
+        });
+        return;
+      }
+
+      const allowed = selected.slice(0, Math.max(0, maxVideos - currentCount));
+      for (const file of allowed) {
+        const init = await initPropertyMediaUpload({
+          propertyId,
+          mediaType: 'video',
+          filename: file.name,
+          mimeType: file.type || 'video/mp4',
+          fileSize: file.size,
+        });
+
+        const uploadResp = await fetch(init.upload.signedUploadUrl, {
+          method: 'PUT',
+          headers: { 'content-type': file.type || 'application/octet-stream' },
+          body: file,
+        });
+        if (!uploadResp.ok) {
+          throw new Error(`Video upload failed for ${file.name}`);
+        }
+
+        await completePropertyMediaUpload({
+          mediaId: init.media.id,
+          publicUrl: null,
+        });
+      }
+
+      const refreshed = await listPropertyMedia(propertyId, true);
+      setVideoItems(refreshed.filter((item) => item.mediaType === 'video'));
+      toast({
+        title: 'Videos uploaded',
+        description: `${allowed.length} video(s) uploaded successfully.`,
+      });
+    } catch (error: any) {
+      toast({
+        title: 'Video upload failed',
+        description: error?.message || 'Could not upload one or more videos.',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsUploading(false);
+      e.target.value = '';
+    }
+  };
+
+  const removePendingVideo = (name: string) => {
+    setPendingVideos((prev) => prev.filter((file) => file.name !== name));
+  };
+
+  const removeUploadedVideo = async (mediaId: string) => {
+    try {
+      await deletePropertyMedia(mediaId);
+      setVideoItems((prev) => prev.filter((item) => item.id !== mediaId));
+      toast({ title: 'Video removed', description: 'Property video removed successfully.' });
+    } catch (error: any) {
+      toast({
+        title: 'Remove failed',
+        description: error?.message || 'Could not remove video.',
+        variant: 'destructive',
+      });
     }
   };
 
@@ -287,7 +430,7 @@ export function EnhancedPropertyImageUpload({
           value={uploadMethod}
           onValueChange={(value) => setUploadMethod(value as 'file' | 'camera')}
         >
-          <TabsList className="grid w-full grid-cols-2">
+          <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="camera" className="flex items-center gap-2">
               <Camera className="h-4 w-4" />
               📱 Camera
@@ -295,6 +438,10 @@ export function EnhancedPropertyImageUpload({
             <TabsTrigger value="file" className="flex items-center gap-2">
               <Upload className="h-4 w-4" />
               File Upload
+            </TabsTrigger>
+            <TabsTrigger value="video" className="flex items-center gap-2">
+              <Video className="h-4 w-4" />
+              Videos
             </TabsTrigger>
           </TabsList>
 
@@ -395,6 +542,107 @@ export function EnhancedPropertyImageUpload({
                 />
               </label>
             </div>
+          </TabsContent>
+
+          <TabsContent value="video" className="space-y-4">
+            <Alert>
+              <Video className="h-4 w-4" />
+              <AlertDescription>
+                Upload property videos (max {maxVideos}). Recommended: MP4, under 200MB each.
+                {!propertyId
+                  ? ' Videos selected now will upload automatically after the property is created.'
+                  : ''}
+              </AlertDescription>
+            </Alert>
+
+            <div className="flex w-full items-center justify-center">
+              <label
+                htmlFor="property-video-upload"
+                className="flex h-32 w-full cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed border-gray-300 bg-gray-50 hover:bg-gray-100"
+              >
+                <div className="flex flex-col items-center justify-center pb-6 pt-5">
+                  {isUploading ? (
+                    <>
+                      <Loader2 className="mb-4 h-8 w-8 animate-spin text-gray-500" />
+                      <p className="mb-2 text-sm text-gray-500">Uploading video...</p>
+                    </>
+                  ) : (
+                    <>
+                      <Video className="mb-4 h-8 w-8 text-gray-500" />
+                      <p className="mb-2 text-sm text-gray-500">
+                        <span className="font-semibold">Click to upload</span> property videos
+                      </p>
+                      <p className="text-xs text-gray-500">MP4 / WEBM up to 200MB</p>
+                    </>
+                  )}
+                </div>
+                <input
+                  id="property-video-upload"
+                  type="file"
+                  className="hidden"
+                  accept="video/mp4,video/webm,video/quicktime,video/*"
+                  multiple
+                  onChange={handleVideoChange}
+                  disabled={isUploading}
+                />
+              </label>
+            </div>
+
+            {!propertyId && pendingVideos.length > 0 && (
+              <div className="space-y-2">
+                <h4 className="font-medium">Queued Videos</h4>
+                {pendingVideos.map((file) => (
+                  <div
+                    key={file.name}
+                    className="flex items-center justify-between rounded-md border p-2 text-sm"
+                  >
+                    <span className="truncate">{file.name}</span>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      type="button"
+                      onClick={() => removePendingVideo(file.name)}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {propertyId && (
+              <div className="space-y-2">
+                <h4 className="font-medium">Uploaded Videos</h4>
+                {isLoadingVideos && (
+                  <p className="text-sm text-muted-foreground">Loading videos...</p>
+                )}
+                {!isLoadingVideos && videoItems.length === 0 && (
+                  <p className="text-sm text-muted-foreground">No videos uploaded yet.</p>
+                )}
+                {videoItems.map((item) => (
+                  <div
+                    key={item.id}
+                    className="flex items-center justify-between rounded-md border p-2"
+                  >
+                    <video
+                      src={item.deliveryUrl || undefined}
+                      controls
+                      className="mr-3 h-20 w-36 rounded border object-cover"
+                    />
+                    <Button
+                      variant="destructive"
+                      size="sm"
+                      type="button"
+                      onClick={() => {
+                        void removeUploadedVideo(item.id);
+                      }}
+                    >
+                      Remove
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            )}
           </TabsContent>
         </Tabs>
 
