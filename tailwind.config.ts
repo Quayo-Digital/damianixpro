@@ -53,6 +53,10 @@ export default {
           DEFAULT: 'hsl(var(--card))',
           foreground: 'hsl(var(--card-foreground))',
         },
+        highlight: {
+          DEFAULT: 'hsl(var(--highlight))',
+          foreground: 'hsl(var(--highlight-foreground))',
+        },
         sidebar: {
           DEFAULT: 'hsl(var(--sidebar-background))',
           foreground: 'hsl(var(--sidebar-foreground))',
@@ -63,18 +67,25 @@ export default {
           border: 'hsl(var(--sidebar-border))',
           ring: 'hsl(var(--sidebar-ring))',
         },
-        // DamianixPro brand colors
+        // Brand palette (aligns with UI tokens: blue primary, magenta accent)
         brand: {
-          primary: '#4CAF50',
-          secondary: '#F5F7FA',
-          accent: '#2E7D32',
-          light: '#E8F5E9',
+          primary: 'hsl(221 83% 53%)',
+          secondary: 'hsl(220 14% 96%)',
+          accent: 'hsl(292 84% 48%)',
+          light: 'hsl(292 62% 96%)',
         },
       },
       borderRadius: {
         lg: 'var(--radius)',
         md: 'calc(var(--radius) - 2px)',
         sm: 'calc(var(--radius) - 4px)',
+        xl: 'calc(var(--radius) + 4px)',
+        '2xl': 'calc(var(--radius) + 8px)',
+      },
+      boxShadow: {
+        soft: '0 1px 2px 0 rgb(15 23 42 / 0.04), 0 4px 16px -4px rgb(15 23 42 / 0.08)',
+        card: '0 1px 3px 0 rgb(15 23 42 / 0.06), 0 8px 24px -8px rgb(15 23 42 / 0.1)',
+        float: '0 12px 40px -12px rgb(15 23 42 / 0.12), 0 2px 8px -2px rgb(15 23 42 / 0.06)',
       },
       keyframes: {
         'accordion-down': {
@@ -93,14 +104,20 @@ export default {
             height: '0',
           },
         },
+        'stat-plus-pop': {
+          '0%': { opacity: '0', transform: 'translateY(10px) scale(0.45)' },
+          '65%': { opacity: '1', transform: 'translateY(-3px) scale(1.12)' },
+          '100%': { opacity: '1', transform: 'translateY(0) scale(1)' },
+        },
       },
       animation: {
         'accordion-down': 'accordion-down 0.2s ease-out',
         'accordion-up': 'accordion-up 0.2s ease-out',
+        'stat-plus-pop': 'stat-plus-pop 0.72s cubic-bezier(0.34, 1.45, 0.64, 1) 0.52s both',
       },
       fontFamily: {
         sans: [
-          'Outfit',
+          'Inter',
           'system-ui',
           '-apple-system',
           'BlinkMacSystemFont',
