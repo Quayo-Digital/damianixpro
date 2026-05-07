@@ -5,6 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { RefreshCw, TrendingUp, MapPin, Building, DollarSign } from 'lucide-react';
 import { PageLayout } from '@/components/layout/PageLayout';
+import { PageContent } from '@/components/layout/PageContent';
 import NigerianRealEstateDataService, {
   PropertyListingData,
   EconomicIndicator,
@@ -36,9 +37,8 @@ const LiveDataDemoPage: React.FC = () => {
       const indicators = await dataService.fetchEconomicIndicators();
       setEconomicIndicators(indicators);
 
-      // Generate market insights
-      const insights = await analyticsEngine.generateMarketInsights('Lagos');
-      setMarketData([insights.marketTrends]);
+      const insights = await analyticsEngine.getLiveMarketInsights('Lagos', 'residential');
+      setMarketData([insights.marketData]);
 
       setLastUpdated(new Date().toLocaleString());
     } catch (error) {
@@ -71,26 +71,24 @@ const LiveDataDemoPage: React.FC = () => {
 
   return (
     <PageLayout>
-      <div className="container mx-auto space-y-6 p-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold">Live Nigerian Real Estate Data</h1>
-            <p className="mt-2 text-muted-foreground">
-              Real-time property listings, market trends, and economic indicators
-            </p>
-            {lastUpdated && (
-              <p className="mt-1 text-sm text-muted-foreground">Last updated: {lastUpdated}</p>
-            )}
-          </div>
+      <PageContent
+        title="Live Nigerian real estate data"
+        description="Sample property listings, market trends, and economic indicators for demos."
+        actions={
           <Button
+            type="button"
             onClick={refreshLiveData}
             disabled={isLoading}
             className="flex items-center gap-2"
           >
             <RefreshCw className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
-            Refresh Data
+            Refresh data
           </Button>
-        </div>
+        }
+      >
+        {lastUpdated ? (
+          <p className="text-sm text-muted-foreground">Last updated: {lastUpdated}</p>
+        ) : null}
 
         <Tabs defaultValue="listings" className="w-full">
           <TabsList className="grid w-full grid-cols-3">
@@ -229,7 +227,7 @@ const LiveDataDemoPage: React.FC = () => {
             </div>
           </TabsContent>
         </Tabs>
-      </div>
+      </PageContent>
     </PageLayout>
   );
 };
