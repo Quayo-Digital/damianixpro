@@ -17,7 +17,7 @@
     "type-check": "tsc --noEmit",
     "test": "vitest",
     "test:ci": "vitest run",
-    "test:smoke": "vitest run src/routes/__tests__/appRoutes.uniqueness.test.ts src/components/kyc/__tests__/KYCVerificationDashboard.providerStatus.test.tsx server/paymentWebhookDedup.test.mjs",
+    "test:smoke": "vitest run src/routes/__tests__/appRoutes.uniqueness.test.ts src/components/kyc/__tests__/KYCVerificationDashboard.providerStatus.test.tsx src/services/analytics/__tests__/executiveAnalyticsApi.test.ts src/components/analytics/__tests__/ExecutiveAnalyticsDashboard.test.tsx server/paymentWebhookDedup.test.mjs",
     "test:voice": "vitest run src/services/voice src/hooks/__tests__/useVoiceAssistant.test.tsx src/components/voice/__tests__ src/components/ai/__tests__/VoiceAssistantWidget.test.tsx",
     "test:ui": "vitest --ui",
     "test:coverage": "vitest --coverage",
@@ -26,6 +26,7 @@
     "prepare": "husky install || true",
     "smoke:payment-rent": "node scripts/smoke-payment-rent-routes.mjs",
     "db:push": "supabase db push",
+    "build:supabase-manual-bundle": "node scripts/build-supabase-manual-bundle.mjs",
     "voice:dev": "node server/index.mjs",
     "tts:dev": "node server/ttsServer.mjs",
     "update-browserslist": "npx update-browserslist-db@latest"
@@ -112,6 +113,7 @@
     "vaul": "^0.9.3",
     "vitest": "^3.2.3",
     "web-push": "^3.6.7",
+    "xlsx": "^0.18.5",
     "zod": "^3.23.8"
   },
   "devDependencies": {
