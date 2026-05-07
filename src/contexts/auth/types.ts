@@ -8,7 +8,9 @@ export type UserRole =
   | 'tenant'
   | 'vendor'
   | 'user'
-  | 'manager';
+  | 'manager'
+  | 'accountant'
+  | 'facility_manager';
 
 export interface AuthUser extends User {
   user_metadata: {
@@ -34,8 +36,15 @@ export interface AuthSessionContextValue {
   isTenant: () => boolean;
   isVendor: () => boolean;
   isManager: () => boolean;
+  isAccountant: () => boolean;
+  isFacilityManager: () => boolean;
   isAuthenticated: () => boolean;
   getRoleDisplay: () => string;
+  /** RBAC: flattened permission ids for the current `userRole` (from `config/rbac-permission-matrix.json`). */
+  permissions: readonly string[];
+  hasPermission: (permission: string) => boolean;
+  hasAnyPermission: (permissions: readonly string[]) => boolean;
+  hasAllPermissions: (permissions: readonly string[]) => boolean;
 }
 
 /** Stable auth API surface (callbacks should stay referentially stable across renders). */

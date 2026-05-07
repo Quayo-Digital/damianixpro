@@ -4,11 +4,9 @@ import {
   SidebarHeader,
   SidebarFooter,
   useSidebar,
-  SidebarTrigger,
 } from '@/components/ui/sidebar';
 import { SidebarNav } from './sidebar/SidebarNav';
 import { Logo } from '@/components/ui/logo';
-import { UserNav } from './UserNav';
 import { ThemeToggle } from './ThemeToggle';
 import { Link } from 'react-router-dom';
 import { useAuthSession } from '@/contexts/auth';
@@ -23,22 +21,23 @@ export function AppSidebar() {
   const homeDashboardPath = getDefaultDashboardPathForRole(userRole as UserRole);
 
   return (
-    <Sidebar>
-      <SidebarHeader className="justify-between">
-        <Link className="flex flex-1 items-center gap-2" to={homeDashboardPath}>
+    <Sidebar collapsible="icon">
+      <SidebarHeader className="border-b border-sidebar-border/80 px-2 py-3">
+        <Link
+          className="flex min-w-0 flex-1 items-center gap-2 overflow-hidden rounded-lg px-1.5 py-1 outline-none ring-sidebar-ring transition-colors hover:bg-sidebar-accent/80 focus-visible:ring-2"
+          to={homeDashboardPath}
+        >
           <Logo />
-          {!isCollapsed && <BrandText className="whitespace-nowrap text-xl font-bold" />}
+          {!isCollapsed && (
+            <BrandText className="truncate text-base font-semibold tracking-tight text-sidebar-foreground" />
+          )}
         </Link>
-        <div className="hidden md:block">
-          <SidebarTrigger />
-        </div>
       </SidebarHeader>
-      <SidebarContent>
+      <SidebarContent className="px-2 py-3">
         <SidebarNav isCollapsed={isCollapsed} />
       </SidebarContent>
-      <SidebarFooter className="flex flex-col items-stretch gap-2">
+      <SidebarFooter className="border-t border-sidebar-border/80 p-2">
         <ThemeToggle />
-        <UserNav />
       </SidebarFooter>
     </Sidebar>
   );

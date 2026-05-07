@@ -1,12 +1,30 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent } from '@/components/ui/card';
-import { Loader2, AlertCircle, BarChart3, Users, Home, User } from 'lucide-react';
+import {
+  Loader2,
+  AlertCircle,
+  BarChart3,
+  Users,
+  Sparkles,
+  Home,
+  TrendingUp,
+  Target,
+  LayoutGrid,
+} from 'lucide-react';
 import { useEnhancedAgentData } from '@/hooks/useEnhancedAgentData';
 import AgentDashboardOverview from '@/components/agent/AgentDashboardOverview';
 import AgentLeadManagement from '@/components/agent/AgentLeadManagement';
 import AgentPerformanceAnalytics from '@/components/agent/AgentPerformanceAnalytics';
 import { RoleScreeningBanner } from '@/components/screening/RoleScreeningBanner';
+import { DamianixProAssistantChat } from '@/components/assistant/DamianixProAssistantChat';
+import { RoleDashboardInsights } from '@/components/dashboard/role-dashboard/RoleDashboardInsights';
+import type {
+  RoleDashboardActivity,
+  RoleDashboardQuickAction,
+  RoleDashboardStat,
+} from '@/components/dashboard/role-dashboard/types';
+import { formatDistanceToNow } from 'date-fns';
 
 const EnhancedAgentDashboardPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState('overview');
@@ -22,6 +40,66 @@ const EnhancedAgentDashboardPage: React.FC = () => {
     updateLeadStatus,
     addNewLead,
   } = useEnhancedAgentData();
+
+  const fmtNgn = (n: number) =>
+    new Intl.NumberFormat('en-NG', {
+      style: 'currency',
+      currency: 'NGN',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    }).format(n);
+
+  const agentPulse = useMemo(() => {
+    const s = stats;
+    const statsRow: RoleDashboardStat[] = [
+      {
+        title: 'Pipeline leads',
+        value: String(s?.totalLeads ?? 0),
+        icon: <Users className="h-4 w-4" />,
+        description: `${s?.activeLeads ?? 0} active`,
+      },
+      {
+        title: 'Conversion rate',
+        value: s != null ? `${Math.round(s.conversionRate)}%` : '—',
+        icon: <Target className="h-4 w-4" />,
+        description: 'Closed ÷ total leads',
+      },
+      {
+        title: 'Active listings',
+        value: String(s?.activeListings ?? 0),
+        icon: <Home className="h-4 w-4" />,
+        description: `${s?.totalProperties ?? 0} properties tracked`,
+      },
+      {
+        title: 'Commission (total)',
+        value: s != null ? fmtNgn(s.totalCommission) : '—',
+        icon: <TrendingUp className="h-4 w-4" />,
+        description: s != null ? `${fmtNgn(s.monthlyCommission)} this month` : '',
+      },
+    ];
+
+    const quickActions: RoleDashboardQuickAction[] = [
+      { label: 'CRM pipeline', to: '/crm/pipeline', icon: LayoutGrid },
+      { label: 'Properties', to: '/properties', icon: Home },
+      { label: 'Service tickets', to: '/maintenance/service-tickets', icon: BarChart3 },
+      { label: 'Executive analytics', to: '/analytics/executive', icon: TrendingUp },
+    ];
+
+    const activities: RoleDashboardActivity[] = [...(leads || [])]
+      .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+      .slice(0, 8)
+      .map((lead) => ({
+        id: lead.id,
+        title: `${lead.client_name} · ${lead.status.replace(/_/g, ' ')}`,
+        meta: lead.preferred_location || lead.lead_source,
+        time: lead.created_at
+          ? formatDistanceToNow(new Date(lead.created_at), { addSuffix: true })
+          : undefined,
+        icon: '📇',
+      }));
+
+    return { statsRow, quickActions, activities };
+  }, [leads, stats]);
 
   if (isLoading) {
     return (
@@ -77,6 +155,16 @@ const EnhancedAgentDashboardPage: React.FC = () => {
     <div className="min-h-screen bg-gray-50">
       <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
         <RoleScreeningBanner />
+
+        <RoleDashboardInsights
+          sectionTitle="Agency pulse"
+          stats={agentPulse.statsRow}
+          quickActions={agentPulse.quickActions}
+          activities={agentPulse.activities}
+          activityTitle="Recent leads"
+          activityEmptyMessage="No leads in your workspace yet."
+        />
+
         {/* Header */}
         <div className="mb-8">
           <div className="flex items-center justify-between">
@@ -106,7 +194,7 @@ const EnhancedAgentDashboardPage: React.FC = () => {
 
         {/* Main Dashboard Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-3 lg:w-auto lg:grid-cols-3">
+          <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4 lg:inline-flex lg:w-auto">
             <TabsTrigger value="overview" className="flex items-center space-x-2">
               <BarChart3 className="h-4 w-4" />
               <span>Overview</span>
@@ -118,6 +206,10 @@ const EnhancedAgentDashboardPage: React.FC = () => {
             <TabsTrigger value="analytics" className="flex items-center space-x-2">
               <BarChart3 className="h-4 w-4" />
               <span>Analytics</span>
+            </TabsTrigger>
+            <TabsTrigger value="assistant" className="flex items-center space-x-2">
+              <Sparkles className="h-4 w-4" />
+              <span>Assistant</span>
             </TabsTrigger>
           </TabsList>
 
@@ -145,6 +237,10 @@ const EnhancedAgentDashboardPage: React.FC = () => {
           {/* Analytics Tab */}
           <TabsContent value="analytics" className="space-y-6">
             <AgentPerformanceAnalytics performanceMetrics={performanceMetrics} />
+          </TabsContent>
+
+          <TabsContent value="assistant" className="space-y-6">
+            <DamianixProAssistantChat />
           </TabsContent>
         </Tabs>
 

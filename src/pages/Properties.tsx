@@ -13,17 +13,19 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card } from '@/components/ui/card';
 import { EditPropertyDialog } from '@/components/properties/EditPropertyDialog';
 import { useAuthSession } from '@/contexts/auth';
-import { toast } from 'sonner';
+import { notifyError } from '@/utils/notify';
 import { PropertyList } from '@/components/properties/PropertyList';
 import { PropertyMap } from '@/components/properties/PropertyMap';
 import { useProperties } from '@/hooks/useProperties';
 import { PageLoader } from '@/components/ui/PageLoader';
 import { OwnerSubscriptionGateBanner } from '@/components/owner/OwnerSubscriptionGateBanner';
 import { useOwnerSubscriptionAccess } from '@/hooks/useOwnerSubscriptionAccess';
+import { TableSkeleton } from '@/components/skeletons/TableSkeleton';
 
 const Properties = () => {
   const navigate = useNavigate();
-  const { userRole, isLoading: authLoading, isOwner, isAgent } = useAuthSession();
+  const { userRole, isLoading: authLoading, isOwner, isAgent, hasPermission } = useAuthSession();
+  const canWriteProperties = hasPermission('properties.write');
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isAddShortletDialogOpen, setIsAddShortletDialogOpen] = useState(false);
   const [selectedPropertyForShortlet, setSelectedPropertyForShortlet] = useState<
@@ -70,7 +72,7 @@ const Properties = () => {
   const handleCreateShortlet = (propertyId?: string) => {
     if (isOwner() && (isCheckingAccess || !hasPaidOwnerAccess)) {
       if (!isCheckingAccess) {
-        toast.error('Subscribe or start a trial to create short-let listings.');
+        notifyError('Upgrade required', 'Subscribe or start a trial to create short-let listings.');
       }
       return;
     }
@@ -81,12 +83,22 @@ const Properties = () => {
   const openAddPropertyDialog = () => {
     if (isCheckingAccess || !hasPaidOwnerAccess) {
       if (!isCheckingAccess) {
-        toast.error('Subscribe or start a trial to add properties.');
+        notifyError('Upgrade required', 'Subscribe or start a trial to add properties.');
       }
       return;
     }
     setIsAddDialogOpen(true);
   };
+
+  if (isLoading) {
+    return (
+      <PageLayout>
+        <PageContent title="My Properties" description="Loading your portfolio…">
+          <TableSkeleton rows={8} cols={4} />
+        </PageContent>
+      </PageLayout>
+    );
+  }
 
   const handleShortletAdded = () => {
     refreshProperties();
@@ -100,17 +112,28 @@ const Properties = () => {
 
   return (
     <PageLayout>
-      <PageContent title="Properties" description="Manage your real estate portfolio">
+      <PageContent
+        title="Properties"
+        description={
+          canWriteProperties
+            ? 'Manage your real estate portfolio'
+            : 'View properties and units (read-only for your role)'
+        }
+      >
         {isOwner() && <OwnerSubscriptionGateBanner />}
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="flex flex-col space-y-4">
-          <div className="flex flex-col items-start justify-between gap-4 md:flex-row md:items-center">
-            <TabsList className="grid w-full grid-cols-3 md:w-auto">
+        <Tabs
+          value={activeTab}
+          onValueChange={setActiveTab}
+          className="flex flex-col space-y-4 sm:space-y-5"
+        >
+          <div className="flex flex-col items-start justify-between gap-3 sm:gap-4 md:flex-row md:items-center">
+            <TabsList className="grid w-full grid-cols-3 sm:w-auto">
               <TabsTrigger value="grid">Grid View</TabsTrigger>
               <TabsTrigger value="list">List View</TabsTrigger>
               <TabsTrigger value="map">Map View</TabsTrigger>
             </TabsList>
 
-            <div className="flex items-center space-x-2 self-end md:self-auto">
+            <div className="flex w-full items-center gap-2 sm:w-auto sm:self-end md:self-auto">
               <Button variant="outline" size="sm" onClick={exportProperties}>
                 <Download className="mr-2 h-4 w-4" />
                 Export
@@ -155,7 +178,7 @@ const Properties = () => {
             <PropertyFilters activeFilter={activeFilter} setActiveFilter={setActiveFilter} />
           </Card>
 
-          <TabsContent value="grid" className="mt-4">
+          <TabsContent value="grid" className="mt-2 sm:mt-4">
             <PropertyGrid
               properties={filteredProperties}
               isLoading={isLoading}
@@ -165,7 +188,7 @@ const Properties = () => {
             />
           </TabsContent>
 
-          <TabsContent value="list" className="mt-4">
+          <TabsContent value="list" className="mt-2 sm:mt-4">
             <PropertyList
               properties={filteredProperties}
               isLoading={isLoading}
@@ -174,7 +197,7 @@ const Properties = () => {
             />
           </TabsContent>
 
-          <TabsContent value="map" className="mt-4">
+          <TabsContent value="map" className="mt-2 sm:mt-4">
             <PropertyMap properties={filteredProperties} />
           </TabsContent>
         </Tabs>

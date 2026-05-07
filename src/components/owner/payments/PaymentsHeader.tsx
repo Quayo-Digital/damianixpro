@@ -17,13 +17,8 @@ export const PaymentsHeader = ({
   loading,
 }: PaymentsHeaderProps) => {
   return (
-    <div className="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
-      <div>
-        <h2 className="text-3xl font-bold">Payment Management</h2>
-        <p className="text-muted-foreground">Track and manage your property income</p>
-      </div>
-
-      <div className="flex items-center gap-2">
+    <div className="flex flex-col items-stretch justify-end gap-4 sm:flex-row sm:items-center sm:justify-end">
+      <div className="flex flex-wrap items-center justify-end gap-2">
         <DateRangePicker
           value={dateRange}
           onValueChange={setDateRange}

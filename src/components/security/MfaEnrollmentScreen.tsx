@@ -34,6 +34,11 @@ export function MfaEnrollmentScreen({ onEnrolled, onSignOut }: Props) {
         const data = await prepareTotpEnrollment();
         if (cancelled) return;
 
+        if (data.kind === 'already_verified') {
+          onEnrolled();
+          return;
+        }
+
         setFactorId(data.factorId);
         setQrSrc(qrCodeToImgSrc(data.qrCode));
         setSecret(data.secret);

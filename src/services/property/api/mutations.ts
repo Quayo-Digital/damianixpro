@@ -4,6 +4,7 @@ import { Property, PropertyFormValues } from '../types';
 import { mapSupabaseToProperty } from '../utils';
 import { uploadPropertyDocuments, deletePropertyDocuments } from '../documentService';
 import { assertOwnerSubscriptionForPaidFeatures } from '@/services/subscription/ownerSubscriptionAccess';
+import { assertWithinPropertyLimit } from '@/services/subscription/planEnforcement';
 import { assertRoleScreeningForMonetization } from '@/services/screening/roleScreeningAccess';
 
 /** Must match migration 20260320000000_fix_properties_organization_id.sql */
@@ -293,6 +294,7 @@ export const createProperty = async (
       throw new Error('Missing owner. Sign in and try again.');
     }
     await assertOwnerSubscriptionForPaidFeatures(ownerId);
+    await assertWithinPropertyLimit(ownerId);
     await assertRoleScreeningForMonetization(ownerId, 'owner');
     await ensureProfileForPropertyOwner(ownerId, session?.user ?? null);
 

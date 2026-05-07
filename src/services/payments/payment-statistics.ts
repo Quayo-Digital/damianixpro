@@ -1,4 +1,5 @@
 import { supabase } from '@/integrations/supabase/client';
+import { toPgDateOnly } from '@/utils/toPgDateOnly';
 
 /**
  * Gets payment statistics grouped by category
@@ -10,18 +11,20 @@ export const getPaymentStatsByCategory = async (
 ): Promise<Record<string, number>> => {
   try {
     // Build query separately without chaining to avoid deep instantiation
-    let query = supabase.from('rent_payments').select('*');
+    let query = supabase
+      .from('rent_payments')
+      .select('amount, category, payment_date, status, property_tenant_id');
 
     // Add status filter
     query = query.eq('status', 'successful');
 
     // Apply additional filters
     if (startDate) {
-      query = query.gte('payment_date', startDate);
+      query = query.gte('payment_date', toPgDateOnly(startDate));
     }
 
     if (endDate) {
-      query = query.lte('payment_date', endDate);
+      query = query.lte('payment_date', toPgDateOnly(endDate));
     }
 
     if (propertyId) {

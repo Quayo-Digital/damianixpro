@@ -124,10 +124,21 @@ export async function storeUserRole(userId: string, role: UserRole): Promise<voi
 }
 
 // Validate if the provided role is a valid UserRole
+const USER_ROLE_VALUES: readonly UserRole[] = [
+  'super_admin',
+  'admin',
+  'owner',
+  'agent',
+  'tenant',
+  'vendor',
+  'user',
+  'manager',
+  'accountant',
+  'facility_manager',
+] as const;
+
 export function isValidUserRole(role: string): role is UserRole {
-  return ['super_admin', 'admin', 'owner', 'agent', 'tenant', 'vendor', 'user', 'manager'].includes(
-    role as UserRole
-  );
+  return (USER_ROLE_VALUES as readonly string[]).includes(role);
 }
 
 // Role helpers
@@ -153,6 +164,12 @@ export function checkIsVendor(role: UserRole | null): boolean {
 export function checkIsManager(role: UserRole | null): boolean {
   return role === 'manager';
 }
+export function checkIsAccountant(role: UserRole | null): boolean {
+  return role === 'accountant';
+}
+export function checkIsFacilityManager(role: UserRole | null): boolean {
+  return role === 'facility_manager';
+}
 
 // Get display name for role
 export function getRoleDisplay(role: UserRole | null): string {
@@ -171,6 +188,10 @@ export function getRoleDisplay(role: UserRole | null): string {
       return 'Service Provider';
     case 'manager':
       return 'Property Manager';
+    case 'facility_manager':
+      return 'Facility Manager';
+    case 'accountant':
+      return 'Accountant';
     case 'user':
       return 'User';
     default:

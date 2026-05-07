@@ -4,6 +4,9 @@
  * Events: payment_successful | payment_failed | rent_due_reminder
  * Channels: Email (Resend) | SMS (Twilio) | WhatsApp (Meta)
  *
+ * Prefer the durable queue for new triggers: server/notifications/outboxTriggers.mjs
+ * (Flutterwave webhooks, rent reminders, and maintenance status use the outbox + inline drain.)
+ *
  * Usage:
  *   await notifyPayment({ event: 'payment_successful', tenant, amount, txRef });
  *   await notifyPayment({ event: 'payment_failed', tenant, txRef });
@@ -307,3 +310,11 @@ export async function notifyPayment(opts) {
 
   return { sent, failed };
 }
+
+/** Shared transport for the notification outbox / channel adapters. */
+export const channelTransport = {
+  sendEmail,
+  sendSMS,
+  sendWhatsApp,
+  createInAppNotification,
+};

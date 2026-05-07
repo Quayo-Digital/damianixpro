@@ -12,26 +12,26 @@ const filters: { label: string; value: MilestoneFilterType; color: string; hover
     {
       label: 'Upcoming',
       value: 'upcoming',
-      color: 'bg-blue-500',
-      hoverColor: 'bg-blue-100 text-blue-700 hover:bg-blue-200',
+      color: 'bg-accent text-accent-foreground',
+      hoverColor: 'bg-accent/70 text-accent-foreground hover:bg-accent',
     },
     {
       label: 'Active',
       value: 'active',
-      color: 'bg-green-500',
-      hoverColor: 'bg-green-100 text-green-700 hover:bg-green-200',
+      color: 'bg-primary text-primary-foreground',
+      hoverColor: 'bg-primary/20 text-primary hover:bg-primary/25',
     },
     {
       label: 'Overdue',
       value: 'overdue',
-      color: 'bg-red-500',
-      hoverColor: 'bg-red-100 text-red-700 hover:bg-red-200',
+      color: 'bg-destructive text-destructive-foreground',
+      hoverColor: 'bg-destructive/10 text-destructive hover:bg-destructive/15',
     },
     {
       label: 'Completed',
       value: 'completed',
-      color: 'bg-gray-500',
-      hoverColor: 'bg-gray-100 text-gray-700 hover:bg-gray-200',
+      color: 'bg-secondary text-secondary-foreground',
+      hoverColor: 'bg-secondary/70 text-secondary-foreground hover:bg-secondary',
     },
   ];
 

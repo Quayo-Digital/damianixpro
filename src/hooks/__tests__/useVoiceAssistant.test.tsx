@@ -9,7 +9,28 @@ const mockHasFeatureAccess = vi.fn((feature: string) => feature === 'voice_assis
 const mockUser = { id: 'user-voice-1' };
 
 vi.mock('@/contexts/auth', () => ({
-  useAuthSession: () => ({ user: mockUser }),
+  useAuthSession: () => ({
+    user: mockUser,
+    userRole: 'tenant',
+    session: null,
+    isLoading: false,
+    loading: false,
+    isSuperAdmin: () => false,
+    isAdmin: () => false,
+    isOwner: () => false,
+    isAgent: () => false,
+    isTenant: () => true,
+    isVendor: () => false,
+    isManager: () => false,
+    isAccountant: () => false,
+    isFacilityManager: () => false,
+    isAuthenticated: () => true,
+    getRoleDisplay: () => 'Tenant',
+    permissions: [],
+    hasPermission: () => true,
+    hasAnyPermission: () => true,
+    hasAllPermissions: () => true,
+  }),
 }));
 
 vi.mock('@/hooks/useSubscription', () => ({

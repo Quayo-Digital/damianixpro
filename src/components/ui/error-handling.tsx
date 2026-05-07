@@ -88,10 +88,10 @@ export const DefaultErrorFallback = ({ error, retry }: ErrorFallbackProps) => {
     <div className="flex min-h-[400px] items-center justify-center p-4">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
-          <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-red-100">
-            <AlertTriangle className="h-6 w-6 text-red-600" />
+          <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-destructive/10">
+            <AlertTriangle className="h-6 w-6 text-destructive" />
           </div>
-          <CardTitle className="text-red-900">Something went wrong</CardTitle>
+          <CardTitle>Something went wrong</CardTitle>
           <CardDescription>
             An unexpected error occurred. Please try again or contact support if the problem
             persists.
@@ -132,13 +132,13 @@ export const DefaultErrorFallback = ({ error, retry }: ErrorFallbackProps) => {
 
 // Network Error Component
 export const NetworkError = ({ onRetry }: { onRetry?: () => void }) => (
-  <Alert className="border-orange-200 bg-orange-50">
-    <WifiOff className="h-4 w-4 text-orange-600" />
-    <AlertTitle className="text-orange-900">Connection Problem</AlertTitle>
-    <AlertDescription className="text-orange-800">
+  <Alert className="border-border bg-accent/40">
+    <WifiOff className="h-4 w-4 text-primary" />
+    <AlertTitle>Connection Problem</AlertTitle>
+    <AlertDescription>
       Unable to connect to the server. Please check your internet connection and try again.
       {onRetry && (
-        <Button variant="link" onClick={onRetry} className="ml-2 h-auto p-0 text-orange-700">
+        <Button variant="link" onClick={onRetry} className="ml-2 h-auto p-0">
           Retry
         </Button>
       )}
@@ -158,10 +158,10 @@ export const ValidationError = ({ errors, className }: ValidationErrorProps) => 
   if (errorEntries.length === 0) return null;
 
   return (
-    <Alert className={cn('border-red-200 bg-red-50', className)}>
-      <AlertTriangle className="h-4 w-4 text-red-600" />
-      <AlertTitle className="text-red-900">Please fix the following errors:</AlertTitle>
-      <AlertDescription className="text-red-800">
+    <Alert className={cn('border-destructive/40 bg-destructive/10', className)}>
+      <AlertTriangle className="h-4 w-4 text-destructive" />
+      <AlertTitle>Please fix the following errors:</AlertTitle>
+      <AlertDescription>
         <ul className="mt-2 space-y-1">
           {errorEntries.map(([field, messages]) => (
             <li key={field} className="text-sm">
@@ -184,7 +184,7 @@ interface FieldErrorProps {
 export const FieldError = ({ error, className }: FieldErrorProps) => {
   if (!error) return null;
 
-  return <p className={cn('mt-1 text-sm text-red-600', className)}>{error}</p>;
+  return <p className={cn('mt-1 text-sm text-destructive', className)}>{error}</p>;
 };
 
 // API Error Handler Hook
@@ -268,10 +268,10 @@ interface ErrorAlertProps {
 
 export const ErrorAlert = ({ error, onRetry, onDismiss, className }: ErrorAlertProps) => {
   return (
-    <Alert className={cn('border-red-200 bg-red-50', className)}>
-      <AlertTriangle className="h-4 w-4 text-red-600" />
-      <AlertTitle className="text-red-900">{error.message}</AlertTitle>
-      <AlertDescription className="text-red-800">
+    <Alert className={cn('border-destructive/40 bg-destructive/10', className)}>
+      <AlertTriangle className="h-4 w-4 text-destructive" />
+      <AlertTitle>{error.message}</AlertTitle>
+      <AlertDescription>
         {error.details}
         <div className="mt-3 flex space-x-2">
           {error.retryable && onRetry && (
@@ -329,8 +329,8 @@ export const Unauthorized = () => (
   <div className="flex min-h-[60vh] items-center justify-center p-4">
     <Card className="w-full max-w-md">
       <CardHeader className="text-center">
-        <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-yellow-100">
-          <AlertTriangle className="h-6 w-6 text-yellow-600" />
+        <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-accent">
+          <AlertTriangle className="h-6 w-6 text-primary" />
         </div>
         <CardTitle>Access Denied</CardTitle>
         <CardDescription>You don't have permission to access this page.</CardDescription>
@@ -355,8 +355,8 @@ export const ServerError = ({ onRetry }: { onRetry?: () => void }) => (
   <div className="flex min-h-[60vh] items-center justify-center p-4">
     <Card className="w-full max-w-md">
       <CardHeader className="text-center">
-        <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-red-100">
-          <Bug className="h-6 w-6 text-red-600" />
+        <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-destructive/10">
+          <Bug className="h-6 w-6 text-destructive" />
         </div>
         <CardTitle>Server Error</CardTitle>
         <CardDescription>Something went wrong on our end. We're working to fix it.</CardDescription>
@@ -406,7 +406,7 @@ export const ConnectionStatus = () => {
   if (isOnline) return null;
 
   return (
-    <div className="fixed left-0 right-0 top-0 z-50 bg-red-600 py-2 text-center text-sm text-white">
+    <div className="fixed left-0 right-0 top-0 z-50 bg-destructive py-2 text-center text-sm text-destructive-foreground">
       <WifiOff className="mr-2 inline h-4 w-4" />
       You're offline. Some features may not work properly.
     </div>

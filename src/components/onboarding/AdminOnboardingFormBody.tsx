@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import { UseFormReturn } from 'react-hook-form';
 import { AdminOnboardingFormValues } from './adminOnboardingSchema';
 import {
@@ -38,8 +39,20 @@ export function AdminOnboardingFormBody({
         <Card>
           <CardHeader>
             <CardTitle>Complete Your Organization Profile</CardTitle>
-            <CardDescription>
-              Set up your organization’s admin profile and default settings.
+            <CardDescription className="space-y-2">
+              <span className="block">
+                Set up your organization’s admin profile and default settings.
+              </span>
+              <span className="block text-xs leading-relaxed">
+                Migrating spreadsheets or onboarding a large landlord team? Continue here after
+                signup:{' '}
+                <Link
+                  className="font-medium text-primary underline-offset-4 hover:underline"
+                  to="/organization/setup"
+                >
+                  Company setup &amp; Excel import wizard
+                </Link>
+              </span>
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">

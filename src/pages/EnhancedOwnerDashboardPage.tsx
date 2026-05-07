@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -44,12 +44,15 @@ import {
   CreditCard,
   MapPin,
   Search,
+  AlertTriangle,
+  CalendarClock,
 } from 'lucide-react';
 import { useEnhancedOwnerData } from '@/hooks/useEnhancedOwnerData';
 import OwnerDashboardOverview from '@/components/owner/OwnerDashboardOverview';
 import OwnerPropertyPortfolio from '@/components/owner/OwnerPropertyPortfolio';
 import OwnerFinancialAnalytics from '@/components/owner/OwnerFinancialAnalytics';
 import { PageLayout } from '@/components/layout/PageLayout';
+import { PageContent } from '@/components/layout/PageContent';
 import { AddPropertyDialog } from '@/components/properties/AddPropertyDialog';
 import { AddShortletDialog } from '@/components/shortlet/AddShortletDialog';
 import { VoiceAssistantWidget } from '@/components/voice/VoiceAssistantWidget';
@@ -58,6 +61,13 @@ import { toast } from 'sonner';
 import { OwnerSubscriptionGateBanner } from '@/components/owner/OwnerSubscriptionGateBanner';
 import { RoleScreeningBanner } from '@/components/screening/RoleScreeningBanner';
 import { useOwnerSubscriptionAccess } from '@/hooks/useOwnerSubscriptionAccess';
+import { RoleDashboardInsights } from '@/components/dashboard/role-dashboard/RoleDashboardInsights';
+import type {
+  RoleDashboardActivity,
+  RoleDashboardQuickAction,
+  RoleDashboardStat,
+} from '@/components/dashboard/role-dashboard/types';
+import { formatDistanceToNow } from 'date-fns';
 
 const EnhancedOwnerDashboardPage: React.FC = () => {
   const navigate = useNavigate();
@@ -90,6 +100,65 @@ const EnhancedOwnerDashboardPage: React.FC = () => {
     addTenant,
     updateTenant,
   } = useEnhancedOwnerData();
+
+  const ownerPulse = useMemo(() => {
+    const activeLeaseCount = tenants?.filter((t) => t.lease_status === 'active').length ?? 0;
+    const expiringSoonCount =
+      tenants?.filter((t) => t.lease_status === 'expiring_soon').length ?? 0;
+    const lateCount =
+      tenants?.filter((t) => t.payment_status === 'late' || t.payment_status === 'overdue')
+        .length ?? 0;
+    const pendingMaint = stats?.pendingMaintenanceRequests ?? 0;
+
+    const statsRow: RoleDashboardStat[] = [
+      {
+        title: 'Leases expiring soon',
+        value: String(expiringSoonCount),
+        icon: <CalendarClock className="h-4 w-4" />,
+        description: 'Needs renewal attention',
+      },
+      {
+        title: 'Late / overdue rent',
+        value: String(lateCount),
+        icon: <AlertTriangle className="h-4 w-4" />,
+        description: 'Tenants off schedule',
+      },
+      {
+        title: 'Pending maintenance',
+        value: String(pendingMaint),
+        icon: <Wrench className="h-4 w-4" />,
+        description: 'Open requests across portfolio',
+      },
+      {
+        title: 'Active leases',
+        value: String(activeLeaseCount),
+        icon: <Users className="h-4 w-4" />,
+        description: 'Currently active lease agreements',
+      },
+    ];
+
+    const quickActions: RoleDashboardQuickAction[] = [
+      { label: 'Portfolio & units', to: '/properties', icon: Building },
+      { label: 'Owner payments', to: '/owner/payments', icon: CreditCard },
+      { label: 'Accounting (NG)', to: '/accounting', icon: FileBarChart },
+      { label: 'Maintenance hub', to: '/maintenance', icon: Wrench },
+    ];
+
+    const fin = [...(finances || [])].sort(
+      (a, b) => new Date(b.transaction_date).getTime() - new Date(a.transaction_date).getTime()
+    );
+    const activities: RoleDashboardActivity[] = fin.slice(0, 8).map((row) => ({
+      id: row.id,
+      title: `${row.transaction_type === 'income' ? 'Income' : 'Expense'} · ${row.category}`,
+      meta: row.description,
+      time: row.transaction_date
+        ? formatDistanceToNow(new Date(row.transaction_date), { addSuffix: true })
+        : undefined,
+      icon: row.transaction_type === 'income' ? '📥' : '📤',
+    }));
+
+    return { statsRow, quickActions, activities };
+  }, [tenants, stats, finances]);
 
   // Quick Actions handlers
   const handleAddProperty = () => {
@@ -170,8 +239,12 @@ const EnhancedOwnerDashboardPage: React.FC = () => {
   if (loading) {
     return (
       <PageLayout>
-        <div className="space-y-6">
-          <div className="animate-pulse">
+        <PageContent
+          title="Owner dashboard"
+          description="Loading your portfolio…"
+          showBreadcrumbs={false}
+        >
+          <div className="animate-pulse space-y-5 sm:space-y-6">
             <div className="mb-4 h-8 w-1/4 rounded bg-muted"></div>
             <div className="mb-6 grid grid-cols-1 gap-6 md:grid-cols-4">
               {[1, 2, 3, 4].map((i) => (
@@ -180,7 +253,7 @@ const EnhancedOwnerDashboardPage: React.FC = () => {
             </div>
             <div className="h-96 rounded bg-muted"></div>
           </div>
-        </div>
+        </PageContent>
       </PageLayout>
     );
   }
@@ -188,38 +261,36 @@ const EnhancedOwnerDashboardPage: React.FC = () => {
   if (error) {
     return (
       <PageLayout>
-        <div className="py-12 text-center">
-          <div className="mb-4 text-red-600">
-            <Shield className="mx-auto mb-4 h-12 w-12" />
-            <h2 className="text-xl font-semibold">Error Loading Dashboard</h2>
-            <p className="mt-2 text-muted-foreground">{error}</p>
+        <PageContent
+          title="Owner dashboard"
+          description="We could not load this view."
+          showBreadcrumbs={false}
+        >
+          <div className="py-8 text-center">
+            <div className="mb-4 text-red-600">
+              <Shield className="mx-auto mb-4 h-12 w-12" />
+              <p className="text-lg font-semibold">Error loading dashboard</p>
+              <p className="mt-2 text-muted-foreground">{error}</p>
+            </div>
+            <Button type="button" onClick={refreshData} className="mt-4">
+              Try again
+            </Button>
           </div>
-          <Button onClick={refreshData} className="mt-4">
-            Try Again
-          </Button>
-        </div>
+        </PageContent>
       </PageLayout>
     );
   }
 
   return (
     <PageLayout>
-      <div className="space-y-6">
-        <OwnerSubscriptionGateBanner />
-        <RoleScreeningBanner />
-        {/* Header */}
-        <div className="flex flex-col items-start justify-between space-y-4 lg:flex-row lg:items-center lg:space-y-0">
-          <div>
-            <h1 className="text-3xl font-bold text-foreground">Enhanced Owner Dashboard</h1>
-            <p className="mt-1 text-muted-foreground">
-              Welcome back, {ownerProfile?.name || 'Owner'}! Manage your property portfolio with
-              advanced insights.
-            </p>
-          </div>
-          <div className="flex items-center space-x-3">
-            <Button variant="outline" onClick={refreshData}>
+      <PageContent
+        title="Enhanced owner dashboard"
+        description={`Welcome back, ${ownerProfile?.name || 'Owner'}! Manage your property portfolio with advanced insights.`}
+        actions={
+          <div className="flex flex-wrap items-center justify-end gap-2">
+            <Button type="button" variant="outline" onClick={refreshData}>
               <TrendingUp className="mr-2 h-4 w-4" />
-              Refresh Data
+              Refresh data
             </Button>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -290,7 +361,19 @@ const EnhancedOwnerDashboardPage: React.FC = () => {
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
-        </div>
+        }
+      >
+        <OwnerSubscriptionGateBanner />
+        <RoleScreeningBanner />
+
+        <RoleDashboardInsights
+          sectionTitle="Portfolio pulse"
+          stats={ownerPulse.statsRow}
+          quickActions={ownerPulse.quickActions}
+          activities={ownerPulse.activities}
+          activityTitle="Recent ledger activity"
+          activityEmptyMessage="No recent income or expense lines yet."
+        />
 
         {/* Key Metrics Summary */}
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
@@ -363,8 +446,8 @@ const EnhancedOwnerDashboardPage: React.FC = () => {
         />
 
         {/* Main Dashboard Content */}
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-5 sm:space-y-6">
+          <TabsList className="grid w-full grid-cols-2 gap-2 sm:grid-cols-4">
             <TabsTrigger value="overview" className="flex items-center space-x-2">
               <Home className="h-4 w-4" />
               <span>Overview</span>
@@ -383,7 +466,7 @@ const EnhancedOwnerDashboardPage: React.FC = () => {
             </TabsTrigger>
           </TabsList>
 
-          <TabsContent value="overview" className="space-y-6">
+          <TabsContent value="overview" className="space-y-5 sm:space-y-6">
             <OwnerDashboardOverview
               ownerProfile={ownerProfile}
               stats={stats}
@@ -398,7 +481,7 @@ const EnhancedOwnerDashboardPage: React.FC = () => {
             />
           </TabsContent>
 
-          <TabsContent value="portfolio" className="space-y-6">
+          <TabsContent value="portfolio" className="space-y-5 sm:space-y-6">
             <OwnerPropertyPortfolio
               properties={properties}
               onAddProperty={handleAddProperty}
@@ -406,11 +489,11 @@ const EnhancedOwnerDashboardPage: React.FC = () => {
             />
           </TabsContent>
 
-          <TabsContent value="analytics" className="space-y-6">
+          <TabsContent value="analytics" className="space-y-5 sm:space-y-6">
             <OwnerFinancialAnalytics finances={finances} performanceMetrics={performanceMetrics} />
           </TabsContent>
 
-          <TabsContent value="tenants" className="space-y-6">
+          <TabsContent value="tenants" className="space-y-5 sm:space-y-6">
             <Card>
               <CardHeader>
                 <CardTitle>Tenant Management</CardTitle>
@@ -609,7 +692,7 @@ const EnhancedOwnerDashboardPage: React.FC = () => {
             </div>
           </DialogContent>
         </Dialog>
-      </div>
+      </PageContent>
     </PageLayout>
   );
 };

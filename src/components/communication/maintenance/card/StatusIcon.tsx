@@ -7,12 +7,12 @@ interface StatusIconProps {
 export function StatusIcon({ status }: StatusIconProps) {
   switch (status) {
     case 'pending':
-      return <Clock className="h-4 w-4 text-amber-500" />;
+      return <Clock className="h-4 w-4 text-muted-foreground" />;
     case 'in_progress':
-      return <WrenchIcon className="h-4 w-4 text-blue-500" />;
+      return <WrenchIcon className="h-4 w-4 text-primary" />;
     case 'completed':
-      return <CheckCircle2 className="h-4 w-4 text-green-500" />;
+      return <CheckCircle2 className="h-4 w-4 text-primary" />;
     default:
-      return <AlertTriangle className="h-4 w-4 text-gray-500" />;
+      return <AlertTriangle className="h-4 w-4 text-muted-foreground" />;
   }
 }

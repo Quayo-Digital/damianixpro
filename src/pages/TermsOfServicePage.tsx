@@ -118,11 +118,11 @@ export default function TermsOfServicePage() {
         <h2 className="text-xl font-semibold text-foreground">11. Contact</h2>
         <p className="text-muted-foreground">
           Questions about these Terms:{' '}
-          <a href="mailto:legal@damianixpro.com" className="text-green-600 hover:text-green-700">
+          <a href="mailto:legal@damianixpro.com" className="text-primary hover:text-primary/90">
             legal@damianixpro.com
           </a>
           . See our{' '}
-          <Link to="/privacy" className="text-green-600 hover:text-green-700">
+          <Link to="/privacy" className="text-primary hover:text-primary/90">
             Privacy Policy
           </Link>{' '}
           for data practices.

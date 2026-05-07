@@ -278,18 +278,6 @@ serve(async (req) => {
       auth: { autoRefreshToken: false, persistSession: false },
     });
 
-    // Fetch configurable rates
-    const { data: configRows } = await supabase
-      .from('accounting_config')
-      .select('key, value')
-      .in('key', ['platform_fee_rate', 'default_agent_commission_rate', 'default_tax_rate']);
-    const configMap = Object.fromEntries(
-      (configRows || []).map((r: { key: string; value: unknown }) => [r.key, r.value])
-    );
-    const platformFeeRate = Number(configMap.platform_fee_rate) || 0.05;
-    const defaultAgentRate = Number(configMap.default_agent_commission_rate) || 0.03;
-    const taxRate = Number(configMap.default_tax_rate) || 0.075;
-
     let paySelect = supabase
       .from('rent_payments')
       .select('*, property_tenants(*, properties(*), tenants(*))');
@@ -341,6 +329,16 @@ serve(async (req) => {
       }
     }
 
+    const amount = Number(raw.amount ?? payment.amount);
+    const expected = Number(payment.amount);
+    if (Math.abs(expected - amount) > 0.01) {
+      console.error('Rent webhook: amount mismatch vs rent_payments row', { expected, amount });
+      return new Response(JSON.stringify({ received: true, ignored: 'amount_mismatch' }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 200,
+      });
+    }
+
     const paidDay = new Date().toISOString().slice(0, 10);
     const { error: updErr } = await supabase
       .from('rent_payments')
@@ -354,59 +352,23 @@ serve(async (req) => {
       return new Response(JSON.stringify({ error: 'update_failed' }), { status: 500 });
     }
 
-    const amount = Number(raw.amount ?? payment.amount);
-    const agentCommissionRate =
-      (payment.property_tenants as { properties?: { agent_commission_rate?: number } })?.properties
-        ?.agent_commission_rate ?? defaultAgentRate;
-    const platformFee = amount * platformFeeRate;
-    const agentCommission = amount * agentCommissionRate;
-    const taxAmount = amount * taxRate;
-    const ownerAmount = amount - (platformFee + agentCommission + taxAmount);
+    const pt = payment.property_tenants as
+      | { properties?: { id?: string }; property_id?: string; tenants?: { user_id?: string } }
+      | undefined;
+    const propertyId = pt?.properties?.id ?? pt?.property_id ?? null;
+    const tenantUserId = pt?.tenants?.user_id ?? null;
 
-    const { error: breakdownError } = await supabase.from('payment_breakdowns').insert({
-      payment_id: payment.id,
-      total_amount: amount,
-      platform_fee: platformFee,
-      agent_commission: agentCommission,
-      owner_amount: ownerAmount,
-      tax_amount: taxAmount,
-      tax_rate: taxRate,
-      paid_to_owner: false,
+    const { error: finalizeErr } = await supabase.rpc('finalize_rent_payment_flutterwave', {
+      p_payment_id: payment.id,
+      p_provider: 'flutterwave',
+      p_external_id: flwRentDedupeId || null,
+      p_property_id: propertyId,
+      p_tenant_user_id: tenantUserId,
+      p_entry_date: paidDay,
     });
 
-    const duplicateBreakdown = breakdownError?.code === '23505';
-    if (breakdownError && !duplicateBreakdown) {
-      console.error('Error recording payment breakdown:', breakdownError);
-    } else if (!breakdownError) {
-      console.log(`Payment breakdown for payment ${payment.id} recorded.`);
-    } else {
-      console.log(
-        `Payment breakdown already exists for payment ${payment.id} (idempotent webhook).`
-      );
-    }
-
-    if (!breakdownError || duplicateBreakdown) {
-      const pt = payment.property_tenants as
-        | { properties?: { id?: string }; property_id?: string; tenants?: { user_id?: string } }
-        | undefined;
-      const propertyId = pt?.properties?.id ?? pt?.property_id ?? null;
-      const tenantUserId = pt?.tenants?.user_id ?? null;
-
-      const { error: journalError } = await supabase.rpc(
-        'create_journal_entries_from_rent_payment',
-        {
-          p_payment_id: payment.id,
-          p_entry_date: new Date().toISOString().slice(0, 10),
-          p_property_id: propertyId,
-          p_tenant_id: tenantUserId,
-        }
-      );
-
-      if (journalError) {
-        console.error('Journal posting failed:', journalError);
-      } else {
-        console.log(`Journal entries ensured for payment ${payment.id}`);
-      }
+    if (finalizeErr) {
+      console.error('Rent webhook: finalize_rent_payment_flutterwave failed', finalizeErr);
     }
   } catch (err) {
     console.error('Error processing webhook:', err);

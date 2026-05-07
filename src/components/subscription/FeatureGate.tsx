@@ -32,8 +32,8 @@ const tierIcons = {
 
 const tierNames = {
   free: 'Free',
-  starter: 'Starter',
-  professional: 'Professional',
+  starter: 'Pro',
+  professional: 'Business',
   enterprise: 'Enterprise',
   white_label: 'White Label',
 };

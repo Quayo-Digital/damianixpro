@@ -1,5 +1,6 @@
 import { supabase } from '@/integrations/supabase/client';
 import { AccountingSummary } from '@/utils/AccountingTypes';
+import { toPgDateOnly } from '@/utils/toPgDateOnly';
 
 /**
  * Gets accounting summary for the specified date range
@@ -12,11 +13,11 @@ export const getAccountingSummary = async (
     let query = supabase.from('payment_breakdowns').select('*, rent_payments!inner(payment_date)');
 
     if (startDate) {
-      query = query.gte('rent_payments.payment_date', startDate);
+      query = query.gte('rent_payments.payment_date', toPgDateOnly(startDate));
     }
 
     if (endDate) {
-      query = query.lte('rent_payments.payment_date', endDate);
+      query = query.lte('rent_payments.payment_date', toPgDateOnly(endDate));
     }
 
     const { data: breakdowns, error } = await query;

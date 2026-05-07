@@ -56,9 +56,11 @@ const formatNgn = (n: number) =>
 type Props = {
   propertyId: string;
   propertyName: string;
+  /** When true, hide add/edit/delete (e.g. accountant / facility_manager with properties.read only). */
+  readOnly?: boolean;
 };
 
-export function PropertyUnitsManager({ propertyId, propertyName }: Props) {
+export function PropertyUnitsManager({ propertyId, propertyName, readOnly = false }: Props) {
   const queryClient = useQueryClient();
   const queryKey = ['property-units', propertyId] as const;
 
@@ -165,10 +167,12 @@ export function PropertyUnitsManager({ propertyId, propertyName }: Props) {
               practice.
             </CardDescription>
           </div>
-          <Button type="button" size="sm" onClick={openAdd}>
-            <Plus className="mr-2 h-4 w-4" />
-            Add unit
-          </Button>
+          {!readOnly && (
+            <Button type="button" size="sm" onClick={openAdd}>
+              <Plus className="mr-2 h-4 w-4" />
+              Add unit
+            </Button>
+          )}
         </CardHeader>
         <CardContent>
           {isError ? (
@@ -197,7 +201,7 @@ export function PropertyUnitsManager({ propertyId, propertyName }: Props) {
                     <TableHead>Unit</TableHead>
                     <TableHead className="text-right">Annual rent</TableHead>
                     <TableHead>Status</TableHead>
-                    <TableHead className="w-[120px] text-right">Actions</TableHead>
+                    {!readOnly && <TableHead className="w-[120px] text-right">Actions</TableHead>}
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -218,28 +222,30 @@ export function PropertyUnitsManager({ propertyId, propertyName }: Props) {
                           {u.status === 'occupied' ? 'Occupied' : 'Vacant'}
                         </span>
                       </TableCell>
-                      <TableCell className="text-right">
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="icon"
-                          className="h-8 w-8"
-                          onClick={() => openEdit(u)}
-                          aria-label="Edit unit"
-                        >
-                          <Pencil className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="icon"
-                          className="h-8 w-8 text-destructive hover:text-destructive"
-                          onClick={() => setDeleteTarget(u)}
-                          aria-label="Delete unit"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </TableCell>
+                      {!readOnly && (
+                        <TableCell className="text-right">
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8"
+                            onClick={() => openEdit(u)}
+                            aria-label="Edit unit"
+                          >
+                            <Pencil className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8 text-destructive hover:text-destructive"
+                            onClick={() => setDeleteTarget(u)}
+                            aria-label="Delete unit"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </TableCell>
+                      )}
                     </TableRow>
                   ))}
                 </TableBody>
@@ -249,101 +255,105 @@ export function PropertyUnitsManager({ propertyId, propertyName }: Props) {
         </CardContent>
       </Card>
 
-      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>{editing ? 'Edit unit' : 'Add unit'}</DialogTitle>
-            <DialogDescription>
-              {propertyName} — annual rent in Nigerian Naira (per year).
-            </DialogDescription>
-          </DialogHeader>
-          <div className="grid gap-4 py-2">
-            <div className="grid gap-2">
-              <Label htmlFor="unit-number">Unit label</Label>
-              <Input
-                id="unit-number"
-                name="unitNumber"
-                placeholder="e.g. Block A — 12B"
-                value={formUnitNumber}
-                onChange={(e) => setFormUnitNumber(e.target.value)}
-              />
+      {!readOnly && (
+        <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+          <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle>{editing ? 'Edit unit' : 'Add unit'}</DialogTitle>
+              <DialogDescription>
+                {propertyName} — annual rent in Nigerian Naira (per year).
+              </DialogDescription>
+            </DialogHeader>
+            <div className="grid gap-4 py-2">
+              <div className="grid gap-2">
+                <Label htmlFor="unit-number">Unit label</Label>
+                <Input
+                  id="unit-number"
+                  name="unitNumber"
+                  placeholder="e.g. Block A — 12B"
+                  value={formUnitNumber}
+                  onChange={(e) => setFormUnitNumber(e.target.value)}
+                />
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="unit-rent">Annual rent (₦)</Label>
+                <Input
+                  id="unit-rent"
+                  name="rentAmount"
+                  type="number"
+                  min={1}
+                  step={1}
+                  placeholder="0"
+                  value={formRent}
+                  onChange={(e) => setFormRent(e.target.value)}
+                />
+              </div>
+              <div className="grid gap-2">
+                <Label>Status</Label>
+                <Select
+                  value={formStatus}
+                  onValueChange={(v) => setFormStatus(v as 'vacant' | 'occupied')}
+                >
+                  <SelectTrigger id="unit-status" aria-label="Unit status">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="vacant">Vacant</SelectItem>
+                    <SelectItem value="occupied">Occupied</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
-            <div className="grid gap-2">
-              <Label htmlFor="unit-rent">Annual rent (₦)</Label>
-              <Input
-                id="unit-rent"
-                name="rentAmount"
-                type="number"
-                min={1}
-                step={1}
-                placeholder="0"
-                value={formRent}
-                onChange={(e) => setFormRent(e.target.value)}
-              />
-            </div>
-            <div className="grid gap-2">
-              <Label>Status</Label>
-              <Select
-                value={formStatus}
-                onValueChange={(v) => setFormStatus(v as 'vacant' | 'occupied')}
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={() => setDialogOpen(false)}>
+                Cancel
+              </Button>
+              <Button
+                type="button"
+                disabled={saveMutation.isPending}
+                onClick={() => saveMutation.mutate()}
               >
-                <SelectTrigger id="unit-status" aria-label="Unit status">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="vacant">Vacant</SelectItem>
-                  <SelectItem value="occupied">Occupied</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-          <DialogFooter>
-            <Button type="button" variant="outline" onClick={() => setDialogOpen(false)}>
-              Cancel
-            </Button>
-            <Button
-              type="button"
-              disabled={saveMutation.isPending}
-              onClick={() => saveMutation.mutate()}
-            >
-              {saveMutation.isPending ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Saving…
-                </>
-              ) : editing ? (
-                'Save changes'
-              ) : (
-                'Add unit'
-              )}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+                {saveMutation.isPending ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Saving…
+                  </>
+                ) : editing ? (
+                  'Save changes'
+                ) : (
+                  'Add unit'
+                )}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      )}
 
-      <AlertDialog open={!!deleteTarget} onOpenChange={(o) => !o && setDeleteTarget(null)}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Remove this unit?</AlertDialogTitle>
-            <AlertDialogDescription>
-              {deleteTarget
-                ? `Unit "${deleteTarget.unit_number?.trim() || deleteTarget.id.slice(0, 8)}" will be deleted. You cannot remove a unit that has an active tenancy.`
-                : null}
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <Button
-              type="button"
-              variant="destructive"
-              disabled={deleteMutation.isPending}
-              onClick={() => deleteTarget && deleteMutation.mutate(deleteTarget.id)}
-            >
-              {deleteMutation.isPending ? 'Removing…' : 'Remove'}
-            </Button>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      {!readOnly && (
+        <AlertDialog open={!!deleteTarget} onOpenChange={(o) => !o && setDeleteTarget(null)}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Remove this unit?</AlertDialogTitle>
+              <AlertDialogDescription>
+                {deleteTarget
+                  ? `Unit "${deleteTarget.unit_number?.trim() || deleteTarget.id.slice(0, 8)}" will be deleted. You cannot remove a unit that has an active tenancy.`
+                  : null}
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <Button
+                type="button"
+                variant="destructive"
+                disabled={deleteMutation.isPending}
+                onClick={() => deleteTarget && deleteMutation.mutate(deleteTarget.id)}
+              >
+                {deleteMutation.isPending ? 'Removing…' : 'Remove'}
+              </Button>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+      )}
     </>
   );
 }

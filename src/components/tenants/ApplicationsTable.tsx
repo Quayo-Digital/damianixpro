@@ -220,7 +220,7 @@ export const ApplicationsTable = ({
                               variant="outline"
                               onClick={() => handleApprove(application)}
                               disabled={isUpdatingApplication}
-                              className="border-green-600 text-green-600 hover:bg-green-50"
+                              className="border-primary text-primary hover:bg-primary/10"
                             >
                               <CheckCircle className="mr-1 h-4 w-4" />
                               Approve
@@ -230,7 +230,7 @@ export const ApplicationsTable = ({
                               variant="outline"
                               onClick={() => handleReject(application)}
                               disabled={isUpdatingApplication}
-                              className="border-red-600 text-red-600 hover:bg-red-50"
+                              className="border-destructive text-destructive hover:bg-destructive/10"
                             >
                               <XCircle className="mr-1 h-4 w-4" />
                               Reject

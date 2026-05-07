@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { format, startOfMonth, subMonths, subDays } from 'date-fns';
+import { useAuthSession } from '@/contexts/auth';
 
 export interface UserTypeDatum {
   name: string;
@@ -19,6 +20,8 @@ export interface Trend {
 }
 
 export function useAdminDashboardData() {
+  const { userRole } = useAuthSession();
+  const canReadAdminDashboard = userRole === 'admin' || userRole === 'super_admin';
   const [totalUsers, setTotalUsers] = useState<number>(0);
   const [totalProperties, setTotalProperties] = useState<number>(0);
   const [totalRevenue, setTotalRevenue] = useState<number>(0);
@@ -37,6 +40,10 @@ export function useAdminDashboardData() {
 
   useEffect(() => {
     const fetchAdminData = async () => {
+      if (!canReadAdminDashboard) {
+        setIsLoading(false);
+        return;
+      }
       setIsLoading(true);
       try {
         const thirtyDaysAgo = subDays(new Date(), 30).toISOString();
@@ -262,7 +269,7 @@ export function useAdminDashboardData() {
     };
 
     fetchAdminData();
-  }, []);
+  }, [canReadAdminDashboard]);
 
   return {
     totalUsers,

@@ -6,8 +6,16 @@ export const AUTH_RETURN_TO_STORAGE_KEY = 'authReturnTo';
 
 export type SerializedLocation = Pick<Location, 'pathname' | 'search' | 'hash'>;
 
-/** Roles that may access `/properties` and `/properties/:id` (see App.routes ProtectedRoute). */
-const PROPERTY_MANAGEMENT_ROLES: UserRole[] = ['owner', 'agent', 'manager', 'admin', 'super_admin'];
+/** Roles that may access `/properties` and `/properties/:id` (see `NAV_PROPERTY_PORTFOLIO_ROLES` in App.routes). */
+const PROPERTY_MANAGEMENT_ROLES: UserRole[] = [
+  'owner',
+  'agent',
+  'manager',
+  'admin',
+  'super_admin',
+  'facility_manager',
+  'accountant',
+];
 
 export function canAccessPropertyManagementRoutes(userRole: UserRole | null | undefined): boolean {
   if (!userRole) return false;
@@ -44,6 +52,10 @@ export function getDefaultDashboardPathForRole(userRole: UserRole | null | undef
       return '/agent/dashboard';
     case 'vendor':
       return '/vendor/dashboard';
+    case 'facility_manager':
+      return '/facility-manager/dashboard';
+    case 'accountant':
+      return '/accountant/dashboard';
     default:
       return '/dashboard';
   }

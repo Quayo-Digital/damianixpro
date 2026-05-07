@@ -5,6 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { CheckCircle, XCircle, AlertTriangle, Play, RefreshCw } from 'lucide-react';
 import { PageLayout } from '@/components/layout/PageLayout';
+import { PageContent } from '@/components/layout/PageContent';
 import ProductionPerformanceTest, {
   PerformanceTestResult,
 } from '@/services/testing/ProductionPerformanceTest';
@@ -68,24 +69,25 @@ const ProductionTestingPage: React.FC = () => {
 
   return (
     <PageLayout>
-      <div className="container mx-auto space-y-6 p-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold">Production Testing Suite</h1>
-            <p className="mt-2 text-muted-foreground">
-              Live data integration and production readiness testing
-            </p>
-          </div>
-          <Button onClick={runAllTests} disabled={isRunning} className="flex items-center gap-2">
+      <PageContent
+        title="Production testing suite"
+        description="Live data integration and production readiness checks."
+        actions={
+          <Button
+            type="button"
+            onClick={runAllTests}
+            disabled={isRunning}
+            className="flex items-center gap-2"
+          >
             {isRunning ? (
               <RefreshCw className="h-4 w-4 animate-spin" />
             ) : (
               <Play className="h-4 w-4" />
             )}
-            Run Tests
+            Run tests
           </Button>
-        </div>
-
+        }
+      >
         {isRunning && (
           <Card>
             <CardContent className="pt-6">
@@ -129,7 +131,7 @@ const ProductionTestingPage: React.FC = () => {
             </Card>
           ))}
         </div>
-      </div>
+      </PageContent>
     </PageLayout>
   );
 };

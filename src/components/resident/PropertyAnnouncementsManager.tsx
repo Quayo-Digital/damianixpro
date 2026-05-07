@@ -29,9 +29,14 @@ import { Megaphone, Plus, RefreshCw } from 'lucide-react';
 
 interface PropertyAnnouncementsManagerProps {
   propertyId: string;
+  /** Hide create announcement UI (staff with properties.read only). */
+  readOnly?: boolean;
 }
 
-export function PropertyAnnouncementsManager({ propertyId }: PropertyAnnouncementsManagerProps) {
+export function PropertyAnnouncementsManager({
+  propertyId,
+  readOnly = false,
+}: PropertyAnnouncementsManagerProps) {
   const [rows, setRows] = useState<PropertyAnnouncement[]>([]);
   const [loading, setLoading] = useState(true);
   const [open, setOpen] = useState(false);
@@ -99,57 +104,59 @@ export function PropertyAnnouncementsManager({ propertyId }: PropertyAnnouncemen
             <RefreshCw className={`mr-1 h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
             Refresh
           </Button>
-          <Dialog open={open} onOpenChange={setOpen}>
-            <DialogTrigger asChild>
-              <Button type="button" size="sm">
-                <Plus className="mr-1 h-4 w-4" />
-                New
-              </Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>New announcement</DialogTitle>
-              </DialogHeader>
-              <div className="space-y-3 py-2">
-                <Input
-                  placeholder="Title"
-                  value={title}
-                  onChange={(e) => setTitle(e.target.value)}
-                />
-                <Textarea
-                  placeholder="Message"
-                  className="min-h-[120px]"
-                  value={body}
-                  onChange={(e) => setBody(e.target.value)}
-                />
-                <Select
-                  value={audience}
-                  onValueChange={(v) => setAudience(v as AnnouncementAudience)}
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All tenants</SelectItem>
-                    <SelectItem value="residential">Residential</SelectItem>
-                    <SelectItem value="commercial">Commercial</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <DialogFooter>
-                <Button variant="outline" type="button" onClick={() => setOpen(false)}>
-                  Cancel
+          {!readOnly && (
+            <Dialog open={open} onOpenChange={setOpen}>
+              <DialogTrigger asChild>
+                <Button type="button" size="sm">
+                  <Plus className="mr-1 h-4 w-4" />
+                  New
                 </Button>
-                <Button
-                  type="button"
-                  onClick={() => void publish()}
-                  disabled={saving || !title.trim() || !body.trim()}
-                >
-                  Publish
-                </Button>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>New announcement</DialogTitle>
+                </DialogHeader>
+                <div className="space-y-3 py-2">
+                  <Input
+                    placeholder="Title"
+                    value={title}
+                    onChange={(e) => setTitle(e.target.value)}
+                  />
+                  <Textarea
+                    placeholder="Message"
+                    className="min-h-[120px]"
+                    value={body}
+                    onChange={(e) => setBody(e.target.value)}
+                  />
+                  <Select
+                    value={audience}
+                    onValueChange={(v) => setAudience(v as AnnouncementAudience)}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All tenants</SelectItem>
+                      <SelectItem value="residential">Residential</SelectItem>
+                      <SelectItem value="commercial">Commercial</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <DialogFooter>
+                  <Button variant="outline" type="button" onClick={() => setOpen(false)}>
+                    Cancel
+                  </Button>
+                  <Button
+                    type="button"
+                    onClick={() => void publish()}
+                    disabled={saving || !title.trim() || !body.trim()}
+                  >
+                    Publish
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
+          )}
         </div>
       </CardHeader>
       <CardContent>

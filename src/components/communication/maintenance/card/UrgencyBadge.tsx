@@ -8,19 +8,22 @@ export function UrgencyBadge({ urgency }: UrgencyBadgeProps) {
   switch (urgency) {
     case 'high':
       return (
-        <Badge variant="outline" className="border-red-200 bg-red-50 text-red-800">
+        <Badge
+          variant="outline"
+          className="border-destructive/40 bg-destructive/10 text-destructive"
+        >
           High Priority
         </Badge>
       );
     case 'medium':
       return (
-        <Badge variant="outline" className="border-amber-200 bg-amber-50 text-amber-800">
+        <Badge variant="outline" className="border-border bg-accent/40 text-foreground">
           Medium Priority
         </Badge>
       );
     case 'low':
       return (
-        <Badge variant="outline" className="border-green-200 bg-green-50 text-green-800">
+        <Badge variant="outline" className="border-border bg-primary/15 text-primary">
           Low Priority
         </Badge>
       );

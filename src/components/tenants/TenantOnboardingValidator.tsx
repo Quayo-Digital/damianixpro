@@ -467,24 +467,24 @@ export function TenantOnboardingValidator() {
   const getRiskBadgeColor = (riskLevel: string) => {
     switch (riskLevel) {
       case 'High':
-        return 'bg-red-100 text-red-800 border-red-300';
+        return 'bg-destructive/10 text-destructive border-destructive/40';
       case 'Medium':
-        return 'bg-yellow-100 text-yellow-800 border-yellow-300';
+        return 'bg-accent text-accent-foreground border-border';
       case 'Low':
-        return 'bg-green-100 text-green-800 border-green-300';
+        return 'bg-primary/15 text-primary border-border';
       default:
-        return 'bg-gray-100 text-gray-800 border-gray-300';
+        return 'bg-muted text-muted-foreground border-border';
     }
   };
 
   const getSeverityIcon = (severity: string) => {
     switch (severity) {
       case 'error':
-        return <XCircle className="h-4 w-4 text-red-500" />;
+        return <XCircle className="h-4 w-4 text-destructive" />;
       case 'warning':
-        return <AlertTriangle className="h-4 w-4 text-yellow-500" />;
+        return <AlertTriangle className="h-4 w-4 text-accent-foreground" />;
       case 'info':
-        return <CheckCircle className="h-4 w-4 text-blue-500" />;
+        return <CheckCircle className="h-4 w-4 text-primary" />;
       default:
         return null;
     }
@@ -495,7 +495,7 @@ export function TenantOnboardingValidator() {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Shield className="h-5 w-5 text-blue-500" />
+            <Shield className="h-5 w-5 text-primary" />
             Tenant Onboarding Validator
           </CardTitle>
           <CardDescription>
@@ -813,19 +813,19 @@ export function TenantOnboardingValidator() {
               }
               className={
                 validationResult.riskLevel === 'Low'
-                  ? 'border-green-200 bg-green-50'
+                  ? 'border-border bg-primary/10'
                   : validationResult.riskLevel === 'Medium'
-                    ? 'border-yellow-200 bg-yellow-50'
+                    ? 'border-border bg-accent/40'
                     : ''
               }
             >
               <div className="flex items-start gap-3">
                 {validationResult.riskLevel === 'High' ? (
-                  <AlertTriangle className="mt-0.5 h-5 w-5 text-red-500" />
+                  <AlertTriangle className="mt-0.5 h-5 w-5 text-destructive" />
                 ) : validationResult.riskLevel === 'Medium' ? (
-                  <AlertTriangle className="mt-0.5 h-5 w-5 text-yellow-500" />
+                  <AlertTriangle className="mt-0.5 h-5 w-5 text-accent-foreground" />
                 ) : (
-                  <CheckCircle className="mt-0.5 h-5 w-5 text-green-500" />
+                  <CheckCircle className="mt-0.5 h-5 w-5 text-primary" />
                 )}
                 <div className="flex-1">
                   <AlertTitle className="text-lg font-semibold">
@@ -893,8 +893,8 @@ export function TenantOnboardingValidator() {
             )}
 
             {validationResult.warnings.length === 0 && (
-              <Alert className="border-green-200 bg-green-50">
-                <CheckCircle className="h-4 w-4 text-green-500" />
+              <Alert className="border-border bg-primary/10">
+                <CheckCircle className="h-4 w-4 text-primary" />
                 <AlertTitle>All Clear!</AlertTitle>
                 <AlertDescription>
                   No issues found. This tenant application meets all validation criteria.
@@ -912,7 +912,7 @@ export function TenantOnboardingValidator() {
                 <ol className="space-y-2">
                   {validationResult.nextSteps.map((step, index) => (
                     <li key={index} className="flex items-start gap-2 text-sm">
-                      <span className="font-semibold text-blue-600">{index + 1}.</span>
+                      <span className="font-semibold text-primary">{index + 1}.</span>
                       <span>{step}</span>
                     </li>
                   ))}

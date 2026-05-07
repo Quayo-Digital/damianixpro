@@ -74,7 +74,7 @@ export const Footer = () => {
               <li>
                 <Link
                   to="/solutions/landlords"
-                  className="flex items-center gap-2 text-muted-foreground transition-colors hover:text-green-600"
+                  className="flex items-center gap-2 text-muted-foreground transition-colors hover:text-primary"
                 >
                   For Landlords
                 </Link>
@@ -82,7 +82,7 @@ export const Footer = () => {
               <li>
                 <Link
                   to="/solutions/tenants"
-                  className="flex items-center gap-2 text-muted-foreground transition-colors hover:text-green-600"
+                  className="flex items-center gap-2 text-muted-foreground transition-colors hover:text-primary"
                 >
                   For Tenants
                 </Link>
@@ -90,7 +90,7 @@ export const Footer = () => {
               <li>
                 <Link
                   to="/solutions/property-managers"
-                  className="flex items-center gap-2 text-muted-foreground transition-colors hover:text-green-600"
+                  className="flex items-center gap-2 text-muted-foreground transition-colors hover:text-primary"
                 >
                   For Property Managers
                 </Link>
@@ -98,7 +98,7 @@ export const Footer = () => {
               <li>
                 <Link
                   to="/public/properties"
-                  className="flex items-center gap-2 text-muted-foreground transition-colors hover:text-green-600"
+                  className="flex items-center gap-2 text-muted-foreground transition-colors hover:text-primary"
                 >
                   Browse Properties
                 </Link>
@@ -112,7 +112,7 @@ export const Footer = () => {
               <li>
                 <Link
                   to="/blog"
-                  className="flex items-center gap-2 text-muted-foreground transition-colors hover:text-green-600"
+                  className="flex items-center gap-2 text-muted-foreground transition-colors hover:text-primary"
                 >
                   Blog
                 </Link>
@@ -120,7 +120,7 @@ export const Footer = () => {
               <li>
                 <Link
                   to="/about"
-                  className="flex items-center gap-2 text-muted-foreground transition-colors hover:text-green-600"
+                  className="flex items-center gap-2 text-muted-foreground transition-colors hover:text-primary"
                 >
                   About Us
                 </Link>
@@ -128,7 +128,7 @@ export const Footer = () => {
               <li>
                 <Link
                   to="/careers"
-                  className="flex items-center gap-2 text-muted-foreground transition-colors hover:text-green-600"
+                  className="flex items-center gap-2 text-muted-foreground transition-colors hover:text-primary"
                 >
                   Careers
                 </Link>
@@ -136,7 +136,7 @@ export const Footer = () => {
               <li>
                 <Link
                   to="/contact"
-                  className="flex items-center gap-2 text-muted-foreground transition-colors hover:text-green-600"
+                  className="flex items-center gap-2 text-muted-foreground transition-colors hover:text-primary"
                 >
                   Contact
                 </Link>
@@ -144,7 +144,7 @@ export const Footer = () => {
               <li>
                 <Link
                   to="/#pricing"
-                  className="flex items-center gap-2 text-muted-foreground transition-colors hover:text-green-600"
+                  className="flex items-center gap-2 text-muted-foreground transition-colors hover:text-primary"
                 >
                   Pricing & plans
                 </Link>
@@ -152,7 +152,7 @@ export const Footer = () => {
               <li>
                 <Link
                   to="/pricing/agents"
-                  className="flex items-center gap-2 text-muted-foreground transition-colors hover:text-green-600"
+                  className="flex items-center gap-2 text-muted-foreground transition-colors hover:text-primary"
                 >
                   Agents & partners pricing
                 </Link>
@@ -166,7 +166,7 @@ export const Footer = () => {
               <li>
                 <Link
                   to="/help"
-                  className="flex items-center gap-2 text-muted-foreground transition-colors hover:text-green-600"
+                  className="flex items-center gap-2 text-muted-foreground transition-colors hover:text-primary"
                 >
                   Help Center
                 </Link>
@@ -174,7 +174,7 @@ export const Footer = () => {
               <li>
                 <Link
                   to="/privacy"
-                  className="flex items-center gap-2 text-muted-foreground transition-colors hover:text-green-600"
+                  className="flex items-center gap-2 text-muted-foreground transition-colors hover:text-primary"
                 >
                   Privacy Policy
                 </Link>
@@ -182,7 +182,7 @@ export const Footer = () => {
               <li>
                 <Link
                   to="/terms"
-                  className="flex items-center gap-2 text-muted-foreground transition-colors hover:text-green-600"
+                  className="flex items-center gap-2 text-muted-foreground transition-colors hover:text-primary"
                 >
                   Terms of Service
                 </Link>
@@ -190,7 +190,7 @@ export const Footer = () => {
               <li>
                 <a
                   href="mailto:contact@damianixpro.com"
-                  className="flex items-center gap-2 text-muted-foreground transition-colors hover:text-green-600"
+                  className="flex items-center gap-2 text-muted-foreground transition-colors hover:text-primary"
                 >
                   <Mail className="h-4 w-4" />
                   contact@damianixpro.com
@@ -199,7 +199,7 @@ export const Footer = () => {
               <li>
                 <a
                   href="https://damianixpro.com"
-                  className="flex items-center gap-2 text-muted-foreground transition-colors hover:text-green-600"
+                  className="flex items-center gap-2 text-muted-foreground transition-colors hover:text-primary"
                 >
                   <Globe className="h-4 w-4" />
                   www.damianixpro.com

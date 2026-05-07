@@ -16,7 +16,7 @@ export default function ContactPage() {
         <div className="container mx-auto flex h-16 items-center justify-between px-4">
           <div className="flex items-center space-x-4">
             <Link to="/" className="flex items-center space-x-2">
-              <div className="flex h-8 w-8 items-center justify-center rounded bg-gradient-to-r from-green-600 to-green-400 font-bold text-white">
+              <div className="flex h-8 w-8 items-center justify-center rounded bg-primary font-bold text-primary-foreground">
                 D
               </div>
               <span className="text-lg font-semibold">DamianixPro</span>
@@ -74,7 +74,7 @@ export default function ContactPage() {
                 <p className="mb-2 text-sm text-muted-foreground">For general inquiries</p>
                 <a
                   href="mailto:sales@damianixpro.com"
-                  className="font-medium text-green-600 hover:text-green-700"
+                  className="font-medium text-primary hover:text-primary/90"
                 >
                   sales@damianixpro.com
                 </a>
@@ -94,7 +94,7 @@ export default function ContactPage() {
                 <p className="mb-2 text-sm text-muted-foreground">Business hours</p>
                 <a
                   href="tel:+2348000000000"
-                  className="font-medium text-green-600 hover:text-green-700"
+                  className="font-medium text-primary hover:text-primary/90"
                 >
                   +234 800 000 0000
                 </a>

@@ -10,6 +10,7 @@ import PWAInstallPrompt from '@/components/pwa/PWAInstallPrompt';
 import PWAStatus from '@/components/pwa/PWAStatus';
 import { logger } from '@/utils/logger';
 import { WhiteLabelProvider } from '@/contexts/WhiteLabelContext';
+import { defaultRetryDelay, defaultShouldRetry } from '@/utils/reactQueryRetry';
 
 // Optimized QueryClient configuration for better performance
 const queryClient = new QueryClient({
@@ -20,7 +21,8 @@ const queryClient = new QueryClient({
       // Keep unused data in cache for 10 minutes
       gcTime: 10 * 60 * 1000,
       // Retry failed requests 2 times instead of 3
-      retry: 2,
+      retry: defaultShouldRetry,
+      retryDelay: defaultRetryDelay,
       // Don't refetch on window focus for better UX
       refetchOnWindowFocus: false,
       // Refetch on reconnect for data consistency
@@ -29,8 +31,9 @@ const queryClient = new QueryClient({
       refetchInterval: false,
     },
     mutations: {
-      // Retry failed mutations once
-      retry: 1,
+      // Mutations are usually not safe to retry automatically unless explicitly opted-in.
+      retry: 0,
+      retryDelay: defaultRetryDelay,
     },
   },
 });

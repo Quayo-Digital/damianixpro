@@ -5,6 +5,7 @@ import { AccountingSummary, PaymentFilter, Payment, OwnerPayout } from '@/utils/
 import { profileFullName } from '@/lib/profileDisplayName';
 import { toast } from '@/components/ui/sonner';
 import { DateRange } from 'react-day-picker';
+import { toPgDateOnly } from '@/utils/toPgDateOnly';
 
 export const usePaymentAccounting = () => {
   const [activeTab, setActiveTab] = useState('overview');
@@ -39,8 +40,8 @@ export const usePaymentAccounting = () => {
         )
         .eq('status', 'successful');
 
-      if (filter.startDate) query = query.gte('payment_date', filter.startDate);
-      if (filter.endDate) query = query.lte('payment_date', filter.endDate);
+      if (filter.startDate) query = query.gte('payment_date', toPgDateOnly(filter.startDate));
+      if (filter.endDate) query = query.lte('payment_date', toPgDateOnly(filter.endDate));
       if (filter.propertyId) query = query.eq('property_tenants.property_id', filter.propertyId);
 
       const { data, error } = await query;

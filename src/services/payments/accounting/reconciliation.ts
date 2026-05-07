@@ -4,6 +4,7 @@
 
 import { supabase } from '@/integrations/supabase/client';
 import { logger } from '@/utils/logger';
+import { toPgDateOnly } from '@/utils/toPgDateOnly';
 
 export interface ReconciliationResult {
   revenueFromPayments: number;
@@ -21,13 +22,15 @@ export async function runReconciliation(
   endDate: string
 ): Promise<ReconciliationResult> {
   try {
+    const ps = toPgDateOnly(startDate);
+    const pe = toPgDateOnly(endDate);
     // Revenue from rent_payments in date range
     const { data: payments, error: paymentsError } = await supabase
       .from('rent_payments')
       .select('amount')
       .eq('status', 'successful')
-      .gte('payment_date', startDate)
-      .lte('payment_date', endDate);
+      .gte('payment_date', ps)
+      .lte('payment_date', pe);
 
     if (paymentsError) throw paymentsError;
 
@@ -38,8 +41,8 @@ export async function runReconciliation(
       .from('journal_entries')
       .select('debit')
       .eq('account', 'Cash/Bank Account')
-      .gte('entry_date', startDate)
-      .lte('entry_date', endDate);
+      .gte('entry_date', ps)
+      .lte('entry_date', pe);
 
     if (journalError) throw journalError;
 
@@ -51,8 +54,8 @@ export async function runReconciliation(
       .from('rent_payments')
       .select('id')
       .eq('status', 'successful')
-      .gte('payment_date', startDate)
-      .lte('payment_date', endDate);
+      .gte('payment_date', ps)
+      .lte('payment_date', pe);
 
     const paymentIds = (paymentsInRange || []).map((p) => p.id);
 
@@ -76,8 +79,8 @@ export async function runReconciliation(
       .from('journal_entries')
       .select('credit')
       .eq('account', 'Owner Payout Payable')
-      .gte('entry_date', startDate)
-      .lte('entry_date', endDate);
+      .gte('entry_date', ps)
+      .lte('entry_date', pe);
 
     if (ownerError) throw ownerError;
 

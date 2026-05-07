@@ -28,18 +28,18 @@ export function RecentActivity({ activities }: RecentActivityProps) {
               className="flex items-center gap-3 border-b pb-3 last:border-0 last:pb-0"
             >
               {activity.type === 'payment' && (
-                <div className="rounded-full bg-green-100 p-2">
-                  <CheckCircle className="h-4 w-4 text-green-600" />
+                <div className="rounded-full bg-primary/15 p-2">
+                  <CheckCircle className="h-4 w-4 text-primary" />
                 </div>
               )}
               {activity.type === 'maintenance' && (
-                <div className="rounded-full bg-amber-100 p-2">
-                  <AlertTriangle className="h-4 w-4 text-amber-600" />
+                <div className="rounded-full bg-destructive/10 p-2">
+                  <AlertTriangle className="h-4 w-4 text-destructive" />
                 </div>
               )}
               {activity.type === 'message' && (
-                <div className="rounded-full bg-blue-100 p-2">
-                  <MessageSquare className="h-4 w-4 text-blue-600" />
+                <div className="rounded-full bg-accent p-2">
+                  <MessageSquare className="h-4 w-4 text-accent-foreground" />
                 </div>
               )}
 
@@ -50,12 +50,12 @@ export function RecentActivity({ activities }: RecentActivityProps) {
 
               {activity.status === 'unread' && <Badge variant="secondary">Unread</Badge>}
               {activity.status === 'in-progress' && (
-                <Badge variant="outline" className="border-amber-200 bg-amber-50 text-amber-800">
+                <Badge variant="outline" className="border-border bg-accent/40 text-foreground">
                   In Progress
                 </Badge>
               )}
               {activity.status === 'completed' && (
-                <Badge variant="outline" className="border-green-200 bg-green-50 text-green-800">
+                <Badge variant="outline" className="border-border bg-primary/15 text-primary">
                   Completed
                 </Badge>
               )}

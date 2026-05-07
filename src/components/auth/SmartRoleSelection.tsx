@@ -24,6 +24,14 @@ interface SmartRoleSelectionProps {
   className?: string;
 }
 
+const hiddenFromSignup = new Set<UserRole>([
+  'super_admin',
+  'admin',
+  'accountant',
+  'facility_manager',
+  'user',
+]);
+
 const roleDescriptions: Record<UserRole, { title: string; description: string; icon: string }> = {
   tenant: {
     title: 'Tenant',
@@ -54,6 +62,26 @@ const roleDescriptions: Record<UserRole, { title: string; description: string; i
     title: 'Super Administrator',
     description: 'System administration (not available)',
     icon: '🔐',
+  },
+  manager: {
+    title: 'Property Manager',
+    description: 'Manage properties and operations for an owner or portfolio',
+    icon: '📋',
+  },
+  user: {
+    title: 'User',
+    description: 'Basic access (assigned by an administrator)',
+    icon: '👤',
+  },
+  accountant: {
+    title: 'Accountant',
+    description: 'Financial and reporting access (assigned by an administrator)',
+    icon: '📊',
+  },
+  facility_manager: {
+    title: 'Facility Manager',
+    description: 'Maintenance and facilities operations (assigned by an administrator)',
+    icon: '🛠️',
   },
 };
 
@@ -139,8 +167,7 @@ export const SmartRoleSelection: React.FC<SmartRoleSelectionProps> = ({
           className="mt-4 grid grid-cols-1 gap-3"
         >
           {Object.entries(roleDescriptions).map(([role, info]) => {
-            // Hide super_admin from selection
-            if (role === 'super_admin') return null;
+            if (hiddenFromSignup.has(role as UserRole)) return null;
 
             const isRestricted = role === 'admin';
             const isSuggested = suggestion?.suggestedRole === role;

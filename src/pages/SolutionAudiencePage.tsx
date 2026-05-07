@@ -197,7 +197,7 @@ export default function SolutionAudiencePage() {
         <div className="container mx-auto flex h-16 flex-wrap items-center justify-between gap-2 px-4">
           <div className="flex min-w-0 flex-1 items-center gap-4">
             <Link to="/" className="flex shrink-0 items-center space-x-2">
-              <div className="flex h-8 w-8 items-center justify-center rounded bg-gradient-to-r from-green-600 to-green-400 font-bold text-white">
+              <div className="flex h-8 w-8 items-center justify-center rounded bg-primary font-bold text-primary-foreground">
                 D
               </div>
               <span className="text-lg font-semibold">DamianixPro</span>
@@ -209,7 +209,7 @@ export default function SolutionAudiencePage() {
                   key={slug}
                   to={`/solutions/${slug}`}
                   className={
-                    slug === audience ? 'font-medium text-green-600' : 'hover:text-foreground'
+                    slug === audience ? 'font-medium text-primary' : 'hover:text-foreground'
                   }
                 >
                   {label}
@@ -241,29 +241,43 @@ export default function SolutionAudiencePage() {
       </header>
 
       <main className="flex-grow">
-        <section className="border-b border-green-100 bg-gradient-to-b from-green-50/80 to-background px-4 py-14 md:py-20">
+        <section className="border-b border-white/10 bg-gradient-to-b from-slate-900 via-slate-950 to-slate-950 px-4 py-14 md:py-20">
           <div className="container mx-auto max-w-4xl text-center">
             <div className="mb-6 flex justify-center">
-              <div className="rounded-full bg-green-100 p-4">
-                <HeroIcon className="h-10 w-10 text-green-600 md:h-12 md:w-12" />
+              <div className="rounded-full border border-white/15 bg-white/10 p-4 backdrop-blur-sm">
+                <HeroIcon className="h-10 w-10 text-blue-200 md:h-12 md:w-12" />
               </div>
             </div>
-            <h1 className="mb-4 text-3xl font-bold tracking-tight md:text-4xl">{content.title}</h1>
-            <p className="mx-auto mb-6 max-w-2xl text-lg text-muted-foreground">
-              {content.subtitle}
-            </p>
-            <p className="mx-auto max-w-2xl text-pretty text-foreground/90">{content.intro}</p>
+            <h1 className="mb-4 text-3xl font-bold tracking-tight text-white md:text-4xl">
+              {content.title}
+            </h1>
+            <p className="mx-auto mb-6 max-w-2xl text-lg text-slate-100">{content.subtitle}</p>
+            <p className="mx-auto max-w-2xl text-pretty text-slate-200">{content.intro}</p>
             <div className="mt-10 flex flex-wrap items-center justify-center gap-3">
-              <Button asChild size="lg" className="gap-2">
+              <Button
+                asChild
+                size="lg"
+                className="gap-2 rounded-xl bg-blue-600 text-white shadow-md hover:bg-blue-700"
+              >
                 <Link to="/auth?tab=register">
                   Get started
                   <ArrowRight className="h-4 w-4" />
                 </Link>
               </Button>
-              <Button variant="outline" size="lg" asChild>
+              <Button
+                variant="outline"
+                size="lg"
+                className="rounded-xl border-white/30 bg-white/5 text-white hover:bg-white/10 hover:text-white"
+                asChild
+              >
                 <Link to="/public/properties">Browse properties</Link>
               </Button>
-              <Button variant="ghost" size="lg" asChild>
+              <Button
+                variant="ghost"
+                size="lg"
+                className="rounded-xl text-slate-100 hover:bg-white/10 hover:text-white"
+                asChild
+              >
                 <Link to="/contact">Talk to sales</Link>
               </Button>
             </div>

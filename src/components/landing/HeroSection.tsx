@@ -6,34 +6,41 @@ export const HeroSection = () => {
   const { user } = useAuthSession();
 
   return (
-    <section className="relative flex min-h-[90vh] flex-col items-center justify-center p-6 pt-24 text-center">
-      {/* Background Image with Gradient Overlay */}
+    <section className="relative flex min-h-[88vh] flex-col items-center justify-center overflow-hidden px-6 pb-16 pt-24 text-center">
+      {/* Premium gradient with subtle background depth */}
       <div className="absolute inset-0 z-0">
-        <img
-          src="/lovable-uploads/dd493e84-bac5-4924-9603-75ef76056640.png"
-          alt="Hero background"
-          className="h-full w-full object-cover"
-        />
-        <div className="absolute inset-0 bg-gradient-to-b from-green-600/80 to-green-900/90 mix-blend-multiply"></div>
+        <div className="absolute inset-0 bg-gradient-to-b from-slate-900 via-slate-950 to-slate-950" />
+        <div className="absolute inset-0 bg-gradient-to-br from-blue-900/45 via-slate-950/40 to-slate-950/90" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(59,130,246,0.25),transparent_45%),radial-gradient(circle_at_80%_15%,rgba(217,70,239,0.18),transparent_40%)]" />
       </div>
 
       {/* Content */}
       <div className="relative z-10 mx-auto max-w-5xl px-4">
-        <h1 className="mb-6 text-4xl font-bold text-white md:text-6xl">
-          DamianixPro: Transforming Nigerian Property Management
+        <h1
+          data-reveal
+          data-reveal-delay="0"
+          className="reveal-on-scroll reveal-hero mb-6 text-4xl font-semibold tracking-tight text-white md:text-6xl"
+        >
+          The Operating System for Nigerian Property Businesses
         </h1>
-        <p className="mx-auto mb-8 max-w-2xl text-xl text-white/90">
-          A revolutionary platform connecting landlords, tenants, and property managers with
-          cutting-edge tools designed specifically for the Nigerian market. Discover short-let
-          properties, manage long-term rentals, and streamline your entire property experience.
+        <p
+          data-reveal
+          data-reveal-delay="80"
+          className="reveal-on-scroll reveal-hero mx-auto mb-10 max-w-3xl text-lg text-slate-100 md:text-xl"
+        >
+          Manage properties, tenants, payments, and operations - all in one platform.
         </p>
 
-        <div className="flex flex-col justify-center space-y-4 md:flex-row md:space-x-4 md:space-y-0">
+        <div
+          data-reveal
+          data-reveal-delay="140"
+          className="reveal-on-scroll reveal-hero flex flex-col justify-center gap-3 md:flex-row md:gap-4"
+        >
           {user ? (
             <Link to="/dashboard">
               <Button
                 size="lg"
-                className="w-full border border-border/50 bg-card/95 px-8 text-lg text-foreground hover:bg-card md:w-auto"
+                className="micro-press w-full rounded-xl bg-blue-600 px-7 py-3 text-base text-white shadow-md transition-all duration-200 hover:bg-blue-700 hover:shadow-lg md:w-auto"
               >
                 Go to Dashboard
               </Button>
@@ -43,7 +50,7 @@ export const HeroSection = () => {
               <Link to="/auth">
                 <Button
                   size="lg"
-                  className="w-full border border-border/50 bg-card/95 px-8 text-lg text-foreground hover:bg-card md:w-auto"
+                  className="micro-press w-full rounded-xl bg-blue-600 px-7 py-3 text-base text-white shadow-md transition-all duration-200 hover:bg-blue-700 hover:shadow-lg md:w-auto"
                 >
                   Get Started
                 </Button>
@@ -54,7 +61,7 @@ export const HeroSection = () => {
             <Button
               size="lg"
               variant="outline"
-              className="w-full border border-primary-foreground/40 bg-foreground/10 px-8 text-lg font-medium text-primary-foreground backdrop-blur-sm hover:bg-card/90 hover:text-foreground md:w-auto"
+              className="micro-press w-full rounded-xl border border-white/30 bg-white/10 px-7 py-3 text-base font-medium text-white backdrop-blur-sm transition-all duration-200 hover:bg-white/20 md:w-auto"
             >
               Browse Properties
             </Button>
@@ -63,17 +70,19 @@ export const HeroSection = () => {
             <Button
               size="lg"
               variant="outline"
-              className="w-full border border-primary-foreground/40 bg-foreground/10 px-8 text-lg font-medium text-primary-foreground backdrop-blur-sm hover:bg-card/90 hover:text-foreground md:w-auto"
+              className="micro-press w-full rounded-xl border border-white/30 bg-white/10 px-7 py-3 text-base font-medium text-white backdrop-blur-sm transition-all duration-200 hover:bg-white/20 md:w-auto"
             >
               Find Short-Lets
             </Button>
           </Link>
         </div>
 
-        <div className="mx-auto mt-12 grid max-w-4xl grid-cols-1 gap-6 text-white md:grid-cols-3">
+        <div className="mx-auto mt-12 grid max-w-4xl grid-cols-1 gap-4 text-white md:grid-cols-3">
           <Link
             to="/solutions/landlords"
-            className="block rounded-lg border border-primary-foreground/20 bg-foreground/10 p-4 text-left text-primary-foreground backdrop-blur-sm transition-colors hover:bg-foreground/15 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:ring-2 focus-visible:ring-ring"
+            data-reveal
+            data-reveal-delay="200"
+            className="reveal-on-scroll reveal-card block rounded-2xl border border-white/20 bg-white/10 p-4 text-left text-white shadow-sm backdrop-blur-sm transition-all duration-200 hover:-translate-y-1 hover:shadow-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:ring-2 focus-visible:ring-ring"
           >
             <h3 className="mb-2 text-lg font-bold">For Landlords</h3>
             <p className="text-sm">
@@ -83,7 +92,9 @@ export const HeroSection = () => {
           </Link>
           <Link
             to="/solutions/tenants"
-            className="block rounded-lg border border-primary-foreground/20 bg-foreground/10 p-4 text-left text-primary-foreground backdrop-blur-sm transition-colors hover:bg-foreground/15 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:ring-2 focus-visible:ring-ring"
+            data-reveal
+            data-reveal-delay="260"
+            className="reveal-on-scroll reveal-card block rounded-2xl border border-white/20 bg-white/10 p-4 text-left text-white shadow-sm backdrop-blur-sm transition-all duration-200 hover:-translate-y-1 hover:shadow-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:ring-2 focus-visible:ring-ring"
           >
             <h3 className="mb-2 text-lg font-bold">For Tenants</h3>
             <p className="text-sm">
@@ -93,7 +104,9 @@ export const HeroSection = () => {
           </Link>
           <Link
             to="/solutions/property-managers"
-            className="block rounded-lg border border-primary-foreground/20 bg-foreground/10 p-4 text-left text-primary-foreground backdrop-blur-sm transition-colors hover:bg-foreground/15 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:ring-2 focus-visible:ring-ring"
+            data-reveal
+            data-reveal-delay="320"
+            className="reveal-on-scroll reveal-card block rounded-2xl border border-white/20 bg-white/10 p-4 text-left text-white shadow-sm backdrop-blur-sm transition-all duration-200 hover:-translate-y-1 hover:shadow-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:ring-2 focus-visible:ring-ring"
           >
             <h3 className="mb-2 text-lg font-bold">For Managers</h3>
             <p className="text-sm">

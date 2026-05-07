@@ -9,10 +9,17 @@ export interface ProtectedRouteProps {
   children?: ReactNode;
   requiredRole?: UserRole | string;
   allowedRoles?: UserRole[];
+  /** RBAC: requires permission key from `config/rbac-permission-matrix.json`. `super_admin` passes via matrix. */
+  requiredPermission?: string;
 }
 
-export function ProtectedRoute({ children, requiredRole, allowedRoles }: ProtectedRouteProps) {
-  const { user, userRole, isLoading } = useAuthSession();
+export function ProtectedRoute({
+  children,
+  requiredRole,
+  allowedRoles,
+  requiredPermission,
+}: ProtectedRouteProps) {
+  const { user, userRole, isLoading, hasPermission } = useAuthSession();
   const location = useLocation();
   const navigate = useNavigate();
   const hasShownToast = useRef(false);
@@ -49,7 +56,13 @@ export function ProtectedRoute({ children, requiredRole, allowedRoles }: Protect
       );
       return;
     }
-  }, [isLoading, user, userRole, requiredRole, allowedRoles]);
+
+    if (requiredPermission && userRole && !hasPermission(requiredPermission)) {
+      hasShownToast.current = true;
+      toast.error('You do not have access to this area.');
+      return;
+    }
+  }, [isLoading, user, userRole, requiredRole, allowedRoles, requiredPermission, hasPermission]);
 
   // Reset toast flag when route changes
   useEffect(() => {
@@ -57,7 +70,12 @@ export function ProtectedRoute({ children, requiredRole, allowedRoles }: Protect
   }, [location.pathname]);
 
   // Show loading while checking auth or waiting for user role
-  if (isLoading || (requiredRole && !userRole) || (allowedRoles && !userRole)) {
+  if (
+    isLoading ||
+    (requiredRole && !userRole) ||
+    (allowedRoles && !userRole) ||
+    (requiredPermission && user && !userRole)
+  ) {
     return (
       <div className="flex min-h-screen flex-col items-center justify-center p-4">
         <div className="h-16 w-16 animate-spin rounded-full border-4 border-solid border-primary border-t-transparent"></div>
@@ -89,6 +107,10 @@ export function ProtectedRoute({ children, requiredRole, allowedRoles }: Protect
     if (!allowedRoles.includes(userRole)) {
       return <Navigate to="/unauthorized" replace />;
     }
+  }
+
+  if (requiredPermission && userRole && !hasPermission(requiredPermission)) {
+    return <Navigate to="/unauthorized" replace />;
   }
 
   // If we have children, render them, otherwise render the Outlet

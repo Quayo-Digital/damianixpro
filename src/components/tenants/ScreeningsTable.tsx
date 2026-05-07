@@ -32,9 +32,9 @@ interface ScreeningsTableProps {
 
 const ScreeningStatusBadge = ({ status }: { status: string }) => {
   const statusConfig = {
-    pending: { label: 'Pending', color: 'bg-yellow-100 text-yellow-800', icon: Clock },
-    passed: { label: 'Passed', color: 'bg-green-100 text-green-800', icon: CheckCircle },
-    failed: { label: 'Failed', color: 'bg-red-100 text-red-800', icon: XCircle },
+    pending: { label: 'Pending', color: 'bg-accent text-accent-foreground', icon: Clock },
+    passed: { label: 'Passed', color: 'bg-primary/15 text-primary', icon: CheckCircle },
+    failed: { label: 'Failed', color: 'bg-destructive/10 text-destructive', icon: XCircle },
   };
 
   const config = statusConfig[status as keyof typeof statusConfig] || statusConfig.pending;
@@ -51,17 +51,17 @@ const ScreeningStatusBadge = ({ status }: { status: string }) => {
 const CreditScoreBadge = ({ score }: { score?: number }) => {
   if (!score) return <span className="text-sm text-muted-foreground">N/A</span>;
 
-  let color = 'bg-red-100 text-red-800';
+  let color = 'bg-destructive/10 text-destructive';
   let label = 'Poor';
 
   if (score >= 750) {
-    color = 'bg-green-100 text-green-800';
+    color = 'bg-primary/15 text-primary';
     label = 'Excellent';
   } else if (score >= 700) {
-    color = 'bg-blue-100 text-blue-800';
+    color = 'bg-secondary text-secondary-foreground';
     label = 'Good';
   } else if (score >= 650) {
-    color = 'bg-yellow-100 text-yellow-800';
+    color = 'bg-accent text-accent-foreground';
     label = 'Fair';
   }
 

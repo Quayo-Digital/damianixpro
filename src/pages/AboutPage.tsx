@@ -36,13 +36,13 @@ export default function AboutPage() {
         <h2 className="text-xl font-semibold text-foreground">Get in touch</h2>
         <p className="text-muted-foreground">
           For partnerships, press, or enterprise questions, visit our{' '}
-          <Link to="/contact" className="font-medium text-green-600 hover:text-green-700">
+          <Link to="/contact" className="font-medium text-primary hover:text-primary/90">
             contact page
           </Link>{' '}
           or email{' '}
           <a
             href="mailto:contact@damianixpro.com"
-            className="font-medium text-green-600 hover:text-green-700"
+            className="font-medium text-primary hover:text-primary/90"
           >
             contact@damianixpro.com
           </a>

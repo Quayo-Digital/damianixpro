@@ -1,0 +1,63 @@
+services:
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: frontend
+      args:
+        VITE_SUPABASE_URL: ${VITE_SUPABASE_URL:-}
+        VITE_SUPABASE_ANON_KEY: ${VITE_SUPABASE_ANON_KEY:-}
+        VITE_YOUVERIFY_BASE_URL: ${VITE_YOUVERIFY_BASE_URL:-}
+        VITE_APPRUVE_BASE_URL: ${VITE_APPRUVE_BASE_URL:-}
+        VITE_FLUTTERWAVE_PUBLIC_KEY: ${VITE_FLUTTERWAVE_PUBLIC_KEY:-}
+        VITE_FLUTTERWAVE_BASE_URL: ${VITE_FLUTTERWAVE_BASE_URL:-}
+        VITE_MAPTILER_API_KEY: ${VITE_MAPTILER_API_KEY:-}
+        VITE_VOICE_SERVER_URL: ${VITE_VOICE_SERVER_URL:-}
+        VITE_VAPID_PUBLIC_KEY: ${VITE_VAPID_PUBLIC_KEY:-}
+        VITE_ENABLE_SUPPORT_CHAT: ${VITE_ENABLE_SUPPORT_CHAT:-}
+        VITE_APP_NAME: ${VITE_APP_NAME:-}
+        VITE_APP_VERSION: ${VITE_APP_VERSION:-}
+        VITE_ENABLE_RUNTIME_CSP: ${VITE_ENABLE_RUNTIME_CSP:-}
+        VITE_CSP_ALLOW_UNSAFE_EVAL: ${VITE_CSP_ALLOW_UNSAFE_EVAL:-}
+    ports:
+      - "3000:80"
+    restart: unless-stopped
+
+  voice-server:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: voice
+    ports:
+      - "4000:4000"
+    env_file:
+      - .env
+    environment:
+      VOICE_SERVER_PORT: ${VOICE_SERVER_PORT:-4000}
+    restart: unless-stopped
+
+  tts-server:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: tts
+    ports:
+      - "4010:4010"
+    env_file:
+      - .env
+    environment:
+      TTS_SERVER_PORT: ${TTS_SERVER_PORT:-4010}
+    restart: unless-stopped
+
+  fintech-api:
+    build:
+      context: ./fintech-api
+      dockerfile: Dockerfile
+    ports:
+      - "4101:4101"
+    env_file:
+      - .env
+    environment:
+      PORT: ${PORT:-4101}
+    restart: unless-stopped
+

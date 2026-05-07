@@ -20,6 +20,7 @@ import { useMaintenanceAlerts } from '@/hooks/usePredictiveMaintenance';
 import { DocumentProcessingDashboard } from '@/components/documents/DocumentProcessingDashboard';
 import { useDocumentProcessing } from '@/hooks/useDocumentProcessing';
 import { VoiceAssistantWidget } from '@/components/voice/VoiceAssistantWidget';
+import { DamianixProAssistantChat } from '@/components/assistant/DamianixProAssistantChat';
 import { KYCVerificationDashboard } from '@/components/kyc/KYCVerificationDashboard';
 import { BlockchainDashboard } from '@/components/blockchain/BlockchainDashboard';
 import { BlockchainAnalyticsDashboard } from '@/components/blockchain/BlockchainAnalyticsDashboard';
@@ -119,7 +120,7 @@ const OwnerDashboardPage = () => {
         title="Owner Dashboard"
         description="Track your properties, tenants, revenue, and maintenance requests"
       >
-        <div className="space-y-6">
+        <div className="space-y-5 sm:space-y-6">
           {isMobile ? (
             <ScrollArea className="w-full whitespace-nowrap">
               <div className="flex w-max space-x-4 pb-4">
@@ -152,12 +153,12 @@ const OwnerDashboardPage = () => {
             </div>
           )}
 
-          <div className="grid gap-4 md:grid-cols-3">
+          <div className="grid gap-4 lg:grid-cols-3">
             <PaymentChart />
             <MaintenanceStatus />
           </div>
 
-          <div className="grid gap-4 md:grid-cols-3">
+          <div className="grid gap-4 lg:grid-cols-3">
             <div className="md:col-span-2">
               <PropertyList properties={properties || []} isLoading={isLoadingProperties} />
             </div>
@@ -170,6 +171,8 @@ const OwnerDashboardPage = () => {
                 compact={false}
                 showHistory={false}
               />
+
+              <DamianixProAssistantChat compact className="border-violet-200" />
 
               {/* KYC Verification Dashboard */}
               <KYCVerificationDashboard

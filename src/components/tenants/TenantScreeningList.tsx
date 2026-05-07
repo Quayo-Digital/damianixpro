@@ -90,14 +90,20 @@ export function TenantScreeningList() {
 
   if (isLoading) return <div className="p-4">Loading screenings...</div>;
   if (error)
-    return <div className="p-4 text-red-500">Error loading screenings: {error.message}</div>;
+    return <div className="p-4 text-destructive">Error loading screenings: {error.message}</div>;
 
   const getStatusBadge = (status: string | null) => {
     switch (status) {
       case 'completed':
-        return <Badge className="bg-green-500 hover:bg-green-600">Completed</Badge>;
+        return (
+          <Badge className="bg-primary text-primary-foreground hover:bg-primary">Completed</Badge>
+        );
       case 'in_progress':
-        return <Badge className="bg-blue-500 hover:bg-blue-600">In Progress</Badge>;
+        return (
+          <Badge className="bg-secondary text-secondary-foreground hover:bg-secondary">
+            In Progress
+          </Badge>
+        );
       case 'pending':
         return <Badge variant="outline">Pending</Badge>;
       case 'failed':

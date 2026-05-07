@@ -329,23 +329,23 @@ export function ContextualGuide({ className }: { className?: string }) {
 
   return (
     <div className={cn('space-y-2', className)}>
-      <Alert className="border-blue-200 bg-blue-50">
-        <Info className="h-4 w-4 text-blue-500" />
-        <AlertDescription className="text-sm text-gray-700">
+      <Alert className="border-border bg-accent/40">
+        <Info className="h-4 w-4 text-primary" />
+        <AlertDescription className="text-sm text-foreground">
           <strong>What you can do:</strong> {guide.explanation}
         </AlertDescription>
       </Alert>
 
-      <Alert className="border-green-200 bg-green-50">
-        <Lightbulb className="h-4 w-4 text-green-500" />
-        <AlertDescription className="text-sm text-gray-700">
+      <Alert className="border-border bg-accent/40">
+        <Lightbulb className="h-4 w-4 text-primary" />
+        <AlertDescription className="text-sm text-foreground">
           <strong>Next step:</strong> {guide.nextAction}
         </AlertDescription>
       </Alert>
 
-      <Alert className="border-yellow-200 bg-yellow-50">
-        <AlertTriangle className="h-4 w-4 text-yellow-500" />
-        <AlertDescription className="text-sm text-gray-700">
+      <Alert className="border-destructive/40 bg-destructive/10">
+        <AlertTriangle className="h-4 w-4 text-destructive" />
+        <AlertDescription className="text-sm text-foreground">
           <strong>Watch out:</strong> {guide.warning}
         </AlertDescription>
       </Alert>

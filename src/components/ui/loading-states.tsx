@@ -1,11 +1,9 @@
 import React from 'react';
 import { cn } from '@/lib/utils';
 import { Loader2, AlertCircle, CheckCircle2, Info } from 'lucide-react';
-
-// Skeleton Components for Loading States
-export const Skeleton = ({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) => {
-  return <div className={cn('animate-pulse rounded-md bg-muted', className)} {...props} />;
-};
+import { Skeleton } from '@/components/ui/skeleton';
+import { Button } from '@/components/ui/button';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
 // Card Skeleton for Property Cards, Dashboard Cards, etc.
 export const CardSkeleton = () => (
@@ -172,20 +170,10 @@ export const LoadingButton = ({
   ...props
 }: LoadingButtonProps) => {
   return (
-    <button
-      className={cn(
-        'inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors',
-        'bg-primary text-primary-foreground hover:bg-primary/90',
-        'h-10 px-4 py-2',
-        'disabled:pointer-events-none disabled:opacity-50',
-        className
-      )}
-      disabled={loading || disabled}
-      {...props}
-    >
+    <Button className={className} disabled={loading || disabled} {...props}>
       {loading && <LoadingSpinner size="sm" className="mr-2" />}
       {loading ? loadingText : children}
-    </button>
+    </Button>
   );
 };
 
@@ -293,34 +281,34 @@ export const StatusMessage = ({ type, title, message, className }: StatusMessage
   const config = {
     info: {
       icon: Info,
-      className: 'bg-blue-50 text-blue-900 border-blue-200',
+      className: 'border-border bg-accent/40 text-foreground',
     },
     success: {
       icon: CheckCircle2,
-      className: 'bg-green-50 text-green-900 border-green-200',
+      className: 'border-border bg-accent/40 text-foreground',
     },
     warning: {
       icon: AlertCircle,
-      className: 'bg-yellow-50 text-yellow-900 border-yellow-200',
+      className: 'border-border bg-accent/40 text-foreground',
     },
     error: {
       icon: AlertCircle,
-      className: 'bg-red-50 text-red-900 border-red-200',
+      className: 'border-destructive/40 bg-destructive/10 text-foreground',
     },
   };
 
   const { icon: Icon, className: typeClassName } = config[type];
 
   return (
-    <div className={cn('rounded-lg border p-4', typeClassName, className)}>
-      <div className="flex">
-        <Icon className="h-5 w-5 flex-shrink-0" />
-        <div className="ml-3">
-          {title && <h3 className="text-sm font-medium">{title}</h3>}
-          <p className={cn('text-sm', title ? 'mt-1' : '')}>{message}</p>
-        </div>
+    <Alert className={cn(typeClassName, className)}>
+      <Icon className="h-4 w-4" />
+      <div>
+        {title ? <AlertTitle>{title}</AlertTitle> : null}
+        <AlertDescription className={cn(!title ? 'text-sm' : undefined)}>
+          {message}
+        </AlertDescription>
       </div>
-    </div>
+    </Alert>
   );
 };
 

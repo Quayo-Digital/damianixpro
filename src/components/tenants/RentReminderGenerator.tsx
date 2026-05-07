@@ -315,7 +315,7 @@ export function RentReminderGenerator() {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Bell className="h-5 w-5 text-blue-500" />
+            <Bell className="h-5 w-5 text-primary" />
             Rent Reminder Generator
           </CardTitle>
           <CardDescription>
@@ -442,9 +442,9 @@ export function RentReminderGenerator() {
 
           {/* Recommendation */}
           {tenantName && dueDate && (
-            <div className="rounded-lg border border-blue-200 bg-blue-50 p-4">
+            <div className="rounded-lg border border-border bg-accent/40 p-4">
               <div className="mb-2 flex items-center gap-2">
-                <AlertCircle className="h-5 w-5 text-blue-500" />
+                <AlertCircle className="h-5 w-5 text-primary" />
                 <span className="font-semibold">Recommended Reminder Type:</span>
                 <Badge
                   variant={
@@ -462,7 +462,7 @@ export function RentReminderGenerator() {
                       : 'Polite Reminder'}
                 </Badge>
               </div>
-              <p className="text-sm text-gray-600">
+              <p className="text-sm text-muted-foreground">
                 Based on days overdue ({parseInt(daysOverdue) || 0} days) and payment history, we
                 recommend sending a{' '}
                 <strong>
@@ -524,13 +524,13 @@ export function RentReminderGenerator() {
                     onClick={() => handleCopy(generatedReminders.polite, 'Polite')}
                   >
                     {copied === 'Polite' ? (
-                      <CheckCircle className="h-4 w-4 text-green-500" />
+                      <CheckCircle className="h-4 w-4 text-primary" />
                     ) : (
                       <Copy className="h-4 w-4" />
                     )}
                   </Button>
                 </div>
-                <p className="text-xs text-gray-500">
+                <p className="text-xs text-muted-foreground">
                   Use for: Early reminders (0-7 days overdue), good payment history, first-time
                   delays for annual rent
                 </p>
@@ -550,13 +550,13 @@ export function RentReminderGenerator() {
                     onClick={() => handleCopy(generatedReminders.firm, 'Firm')}
                   >
                     {copied === 'Firm' ? (
-                      <CheckCircle className="h-4 w-4 text-green-500" />
+                      <CheckCircle className="h-4 w-4 text-primary" />
                     ) : (
                       <Copy className="h-4 w-4" />
                     )}
                   </Button>
                 </div>
-                <p className="text-xs text-gray-500">
+                <p className="text-xs text-muted-foreground">
                   Use for: 7-21 days overdue, repeated late payments, requires immediate attention
                 </p>
               </TabsContent>
@@ -575,13 +575,13 @@ export function RentReminderGenerator() {
                     onClick={() => handleCopy(generatedReminders.final, 'Final')}
                   >
                     {copied === 'Final' ? (
-                      <CheckCircle className="h-4 w-4 text-green-500" />
+                      <CheckCircle className="h-4 w-4 text-primary" />
                     ) : (
                       <Copy className="h-4 w-4" />
                     )}
                   </Button>
                 </div>
-                <p className="text-xs text-gray-500">
+                <p className="text-xs text-muted-foreground">
                   Use for: 21+ days overdue, multiple missed annual rent payments, legal action may
                   be required
                 </p>

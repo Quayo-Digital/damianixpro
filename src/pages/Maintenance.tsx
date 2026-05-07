@@ -6,18 +6,18 @@ import { AlertTriangle, Clock, Wrench, Plus } from 'lucide-react';
 import { useAuthSession } from '@/contexts/auth';
 import { MaintenanceRequestDialog } from '@/components/maintenance/MaintenanceRequestDialog';
 import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
 import { MaintenanceRequest } from '@/components/communication/maintenance/maintenance-data';
 import { PageLayout } from '@/components/layout/PageLayout';
 import { PageContent } from '@/components/layout/PageContent';
 import { useMaintenanceRequests } from '@/hooks/useMaintenanceRequests';
 import { MaintenanceTable } from '@/components/maintenance/MaintenanceTable';
+import { TableSkeleton } from '@/components/skeletons/TableSkeleton';
+import { notifyError, notifySuccess } from '@/utils/notify';
 
 const Maintenance = () => {
   const [activeTab, setActiveTab] = useState('all');
   const { maintenanceRequests, isLoading, refetch } = useMaintenanceRequests();
   const { isOwner, isAgent, isTenant, isVendor } = useAuthSession();
-  const { toast } = useToast();
 
   const handleStatusUpdate = async (
     id: string,
@@ -33,17 +33,10 @@ const Maintenance = () => {
 
       refetch();
 
-      toast({
-        title: 'Status Updated',
-        description: `Request status updated to ${newStatus.replace('_', ' ')}.`,
-      });
+      notifySuccess('Status updated', `Request status updated to ${newStatus.replace('_', ' ')}.`);
     } catch (error) {
       console.error('Error updating status:', error);
-      toast({
-        title: 'Update Failed',
-        description: 'Failed to update maintenance request status',
-        variant: 'destructive',
-      });
+      notifyError('Update failed', 'Failed to update maintenance request status');
     }
   };
 
@@ -57,11 +50,7 @@ const Maintenance = () => {
 
   const renderContent = (requests: MaintenanceRequest[], showPriority: boolean = false) => {
     if (isLoading) {
-      return (
-        <div className="flex items-center justify-center p-8">
-          <div className="h-8 w-8 animate-spin rounded-full border-b-2 border-primary"></div>
-        </div>
-      );
+      return <TableSkeleton rows={7} cols={5} />;
     }
     return (
       <MaintenanceTable
@@ -90,14 +79,14 @@ const Maintenance = () => {
           </>
         }
       >
-        <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="grid w-full grid-cols-3 md:w-auto">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4 sm:space-y-5">
+          <TabsList className="grid w-full grid-cols-1 gap-2 sm:grid-cols-3 md:w-auto">
             <TabsTrigger value="all">All Requests</TabsTrigger>
             <TabsTrigger value="pending">Pending ({pendingRequests.length})</TabsTrigger>
             <TabsTrigger value="inprogress">In Progress ({inProgressRequests.length})</TabsTrigger>
           </TabsList>
 
-          <TabsContent value="all">
+          <TabsContent value="all" className="mt-2 sm:mt-4">
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
@@ -109,7 +98,7 @@ const Maintenance = () => {
             </Card>
           </TabsContent>
 
-          <TabsContent value="pending">
+          <TabsContent value="pending" className="mt-2 sm:mt-4">
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
@@ -121,7 +110,7 @@ const Maintenance = () => {
             </Card>
           </TabsContent>
 
-          <TabsContent value="inprogress">
+          <TabsContent value="inprogress" className="mt-2 sm:mt-4">
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">

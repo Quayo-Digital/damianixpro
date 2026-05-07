@@ -7,6 +7,10 @@ import { useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuthSession } from '@/contexts/auth';
 import { AdminOnboardingTour } from '@/components/admin/dashboard/AdminOnboardingTour';
+import { DamianixProAssistantChat } from '@/components/assistant/DamianixProAssistantChat';
+import { RoleDashboardInsights } from '@/components/dashboard/role-dashboard/RoleDashboardInsights';
+import { useAdminRoleDashboardExtras } from '@/hooks/useAdminRoleDashboardExtras';
+import { Building2, ClipboardList, Percent, Wallet } from 'lucide-react';
 
 // Use React.lazy for subcomponents
 const StatGrid = lazy(() =>
@@ -62,6 +66,22 @@ const AdminDashboardPage = () => {
     pendingApplicationsCount,
     pendingScreeningsCount,
   } = useAdminDashboardData();
+
+  const {
+    loading: pulseLoading,
+    occupancyPct,
+    outstandingRentNgn,
+    activeTenancies,
+    activities: pulseActivities,
+  } = useAdminRoleDashboardExtras();
+
+  const formatNgn = (n: number) =>
+    new Intl.NumberFormat('en-NG', {
+      style: 'currency',
+      currency: 'NGN',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    }).format(n);
 
   useEffect(() => {
     const invalidateDashboard = () => {
@@ -176,7 +196,46 @@ const AdminDashboardPage = () => {
     <PageLayout>
       {user && <AdminOnboardingTour run={runTour} onTourEnd={handleTourEnd} />}
       <PageContent title="Admin Dashboard" description="Platform management and analytics">
-        <div className="space-y-6">
+        <div className="space-y-5 sm:space-y-6">
+          <RoleDashboardInsights
+            sectionTitle="Operations pulse"
+            stats={[
+              {
+                title: 'Occupancy (units)',
+                value: pulseLoading ? '…' : occupancyPct != null ? `${occupancyPct}%` : '—',
+                icon: <Percent className="h-4 w-4" />,
+                description: 'Occupied units ÷ total units',
+              },
+              {
+                title: 'Outstanding rent',
+                value: pulseLoading ? '…' : formatNgn(outstandingRentNgn),
+                icon: <Wallet className="h-4 w-4" />,
+                description: 'Non-successful rent ledger balance',
+              },
+              {
+                title: 'Review queue',
+                value: String((pendingApplicationsCount || 0) + (pendingScreeningsCount || 0)),
+                icon: <ClipboardList className="h-4 w-4" />,
+                description: 'Pending applications + screenings',
+              },
+              {
+                title: 'Active tenancies',
+                value: pulseLoading ? '…' : String(activeTenancies),
+                icon: <Building2 className="h-4 w-4" />,
+                description: 'Active property–tenant links',
+              },
+            ]}
+            quickActions={[
+              { label: 'User management', to: '/admin/users' },
+              { label: 'Roles & access', to: '/admin/roles' },
+              { label: 'Service tickets', to: '/admin/maintenance-tickets' },
+              { label: 'Support queue', to: '/admin/support' },
+            ]}
+            activities={pulseActivities}
+            activityTitle="Recent platform activity"
+            activityEmptyMessage="No recent payments or maintenance requests."
+            quickActionsTitle="Quick actions"
+          />
           <div id="tour-step-1">
             <Suspense fallback={<FallbackBlock text="Loading stats..." />}>
               <StatGrid
@@ -217,6 +276,8 @@ const AdminDashboardPage = () => {
               </Suspense>
             </div>
           </div>
+
+          <DamianixProAssistantChat />
 
           {/* Testing Hub - Centralized Testing Access */}
           <div id="tour-step-6">

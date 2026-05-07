@@ -20,7 +20,17 @@ export function RoleAssignmentTool() {
   const [isLoading, setIsLoading] = useState(false);
   const [users, setUsers] = useState<any[]>([]);
 
-  const roles: UserRole[] = ['admin', 'owner', 'agent', 'tenant', 'vendor', 'user', 'manager'];
+  const roles: UserRole[] = [
+    'admin',
+    'owner',
+    'agent',
+    'tenant',
+    'vendor',
+    'user',
+    'manager',
+    'accountant',
+    'facility_manager',
+  ];
 
   const searchUsers = async () => {
     if (!email.trim()) {

@@ -42,9 +42,9 @@ export function TenantScreening({ tenantId, tenantName = 'Applicant' }: TenantSc
   const getStatusBadge = (status: ScreeningStatus) => {
     switch (status) {
       case 'completed':
-        return <Badge className="bg-green-500">Completed</Badge>;
+        return <Badge className="bg-primary text-primary-foreground">Completed</Badge>;
       case 'in_progress':
-        return <Badge className="bg-blue-500">In Progress</Badge>;
+        return <Badge className="bg-secondary text-secondary-foreground">In Progress</Badge>;
       case 'pending':
         return <Badge variant="outline">Pending</Badge>;
       case 'failed':
@@ -56,9 +56,9 @@ export function TenantScreening({ tenantId, tenantName = 'Applicant' }: TenantSc
 
   const getStatusIcon = (verified: boolean) => {
     return verified ? (
-      <CheckCircle className="h-5 w-5 text-green-500" />
+      <CheckCircle className="h-5 w-5 text-primary" />
     ) : (
-      <AlertCircle className="h-5 w-5 text-amber-500" />
+      <AlertCircle className="h-5 w-5 text-accent-foreground" />
     );
   };
 
@@ -126,7 +126,7 @@ export function TenantScreening({ tenantId, tenantName = 'Applicant' }: TenantSc
         </div>
 
         {overallVerificationStatus === 'verified' ? (
-          <Badge className="bg-green-500">All Verified</Badge>
+          <Badge className="bg-primary text-primary-foreground">All Verified</Badge>
         ) : screeningResults.length > 0 ? (
           <Badge variant="destructive">Issues Found</Badge>
         ) : (

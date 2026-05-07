@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { UserRole } from '@/contexts/auth';
+import { useAuthSession } from '@/contexts/auth';
 import { profileFullName } from '@/lib/profileDisplayName';
 
 export interface UserProfileWithRole {
@@ -60,8 +61,13 @@ const fetchUsers = async (): Promise<UserProfileWithRole[]> => {
 };
 
 export const useAdminUsers = () => {
+  const { userRole } = useAuthSession();
+  const canReadAdminUsers = userRole === 'admin' || userRole === 'super_admin';
+
   return useQuery({
     queryKey: ['admin-users'],
     queryFn: fetchUsers,
+    enabled: canReadAdminUsers,
+    retry: false,
   });
 };

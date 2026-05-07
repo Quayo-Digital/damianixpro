@@ -118,26 +118,26 @@ export const ContextualHelp = ({ tip, children }: ContextualHelpProps) => {
   const getIcon = () => {
     switch (tip.type) {
       case 'tip':
-        return <Lightbulb className="h-4 w-4 text-yellow-600" />;
+        return <Lightbulb className="h-4 w-4 text-primary" />;
       case 'warning':
-        return <AlertCircle className="h-4 w-4 text-orange-600" />;
+        return <AlertCircle className="h-4 w-4 text-destructive" />;
       case 'success':
-        return <CheckCircle2 className="h-4 w-4 text-green-600" />;
+        return <CheckCircle2 className="h-4 w-4 text-primary" />;
       default:
-        return <Info className="h-4 w-4 text-blue-600" />;
+        return <Info className="h-4 w-4 text-primary" />;
     }
   };
 
   const getBgColor = () => {
     switch (tip.type) {
       case 'tip':
-        return 'bg-yellow-50 border-yellow-200';
+        return 'bg-accent/40 border-border';
       case 'warning':
-        return 'bg-orange-50 border-orange-200';
+        return 'bg-destructive/10 border-destructive/40';
       case 'success':
-        return 'bg-green-50 border-green-200';
+        return 'bg-accent/40 border-border';
       default:
-        return 'bg-blue-50 border-blue-200';
+        return 'bg-accent/40 border-border';
     }
   };
 
@@ -203,12 +203,12 @@ export const TourStep = ({
       )}
 
       {step.tips && step.tips.length > 0 && (
-        <div className="rounded-md border border-yellow-200 bg-yellow-50 p-3">
+        <div className="rounded-md border border-border bg-accent/40 p-3">
           <div className="mb-2 flex items-center">
-            <Lightbulb className="mr-2 h-4 w-4 text-yellow-600" />
-            <span className="text-sm font-medium text-yellow-800">Tips:</span>
+            <Lightbulb className="mr-2 h-4 w-4 text-primary" />
+            <span className="text-sm font-medium text-foreground">Tips:</span>
           </div>
-          <ul className="space-y-1 text-sm text-yellow-700">
+          <ul className="space-y-1 text-sm text-muted-foreground">
             {step.tips.map((tip, index) => (
               <li key={index} className="flex items-start">
                 <span className="mr-2">•</span>
@@ -242,13 +242,13 @@ export const HelpGuide = ({ guide, onStartTour }: HelpGuideProps) => {
   const getDifficultyColor = (difficulty: string) => {
     switch (difficulty) {
       case 'beginner':
-        return 'bg-green-100 text-green-800';
+        return 'bg-accent text-accent-foreground';
       case 'intermediate':
-        return 'bg-yellow-100 text-yellow-800';
+        return 'bg-secondary text-secondary-foreground';
       case 'advanced':
-        return 'bg-red-100 text-red-800';
+        return 'bg-destructive/15 text-destructive';
       default:
-        return 'bg-gray-100 text-gray-800';
+        return 'bg-muted text-muted-foreground';
     }
   };
 
@@ -274,7 +274,7 @@ export const HelpGuide = ({ guide, onStartTour }: HelpGuideProps) => {
           <ul className="space-y-1">
             {guide.steps.slice(0, 3).map((step, index) => (
               <li key={step.id} className="flex items-center text-sm text-muted-foreground">
-                <CheckCircle2 className="mr-2 h-3 w-3 flex-shrink-0 text-green-600" />
+                <CheckCircle2 className="mr-2 h-3 w-3 flex-shrink-0 text-primary" />
                 {step.title}
               </li>
             ))}
@@ -439,12 +439,12 @@ export const FormFieldWithHelp = ({
     <div className="flex items-center space-x-2">
       <label className="text-sm font-medium">
         {label}
-        {required && <span className="ml-1 text-red-500">*</span>}
+        {required && <span className="ml-1 text-destructive">*</span>}
       </label>
       <HelpIcon content={helpText} />
     </div>
     {children}
-    {error && <p className="text-sm text-red-600">{error}</p>}
+    {error && <p className="text-sm text-destructive">{error}</p>}
   </div>
 );
 
@@ -476,7 +476,7 @@ export const OnboardingChecklist = ({ items, onItemClick }: OnboardingChecklistP
           </Badge>
         </CardTitle>
         <CardDescription>Complete these steps to get the most out of DamianixPro</CardDescription>
-        <div className="h-2 w-full rounded-full bg-gray-200">
+        <div className="h-2 w-full rounded-full bg-muted">
           <div
             className="h-2 rounded-full bg-primary transition-all duration-300"
             style={{ width: `${progress}%` }}
@@ -491,23 +491,23 @@ export const OnboardingChecklist = ({ items, onItemClick }: OnboardingChecklistP
               className={cn(
                 'flex items-start space-x-3 rounded-lg border p-3 transition-colors',
                 item.completed
-                  ? 'border-green-200 bg-green-50'
-                  : 'cursor-pointer border-gray-200 bg-gray-50 hover:bg-gray-100'
+                  ? 'border-border bg-accent/40'
+                  : 'cursor-pointer border-border bg-muted/40 hover:bg-muted/70'
               )}
               onClick={() => !item.completed && onItemClick?.(item)}
             >
               <div className="mt-0.5 flex-shrink-0">
                 {item.completed ? (
-                  <CheckCircle2 className="h-5 w-5 text-green-600" />
+                  <CheckCircle2 className="h-5 w-5 text-primary" />
                 ) : (
-                  <div className="h-5 w-5 rounded-full border-2 border-gray-300" />
+                  <div className="h-5 w-5 rounded-full border-2 border-border" />
                 )}
               </div>
               <div className="flex-1">
                 <h4
                   className={cn(
                     'text-sm font-medium',
-                    item.completed ? 'text-green-900' : 'text-gray-900'
+                    item.completed ? 'text-foreground' : 'text-foreground'
                   )}
                 >
                   {item.title}
@@ -515,13 +515,13 @@ export const OnboardingChecklist = ({ items, onItemClick }: OnboardingChecklistP
                 <p
                   className={cn(
                     'mt-1 text-sm',
-                    item.completed ? 'text-green-700' : 'text-gray-600'
+                    item.completed ? 'text-muted-foreground' : 'text-muted-foreground'
                   )}
                 >
                   {item.description}
                 </p>
               </div>
-              {!item.completed && <ChevronRight className="h-4 w-4 text-gray-400" />}
+              {!item.completed && <ChevronRight className="h-4 w-4 text-muted-foreground" />}
             </div>
           ))}
         </div>

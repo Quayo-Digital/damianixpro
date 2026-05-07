@@ -6,6 +6,7 @@ import type {
   AuthActionsContextValue,
   UserRole,
 } from '@/contexts/auth/types';
+import { getPermissionsForRole } from '@/auth/rbac/matrix';
 
 const noop = () => Promise.resolve(null as unknown as null);
 const noopVoid = () => Promise.resolve();
@@ -19,6 +20,8 @@ export function createMockAuthSession(
   const session = overrides.session ?? null;
   const loading = overrides.loading ?? false;
   const isLoading = overrides.isLoading ?? false;
+  const permSet = getPermissionsForRole(userRole);
+  const permissions = Object.freeze([...permSet]);
 
   return {
     user,
@@ -27,14 +30,22 @@ export function createMockAuthSession(
     loading,
     isLoading,
     isSuperAdmin: () => userRole === 'super_admin',
-    isAdmin: () => userRole === 'admin',
+    isAdmin: () => userRole === 'super_admin' || userRole === 'admin',
     isOwner: () => userRole === 'owner',
     isAgent: () => userRole === 'agent',
     isTenant: () => userRole === 'tenant',
     isVendor: () => userRole === 'vendor',
     isManager: () => userRole === 'manager',
+    isAccountant: () => userRole === 'accountant',
+    isFacilityManager: () => userRole === 'facility_manager',
     isAuthenticated: () => user !== null,
     getRoleDisplay: () => String(userRole),
+    permissions: overrides.permissions ?? permissions,
+    hasPermission: overrides.hasPermission ?? ((p: string) => permSet.has(p)),
+    hasAnyPermission:
+      overrides.hasAnyPermission ?? ((ps: readonly string[]) => ps.some((p) => permSet.has(p))),
+    hasAllPermissions:
+      overrides.hasAllPermissions ?? ((ps: readonly string[]) => ps.every((p) => permSet.has(p))),
   };
 }
 

@@ -3,7 +3,6 @@ import { useLocation } from 'react-router-dom';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { X, Lightbulb, MousePointerClick } from 'lucide-react';
-import { cn } from '@/lib/utils';
 
 interface ProactiveSuggestion {
   action: string;
@@ -205,14 +204,14 @@ export function ProactiveHelper() {
 
   return (
     <div className="fixed bottom-4 right-4 z-50 max-w-md animate-in slide-in-from-bottom-5">
-      <Alert className="border-blue-200 bg-blue-50 shadow-lg">
+      <Alert className="border-border bg-popover shadow-lg">
         <div className="flex items-start gap-3">
-          <Lightbulb className="mt-0.5 h-5 w-5 flex-shrink-0 text-blue-500" />
+          <Lightbulb className="mt-0.5 h-5 w-5 flex-shrink-0 text-primary" />
           <div className="flex-1">
-            <AlertTitle className="mb-1 text-sm font-semibold text-gray-800">
+            <AlertTitle className="mb-1 text-sm font-semibold text-foreground">
               Need help getting started?
             </AlertTitle>
-            <AlertDescription className="mb-3 text-sm text-gray-700">
+            <AlertDescription className="mb-3 text-sm text-muted-foreground">
               <strong>{suggestion.action}:</strong> {suggestion.description}
             </AlertDescription>
             <div className="flex items-center gap-2">

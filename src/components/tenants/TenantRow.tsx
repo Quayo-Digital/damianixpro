@@ -52,7 +52,7 @@ export function TenantRow({ tenant, onViewTenant }: TenantRowProps) {
         <Badge
           variant={tenant.status === 'active' ? 'default' : 'secondary'}
           className={
-            tenant.status === 'active' ? 'bg-green-100 text-green-800 hover:bg-green-100' : ''
+            tenant.status === 'active' ? 'bg-primary/15 text-primary hover:bg-primary/20' : ''
           }
         >
           {tenant.status === 'active' ? 'Active' : 'Inactive'}

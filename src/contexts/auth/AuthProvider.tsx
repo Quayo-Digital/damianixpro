@@ -11,7 +11,10 @@ import {
   checkIsTenant,
   checkIsVendor,
   checkIsManager,
+  checkIsAccountant,
+  checkIsFacilityManager,
 } from './authUtils';
+import { getPermissionsForRole } from '@/auth/rbac/matrix';
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const {
@@ -30,8 +33,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     updateUserMetadata,
   } = useAuthState();
 
-  const sessionValue = useMemo(
-    () => ({
+  const sessionValue = useMemo(() => {
+    const permSet = getPermissionsForRole(userRole);
+    const permissions = Object.freeze([...permSet]);
+    return {
       user,
       userRole,
       isLoading,
@@ -44,11 +49,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       isTenant: () => checkIsTenant(userRole),
       isVendor: () => checkIsVendor(userRole),
       isManager: () => checkIsManager(userRole),
+      isAccountant: () => checkIsAccountant(userRole),
+      isFacilityManager: () => checkIsFacilityManager(userRole),
       isAuthenticated: () => user !== null,
       getRoleDisplay: () => getRoleDisplay(userRole),
-    }),
-    [user, userRole, isLoading, session]
-  );
+      permissions,
+      hasPermission: (permission: string) => permSet.has(permission),
+      hasAnyPermission: (perms: readonly string[]) => perms.some((p) => permSet.has(p)),
+      hasAllPermissions: (perms: readonly string[]) => perms.every((p) => permSet.has(p)),
+    };
+  }, [user, userRole, isLoading, session]);
 
   const actionsValue = useMemo(
     () => ({

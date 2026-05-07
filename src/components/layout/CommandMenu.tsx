@@ -36,12 +36,30 @@ export function CommandMenu() {
     {
       title: 'Dashboard',
       path: dashboardPath,
-      roles: ['admin', 'super_admin', 'owner', 'tenant', 'agent', 'manager', 'vendor'],
+      roles: [
+        'admin',
+        'super_admin',
+        'owner',
+        'tenant',
+        'agent',
+        'manager',
+        'vendor',
+        'accountant',
+        'facility_manager',
+      ],
     },
     {
       title: 'Properties',
       path: '/properties',
-      roles: ['admin', 'super_admin', 'owner', 'agent', 'manager'],
+      roles: [
+        'admin',
+        'super_admin',
+        'owner',
+        'agent',
+        'manager',
+        'facility_manager',
+        'accountant',
+      ],
     },
     {
       title: 'Short-Lets',
@@ -51,11 +69,55 @@ export function CommandMenu() {
     {
       title: 'Maintenance',
       path: '/maintenance',
-      roles: ['admin', 'super_admin', 'owner', 'tenant', 'agent', 'manager', 'vendor'],
+      roles: [
+        'admin',
+        'super_admin',
+        'owner',
+        'tenant',
+        'agent',
+        'manager',
+        'vendor',
+        'facility_manager',
+      ],
+    },
+    {
+      title: 'Service tickets (tenant)',
+      path: '/tenant/maintenance-tickets',
+      roles: ['tenant'],
+    },
+    {
+      title: 'Service tickets (admin)',
+      path: '/admin/maintenance-tickets',
+      roles: ['admin', 'super_admin'],
+    },
+    {
+      title: 'Service tickets (portfolio)',
+      path: '/maintenance/service-tickets',
+      roles: ['owner', 'agent', 'manager'],
+    },
+    {
+      title: 'My assigned tickets',
+      path: '/facility-manager/tickets',
+      roles: ['facility_manager'],
+    },
+    {
+      title: 'Vendor tickets',
+      path: '/vendor/maintenance-tickets',
+      roles: ['vendor'],
     },
     {
       title: 'Tenants',
       path: '/tenant-management',
+      roles: ['admin', 'super_admin', 'owner', 'agent', 'manager'],
+    },
+    {
+      title: 'Accounting (NG)',
+      path: '/accounting',
+      roles: ['admin', 'super_admin', 'owner', 'agent', 'manager', 'accountant'],
+    },
+    {
+      title: 'CRM Pipeline',
+      path: '/crm/pipeline',
       roles: ['admin', 'super_admin', 'owner', 'agent', 'manager'],
     },
     {
@@ -76,14 +138,14 @@ export function CommandMenu() {
     <>
       <Button
         variant="outline"
-        className="relative h-9 w-full justify-start rounded-[0.5rem] text-sm text-muted-foreground sm:pr-12 md:w-40 lg:w-64"
+        className="relative h-9 w-full max-w-full justify-start rounded-lg border-border/70 bg-muted/30 text-sm text-muted-foreground shadow-sm transition-colors hover:bg-muted/50 sm:pr-12 md:max-w-md lg:max-w-md"
         onClick={() => setOpen(true)}
+        aria-label="Open command menu to search and navigate"
       >
-        <Search className="mr-2 h-4 w-4" />
-        <span className="hidden lg:inline-flex">Search...</span>
-        <span className="inline-flex lg:hidden">Search...</span>
-        <kbd className="pointer-events-none absolute right-1.5 top-2 hidden h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium opacity-100 sm:flex">
-          <span className="text-xs">⌘</span>K
+        <Search className="mr-2 h-4 w-4 shrink-0 opacity-70" aria-hidden />
+        <span className="truncate">Search workspace…</span>
+        <kbd className="pointer-events-none absolute right-1.5 top-1/2 hidden h-6 -translate-y-1/2 select-none items-center gap-0.5 rounded-md border border-border/80 bg-background px-1.5 font-mono text-[10px] font-medium shadow-sm sm:inline-flex">
+          <span className="text-[11px]">⌘</span>K
         </kbd>
       </Button>
       <CommandDialog open={open} onOpenChange={setOpen}>

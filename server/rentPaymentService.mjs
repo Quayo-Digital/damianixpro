@@ -1,14 +1,74 @@
 import express from 'express';
 import { v4 as uuidv4 } from 'uuid';
+import crypto from 'crypto';
 import { supabaseAdmin } from './supabaseClient.mjs';
 import { validateVerificationToken } from './voiceAuthService.mjs';
 import { resolvePropertyTenantIdFromLease } from './rentLedgerCompat.mjs';
 import { claimPaymentWebhookEvent } from './paymentWebhookDedup.mjs';
+import {
+  enqueuePaymentFailed,
+  enqueuePaymentReceived,
+  drainNotificationOutbox,
+} from './notifications/outboxTriggers.mjs';
+import { apiError, logger } from './observability.mjs';
 
 const router = express.Router();
 
+async function notifyRentCallbackOutbox(paymentRow, paymentReference, isSuccess) {
+  if (!supabaseAdmin || !paymentRow?.property_tenant_id) return;
+  const { data: pt } = await supabaseAdmin
+    .from('property_tenants')
+    .select('tenant_id')
+    .eq('id', paymentRow.property_tenant_id)
+    .maybeSingle();
+  if (!pt?.tenant_id) return;
+  const { data: tenant } = await supabaseAdmin
+    .from('tenants')
+    .select('user_id, phone, email, first_name, last_name')
+    .eq('id', pt.tenant_id)
+    .maybeSingle();
+  if (!tenant) return;
+  const t = { ...tenant, first_name: tenant.first_name || 'Tenant' };
+  const channels = ['in_app', 'email', 'sms', 'whatsapp'];
+  if (isSuccess) {
+    await enqueuePaymentReceived({
+      tenant: t,
+      amount: Number(paymentRow.amount) || 0,
+      txRef: paymentReference,
+      channels,
+    });
+  } else {
+    await enqueuePaymentFailed({
+      tenant: t,
+      txRef: paymentReference,
+      channels,
+    });
+  }
+  await drainNotificationOutbox(25);
+}
+
 const PUBLIC_PAYMENT_BASE_URL =
   process.env.PUBLIC_PAYMENT_BASE_URL || 'https://payments.damianixpro.local';
+const RENT_WEBHOOK_SECRET = (process.env.RENT_PAYMENT_WEBHOOK_SECRET || '').trim();
+const UUID_RE =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+function isUuid(s) {
+  return typeof s === 'string' && UUID_RE.test(s);
+}
+
+function computeRentWebhookSignature(rawBody) {
+  return crypto
+    .createHmac('sha256', RENT_WEBHOOK_SECRET)
+    .update(String(rawBody || ''), 'utf8')
+    .digest('hex');
+}
+
+function safeEqualHex(a, b) {
+  const left = Buffer.from(String(a || ''), 'utf8');
+  const right = Buffer.from(String(b || ''), 'utf8');
+  if (left.length !== right.length) return false;
+  return crypto.timingSafeEqual(left, right);
+}
 
 router.post('/api/payments/rent', async (req, res) => {
   if (!supabaseAdmin) {
@@ -25,6 +85,9 @@ router.post('/api/payments/rent', async (req, res) => {
 
   if (!tenant_id || !amount) {
     return res.status(400).json({ error: 'tenant_id and amount are required.' });
+  }
+  if (!isUuid(String(tenant_id))) {
+    return res.status(400).json({ error: 'tenant_id must be a valid UUID.' });
   }
 
   // Sensitive operation: require voice agent verification
@@ -48,6 +111,9 @@ router.post('/api/payments/rent', async (req, res) => {
   const numericAmount = Number(amount);
   if (Number.isNaN(numericAmount) || numericAmount <= 0) {
     return res.status(400).json({ error: 'amount must be a positive number.' });
+  }
+  if (numericAmount > 50_000_000) {
+    return res.status(400).json({ error: 'amount is too large.' });
   }
 
   try {
@@ -153,18 +219,41 @@ router.post('/api/payments/rent', async (req, res) => {
 // Webhook endpoint for payment confirmation
 router.post('/api/payments/rent/webhook', async (req, res) => {
   if (!supabaseAdmin) {
-    return res
-      .status(500)
-      .json({ error: 'Rent payment service not configured. Missing Supabase credentials.' });
+    return apiError(
+      res,
+      500,
+      'SERVICE_NOT_CONFIGURED',
+      'Rent payment service not configured.',
+      null,
+      req.requestId
+    );
   }
 
   const { payment_reference, status } = req.body ?? {};
 
   if (!payment_reference) {
-    return res.status(400).json({ error: 'payment_reference is required.' });
+    return apiError(res, 400, 'VALIDATION_ERROR', 'payment_reference is required.', null, req.requestId);
+  }
+  if (String(payment_reference).length > 220) {
+    return apiError(res, 400, 'VALIDATION_ERROR', 'payment_reference is invalid.', null, req.requestId);
   }
 
-  // In real integration, you would verify signature / secret here.
+  if (!RENT_WEBHOOK_SECRET) {
+    return apiError(
+      res,
+      503,
+      'WEBHOOK_SECRET_MISSING',
+      'RENT_PAYMENT_WEBHOOK_SECRET is not configured.',
+      null,
+      req.requestId
+    );
+  }
+  const sentSig = req.headers['x-rent-signature'];
+  const expectedSig = computeRentWebhookSignature(req.rawBody || '');
+  if (!sentSig || !safeEqualHex(sentSig, expectedSig)) {
+    logger.warn('rent_webhook_signature_invalid', { request_id: req.requestId });
+    return apiError(res, 401, 'INVALID_SIGNATURE', 'Invalid webhook signature.', null, req.requestId);
+  }
 
   try {
     const claim = await claimPaymentWebhookEvent(supabaseAdmin, {
@@ -172,8 +261,15 @@ router.post('/api/payments/rent/webhook', async (req, res) => {
       externalId: payment_reference,
     });
     if (!claim.ok) {
-      console.error('[rent-payments] Dedup ledger insert failed', claim.error);
-      return res.status(500).json({ error: 'Failed to record webhook idempotency.' });
+      logger.error('rent_webhook_dedup_failed', { request_id: req.requestId, error: claim.error });
+      return apiError(
+        res,
+        500,
+        'WEBHOOK_IDEMPOTENCY_FAILED',
+        'Failed to record webhook idempotency.',
+        null,
+        req.requestId
+      );
     }
     if (!claim.firstDelivery) {
       return res.json({
@@ -200,8 +296,24 @@ router.post('/api/payments/rent/webhook', async (req, res) => {
       .single();
 
     if (error) {
-      console.error('[rent-payments] Failed to update payment status', error);
-      return res.status(500).json({ error: 'Failed to update payment status.' });
+      logger.error('rent_webhook_update_failed', {
+        request_id: req.requestId,
+        error: error?.message || String(error),
+      });
+      return apiError(
+        res,
+        500,
+        'PAYMENT_UPDATE_FAILED',
+        'Failed to update payment status.',
+        null,
+        req.requestId
+      );
+    }
+
+    if (data) {
+      void notifyRentCallbackOutbox(data, payment_reference, isSuccess).catch((e) =>
+        console.warn('[rent-payments] notification outbox', e?.message)
+      );
     }
 
     return res.json({
@@ -209,8 +321,18 @@ router.post('/api/payments/rent/webhook', async (req, res) => {
       payment: data,
     });
   } catch (err) {
-    console.error('[rent-payments] Unexpected error updating payment', err);
-    return res.status(500).json({ error: 'Unexpected error updating payment status.' });
+    logger.error('rent_webhook_unexpected', {
+      request_id: req.requestId,
+      error: err instanceof Error ? err.message : String(err),
+    });
+    return apiError(
+      res,
+      500,
+      'INTERNAL_ERROR',
+      'Unexpected error updating payment status.',
+      null,
+      req.requestId
+    );
   }
 });
 

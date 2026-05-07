@@ -32,15 +32,25 @@ export function UserNav() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" className="relative h-8 w-8 rounded-full">
-          <Avatar className="h-8 w-8">
-            <AvatarFallback>
+        <Button
+          variant="ghost"
+          className="relative h-9 w-9 rounded-full ring-offset-background focus-visible:ring-2 focus-visible:ring-ring"
+          aria-label="Account menu"
+          aria-haspopup="menu"
+        >
+          <Avatar className="shadow-soft h-8 w-8 border border-border/60">
+            <AvatarFallback className="bg-primary/10 text-xs font-medium text-primary">
               {user?.user_metadata?.full_name ? getInitials(user.user_metadata.full_name) : 'U'}
             </AvatarFallback>
           </Avatar>
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent className="w-56" align="end" forceMount>
+      <DropdownMenuContent
+        className="shadow-float w-56 rounded-xl"
+        align="end"
+        sideOffset={8}
+        forceMount
+      >
         <DropdownMenuLabel className="font-normal">
           <div className="flex flex-col space-y-1">
             <p className="text-sm font-medium leading-none">

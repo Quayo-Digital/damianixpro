@@ -10,8 +10,14 @@
 import express from "express";
 import { supabaseAdmin } from "./supabaseClient.mjs";
 import { recordExpense } from "./accountingEngine.mjs";
+import { requireSupabaseJwt } from "./middleware/supabaseJwt.mjs";
+import { createAttachUserRole } from "./middleware/attachUserRole.mjs";
+import { createRequireRbacPermission } from "./middleware/requireRbacPermission.mjs";
 
 const router = express.Router();
+const attachUserRole = createAttachUserRole(supabaseAdmin);
+const requireAccountingPost = createRequireRbacPermission("accounting.post");
+const requireAccountingRead = createRequireRbacPermission("accounting.read");
 
 // Map category to chart of accounts expense account
 const CATEGORY_TO_ACCOUNT = {
@@ -33,7 +39,7 @@ function getAccountForCategory(category) {
  *
  * Body: { amount, category, property_id?, description? }
  */
-router.post("/api/expenses", async (req, res) => {
+router.post("/api/expenses", requireSupabaseJwt, attachUserRole, requireAccountingPost, async (req, res) => {
   try {
     if (!supabaseAdmin) {
       return res.status(500).json({ error: "Service not configured." });
@@ -126,7 +132,7 @@ router.post("/api/expenses", async (req, res) => {
  *
  * Query: category, property_id, date_from, date_to
  */
-router.get("/api/expenses", async (req, res) => {
+router.get("/api/expenses", requireSupabaseJwt, attachUserRole, requireAccountingRead, async (req, res) => {
   try {
     if (!supabaseAdmin) {
       return res.status(500).json({ error: "Service not configured." });

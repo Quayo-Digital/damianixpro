@@ -12,18 +12,18 @@ export default function HelpCenterPage() {
         <ul className="list-disc space-y-2 pl-5 text-muted-foreground">
           <li>
             <strong className="text-foreground">New user:</strong> Create an account from{' '}
-            <Link to="/auth?tab=register" className="text-green-600 hover:text-green-700">
+            <Link to="/auth?tab=register" className="text-primary hover:text-primary/90">
               Register
             </Link>{' '}
             and choose the role that matches how you use the platform (owner, tenant, agent, etc.).
           </li>
           <li>
             <strong className="text-foreground">Browsing:</strong> Explore{' '}
-            <Link to="/public/properties" className="text-green-600 hover:text-green-700">
+            <Link to="/public/properties" className="text-primary hover:text-primary/90">
               public listings
             </Link>{' '}
             or{' '}
-            <Link to="/shortlets" className="text-green-600 hover:text-green-700">
+            <Link to="/shortlets" className="text-primary hover:text-primary/90">
               short-lets
             </Link>{' '}
             without signing in.
@@ -63,7 +63,7 @@ export default function HelpCenterPage() {
         <h2 className="text-xl font-semibold text-foreground">More documentation</h2>
         <p className="text-muted-foreground">
           In-app guides and deeper product documentation may be available under{' '}
-          <Link to="/public/docs" className="text-green-600 hover:text-green-700">
+          <Link to="/public/docs" className="text-primary hover:text-primary/90">
             Documentation
           </Link>{' '}
           when signed in or on public routes.
@@ -76,12 +76,12 @@ export default function HelpCenterPage() {
           Email{' '}
           <a
             href="mailto:support@damianixpro.com"
-            className="font-medium text-green-600 hover:text-green-700"
+            className="font-medium text-primary hover:text-primary/90"
           >
             support@damianixpro.com
           </a>{' '}
           or use the{' '}
-          <Link to="/contact" className="font-medium text-green-600 hover:text-green-700">
+          <Link to="/contact" className="font-medium text-primary hover:text-primary/90">
             contact form
           </Link>
           . Include your account email (never share passwords) and screenshots if relevant.

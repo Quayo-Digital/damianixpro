@@ -234,16 +234,16 @@ export function TenantOnboarding({
           </div>
 
           {status.completed ? (
-            <Alert className="border-green-200 bg-green-50">
-              <CheckCircle className="h-4 w-4 text-green-600" />
-              <AlertDescription className="text-green-600">
+            <Alert className="border-border bg-primary/10">
+              <CheckCircle className="h-4 w-4 text-primary" />
+              <AlertDescription className="text-primary">
                 Tenant onboarding has been completed successfully.
               </AlertDescription>
             </Alert>
           ) : (
-            <Alert className="border-blue-200 bg-blue-50">
-              <AlertTriangle className="h-4 w-4 text-blue-600" />
-              <AlertDescription className="text-blue-600">
+            <Alert className="border-border bg-accent/40">
+              <AlertTriangle className="h-4 w-4 text-primary" />
+              <AlertDescription className="text-foreground">
                 Tenant onboarding is in progress. Complete the remaining steps to finish the
                 process.
               </AlertDescription>
@@ -256,7 +256,7 @@ export function TenantOnboarding({
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-3">
                     <div
-                      className={`rounded-full p-2 ${step.completed ? 'bg-green-100 text-green-600' : activeStep === step.id ? 'bg-blue-100 text-blue-600' : 'bg-gray-100 text-gray-400'}`}
+                      className={`rounded-full p-2 ${step.completed ? 'bg-primary/15 text-primary' : activeStep === step.id ? 'bg-accent text-accent-foreground' : 'bg-muted text-muted-foreground'}`}
                     >
                       {step.icon}
                     </div>
@@ -267,20 +267,18 @@ export function TenantOnboarding({
                   </div>
 
                   {step.completed ? (
-                    <Badge className="border-green-200 bg-green-100 text-green-600">
-                      Completed
-                    </Badge>
+                    <Badge className="border-border bg-primary/15 text-primary">Completed</Badge>
                   ) : activeStep === step.id ? (
                     <Button onClick={step.action} disabled={step.disabled}>
                       {step.title}
                     </Button>
                   ) : (
-                    <Badge className="border-gray-200 bg-gray-100 text-gray-500">Pending</Badge>
+                    <Badge className="border-border bg-muted text-muted-foreground">Pending</Badge>
                   )}
                 </div>
 
                 {step.id < onboardingSteps.length && (
-                  <div className="ml-6 border-l-2 border-dashed border-gray-200 pl-3">
+                  <div className="ml-6 border-l-2 border-dashed border-border pl-3">
                     <div className="h-4"></div>
                   </div>
                 )}

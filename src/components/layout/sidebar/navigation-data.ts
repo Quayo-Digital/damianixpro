@@ -1,4 +1,4 @@
-import { Home, Building2 } from 'lucide-react';
+import { Home, Building2, FileSpreadsheet } from 'lucide-react';
 import React from 'react';
 import {
   NavItem,
@@ -12,6 +12,7 @@ import {
   getMaintenanceNav,
   getAnalyticsNav,
   getReportsNav,
+  getCrmPipelineNav,
   getVendorNav,
   getCommonNav,
 } from './nav-config';
@@ -24,6 +25,8 @@ export const createNavItems = (
   isVendor: boolean
 ): NavItem[] => {
   const dashboardHref = getDefaultDashboardPathForRole((userRole as UserRole) ?? null);
+
+  const setupMigrationVisible = ['owner', 'admin', 'super_admin'].includes(userRole ?? '');
 
   const navItems = [
     // Dashboard
@@ -45,6 +48,17 @@ export const createNavItems = (
         ]
       : []),
     getAdminNav(isAdmin),
+    ...(setupMigrationVisible
+      ? ([
+          {
+            title: 'Setup & migration',
+            href: '/organization/setup',
+            icon: React.createElement(FileSpreadsheet, { className: 'h-4 w-4' }),
+            isVisible: true,
+            isActive: (pathname: string) => pathname.startsWith('/organization/setup'),
+          },
+        ] satisfies NavItem[])
+      : []),
     getPropertiesNav(userRole),
     getShortletsNav(userRole),
     getTenantsNav(userRole),
@@ -54,6 +68,7 @@ export const createNavItems = (
     getVerificationNav(userRole),
     getMaintenanceNav(userRole),
     getReportsNav(userRole),
+    getCrmPipelineNav(userRole),
     getVendorNav(isVendor),
     ...getCommonNav(userRole),
   ];

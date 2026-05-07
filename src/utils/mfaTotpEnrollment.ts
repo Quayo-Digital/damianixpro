@@ -1,11 +1,14 @@
 import { supabase } from '@/integrations/supabase/client';
 import { logger } from '@/utils/logger';
 
-export type TotpEnrollmentInitResult = {
-  factorId: string;
-  qrCode: string;
-  secret: string;
-};
+export type TotpEnrollmentInitResult =
+  | {
+      kind: 'enroll';
+      factorId: string;
+      qrCode: string;
+      secret: string;
+    }
+  | { kind: 'already_verified' };
 
 /**
  * Serializes TOTP enrollment so React Strict Mode / double effects cannot
@@ -18,25 +21,39 @@ function getTotpIssuer(): string {
   return window.location.hostname || 'App';
 }
 
-async function unenrollUnverifiedFactors(): Promise<void> {
+function newTotpFriendlyName(): string {
+  if (typeof globalThis.crypto !== 'undefined' && 'randomUUID' in globalThis.crypto) {
+    return `Authenticator (${globalThis.crypto.randomUUID().slice(0, 8)})`;
+  }
+  return `Authenticator (${Date.now().toString(36)})`;
+}
+
+async function listFactorsOrThrow(): Promise<
+  NonNullable<Awaited<ReturnType<typeof supabase.auth.mfa.listFactors>>['data']>
+> {
   const listed = await supabase.auth.mfa.listFactors();
   if (listed.error) throw listed.error;
+  return listed.data ?? { totp: [], phone: [] };
+}
+
+async function unenrollUnverifiedFactors(): Promise<void> {
+  const data = await listFactorsOrThrow();
   const stale = [
-    ...(listed.data?.totp ?? []).filter((f) => f.status !== 'verified'),
-    ...(listed.data?.phone ?? []).filter((f) => f.status !== 'verified'),
+    ...(data.totp ?? []).filter((f) => f.status !== 'verified'),
+    ...(data.phone ?? []).filter((f) => f.status !== 'verified'),
   ];
   for (const f of stale) {
     const { error } = await supabase.auth.mfa.unenroll({ factorId: f.id });
-    if (error) logger.warn('MFA unenroll unverified factor', error);
+    if (error) logger.warn('MFA unenroll unverified factor', { factorId: f.id, error });
   }
 }
 
-async function enrollTotpOnce(): Promise<TotpEnrollmentInitResult> {
+async function enrollTotpOnce(): Promise<Extract<TotpEnrollmentInitResult, { kind: 'enroll' }>> {
   await unenrollUnverifiedFactors();
 
   const { data, error: enrollError } = await supabase.auth.mfa.enroll({
     factorType: 'totp',
-    friendlyName: 'Authenticator',
+    friendlyName: newTotpFriendlyName(),
     issuer: getTotpIssuer(),
   });
 
@@ -46,6 +63,7 @@ async function enrollTotpOnce(): Promise<TotpEnrollmentInitResult> {
   }
 
   return {
+    kind: 'enroll',
     factorId: data.id,
     qrCode: data.totp.qr_code ?? '',
     secret: data.totp.secret ?? '',
@@ -71,12 +89,23 @@ function isRetriableEnrollError(e: unknown): boolean {
  */
 export function prepareTotpEnrollment(): Promise<TotpEnrollmentInitResult> {
   const next = totpEnrollChain.then(async () => {
+    const initial = await listFactorsOrThrow();
+    if ((initial.totp ?? []).some((f) => f.status === 'verified')) {
+      return { kind: 'already_verified' as const };
+    }
+
     try {
       return await enrollTotpOnce();
     } catch (first) {
       if (!isRetriableEnrollError(first)) throw first;
       logger.warn('MFA enroll retry after cleanup', first);
       await unenrollUnverifiedFactors();
+
+      const relisted = await listFactorsOrThrow();
+      if ((relisted.totp ?? []).some((f) => f.status === 'verified')) {
+        return { kind: 'already_verified' as const };
+      }
+
       return await enrollTotpOnce();
     }
   });
@@ -84,7 +113,7 @@ export function prepareTotpEnrollment(): Promise<TotpEnrollmentInitResult> {
     () => undefined,
     () => undefined
   );
-  return next as Promise<TotpEnrollmentInitResult>;
+  return next;
 }
 
 export function formatMfaSetupError(e: unknown): string {

@@ -348,12 +348,12 @@ export const SubscriptionPlans: React.FC<SubscriptionPlansProps> = ({
             <Card
               key={plan.id}
               className={`relative transition-all duration-200 hover:shadow-lg ${
-                plan.popular ? 'scale-105 ring-2 ring-blue-500' : ''
-              } ${isCurrentPlan ? 'ring-2 ring-green-500' : ''}`}
+                plan.popular ? 'scale-105 border-primary/50 bg-primary/5 ring-2 ring-primary' : ''
+              } ${isCurrentPlan ? 'ring-2 ring-primary/40' : ''}`}
             >
               {plan.popular && (
                 <div className="absolute -top-3 left-1/2 -translate-x-1/2 transform">
-                  <Badge className="bg-blue-500 text-primary-foreground dark:bg-blue-600">
+                  <Badge className="bg-primary px-3 py-1 text-primary-foreground shadow-md">
                     Most Popular
                   </Badge>
                 </div>
@@ -369,7 +369,7 @@ export const SubscriptionPlans: React.FC<SubscriptionPlansProps> = ({
 
               <CardHeader className="pb-4 text-center">
                 <div className="mb-2 flex items-center justify-center">
-                  <TierIcon className="h-8 w-8 text-blue-600" />
+                  <TierIcon className="h-8 w-8 text-primary" />
                 </div>
 
                 <CardTitle className="text-xl font-bold">{plan.name}</CardTitle>
@@ -465,7 +465,7 @@ export const SubscriptionPlans: React.FC<SubscriptionPlansProps> = ({
                     <Button
                       onClick={() => handleStartTrial(plan)}
                       disabled={actionPending}
-                      className={`w-full ${plan.popular ? 'bg-blue-600 hover:bg-blue-700' : ''}`}
+                      className={`w-full rounded-xl shadow-sm ${plan.popular ? 'bg-blue-600 hover:bg-blue-700' : ''}`}
                       variant={plan.popular ? 'default' : 'default'}
                     >
                       {processing ? (
@@ -497,7 +497,7 @@ export const SubscriptionPlans: React.FC<SubscriptionPlansProps> = ({
                       plan.popular
                         ? 'bg-blue-600 hover:bg-blue-700'
                         : isCurrentPlan
-                          ? 'bg-green-600 hover:bg-green-700'
+                          ? 'bg-primary hover:bg-primary/90'
                           : ''
                     }`}
                     variant={plan.popular ? 'default' : isCurrentPlan ? 'default' : 'outline'}

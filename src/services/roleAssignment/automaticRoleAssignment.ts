@@ -146,7 +146,7 @@ export class AutomaticRoleAssignmentService {
     suggestedRole: UserRole
   ): UserRole[] {
     // Base roles everyone can select
-    const baseRoles: UserRole[] = ['tenant', 'owner', 'agent', 'vendor'];
+    const baseRoles: UserRole[] = ['tenant', 'owner', 'agent', 'vendor', 'manager'];
 
     // Admin role is restricted - only existing admins can create new admins
     // This would be handled by the UI/backend validation
@@ -179,6 +179,23 @@ export class AutomaticRoleAssignmentService {
       return {
         isValid: false,
         message: 'Super admin role is not available for registration.',
+        suggestedAlternative: 'tenant',
+      };
+    }
+
+    if (requestedRole === 'accountant' || requestedRole === 'facility_manager') {
+      return {
+        isValid: false,
+        message:
+          'Accountant and Facility Manager accounts are created by your organization administrator.',
+        suggestedAlternative: 'tenant',
+      };
+    }
+
+    if (requestedRole === 'user') {
+      return {
+        isValid: false,
+        message: 'This access level is assigned by an administrator.',
         suggestedAlternative: 'tenant',
       };
     }

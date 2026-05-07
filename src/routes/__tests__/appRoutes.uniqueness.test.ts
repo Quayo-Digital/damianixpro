@@ -27,6 +27,8 @@ describe('App route definitions', () => {
       '/analytics',
       '/finance',
       '/admin/finance',
+      '/accounting',
+      '/crm/pipeline',
       '/unauthorized',
       '*',
     ];

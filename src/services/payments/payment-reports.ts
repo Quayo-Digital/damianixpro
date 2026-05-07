@@ -1,3 +1,4 @@
+import { format } from 'date-fns';
 import { supabase } from '@/integrations/supabase/client';
 
 interface FetchFinanceDashboardDataProps {
@@ -15,7 +16,9 @@ export const fetchFinanceDashboardData = async ({
   startDate.setDate(1);
   startDate.setHours(0, 0, 0, 0);
 
-  const startDateString = startDate.toISOString();
+  /** rent_payments.payment_date is a `date` — use YYYY-MM-DD, not a timestamptz string. */
+  const revenueFromDate = format(startDate, 'yyyy-MM-dd');
+  const expenseFromIso = startDate.toISOString();
 
   // --- Generate month labels ---
   const months: string[] = [];
@@ -40,7 +43,7 @@ export const fetchFinanceDashboardData = async ({
     .from('rent_payments')
     .select('payment_date, amount, property_tenant_id')
     .eq('status', 'successful')
-    .gte('payment_date', startDateString);
+    .gte('payment_date', revenueFromDate);
 
   if (propertyFilter !== 'all') {
     const { data: propertyTenants, error: ptError } = await supabase
@@ -83,7 +86,7 @@ export const fetchFinanceDashboardData = async ({
   let expenseQuery = supabase
     .from('expenses')
     .select('created_at, amount, category, property_id')
-    .gte('created_at', startDateString);
+    .gte('created_at', expenseFromIso);
 
   if (propertyFilter !== 'all') {
     expenseQuery = expenseQuery.eq('property_id', propertyFilter);

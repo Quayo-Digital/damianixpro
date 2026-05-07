@@ -35,7 +35,7 @@ flowchart LR
 ## What the SPA calls today
 
 - **Supabase** — Auth, RLS-backed tables, shortlet flows (e.g. `wallets` in Supabase), most CRUD.
-- **`VITE_VOICE_SERVER_URL`** → **`server/`** — Voice STT, AI assistant, document OCR, rent/Flutterwave helpers, accounting-style routes, web push webhook mount, etc.
+- **`VITE_VOICE_SERVER_URL`** → **`server/`** — Voice STT, AI assistant, document OCR, rent/Flutterwave helpers, accounting-style routes, web push webhook mount, **RBAC** (`GET /api/rbac/me`, `GET /api/rbac/demo/accounting` — Supabase JWT + `config/rbac-permission-matrix.json`), etc.
 - **`VITE_API_BASE_URL`** — Used by a few integrations (e.g. Nigerian market data). It is **not** automatically the same host as `fintech-api` unless you configure it that way.
 
 If you add first-class ledger UI that talks to `fintech-api`, introduce an explicit env (e.g. `VITE_FINTECH_API_URL`) instead of overloading `VITE_API_BASE_URL`.

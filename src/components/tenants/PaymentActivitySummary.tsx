@@ -286,30 +286,30 @@ export function PaymentActivitySummary() {
   const getEventIcon = (type: string) => {
     switch (type) {
       case 'billing':
-        return <FileText className="h-4 w-4 text-blue-500" />;
+        return <FileText className="h-4 w-4 text-primary" />;
       case 'payment':
-        return <CheckCircle className="h-4 w-4 text-green-500" />;
+        return <CheckCircle className="h-4 w-4 text-primary" />;
       case 'wallet':
-        return <Wallet className="h-4 w-4 text-purple-500" />;
+        return <Wallet className="h-4 w-4 text-secondary-foreground" />;
       case 'penalty':
-        return <AlertTriangle className="h-4 w-4 text-red-500" />;
+        return <AlertTriangle className="h-4 w-4 text-destructive" />;
       default:
-        return <Clock className="h-4 w-4 text-gray-500" />;
+        return <Clock className="h-4 w-4 text-muted-foreground" />;
     }
   };
 
   const getEventColor = (type: string) => {
     switch (type) {
       case 'billing':
-        return 'bg-blue-50 border-blue-200';
+        return 'bg-primary/10 border-border';
       case 'payment':
-        return 'bg-green-50 border-green-200';
+        return 'bg-primary/10 border-border';
       case 'wallet':
-        return 'bg-purple-50 border-purple-200';
+        return 'bg-secondary/40 border-border';
       case 'penalty':
-        return 'bg-red-50 border-red-200';
+        return 'bg-destructive/10 border-destructive/40';
       default:
-        return 'bg-gray-50 border-gray-200';
+        return 'bg-muted/40 border-border';
     }
   };
 
@@ -318,7 +318,7 @@ export function PaymentActivitySummary() {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <FileText className="h-5 w-5 text-blue-500" />
+            <FileText className="h-5 w-5 text-primary" />
             Payment Activity Summary
           </CardTitle>
           <CardDescription>
@@ -430,7 +430,9 @@ export function PaymentActivitySummary() {
                 onChange={(e) => setCurrentBalance(e.target.value)}
                 placeholder="3500000"
               />
-              <p className="mt-1 text-xs text-gray-500">Enter the current outstanding balance</p>
+              <p className="mt-1 text-xs text-muted-foreground">
+                Enter the current outstanding balance
+              </p>
             </div>
           </div>
 
@@ -451,44 +453,44 @@ export function PaymentActivitySummary() {
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-2 gap-4 md:grid-cols-3">
-                <div className="rounded-lg border border-blue-200 bg-blue-50 p-4">
-                  <p className="text-sm text-gray-600">Total Rent Billed</p>
-                  <p className="text-xl font-bold text-blue-600">
+                <div className="rounded-lg border border-border bg-primary/10 p-4">
+                  <p className="text-sm text-muted-foreground">Total Rent Billed</p>
+                  <p className="text-xl font-bold text-primary">
                     {formatCurrency(summary.summary.totalRentBilled)}
                   </p>
                 </div>
-                <div className="rounded-lg border border-green-200 bg-green-50 p-4">
-                  <p className="text-sm text-gray-600">Total Payments</p>
-                  <p className="text-xl font-bold text-green-600">
+                <div className="rounded-lg border border-border bg-primary/10 p-4">
+                  <p className="text-sm text-muted-foreground">Total Payments</p>
+                  <p className="text-xl font-bold text-primary">
                     {formatCurrency(summary.summary.totalPayments)}
                   </p>
                 </div>
                 {summary.summary.totalWalletCredits > 0 && (
-                  <div className="rounded-lg border border-purple-200 bg-purple-50 p-4">
-                    <p className="text-sm text-gray-600">Wallet Credits</p>
-                    <p className="text-xl font-bold text-purple-600">
+                  <div className="rounded-lg border border-border bg-secondary/40 p-4">
+                    <p className="text-sm text-muted-foreground">Wallet Credits</p>
+                    <p className="text-xl font-bold text-secondary-foreground">
                       {formatCurrency(summary.summary.totalWalletCredits)}
                     </p>
                   </div>
                 )}
                 {summary.summary.totalWalletDebits > 0 && (
-                  <div className="rounded-lg border border-purple-200 bg-purple-50 p-4">
-                    <p className="text-sm text-gray-600">Wallet Debits</p>
-                    <p className="text-xl font-bold text-purple-600">
+                  <div className="rounded-lg border border-border bg-secondary/40 p-4">
+                    <p className="text-sm text-muted-foreground">Wallet Debits</p>
+                    <p className="text-xl font-bold text-secondary-foreground">
                       {formatCurrency(summary.summary.totalWalletDebits)}
                     </p>
                   </div>
                 )}
                 {summary.summary.totalPenalties > 0 && (
-                  <div className="rounded-lg border border-red-200 bg-red-50 p-4">
-                    <p className="text-sm text-gray-600">Total Penalties</p>
-                    <p className="text-xl font-bold text-red-600">
+                  <div className="rounded-lg border border-destructive/40 bg-destructive/10 p-4">
+                    <p className="text-sm text-muted-foreground">Total Penalties</p>
+                    <p className="text-xl font-bold text-destructive">
                       {formatCurrency(summary.summary.totalPenalties)}
                     </p>
                   </div>
                 )}
-                <div className="rounded-lg border border-gray-200 bg-gray-50 p-4">
-                  <p className="text-sm text-gray-600">Current Balance</p>
+                <div className="rounded-lg border border-border bg-muted/40 p-4">
+                  <p className="text-sm text-muted-foreground">Current Balance</p>
                   <p className="text-xl font-bold">
                     {formatCurrency(summary.summary.currentBalance)}
                   </p>
@@ -535,7 +537,7 @@ export function PaymentActivitySummary() {
                           </p>
                         </div>
                         <p className="mb-1 font-medium">{event.description}</p>
-                        <p className="text-sm text-gray-600">{event.narrative}</p>
+                        <p className="text-sm text-muted-foreground">{event.narrative}</p>
                       </div>
                     </div>
                   </div>

@@ -19,6 +19,9 @@ import {
   Camera,
   Crown,
   Palette,
+  Calculator,
+  Ticket,
+  LayoutGrid,
 } from 'lucide-react';
 import React from 'react';
 
@@ -71,6 +74,12 @@ export const getAdminNav = (isAdmin: boolean): NavItem | null => {
         isVisible: true,
       },
       {
+        title: 'Activation Funnel',
+        href: '/admin/activation-funnel',
+        icon: React.createElement(BarChart3, { className: 'h-4 w-4' }),
+        isVisible: true,
+      },
+      {
         title: '3D Tour Requests',
         href: '/admin/tour-requests',
         icon: React.createElement(Camera, { className: 'h-4 w-4' }),
@@ -92,7 +101,15 @@ export const getPropertiesNav = (userRole: string | null): NavItem => ({
   title: 'My Properties',
   href: '/properties',
   icon: React.createElement(Building, { className: 'h-4 w-4' }),
-  isVisible: ['admin', 'super_admin', 'owner', 'agent', 'manager'].includes(userRole || ''),
+  isVisible: [
+    'admin',
+    'super_admin',
+    'owner',
+    'agent',
+    'manager',
+    'facility_manager',
+    'accountant',
+  ].includes(userRole || ''),
   isActive: (pathname) => pathname === '/properties' || pathname.startsWith('/properties/'),
 });
 
@@ -161,8 +178,10 @@ export const getVerificationNav = (userRole: string | null): NavItem | null => {
 };
 
 export const getFinanceNav = (userRole: string | null): NavItem => {
-  // Exclude tenants since they have integrated payment management in their Enhanced Tenant Dashboard
-  const isVisible = ['admin', 'super_admin', 'owner'].includes(userRole || '');
+  // Tenants use the tenant dashboard for payments; finance hub includes accounting roles.
+  const isVisible = ['admin', 'super_admin', 'owner', 'accountant', 'manager', 'agent'].includes(
+    userRole || ''
+  );
   let children: NavItem[] = [];
   if (userRole === 'admin' || userRole === 'super_admin') {
     children = [
@@ -176,6 +195,12 @@ export const getFinanceNav = (userRole: string | null): NavItem => {
         title: 'Payment Accounting',
         href: '/admin/accounting',
         icon: React.createElement(Banknote, { className: 'h-4 w-4' }),
+        isVisible: true,
+      },
+      {
+        title: 'Accounting (NG)',
+        href: '/accounting',
+        icon: React.createElement(Calculator, { className: 'h-4 w-4' }),
         isVisible: true,
       },
     ];
@@ -193,34 +218,169 @@ export const getFinanceNav = (userRole: string | null): NavItem => {
         icon: React.createElement(Banknote, { className: 'h-4 w-4' }),
         isVisible: true,
       },
+      {
+        title: 'Accounting (NG)',
+        href: '/accounting',
+        icon: React.createElement(Calculator, { className: 'h-4 w-4' }),
+        isVisible: true,
+      },
+    ];
+  } else if (userRole === 'accountant' || userRole === 'manager' || userRole === 'agent') {
+    children = [
+      ...(userRole === 'accountant'
+        ? ([
+            {
+              title: 'Accountant dashboard',
+              href: '/accountant/dashboard',
+              icon: React.createElement(CreditCard, { className: 'h-4 w-4' }),
+              isVisible: true,
+            },
+          ] satisfies NavItem[])
+        : []),
+      {
+        title: 'Accounting (NG)',
+        href: '/accounting',
+        icon: React.createElement(Calculator, { className: 'h-4 w-4' }),
+        isVisible: true,
+      },
     ];
   }
   return {
     title: 'Finance',
-    href: userRole === 'owner' ? '/finance' : '/admin/finance',
+    href:
+      userRole === 'owner'
+        ? '/finance'
+        : userRole === 'accountant'
+          ? '/accountant/dashboard'
+          : userRole === 'manager' || userRole === 'agent'
+            ? '/accounting'
+            : '/admin/finance',
     icon: React.createElement(CreditCard, { className: 'h-4 w-4' }),
     isVisible: isVisible,
     isActive: (pathname) => {
-      if (userRole === 'owner') return pathname === '/finance' || pathname === '/owner/payments';
+      if (userRole === 'owner')
+        return (
+          pathname === '/finance' ||
+          pathname === '/owner/payments' ||
+          pathname.startsWith('/accounting')
+        );
       if (userRole === 'admin' || userRole === 'super_admin')
-        return pathname.startsWith('/admin/finance') || pathname.startsWith('/admin/accounting');
+        return (
+          pathname.startsWith('/admin/finance') ||
+          pathname.startsWith('/admin/accounting') ||
+          pathname.startsWith('/accounting')
+        );
+      if (userRole === 'accountant' || userRole === 'manager' || userRole === 'agent') {
+        return pathname.startsWith('/accounting') || pathname.startsWith('/accountant/dashboard');
+      }
       return pathname.startsWith('/finance');
     },
     children: children.length > 0 ? children : undefined,
   };
 };
 
-export const getMaintenanceNav = (userRole: string | null): NavItem => ({
-  title: 'Maintenance',
-  href: '/maintenance',
-  icon: React.createElement(Wrench, { className: 'h-4 w-4' }),
-  isVisible: ['admin', 'super_admin', 'owner', 'agent', 'manager', 'tenant'].includes(
-    userRole || ''
-  ),
-});
+export const getMaintenanceNav = (userRole: string | null): NavItem => {
+  const u = userRole || '';
+  const isVisible = [
+    'admin',
+    'super_admin',
+    'owner',
+    'agent',
+    'manager',
+    'facility_manager',
+    'tenant',
+  ].includes(u);
+
+  const children: NavItem[] = [];
+  if (u === 'tenant') {
+    children.push({
+      title: 'Service tickets',
+      href: '/tenant/maintenance-tickets',
+      icon: React.createElement(Ticket, { className: 'h-4 w-4' }),
+      isVisible: true,
+    });
+  } else if (u === 'admin' || u === 'super_admin') {
+    children.push({
+      title: 'All tickets',
+      href: '/admin/maintenance-tickets',
+      icon: React.createElement(Ticket, { className: 'h-4 w-4' }),
+      isVisible: true,
+    });
+  } else if (u === 'facility_manager') {
+    children.push(
+      {
+        title: 'Dashboard',
+        href: '/facility-manager/dashboard',
+        icon: React.createElement(Home, { className: 'h-4 w-4' }),
+        isVisible: true,
+      },
+      {
+        title: 'My tickets',
+        href: '/facility-manager/tickets',
+        icon: React.createElement(Ticket, { className: 'h-4 w-4' }),
+        isVisible: true,
+      }
+    );
+  } else if (['owner', 'agent', 'manager'].includes(u)) {
+    children.push({
+      title: 'Service tickets',
+      href: '/maintenance/service-tickets',
+      icon: React.createElement(Ticket, { className: 'h-4 w-4' }),
+      isVisible: true,
+    });
+  }
+
+  return {
+    title: 'Maintenance',
+    href: '/maintenance',
+    icon: React.createElement(Wrench, { className: 'h-4 w-4' }),
+    isVisible,
+    children: children.length > 0 ? children : undefined,
+    isActive: (pathname) => {
+      if (u === 'tenant') {
+        return (
+          pathname.startsWith('/maintenance') || pathname.startsWith('/tenant/maintenance-tickets')
+        );
+      }
+      if (u === 'admin' || u === 'super_admin') {
+        return (
+          pathname.startsWith('/maintenance') || pathname.startsWith('/admin/maintenance-tickets')
+        );
+      }
+      if (u === 'facility_manager') {
+        return (
+          pathname.startsWith('/maintenance') ||
+          pathname.startsWith('/facility-manager/tickets') ||
+          pathname.startsWith('/facility-manager/dashboard')
+        );
+      }
+      if (['owner', 'agent', 'manager'].includes(u)) {
+        return pathname.startsWith('/maintenance');
+      }
+      return pathname.startsWith('/maintenance');
+    },
+  };
+};
 
 export const getAnalyticsNav = (userRole: string | null): NavItem => {
-  const isVisible = ['admin', 'super_admin', 'owner', 'agent', 'manager'].includes(userRole || '');
+  const isVisible = [
+    'admin',
+    'super_admin',
+    'owner',
+    'agent',
+    'manager',
+    'accountant',
+    'facility_manager',
+  ].includes(userRole || '');
+  const executiveVisible = [
+    'admin',
+    'super_admin',
+    'owner',
+    'agent',
+    'manager',
+    'accountant',
+    'facility_manager',
+  ].includes(userRole || '');
   return {
     title: 'Analytics',
     href: '/analytics',
@@ -231,6 +391,12 @@ export const getAnalyticsNav = (userRole: string | null): NavItem => {
       pathname.startsWith('/live-data') ||
       pathname.startsWith('/production-testing'),
     children: [
+      {
+        title: 'Executive',
+        href: '/analytics/executive',
+        icon: React.createElement(LayoutGrid, { className: 'h-4 w-4' }),
+        isVisible: executiveVisible,
+      },
       {
         title: 'Market Intelligence',
         href: '/analytics',
@@ -266,6 +432,19 @@ export const getReportsNav = (userRole: string | null): NavItem => ({
   isVisible: ['admin', 'super_admin', 'owner', 'agent', 'manager'].includes(userRole || ''),
 });
 
+/** Property CRM & sales pipeline (Kanban); uses crm.read / crm.write in app. */
+export const getCrmPipelineNav = (userRole: string | null): NavItem | null => {
+  const roles = ['admin', 'super_admin', 'owner', 'agent', 'manager'];
+  if (!roles.includes(userRole || '')) return null;
+  return {
+    title: 'CRM Pipeline',
+    href: '/crm/pipeline',
+    icon: React.createElement(LayoutGrid, { className: 'h-4 w-4' }),
+    isVisible: true,
+    isActive: (pathname) => pathname.startsWith('/crm'),
+  };
+};
+
 export const getVendorNav = (isVendor: boolean): NavItem | null => {
   if (!isVendor) return null;
   return {
@@ -285,6 +464,12 @@ export const getVendorNav = (isVendor: boolean): NavItem | null => {
         title: 'My Jobs',
         href: '/vendor/maintenance',
         icon: React.createElement(Wrench, { className: 'h-4 w-4' }),
+        isVisible: true,
+      },
+      {
+        title: 'Assigned tickets',
+        href: '/vendor/maintenance-tickets',
+        icon: React.createElement(Ticket, { className: 'h-4 w-4' }),
         isVisible: true,
       },
     ],

@@ -2,7 +2,10 @@ import express from 'express';
 import { v4 as uuidv4 } from 'uuid';
 import { supabaseAdmin } from './supabaseClient.mjs';
 import { mapRentRowToLegacyPayment } from './rentLedgerCompat.mjs';
-import { notifyPayment } from './paymentNotificationService.mjs';
+import {
+  enqueueRentDueReminder,
+  drainNotificationOutbox,
+} from './notifications/outboxTriggers.mjs';
 
 const router = express.Router();
 
@@ -300,15 +303,15 @@ async function processReminder(item) {
     phone: item.phone,
     email: item.email,
   };
-  await notifyPayment({
-    event: 'rent_due_reminder',
+  await enqueueRentDueReminder({
     tenant,
     amount: item.amount,
     dueDate: item.due_date,
     daysUntilDue: item.days_until_due ?? 0,
     paymentLink: paystack?.url,
-    channels: ['email', 'sms', 'whatsapp'],
+    channels: ['in_app', 'email', 'sms', 'whatsapp'],
   });
+  await drainNotificationOutbox(30);
 
   const { data: reminder, error } = await supabaseAdmin
     .from('rent_reminder_calls')

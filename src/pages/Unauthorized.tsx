@@ -4,6 +4,7 @@ import { useAuthSession, useAuthActions } from '@/contexts/auth';
 import { getDefaultDashboardPathForRole } from '@/utils/authRedirect';
 import type { UserRole } from '@/contexts/auth/types';
 import { ShieldAlert, Home, ArrowLeft, AlertCircle } from 'lucide-react';
+import { BodyText, PageTitle } from '@/components/ui/typography';
 
 const Unauthorized = () => {
   const navigate = useNavigate();
@@ -25,21 +26,21 @@ const Unauthorized = () => {
   const getDashboardPath = () => getDefaultDashboardPathForRole(userRole as UserRole);
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center bg-muted/40 p-4 dark:bg-background">
-      <div className="w-full max-w-md rounded-lg border border-border bg-card p-8 text-center text-card-foreground shadow-md">
+    <div className="flex min-h-screen flex-col items-center justify-center bg-muted/30 p-4 dark:bg-background">
+      <div className="w-full max-w-md rounded-xl border border-border bg-card p-6 text-center text-card-foreground shadow-card sm:p-8">
         <div className="mb-6 flex justify-center">
           <div className="flex h-20 w-20 items-center justify-center rounded-full bg-yellow-50 dark:bg-yellow-950/50">
             <ShieldAlert size={36} className="text-yellow-500 dark:text-yellow-400" />
           </div>
         </div>
 
-        <h1 className="mb-4 text-3xl font-bold text-foreground">Access Denied</h1>
+        <PageTitle className="mb-4">Access Denied</PageTitle>
 
-        <p className="mb-4 text-lg text-muted-foreground">
+        <BodyText className="mb-4">
           You don't have sufficient permissions to access this page.
-        </p>
+        </BodyText>
 
-        <div className="text-md mb-6 flex items-start rounded-md bg-blue-50 p-4 text-blue-800">
+        <div className="text-md mb-6 flex items-start rounded-md border border-border bg-accent/40 p-4 text-foreground">
           <AlertCircle size={20} className="mr-2 mt-0.5 flex-shrink-0" />
           <div className="text-left">
             <p className="font-medium">
@@ -53,28 +54,17 @@ const Unauthorized = () => {
         </div>
 
         <div className="space-y-4">
-          <Button
-            onClick={() => navigate(getDashboardPath())}
-            className="h-auto w-full bg-green-500 py-3 text-white hover:bg-green-600"
-          >
+          <Button onClick={() => navigate(getDashboardPath())} className="h-11 w-full">
             <Home size={20} className="mr-2" />
             Go to Your Dashboard
           </Button>
 
-          <Button
-            variant="outline"
-            onClick={handleRefreshAndRetry}
-            className="h-auto w-full border border-border bg-background py-3 text-foreground hover:bg-muted/50"
-          >
+          <Button variant="outline" onClick={handleRefreshAndRetry} className="h-11 w-full">
             <AlertCircle size={20} className="mr-2" />
             Refresh Role & Retry
           </Button>
 
-          <Button
-            variant="outline"
-            onClick={() => navigate(-1)}
-            className="h-auto w-full border border-border bg-background py-3 text-foreground hover:bg-muted/50"
-          >
+          <Button variant="outline" onClick={() => navigate(-1)} className="h-11 w-full">
             <ArrowLeft size={20} className="mr-2" />
             Go Back
           </Button>

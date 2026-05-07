@@ -4,6 +4,7 @@
  */
 
 import { supabase } from '@/integrations/supabase/client';
+import { toPgDateOnly } from '@/utils/toPgDateOnly';
 
 export interface TaxReportSection {
   taxableSupply: number;
@@ -30,13 +31,15 @@ export async function generateNigerianTaxReport(
   endDate: string
 ): Promise<NigerianTaxReport> {
   const notes: string[] = [];
+  const ps = toPgDateOnly(startDate);
+  const pe = toPgDateOnly(endDate);
 
   const { data: paymentsInRange } = await supabase
     .from('rent_payments')
     .select('id, payment_date')
     .eq('status', 'successful')
-    .gte('payment_date', startDate)
-    .lte('payment_date', endDate);
+    .gte('payment_date', ps)
+    .lte('payment_date', pe);
 
   const paymentIds = (paymentsInRange || []).map((p) => p.id);
   const paymentDates = new Map((paymentsInRange || []).map((p) => [p.id, p.payment_date]));

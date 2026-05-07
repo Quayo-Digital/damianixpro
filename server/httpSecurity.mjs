@@ -13,7 +13,15 @@ export function applyVoiceServerSecurity(app, { jsonLimit = '2mb' } = {}) {
     app.set('trust proxy', 1);
   }
 
-  app.use(helmet());
+  app.use(
+    helmet({
+      // Keep CSP off for API server responses to avoid accidental integration breakage.
+      contentSecurityPolicy: false,
+      crossOriginEmbedderPolicy: false,
+      hsts: process.env.NODE_ENV === 'production',
+      referrerPolicy: { policy: 'no-referrer' },
+    }),
+  );
 
   const raw = (process.env.VOICE_SERVER_CORS_ORIGIN || process.env.CORS_ORIGIN || '*').trim();
   app.use(
@@ -37,8 +45,30 @@ export function applyVoiceServerSecurity(app, { jsonLimit = '2mb' } = {}) {
       max,
       standardHeaders: true,
       legacyHeaders: false,
+      message: { error: 'RATE_LIMITED', message: 'Too many requests. Please try again shortly.' },
     }),
   );
 
-  app.use(express.json({ limit: jsonLimit }));
+  app.use(
+    express.json({
+      limit: jsonLimit,
+      verify: (req, _res, buf) => {
+        req.rawBody = buf.toString('utf8');
+      },
+    }),
+  );
+}
+
+export function createStrictRouteLimiter({
+  windowMs = 60_000,
+  max = 60,
+  message = 'Too many requests for this endpoint.',
+} = {}) {
+  return rateLimit({
+    windowMs,
+    max,
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: { error: 'RATE_LIMITED', message },
+  });
 }

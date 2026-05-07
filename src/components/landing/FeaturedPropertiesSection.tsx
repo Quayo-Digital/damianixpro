@@ -157,7 +157,7 @@ export function FeaturedPropertiesSection() {
       <div className="container mx-auto">
         {/* Section Header */}
         <div className="mb-10 flex flex-col md:flex-row md:items-end md:justify-between">
-          <div>
+          <div data-reveal data-reveal-delay="50" className="reveal-on-scroll reveal-hero">
             <div className="mb-3 flex items-center gap-2">
               <Crown className="h-6 w-6 text-amber-500" />
               <span className="text-sm font-semibold uppercase tracking-wider text-amber-600 dark:text-amber-400">
@@ -172,14 +172,24 @@ export function FeaturedPropertiesSection() {
               property managers across Nigeria.
             </p>
           </div>
-          <Button variant="outline" className="group mt-4 md:mt-0" onClick={handleViewAll}>
+          <Button
+            variant="outline"
+            className="micro-press reveal-on-scroll reveal-card group mt-4 md:mt-0"
+            data-reveal
+            data-reveal-delay="90"
+            onClick={handleViewAll}
+          >
             View All Listings
             <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
           </Button>
         </div>
 
         {/* Carousel */}
-        <div className="relative px-12">
+        <div
+          data-reveal
+          data-reveal-delay="120"
+          className="reveal-on-scroll reveal-hero relative px-12"
+        >
           <Carousel
             setApi={setApi}
             opts={{
@@ -189,9 +199,13 @@ export function FeaturedPropertiesSection() {
             className="w-full"
           >
             <CarouselContent className="-ml-4">
-              {properties.map((property) => (
+              {properties.map((property, index) => (
                 <CarouselItem key={property.id} className="pl-4 md:basis-1/2 lg:basis-1/3">
-                  <FeaturedPropertyCard property={property} onView={handleViewProperty} />
+                  <FeaturedPropertyCard
+                    property={property}
+                    onView={handleViewProperty}
+                    revealDelay={140 + (index % 3) * 70}
+                  />
                 </CarouselItem>
               ))}
             </CarouselContent>
@@ -217,7 +231,11 @@ export function FeaturedPropertiesSection() {
         </div>
 
         {/* Trust Badges */}
-        <div className="mt-12 flex flex-wrap justify-center gap-6 text-sm text-muted-foreground">
+        <div
+          data-reveal
+          data-reveal-delay="180"
+          className="reveal-on-scroll reveal-card mt-12 flex flex-wrap justify-center gap-6 text-sm text-muted-foreground"
+        >
           <div className="flex items-center gap-2">
             <Star className="h-4 w-4 text-amber-500" />
             <span>Verified Properties</span>
@@ -240,26 +258,31 @@ export function FeaturedPropertiesSection() {
 interface FeaturedPropertyCardProps {
   property: FeaturedProperty;
   onView: (id: string) => void;
+  revealDelay?: number;
 }
 
-function FeaturedPropertyCard({ property, onView }: FeaturedPropertyCardProps) {
+function FeaturedPropertyCard({ property, onView, revealDelay = 120 }: FeaturedPropertyCardProps) {
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'Available':
-        return 'bg-green-500';
+        return 'bg-primary';
       case 'Rented':
-        return 'bg-blue-500';
+        return 'bg-secondary';
       case 'Sold':
-        return 'bg-gray-500';
+        return 'bg-muted-foreground';
       default:
-        return 'bg-gray-500';
+        return 'bg-muted-foreground';
     }
   };
 
   return (
-    <Card className="group overflow-hidden border-0 shadow-lg transition-all duration-300 hover:shadow-xl">
+    <Card
+      data-reveal
+      data-reveal-delay={String(revealDelay)}
+      className="reveal-on-scroll reveal-card group overflow-hidden rounded-2xl border border-border shadow-md transition-all duration-300 hover:-translate-y-1 hover:shadow-xl"
+    >
       {/* Image Container */}
-      <div className="relative h-56 overflow-hidden">
+      <div className="relative h-64 overflow-hidden">
         {property.imageUrl ? (
           <img
             src={property.imageUrl}
@@ -282,7 +305,7 @@ function FeaturedPropertyCard({ property, onView }: FeaturedPropertyCardProps) {
           <div className="absolute left-3 top-3">
             <Badge className="border-0 bg-amber-500 text-white hover:bg-amber-600">
               <Crown className="mr-1 h-3 w-3" />
-              Premium
+              Verified
             </Badge>
           </div>
         )}
@@ -293,6 +316,12 @@ function FeaturedPropertyCard({ property, onView }: FeaturedPropertyCardProps) {
             {property.status}
           </Badge>
         </div>
+
+        {property.status === 'Available' && (
+          <div className="absolute right-3 top-12">
+            <Badge className="border-0 bg-white/90 text-foreground">Available</Badge>
+          </div>
+        )}
 
         {/* Price on Image */}
         <div className="absolute bottom-3 left-3">
@@ -340,7 +369,7 @@ function FeaturedPropertyCard({ property, onView }: FeaturedPropertyCardProps) {
           <Badge variant="outline" className="capitalize">
             {property.type}
           </Badge>
-          <Button size="sm" onClick={() => onView(property.id)} className="group/btn">
+          <Button size="sm" onClick={() => onView(property.id)} className="micro-press group/btn">
             View Details
             <ArrowRight className="ml-1 h-3 w-3 transition-transform group-hover/btn:translate-x-1" />
           </Button>

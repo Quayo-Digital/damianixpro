@@ -1,33 +1,137 @@
 import express from "express";
 import axios from "axios";
 import { v4 as uuidv4 } from "uuid";
+import crypto from "crypto";
 import { PDFDocument, rgb, StandardFonts } from "pdf-lib";
 import { supabaseAdmin } from "./supabaseClient.mjs";
-import { notifyPayment } from "./paymentNotificationService.mjs";
-import { recordRentPayment } from "./accountingEngine.mjs";
+import { requireSupabaseJwt } from "./middleware/supabaseJwt.mjs";
+import { createAttachUserRole } from "./middleware/attachUserRole.mjs";
+import { createRequireRbacPermission } from "./middleware/requireRbacPermission.mjs";
+import {
+  enqueuePaymentFailed,
+  enqueuePaymentReceived,
+  drainNotificationOutbox,
+} from "./notifications/outboxTriggers.mjs";
 import {
   legacyMatchesRefinedFilter,
   mapRentRowToLegacyPayment,
   needsLegacyStatusRefinement,
-  resolveLeaseIdForPropertyTenant,
   resolvePropertyTenantIdFromLease,
   rentStatusesMatchingApiFilter,
 } from "./rentLedgerCompat.mjs";
 import { claimPaymentWebhookEvent } from "./paymentWebhookDedup.mjs";
+import { apiError, logger } from "./observability.mjs";
 
 const router = express.Router();
+const attachUserRole = createAttachUserRole(supabaseAdmin);
+const requirePaymentsRead = createRequireRbacPermission("payments.read");
+const requirePaymentsWrite = createRequireRbacPermission("payments.write");
+
+const UUID_RE =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+function isUuid(s) {
+  return typeof s === "string" && UUID_RE.test(s);
+}
+function asPgDateOnly(s) {
+  if (!s || typeof s !== "string") return null;
+  const x = s.trim();
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(x)) return null;
+  const d = new Date(`${x}T00:00:00.000Z`);
+  if (Number.isNaN(d.getTime())) return null;
+  return x;
+}
+function asLimitedString(v, maxLen) {
+  if (v == null) return null;
+  const out = String(v).trim();
+  if (!out) return null;
+  return out.length > maxLen ? out.slice(0, maxLen) : out;
+}
+function looksLikeTxRef(v) {
+  if (!v || typeof v !== "string") return false;
+  const x = v.trim();
+  if (x.length < 6 || x.length > 200) return false;
+  return /^[a-zA-Z0-9._:-]+$/.test(x);
+}
+function safeHttpUrl(v) {
+  if (!v || typeof v !== "string") return null;
+  const s = v.trim();
+  if (!s || s.length > 2048) return null;
+  try {
+    const u = new URL(s);
+    if (u.protocol !== "https:" && u.protocol !== "http:") return null;
+    return u.toString();
+  } catch {
+    return null;
+  }
+}
+
+async function getTenantIdForUser(uid) {
+  const { data } = await supabaseAdmin
+    .from("tenants")
+    .select("id")
+    .eq("user_id", uid)
+    .maybeSingle();
+  return data?.id ?? null;
+}
+
+async function getVisiblePropertyIds(uid, role) {
+  if (
+    role === "admin" ||
+    role === "super_admin" ||
+    role === "accountant" ||
+    role === "facility_manager"
+  ) {
+    return null;
+  }
+  if (role === "owner") {
+    const { data } = await supabaseAdmin.from("properties").select("id").eq("owner_id", uid);
+    return (data || []).map((r) => r.id);
+  }
+  if (role === "agent") {
+    const { data } = await supabaseAdmin.from("properties").select("id").eq("agent_id", uid);
+    return (data || []).map((r) => r.id);
+  }
+  if (role === "manager") {
+    const { data } = await supabaseAdmin
+      .from("properties")
+      .select("id")
+      .or(`agent_id.eq.${uid},owner_id.eq.${uid}`);
+    return (data || []).map((r) => r.id);
+  }
+  return [];
+}
+
+async function applyPaymentsVisibility(query, uid, role) {
+  if (role === "admin" || role === "super_admin") return query;
+  if (role === "tenant") {
+    const tid = await getTenantIdForUser(uid);
+    if (!tid) return query.eq("id", "__none__");
+    return query.eq("property_tenants.tenant_id", tid);
+  }
+  const ids = await getVisiblePropertyIds(uid, role);
+  if (!ids || ids.length === 0) return query.eq("id", "__none__");
+  return query.in("property_tenants.property_id", ids);
+}
 
 const secretKey = () =>
   process.env.FLUTTERWAVE_SECRET_KEY || process.env.FLW_SECRET_KEY;
 const secretHash = () =>
   process.env.FLUTTERWAVE_SECRET_HASH || process.env.FLW_SECRET_HASH;
 
+function safeEqual(a, b) {
+  const left = Buffer.from(String(a || ''), 'utf8');
+  const right = Buffer.from(String(b || ''), 'utf8');
+  if (left.length !== right.length) return false;
+  return crypto.timingSafeEqual(left, right);
+}
+
 router.post("/api/payments/webhook", async (req, res) => {
   try {
     const hash = secretHash();
     const signature = req.headers["verif-hash"];
-    if (hash && (!signature || signature !== hash)) {
-      return res.status(401).end();
+    if (hash && (!signature || !safeEqual(signature, hash))) {
+      logger.warn("flutterwave_webhook_signature_invalid", { request_id: req.requestId });
+      return apiError(res, 401, "INVALID_SIGNATURE", "Invalid webhook signature.", null, req.requestId);
     }
 
     const payload = req.body;
@@ -58,7 +162,10 @@ router.post("/api/payments/webhook", async (req, res) => {
       );
       verified = verifyRes.data?.data;
     } catch (verifyErr) {
-      console.error("[webhook] Verify failed", verifyErr?.response?.data || verifyErr?.message);
+      logger.error("flutterwave_webhook_verify_failed", {
+        request_id: req.requestId,
+        error: verifyErr?.response?.data || verifyErr?.message,
+      });
       return res.status(200).end();
     }
     const status = verified?.status;
@@ -87,7 +194,10 @@ router.post("/api/payments/webhook", async (req, res) => {
         externalId: verifiedFlwId,
       });
       if (!claim.ok) {
-        console.error("[webhook] Dedup ledger insert failed", claim.error);
+        logger.error("flutterwave_webhook_dedup_failed", {
+          request_id: req.requestId,
+          error: claim.error,
+        });
         return res.status(500).end();
       }
       if (!claim.firstDelivery) {
@@ -124,20 +234,46 @@ router.post("/api/payments/webhook", async (req, res) => {
         .eq("id", payment.id);
 
       if (updateErr) {
-        console.error("[webhook] Failed to update payment", updateErr);
+        logger.error("flutterwave_webhook_update_failed", {
+          request_id: req.requestId,
+          error: updateErr?.message || String(updateErr),
+        });
         return res.status(200).end();
       }
 
-      const leaseId = await resolveLeaseIdForPropertyTenant(supabaseAdmin, payment.property_tenant_id);
+      const { data: payCtx } = await supabaseAdmin
+        .from("rent_payments")
+        .select(
+          `
+          id,
+          property_tenants (
+            property_id,
+            properties ( id ),
+            tenants ( user_id )
+          )
+        `
+        )
+        .eq("id", payment.id)
+        .maybeSingle();
 
-      await recordRentPayment(supabaseAdmin, {
-        paymentId: payment.id,
-        amount: actualAmount,
-        leaseId,
-        tenantId: tenantIdForNotify,
-        txRef: verifiedTxRef,
-        entryDate: today,
+      const propertyIdForLedger =
+        payCtx?.property_tenants?.properties?.id ?? payCtx?.property_tenants?.property_id ?? null;
+      const tenantUserIdForLedger = payCtx?.property_tenants?.tenants?.user_id ?? null;
+
+      const { error: finalizeErr } = await supabaseAdmin.rpc("finalize_rent_payment_flutterwave", {
+        p_payment_id: payment.id,
+        p_provider: "flutterwave",
+        p_external_id: verifiedFlwId || null,
+        p_property_id: propertyIdForLedger,
+        p_tenant_user_id: tenantUserIdForLedger,
+        p_entry_date: today,
       });
+      if (finalizeErr) {
+        logger.error("flutterwave_finalize_accounting_failed", {
+          request_id: req.requestId,
+          error: finalizeErr?.message || String(finalizeErr),
+        });
+      }
 
       const { data: tenant } = await supabaseAdmin
         .from("tenants")
@@ -146,13 +282,13 @@ router.post("/api/payments/webhook", async (req, res) => {
         .maybeSingle();
 
       if (tenant) {
-        await notifyPayment({
-          event: "payment_successful",
+        await enqueuePaymentReceived({
           tenant: { ...tenant, first_name: tenant.first_name || "Tenant" },
           amount: actualAmount,
           txRef: verifiedTxRef,
-          channels: ["email", "sms", "whatsapp"],
+          channels: ["in_app", "email", "sms", "whatsapp"],
         });
+        await drainNotificationOutbox(30);
       }
 
       // Optional: store Flutterwave card authorization for recurring rent (meta.recurring_opt_in).
@@ -217,12 +353,18 @@ router.post("/api/payments/webhook", async (req, res) => {
                 next_charge_due_date: nextDue.toISOString().slice(0, 10),
               });
             if (manErr) {
-              console.warn("[webhook] rent_recurrence_mandates", manErr.message);
+              logger.warn("flutterwave_webhook_mandate_insert_warning", {
+                request_id: req.requestId,
+                error: manErr.message,
+              });
             }
           }
         }
       } catch (recErr) {
-        console.warn("[webhook] recurring mandate (non-fatal)", recErr?.message);
+        logger.warn("flutterwave_webhook_mandate_non_fatal", {
+          request_id: req.requestId,
+          error: recErr?.message,
+        });
       }
     } else {
       const { error: failErr } = await supabaseAdmin
@@ -234,7 +376,10 @@ router.post("/api/payments/webhook", async (req, res) => {
         .eq("id", payment.id);
 
       if (failErr) {
-        console.error("[webhook] Failed to mark payment failed", failErr);
+        logger.error("flutterwave_webhook_mark_failed_error", {
+          request_id: req.requestId,
+          error: failErr?.message || String(failErr),
+        });
       }
 
       const { data: tenant } = await supabaseAdmin
@@ -244,23 +389,31 @@ router.post("/api/payments/webhook", async (req, res) => {
         .maybeSingle();
 
       if (tenant) {
-        await notifyPayment({
-          event: "payment_failed",
+        await enqueuePaymentFailed({
           tenant: { ...tenant, first_name: tenant.first_name || "Tenant" },
           txRef: verifiedTxRef,
-          channels: ["email", "sms", "whatsapp"],
+          channels: ["in_app", "email", "sms", "whatsapp"],
         });
+        await drainNotificationOutbox(30);
       }
     }
 
     return res.status(200).end();
   } catch (err) {
-    console.error("[webhook]", err?.response?.data || err?.message);
+    logger.error("flutterwave_webhook_unexpected", {
+      request_id: req.requestId,
+      error: err?.response?.data || err?.message,
+    });
     return res.status(200).end();
   }
 });
 
-router.get("/api/payments", async (req, res) => {
+router.get(
+  "/api/payments",
+  requireSupabaseJwt,
+  attachUserRole,
+  requirePaymentsRead,
+  async (req, res) => {
   try {
     if (!supabaseAdmin) {
       return res.status(500).json({ error: "Service not configured." });
@@ -297,14 +450,19 @@ router.get("/api/payments", async (req, res) => {
     } else if (rentSt?.length) {
       query = query.in("status", rentSt);
     }
-    if (dateFrom) {
-      query = query.gte("due_date", dateFrom);
+    const df = asPgDateOnly(dateFrom);
+    const dt = asPgDateOnly(dateTo);
+    if (dateFrom && !df) return res.status(400).json({ error: "Invalid date_from (YYYY-MM-DD required)." });
+    if (dateTo && !dt) return res.status(400).json({ error: "Invalid date_to (YYYY-MM-DD required)." });
+    if (df) {
+      query = query.gte("due_date", df);
     }
-    if (dateTo) {
-      query = query.lte("due_date", dateTo);
+    if (dt) {
+      query = query.lte("due_date", dt);
     }
 
-    const { data: payments, error } = await query;
+    query = await applyPaymentsVisibility(query, req.auth.sub, req.userRole);
+    const { data: payments, error } = await query.limit(500);
 
     if (error) {
       console.error("[payments]", error);
@@ -341,13 +499,26 @@ router.get("/api/payments", async (req, res) => {
   }
 });
 
-router.get("/api/payments/summary", async (req, res) => {
+router.get(
+  "/api/payments/summary",
+  requireSupabaseJwt,
+  attachUserRole,
+  requirePaymentsRead,
+  async (req, res) => {
   try {
     if (!supabaseAdmin) {
       return res.status(500).json({ error: "Service not configured." });
     }
 
-    const { data: payments, error } = await supabaseAdmin.from("rent_payments").select("amount, status");
+    let q = supabaseAdmin.from("rent_payments").select(
+      `
+      amount,
+      status,
+      property_tenants!inner ( tenant_id, property_id )
+    `
+    );
+    q = await applyPaymentsVisibility(q, req.auth.sub, req.userRole);
+    const { data: payments, error } = await q.limit(2000);
 
     if (error) {
       console.error("[payments/summary]", error);
@@ -379,18 +550,37 @@ router.get("/api/payments/summary", async (req, res) => {
   }
 });
 
-router.get("/api/payments/status/:tx_ref", async (req, res) => {
+router.get(
+  "/api/payments/status/:tx_ref",
+  requireSupabaseJwt,
+  attachUserRole,
+  requirePaymentsRead,
+  async (req, res) => {
   try {
     const txRef = req.params.tx_ref;
     if (!txRef || !supabaseAdmin) {
       return res.status(400).json({ error: "tx_ref is required." });
     }
+    if (!looksLikeTxRef(txRef)) {
+      return res.status(400).json({ error: "Invalid tx_ref." });
+    }
 
-    const { data: payment, error } = await supabaseAdmin
+    let q = supabaseAdmin
       .from("rent_payments")
-      .select("id, amount, status, payment_date, reference, due_date")
-      .eq("reference", txRef)
-      .maybeSingle();
+      .select(
+        `
+        id,
+        amount,
+        status,
+        payment_date,
+        reference,
+        due_date,
+        property_tenants!inner ( tenant_id, property_id, tenants ( first_name, last_name ) )
+      `
+      )
+      .eq("reference", txRef);
+    q = await applyPaymentsVisibility(q, req.auth.sub, req.userRole);
+    const { data: payment, error } = await q.maybeSingle();
 
     if (error) {
       return res.status(500).json({ error: "Failed to fetch payment status." });
@@ -402,7 +592,7 @@ router.get("/api/payments/status/:tx_ref", async (req, res) => {
 
     const legacy = mapRentRowToLegacyPayment({
       ...payment,
-      property_tenants: { tenant_id: null, tenants: {} },
+      property_tenants: payment.property_tenants || { tenant_id: null, tenants: {} },
     });
 
     res.json({
@@ -417,14 +607,20 @@ router.get("/api/payments/status/:tx_ref", async (req, res) => {
   }
 });
 
-router.get("/api/payments/:id", async (req, res) => {
+router.get(
+  "/api/payments/:id",
+  requireSupabaseJwt,
+  attachUserRole,
+  requirePaymentsRead,
+  async (req, res) => {
   try {
     const id = req.params.id;
     if (!id || !supabaseAdmin) {
       return res.status(400).json({ error: "Payment ID is required." });
     }
+    if (!isUuid(id)) return res.status(400).json({ error: "Invalid payment id." });
 
-    const { data: payment, error } = await supabaseAdmin
+    let q = supabaseAdmin
       .from("rent_payments")
       .select(
         `
@@ -442,8 +638,9 @@ router.get("/api/payments/:id", async (req, res) => {
         )
       `
       )
-      .eq("id", id)
-      .maybeSingle();
+      .eq("id", id);
+    q = await applyPaymentsVisibility(q, req.auth.sub, req.userRole);
+    const { data: payment, error } = await q.maybeSingle();
 
     if (error || !payment) {
       return res.status(404).json({ error: "Payment not found." });
@@ -472,15 +669,21 @@ router.get("/api/payments/:id", async (req, res) => {
   }
 });
 
-router.post("/api/payments/:id/resend-link", async (req, res) => {
+router.post(
+  "/api/payments/:id/resend-link",
+  requireSupabaseJwt,
+  attachUserRole,
+  requirePaymentsWrite,
+  async (req, res) => {
   try {
     const id = req.params.id;
     const key = secretKey();
     if (!id || !key || !supabaseAdmin) {
       return res.status(400).json({ error: "Payment ID is required." });
     }
+    if (!isUuid(id)) return res.status(400).json({ error: "Invalid payment id." });
 
-    const { data: payment, error } = await supabaseAdmin
+    let q = supabaseAdmin
       .from("rent_payments")
       .select(
         `
@@ -493,8 +696,9 @@ router.post("/api/payments/:id/resend-link", async (req, res) => {
         property_tenants!inner ( tenant_id )
       `
       )
-      .eq("id", id)
-      .maybeSingle();
+      .eq("id", id);
+    q = await applyPaymentsVisibility(q, req.auth.sub, req.userRole);
+    const { data: payment, error } = await q.maybeSingle();
 
     if (error || !payment) {
       return res.status(404).json({ error: "Payment not found." });
@@ -524,12 +728,14 @@ router.post("/api/payments/:id/resend-link", async (req, res) => {
         tx_ref,
         amount: Number(payment.amount),
         currency: "NGN",
-        redirect_url: process.env.PAYMENT_REDIRECT_URL || "https://yourdomain.com/api/payments/callback",
+        redirect_url:
+          safeHttpUrl(process.env.PAYMENT_REDIRECT_URL) ||
+          "https://yourdomain.com/api/payments/callback",
         customer: { email: tenantEmail, name: tenantName },
         customizations: {
           title: "DamianixPro Rent Payment",
           description: "Rent payment",
-          logo: process.env.PAYMENT_LOGO_URL || "https://yourdomain.com/logo.png",
+          logo: safeHttpUrl(process.env.PAYMENT_LOGO_URL) || "https://yourdomain.com/logo.png",
         },
         meta: { tenant_id: tenantId, payment_type: "rent" },
       },
@@ -566,14 +772,20 @@ router.post("/api/payments/:id/resend-link", async (req, res) => {
   }
 });
 
-router.get("/api/payments/:id/receipt", async (req, res) => {
+router.get(
+  "/api/payments/:id/receipt",
+  requireSupabaseJwt,
+  attachUserRole,
+  requirePaymentsRead,
+  async (req, res) => {
   const id = req.params.id;
   if (!id || !supabaseAdmin) {
     return res.status(400).json({ error: "Payment ID is required." });
   }
+  if (!isUuid(id)) return res.status(400).json({ error: "Invalid payment id." });
 
   try {
-    const { data: payment, error } = await supabaseAdmin
+    let q = supabaseAdmin
       .from("rent_payments")
       .select(
         `
@@ -591,8 +803,9 @@ router.get("/api/payments/:id/receipt", async (req, res) => {
         )
       `
       )
-      .eq("id", id)
-      .maybeSingle();
+      .eq("id", id);
+    q = await applyPaymentsVisibility(q, req.auth.sub, req.userRole);
+    const { data: payment, error } = await q.maybeSingle();
 
     if (error || !payment) {
       return res.status(404).json({ error: "Payment not found." });
@@ -717,10 +930,16 @@ const handleRentPayment = async (req, res) => {
     if (!tenant_id || amount == null || amount === "") {
       return res.status(400).json({ error: "tenant_id and amount are required." });
     }
+    if (!isUuid(String(tenant_id))) {
+      return res.status(400).json({ error: "tenant_id must be a UUID." });
+    }
 
     const numericAmount = Number(amount);
     if (Number.isNaN(numericAmount) || numericAmount <= 0) {
       return res.status(400).json({ error: "amount must be a positive number." });
+    }
+    if (numericAmount > 50_000_000) {
+      return res.status(400).json({ error: "amount is too large." });
     }
 
     if (!supabaseAdmin) {
@@ -801,7 +1020,10 @@ const handleRentPayment = async (req, res) => {
           tx_ref,
           amount: numericAmount,
           currency: "NGN",
-          redirect_url: redirect_url || process.env.PAYMENT_REDIRECT_URL || "https://yourdomain.com/payment/callback",
+          redirect_url:
+            safeHttpUrl(redirect_url) ||
+            safeHttpUrl(process.env.PAYMENT_REDIRECT_URL) ||
+            "https://yourdomain.com/payment/callback",
           customer: {
             email: tenantEmail,
             name: tenantName,
@@ -809,7 +1031,7 @@ const handleRentPayment = async (req, res) => {
           customizations: {
             title: "DamianixPro Rent Payment",
             description: "Rent payment for property",
-            logo: process.env.PAYMENT_LOGO_URL || "https://yourdomain.com/logo.png",
+            logo: safeHttpUrl(process.env.PAYMENT_LOGO_URL) || "https://yourdomain.com/logo.png",
           },
           meta: {
             tenant_id,

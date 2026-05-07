@@ -54,7 +54,7 @@ export function TenantListView() {
 
   if (error) {
     return (
-      <div className="p-4 text-red-500">Error fetching tenants: {(error as Error).message}</div>
+      <div className="p-4 text-destructive">Error fetching tenants: {(error as Error).message}</div>
     );
   }
 

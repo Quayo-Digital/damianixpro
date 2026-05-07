@@ -32,7 +32,11 @@ const VendorDashboardPage = () => {
   if (isLoading) {
     return (
       <PageLayout>
-        <PageContent title="Vendor Dashboard">
+        <PageContent
+          title="Vendor dashboard"
+          description="Loading your workspace…"
+          showBreadcrumbs={false}
+        >
           <Card>
             <CardContent className="flex items-center justify-center py-12">
               <div className="space-y-4 text-center">
@@ -49,7 +53,11 @@ const VendorDashboardPage = () => {
   if (error) {
     return (
       <PageLayout>
-        <PageContent title="Vendor Dashboard">
+        <PageContent
+          title="Vendor dashboard"
+          description="Something went wrong."
+          showBreadcrumbs={false}
+        >
           <Alert variant="destructive">
             <AlertCircle className="h-4 w-4" />
             <AlertDescription>{error}</AlertDescription>
@@ -62,7 +70,11 @@ const VendorDashboardPage = () => {
   if (!profile || !stats || !performanceMetrics) {
     return (
       <PageLayout>
-        <PageContent title="Vendor Dashboard">
+        <PageContent
+          title="Vendor dashboard"
+          description="Complete your vendor profile to unlock the full dashboard."
+          showBreadcrumbs={false}
+        >
           <Card>
             <CardHeader>
               <CardTitle>Setup Required</CardTitle>
@@ -83,7 +95,10 @@ const VendorDashboardPage = () => {
 
   return (
     <PageLayout>
-      <PageContent title="Vendor Dashboard" subtitle={`Welcome back, ${profile.name}!`}>
+      <PageContent
+        title="Vendor dashboard"
+        description={`Welcome back, ${profile.name}! Manage jobs, performance, and your public profile.`}
+      >
         <div className="space-y-6">
           <RoleScreeningBanner />
           {/* Status Badge */}

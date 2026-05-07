@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { PageLayout } from '@/components/layout/PageLayout';
+import { PageContent } from '@/components/layout/PageContent';
 import {
   Card,
   CardContent,
@@ -264,211 +265,208 @@ export default function Rent() {
 
   return (
     <PageLayout>
-      <div className="container mx-auto py-6">
-        <div className="flex flex-col space-y-6">
-          <div className="flex flex-col items-start justify-between gap-4 md:flex-row md:items-center">
-            <h1 className="text-3xl font-bold tracking-tight">Rent Management</h1>
-            <div className="flex gap-2 self-end md:self-auto">
-              <Button onClick={() => setIsAddPaymentOpen(true)}>Add Rent Payment</Button>
-            </div>
-          </div>
+      <PageContent
+        title="Rent management"
+        description="Track rent payments, reminders, and settings."
+        actions={
+          <Button type="button" onClick={() => setIsAddPaymentOpen(true)}>
+            Add rent payment
+          </Button>
+        }
+      >
+        <Tabs value={activeTab} onValueChange={setActiveTab}>
+          <TabsList className="mb-4 grid w-full grid-cols-3">
+            <TabsTrigger value="payments">Payments</TabsTrigger>
+            <TabsTrigger value="reminders">
+              <Bell className="mr-2 h-4 w-4" /> Reminders
+            </TabsTrigger>
+            <TabsTrigger value="settings">Settings</TabsTrigger>
+          </TabsList>
 
-          <Tabs value={activeTab} onValueChange={setActiveTab}>
-            <TabsList className="mb-4 grid w-full grid-cols-3">
-              <TabsTrigger value="payments">Payments</TabsTrigger>
-              <TabsTrigger value="reminders">
-                <Bell className="mr-2 h-4 w-4" /> Reminders
-              </TabsTrigger>
-              <TabsTrigger value="settings">Settings</TabsTrigger>
-            </TabsList>
-
-            <TabsContent value="payments" className="space-y-6">
-              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-                <Card>
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-sm font-medium text-muted-foreground">
-                      USD Rent
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="flex items-center justify-between">
-                      <div className="text-2xl font-bold">${totalUsdRent.toLocaleString()}</div>
-                      <DollarSign className="h-5 w-5 text-muted-foreground" />
-                    </div>
-                    <div className="mt-2 grid grid-cols-3 gap-1 text-xs">
-                      <div className="flex items-center text-green-500">
-                        <Check className="mr-1 h-3 w-3" /> ${paidUsdRent.toLocaleString()}
-                      </div>
-                      <div className="flex items-center text-amber-500">
-                        <Clock className="mr-1 h-3 w-3" /> ${pendingUsdRent.toLocaleString()}
-                      </div>
-                      <div className="flex items-center text-red-500">
-                        <X className="mr-1 h-3 w-3" /> ${overdueUsdRent.toLocaleString()}
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-
-                <Card>
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-sm font-medium text-muted-foreground">
-                      Naira (₦) Rent
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="flex items-center justify-between">
-                      <div className="text-2xl font-bold">₦{totalNgnRent.toLocaleString()}</div>
-                      <Wallet className="h-5 w-5 text-muted-foreground" />
-                    </div>
-                    <div className="mt-2 grid grid-cols-3 gap-1 text-xs">
-                      <div className="flex items-center text-green-500">
-                        <Check className="mr-1 h-3 w-3" /> ₦{paidNgnRent.toLocaleString()}
-                      </div>
-                      <div className="flex items-center text-amber-500">
-                        <Clock className="mr-1 h-3 w-3" /> ₦{pendingNgnRent.toLocaleString()}
-                      </div>
-                      <div className="flex items-center text-red-500">
-                        <X className="mr-1 h-3 w-3" /> ₦{overdueNgnRent.toLocaleString()}
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-
-                <Card>
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-sm font-medium text-muted-foreground">
-                      Paid
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="flex items-center justify-between">
-                      <div className="text-2xl font-bold text-green-600">
-                        ${paidUsdRent.toLocaleString()} / ₦{paidNgnRent.toLocaleString()}
-                      </div>
-                      <Check className="h-5 w-5 text-green-500" />
-                    </div>
-                  </CardContent>
-                </Card>
-
-                <Card>
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-sm font-medium text-muted-foreground">
-                      Pending/Overdue
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="flex items-center justify-between">
-                      <div className="text-2xl font-bold text-amber-600">
-                        ${(pendingUsdRent + overdueUsdRent).toLocaleString()} / ₦
-                        {(pendingNgnRent + overdueNgnRent).toLocaleString()}
-                      </div>
-                      <Clock className="h-5 w-5 text-amber-500" />
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
-
-              <div className="flex flex-col gap-4 md:flex-row md:items-center">
-                <div className="w-full md:w-1/3">
-                  <Input
-                    placeholder="Filter by property..."
-                    value={propertyFilter}
-                    onChange={(e) => setPropertyFilter(e.target.value)}
-                    className="w-full"
-                  />
-                </div>
-                <div className="w-full md:w-1/3">
-                  <Select value={statusFilter} onValueChange={setStatusFilter}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Filter by status" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all-statuses">All Statuses</SelectItem>
-                      <SelectItem value="paid">Paid</SelectItem>
-                      <SelectItem value="pending">Pending</SelectItem>
-                      <SelectItem value="overdue">Overdue</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-
+          <TabsContent value="payments" className="space-y-6">
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
               <Card>
-                <CardHeader>
-                  <CardTitle>Rent Payments</CardTitle>
-                  <CardDescription>Manage and track all property rent payments</CardDescription>
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm font-medium text-muted-foreground">
+                    USD Rent
+                  </CardTitle>
                 </CardHeader>
-                <CardContent className="overflow-x-auto">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Property</TableHead>
-                        <TableHead>Tenant</TableHead>
-                        <TableHead>Amount</TableHead>
-                        <TableHead>Due Date</TableHead>
-                        <TableHead>Status</TableHead>
-                        <TableHead>Payment Date</TableHead>
-                        <TableHead>Actions</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {filteredPayments.map((payment) => (
-                        <TableRow key={payment.id}>
-                          <TableCell className="font-medium">{payment.propertyName}</TableCell>
-                          <TableCell>{payment.tenant}</TableCell>
-                          <TableCell>{formatAmount(payment.amount, payment.currency)}</TableCell>
-                          <TableCell>{payment.dueDate}</TableCell>
-                          <TableCell>
-                            <Badge
-                              className={`flex items-center gap-1 ${getBadgeColor(payment.status)}`}
-                              variant="outline"
-                            >
-                              {getStatusIcon(payment.status)}
-                              {payment.status.charAt(0).toUpperCase() + payment.status.slice(1)}
-                            </Badge>
-                          </TableCell>
-                          <TableCell>{payment.paymentDate || '-'}</TableCell>
-                          <TableCell>
-                            {payment.status !== 'paid' && (
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                onClick={() => handleMarkAsPaid(payment.id)}
-                              >
-                                Mark as Paid
-                              </Button>
-                            )}
-                            {payment.status === 'paid' && (
-                              <Button size="sm" variant="outline">
-                                <FileText className="mr-1 h-4 w-4" /> Receipt
-                              </Button>
-                            )}
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-
-                  {filteredPayments.length === 0 && (
-                    <div className="py-10 text-center">
-                      <p className="text-muted-foreground">
-                        No rent payments found matching your criteria.
-                      </p>
+                <CardContent>
+                  <div className="flex items-center justify-between">
+                    <div className="text-2xl font-bold">${totalUsdRent.toLocaleString()}</div>
+                    <DollarSign className="h-5 w-5 text-muted-foreground" />
+                  </div>
+                  <div className="mt-2 grid grid-cols-3 gap-1 text-xs">
+                    <div className="flex items-center text-green-500">
+                      <Check className="mr-1 h-3 w-3" /> ${paidUsdRent.toLocaleString()}
                     </div>
-                  )}
+                    <div className="flex items-center text-amber-500">
+                      <Clock className="mr-1 h-3 w-3" /> ${pendingUsdRent.toLocaleString()}
+                    </div>
+                    <div className="flex items-center text-red-500">
+                      <X className="mr-1 h-3 w-3" /> ${overdueUsdRent.toLocaleString()}
+                    </div>
+                  </div>
                 </CardContent>
               </Card>
-            </TabsContent>
 
-            <TabsContent value="reminders">
-              <RentReminders />
-            </TabsContent>
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm font-medium text-muted-foreground">
+                    Naira (₦) Rent
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="flex items-center justify-between">
+                    <div className="text-2xl font-bold">₦{totalNgnRent.toLocaleString()}</div>
+                    <Wallet className="h-5 w-5 text-muted-foreground" />
+                  </div>
+                  <div className="mt-2 grid grid-cols-3 gap-1 text-xs">
+                    <div className="flex items-center text-green-500">
+                      <Check className="mr-1 h-3 w-3" /> ₦{paidNgnRent.toLocaleString()}
+                    </div>
+                    <div className="flex items-center text-amber-500">
+                      <Clock className="mr-1 h-3 w-3" /> ₦{pendingNgnRent.toLocaleString()}
+                    </div>
+                    <div className="flex items-center text-red-500">
+                      <X className="mr-1 h-3 w-3" /> ₦{overdueNgnRent.toLocaleString()}
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
 
-            <TabsContent value="settings">
-              <RentRemindersSettings />
-            </TabsContent>
-          </Tabs>
-        </div>
-      </div>
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm font-medium text-muted-foreground">Paid</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="flex items-center justify-between">
+                    <div className="text-2xl font-bold text-green-600">
+                      ${paidUsdRent.toLocaleString()} / ₦{paidNgnRent.toLocaleString()}
+                    </div>
+                    <Check className="h-5 w-5 text-green-500" />
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm font-medium text-muted-foreground">
+                    Pending/Overdue
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="flex items-center justify-between">
+                    <div className="text-2xl font-bold text-amber-600">
+                      ${(pendingUsdRent + overdueUsdRent).toLocaleString()} / ₦
+                      {(pendingNgnRent + overdueNgnRent).toLocaleString()}
+                    </div>
+                    <Clock className="h-5 w-5 text-amber-500" />
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
+            <div className="flex flex-col gap-4 md:flex-row md:items-center">
+              <div className="w-full md:w-1/3">
+                <Input
+                  placeholder="Filter by property..."
+                  value={propertyFilter}
+                  onChange={(e) => setPropertyFilter(e.target.value)}
+                  className="w-full"
+                />
+              </div>
+              <div className="w-full md:w-1/3">
+                <Select value={statusFilter} onValueChange={setStatusFilter}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Filter by status" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all-statuses">All Statuses</SelectItem>
+                    <SelectItem value="paid">Paid</SelectItem>
+                    <SelectItem value="pending">Pending</SelectItem>
+                    <SelectItem value="overdue">Overdue</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>Rent Payments</CardTitle>
+                <CardDescription>Manage and track all property rent payments</CardDescription>
+              </CardHeader>
+              <CardContent className="overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Property</TableHead>
+                      <TableHead>Tenant</TableHead>
+                      <TableHead>Amount</TableHead>
+                      <TableHead>Due Date</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead>Payment Date</TableHead>
+                      <TableHead>Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {filteredPayments.map((payment) => (
+                      <TableRow key={payment.id}>
+                        <TableCell className="font-medium">{payment.propertyName}</TableCell>
+                        <TableCell>{payment.tenant}</TableCell>
+                        <TableCell>{formatAmount(payment.amount, payment.currency)}</TableCell>
+                        <TableCell>{payment.dueDate}</TableCell>
+                        <TableCell>
+                          <Badge
+                            className={`flex items-center gap-1 ${getBadgeColor(payment.status)}`}
+                            variant="outline"
+                          >
+                            {getStatusIcon(payment.status)}
+                            {payment.status.charAt(0).toUpperCase() + payment.status.slice(1)}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>{payment.paymentDate || '-'}</TableCell>
+                        <TableCell>
+                          {payment.status !== 'paid' && (
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => handleMarkAsPaid(payment.id)}
+                            >
+                              Mark as Paid
+                            </Button>
+                          )}
+                          {payment.status === 'paid' && (
+                            <Button size="sm" variant="outline">
+                              <FileText className="mr-1 h-4 w-4" /> Receipt
+                            </Button>
+                          )}
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+
+                {filteredPayments.length === 0 && (
+                  <div className="py-10 text-center">
+                    <p className="text-muted-foreground">
+                      No rent payments found matching your criteria.
+                    </p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="reminders">
+            <RentReminders />
+          </TabsContent>
+
+          <TabsContent value="settings">
+            <RentRemindersSettings />
+          </TabsContent>
+        </Tabs>
+      </PageContent>
 
       <Dialog open={isAddPaymentOpen} onOpenChange={setIsAddPaymentOpen}>
         <DialogContent className="sm:max-w-[425px]">

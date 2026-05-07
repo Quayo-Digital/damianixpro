@@ -156,13 +156,23 @@ export function TenantDashboard({ onMakePayment }: TenantDashboardProps) {
 
       if (maintenance) {
         activities.push(
-          ...maintenance.map((request) => ({
-            id: `maintenance_${request.id}`,
-            type: 'maintenance' as const,
-            description: `Maintenance request: ${request.title}`,
-            date: request.created_at.split('T')[0],
-            status: request.status as 'completed' | 'in-progress' | 'unread',
-          }))
+          ...maintenance.map((request) => {
+            const r = request as {
+              id: string;
+              issue?: string | null;
+              category?: string | null;
+              created_at?: string | null;
+              status?: string | null;
+            };
+            const label = r.issue?.trim() || r.category || 'Request';
+            return {
+              id: `maintenance_${r.id}`,
+              type: 'maintenance' as const,
+              description: `Maintenance request: ${label}`,
+              date: (r.created_at || '').split('T')[0],
+              status: r.status as 'completed' | 'in-progress' | 'unread',
+            };
+          })
         );
       }
 

@@ -9,8 +9,13 @@
 
 import express from "express";
 import { supabaseAdmin } from "./supabaseClient.mjs";
+import { requireSupabaseJwt } from "./middleware/supabaseJwt.mjs";
+import { createAttachUserRole } from "./middleware/attachUserRole.mjs";
+import { createRequireRbacPermission } from "./middleware/requireRbacPermission.mjs";
 
 const router = express.Router();
+const attachUserRole = createAttachUserRole(supabaseAdmin);
+const requireReportsFinancial = createRequireRbacPermission("reports.financial");
 
 // Cash/bank accounts (asset type)
 const CASH_ACCOUNTS = ["Bank Account", "Bank", "Cash", "Cash/Bank Account"];
@@ -18,7 +23,7 @@ const CASH_ACCOUNTS = ["Bank Account", "Bank", "Cash", "Cash/Bank Account"];
 /**
  * GET /api/reports/cash-flow
  */
-router.get("/api/reports/cash-flow", async (req, res) => {
+router.get("/api/reports/cash-flow", requireSupabaseJwt, attachUserRole, requireReportsFinancial, async (req, res) => {
   try {
     if (!supabaseAdmin) {
       return res.status(500).json({ error: "Service not configured." });

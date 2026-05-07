@@ -305,7 +305,7 @@ export function RentReminderMessageGenerator() {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <MessageSquare className="h-5 w-5 text-blue-500" />
+            <MessageSquare className="h-5 w-5 text-primary" />
             Rent Reminder Message Generator
           </CardTitle>
           <CardDescription>
@@ -373,7 +373,7 @@ export function RentReminderMessageGenerator() {
                   onChange={(e) => setDaysToDueDate(e.target.value)}
                   placeholder="5 or -3"
                 />
-                <p className="mt-1 text-xs text-gray-500">
+                <p className="mt-1 text-xs text-muted-foreground">
                   Positive = days until due, Negative = days overdue
                 </p>
                 {isOverdue && (
@@ -409,7 +409,7 @@ export function RentReminderMessageGenerator() {
               className="mt-2 font-mono text-sm"
               rows={4}
             />
-            <p className="mt-1 text-xs text-gray-500">
+            <p className="mt-1 text-xs text-muted-foreground">
               Optional: JSON array of payment history to personalize the message
             </p>
           </div>
@@ -427,7 +427,7 @@ export function RentReminderMessageGenerator() {
                 onChange={(e) => setPaymentLink(e.target.value)}
                 placeholder="https://checkout.flutterwave.com/xxx"
               />
-              <p className="mt-1 text-xs text-gray-500">
+              <p className="mt-1 text-xs text-muted-foreground">
                 The payment link will be included in all message versions
               </p>
             </div>

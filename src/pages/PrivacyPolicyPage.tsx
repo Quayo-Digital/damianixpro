@@ -20,7 +20,7 @@ export default function PrivacyPolicyPage() {
           DamianixPro is operated in connection with{' '}
           <strong className="text-foreground">Damianix Systems Ltd</strong> (&quot;we&quot;,
           &quot;us&quot;). Contact:{' '}
-          <a href="mailto:privacy@damianixpro.com" className="text-green-600 hover:text-green-700">
+          <a href="mailto:privacy@damianixpro.com" className="text-primary hover:text-primary/90">
             privacy@damianixpro.com
           </a>
           .
@@ -45,7 +45,7 @@ export default function PrivacyPolicyPage() {
           <li>
             <strong className="text-foreground">Technical data:</strong> device, browser, IP
             address, logs, and cookies or similar technologies (see{' '}
-            <a href="#cookies" className="text-green-600 hover:text-green-700">
+            <a href="#cookies" className="text-primary hover:text-primary/90">
               Cookies
             </a>
             ).
@@ -125,11 +125,11 @@ export default function PrivacyPolicyPage() {
 
       <p className="text-muted-foreground">
         Questions? See also our{' '}
-        <Link to="/terms" className="text-green-600 hover:text-green-700">
+        <Link to="/terms" className="text-primary hover:text-primary/90">
           Terms of Service
         </Link>{' '}
         or{' '}
-        <Link to="/contact" className="text-green-600 hover:text-green-700">
+        <Link to="/contact" className="text-primary hover:text-primary/90">
           contact us
         </Link>
         .

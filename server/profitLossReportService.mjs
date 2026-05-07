@@ -7,8 +7,13 @@
 
 import express from "express";
 import { supabaseAdmin } from "./supabaseClient.mjs";
+import { requireSupabaseJwt } from "./middleware/supabaseJwt.mjs";
+import { createAttachUserRole } from "./middleware/attachUserRole.mjs";
+import { createRequireRbacPermission } from "./middleware/requireRbacPermission.mjs";
 
 const router = express.Router();
+const attachUserRole = createAttachUserRole(supabaseAdmin);
+const requireReportsFinancial = createRequireRbacPermission("reports.financial");
 
 /**
  * GET /api/reports/profit-loss
@@ -18,7 +23,7 @@ const router = express.Router();
  * Expenses: journal debits to expense accounts + accounting_transactions type=expense + expenses table
  * Avoids double-count by preferring journal_entries; accounting_transactions/expenses supplement.
  */
-router.get("/api/reports/profit-loss", async (req, res) => {
+router.get("/api/reports/profit-loss", requireSupabaseJwt, attachUserRole, requireReportsFinancial, async (req, res) => {
   try {
     if (!supabaseAdmin) {
       return res.status(500).json({ error: "Service not configured." });

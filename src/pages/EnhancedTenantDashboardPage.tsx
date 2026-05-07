@@ -1,6 +1,7 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Navigate, useNavigate, useSearchParams } from 'react-router-dom';
 import { PageLayout } from '@/components/layout/PageLayout';
+import { PageContent } from '@/components/layout/PageContent';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
@@ -20,6 +21,8 @@ import {
   Clock,
   TrendingUp,
   Calendar,
+  Receipt,
+  ClipboardList,
 } from 'lucide-react';
 import { useAuthSession } from '@/contexts/auth';
 import { useEnhancedTenantData } from '@/hooks/useEnhancedTenantData';
@@ -34,6 +37,13 @@ import { annualRentNgn } from '@/utils/nigeriaRent';
 import { formatTenantLeaseStatusLabel } from '@/services/leases/tenantLeasePresentation';
 import { RoleScreeningBanner } from '@/components/screening/RoleScreeningBanner';
 import { TenantApplicationNextStepStrip } from '@/components/tenant/TenantApplicationNextStepStrip';
+import { RoleDashboardInsights } from '@/components/dashboard/role-dashboard/RoleDashboardInsights';
+import type {
+  RoleDashboardActivity,
+  RoleDashboardQuickAction,
+  RoleDashboardStat,
+} from '@/components/dashboard/role-dashboard/types';
+import { formatDistanceToNow } from 'date-fns';
 
 // Nigerian currency formatter
 const formatCurrency = (amount: number) => {
@@ -66,7 +76,8 @@ const EnhancedTenantDashboardPage = () => {
     }
   }, [searchParams]);
 
-  const { profile, lease, stats, notifications, loading, error } = useEnhancedTenantData();
+  const { profile, lease, stats, notifications, payments, maintenanceRequests, loading, error } =
+    useEnhancedTenantData();
   // Use public properties hook for tenants to see available properties
   const {
     filteredProperties: availableProperties,
@@ -80,7 +91,76 @@ const EnhancedTenantDashboardPage = () => {
   });
   const shortletListings = shortletListingsData?.listings || [];
 
-  // Check if user is a tenant
+  const tenantPulse = useMemo(() => {
+    const nextDue = stats?.nextPaymentDue
+      ? formatDistanceToNow(new Date(stats.nextPaymentDue), { addSuffix: true })
+      : '—';
+    const statsRow: RoleDashboardStat[] = [
+      {
+        title: 'Next rent',
+        value: stats?.nextPaymentAmount ? formatCurrency(stats.nextPaymentAmount) : '—',
+        icon: <CreditCard className="h-4 w-4" />,
+        description: stats?.nextPaymentDue ? `Due ${nextDue}` : 'No upcoming charge on file',
+      },
+      {
+        title: 'Payments recorded',
+        value: String(stats?.totalPayments ?? 0),
+        icon: <Receipt className="h-4 w-4" />,
+        description: 'Completed rent-related payments',
+      },
+      {
+        title: 'Outstanding balance',
+        value: stats?.outstandingBalance != null ? formatCurrency(stats.outstandingBalance) : '—',
+        icon: <BarChart3 className="h-4 w-4" />,
+        description: 'Per ledger / lease summary',
+      },
+      {
+        title: 'Maintenance requests',
+        value: String(stats?.maintenanceRequestsSubmitted ?? 0),
+        icon: <Wrench className="h-4 w-4" />,
+        description: `${stats?.maintenanceRequestsCompleted ?? 0} completed`,
+      },
+    ];
+
+    const quickActions: RoleDashboardQuickAction[] = [
+      { label: 'Pay rent & history', to: '/tenant/dashboard?tab=payments', icon: CreditCard },
+      { label: 'Maintenance & requests', to: '/tenant/dashboard?tab=maintenance', icon: Wrench },
+      { label: 'Service tickets', to: '/tenant/maintenance-tickets', icon: ClipboardList },
+      { label: 'Documents', to: '/tenant/dashboard?tab=documents', icon: FileText },
+    ];
+
+    const payActs: RoleDashboardActivity[] = [...(payments || [])]
+      .filter((p) => p.payment_status === 'completed')
+      .sort((a, b) => new Date(b.payment_date).getTime() - new Date(a.payment_date).getTime())
+      .slice(0, 4)
+      .map((p) => ({
+        id: `p-${p.id}`,
+        title: `Payment · ${formatCurrency(p.amount)}`,
+        meta: p.description || p.payment_type,
+        time: p.payment_date
+          ? formatDistanceToNow(new Date(p.payment_date), { addSuffix: true })
+          : undefined,
+        icon: '✅',
+      }));
+
+    const maintActs: RoleDashboardActivity[] = [...(maintenanceRequests || [])]
+      .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+      .slice(0, 4)
+      .map((m) => ({
+        id: `m-${m.id}`,
+        title: m.title || 'Maintenance request',
+        meta: [m.status, m.category].filter(Boolean).join(' · '),
+        time: m.created_at
+          ? formatDistanceToNow(new Date(m.created_at), { addSuffix: true })
+          : undefined,
+        icon: '🔧',
+      }));
+
+    const activities = [...payActs, ...maintActs].slice(0, 8);
+
+    return { statsRow, quickActions, activities };
+  }, [stats, payments, maintenanceRequests]);
+
   if (!user || userRole !== 'tenant') {
     return <Navigate to="/unauthorized" replace />;
   }
@@ -100,26 +180,25 @@ const EnhancedTenantDashboardPage = () => {
   if (loading) {
     return (
       <PageLayout>
-        <div className="container mx-auto px-4 py-8">
-          <div className="space-y-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <div className="mb-2 h-8 w-64 animate-pulse rounded bg-gray-200"></div>
-                <div className="h-4 w-48 animate-pulse rounded bg-gray-200"></div>
-              </div>
-            </div>
+        <PageContent
+          title="Tenant dashboard"
+          description="Loading your workspace…"
+          showBreadcrumbs={false}
+        >
+          <div className="animate-pulse space-y-6">
+            <div className="mb-4 h-8 w-1/3 max-w-xs rounded bg-muted" />
             <div className="grid grid-cols-1 gap-6 md:grid-cols-4">
-              {[...Array(4)].map((_, i) => (
-                <Card key={i} className="animate-pulse">
+              {[1, 2, 3, 4].map((i) => (
+                <Card key={i}>
                   <CardContent className="p-6">
-                    <div className="mb-2 h-4 w-3/4 rounded bg-gray-200"></div>
-                    <div className="h-8 w-1/2 rounded bg-gray-200"></div>
+                    <div className="mb-2 h-4 w-3/4 rounded bg-muted" />
+                    <div className="h-8 w-1/2 rounded bg-muted" />
                   </CardContent>
                 </Card>
               ))}
             </div>
           </div>
-        </div>
+        </PageContent>
       </PageLayout>
     );
   }
@@ -127,16 +206,20 @@ const EnhancedTenantDashboardPage = () => {
   if (error) {
     return (
       <PageLayout>
-        <div className="container mx-auto px-4 py-8">
-          <Card className="border-red-200">
+        <PageContent
+          title="Tenant dashboard"
+          description="We could not load this view."
+          showBreadcrumbs={false}
+        >
+          <Card className="border-destructive/30">
             <CardContent className="p-6">
-              <div className="flex items-center space-x-2 text-red-600">
-                <AlertCircle className="h-5 w-5" />
+              <div className="flex items-center gap-2 text-destructive">
+                <AlertCircle className="h-5 w-5 shrink-0" />
                 <span>Error loading tenant dashboard: {error}</span>
               </div>
             </CardContent>
           </Card>
-        </div>
+        </PageContent>
       </PageLayout>
     );
   }
@@ -157,49 +240,54 @@ const EnhancedTenantDashboardPage = () => {
 
   return (
     <PageLayout>
-      <div className="container mx-auto px-4 py-8">
-        <div className="space-y-6">
-          <RoleScreeningBanner />
-          <TenantApplicationNextStepStrip />
-          {/* Header */}
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900">Enhanced Tenant Dashboard</h1>
-              <p className="mt-1 text-gray-600">
-                Manage your tenancy, payments, and property services
-              </p>
-            </div>
-            <div className="flex items-center space-x-4">
-              {/* Notifications */}
-              {unreadNotifications > 0 && (
-                <div className="relative">
-                  <Button variant="outline" size="sm">
-                    <Bell className="h-4 w-4" />
-                    {unreadNotifications > 0 && (
-                      <Badge className="absolute -right-2 -top-2 flex h-5 w-5 items-center justify-center rounded-full p-0 text-xs">
-                        {unreadNotifications}
-                      </Badge>
-                    )}
-                  </Button>
-                </div>
-              )}
-
-              {/* Tenant Profile */}
-              <div className="flex items-center space-x-3">
-                <div className="text-right">
-                  <p className="text-sm font-medium text-gray-900">
-                    {profile ? `${profile.first_name} ${profile.last_name}` : 'Loading...'}
-                  </p>
-                  <p className="text-xs text-gray-500">
-                    {lease?.lease_status === 'active' ? 'Active Tenant' : 'Tenant'}
-                  </p>
-                </div>
-                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-100">
-                  <User className="h-4 w-4 text-blue-600" />
-                </div>
+      <PageContent
+        title="Tenant dashboard"
+        description="Manage your tenancy, payments, and property services."
+        actions={
+          <div className="flex flex-wrap items-center justify-end gap-3">
+            {unreadNotifications > 0 && (
+              <div className="relative">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  aria-label={`${unreadNotifications} unread notifications`}
+                >
+                  <Bell className="h-4 w-4" />
+                  <Badge className="absolute -right-2 -top-2 flex h-5 w-5 items-center justify-center rounded-full p-0 text-xs">
+                    {unreadNotifications}
+                  </Badge>
+                </Button>
+              </div>
+            )}
+            <div className="flex items-center gap-3">
+              <div className="text-right">
+                <p className="text-sm font-medium text-foreground">
+                  {profile ? `${profile.first_name} ${profile.last_name}` : 'Loading…'}
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  {lease?.lease_status === 'active' ? 'Active tenant' : 'Tenant'}
+                </p>
+              </div>
+              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10">
+                <User className="h-4 w-4 text-primary" />
               </div>
             </div>
           </div>
+        }
+      >
+        <div className="space-y-6">
+          <RoleScreeningBanner />
+          <TenantApplicationNextStepStrip />
+
+          <RoleDashboardInsights
+            sectionTitle="Tenancy pulse"
+            stats={tenantPulse.statsRow}
+            quickActions={tenantPulse.quickActions}
+            activities={tenantPulse.activities}
+            activityTitle="Rent & maintenance activity"
+            activityEmptyMessage="No recent payments or maintenance updates."
+          />
 
           {/* Urgent Alerts */}
           {(isPaymentDueSoon || urgentNotifications > 0) && (
@@ -560,20 +648,20 @@ const EnhancedTenantDashboardPage = () => {
           </Card>
 
           {/* Footer */}
-          <div className="text-center text-sm text-gray-500">
+          <div className="text-center text-sm text-muted-foreground">
             <p>
               Need help? Contact property management at{' '}
-              <a href="mailto:support@nigeriahomes.com" className="text-blue-600 hover:underline">
+              <a href="mailto:support@nigeriahomes.com" className="text-primary hover:underline">
                 support@nigeriahomes.com
               </a>{' '}
               or{' '}
-              <a href="tel:+234-800-HOMES" className="text-blue-600 hover:underline">
+              <a href="tel:+234-800-HOMES" className="text-primary hover:underline">
                 +234-800-HOMES
               </a>
             </p>
           </div>
         </div>
-      </div>
+      </PageContent>
     </PageLayout>
   );
 };

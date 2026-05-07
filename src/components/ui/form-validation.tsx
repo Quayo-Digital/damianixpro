@@ -155,9 +155,9 @@ export const ValidatedInput = React.forwardRef<HTMLInputElement, ValidatedInputP
       if (!showValidation || !touched) return null;
 
       if (validation.isValid && value) {
-        return <Check className="h-4 w-4 text-green-600" />;
+        return <Check className="h-4 w-4 text-primary" />;
       } else if (!validation.isValid) {
-        return <X className="h-4 w-4 text-red-600" />;
+        return <X className="h-4 w-4 text-destructive" />;
       }
       return null;
     };
@@ -168,7 +168,7 @@ export const ValidatedInput = React.forwardRef<HTMLInputElement, ValidatedInputP
           <div className="flex items-center space-x-2">
             <label className="text-sm font-medium">
               {label}
-              {rules.required && <span className="ml-1 text-red-500">*</span>}
+              {rules.required && <span className="ml-1 text-destructive">*</span>}
             </label>
             {helpText && <HelpIcon content={helpText} />}
           </div>
@@ -184,8 +184,13 @@ export const ValidatedInput = React.forwardRef<HTMLInputElement, ValidatedInputP
             onBlur={handleBlur}
             className={cn(
               'pr-10',
-              !validation.isValid && touched && 'border-red-500 focus:border-red-500',
-              validation.isValid && touched && value && 'border-green-500 focus:border-green-500',
+              !validation.isValid &&
+                touched &&
+                'border-destructive focus-visible:ring-destructive/30',
+              validation.isValid &&
+                touched &&
+                value &&
+                'border-primary focus-visible:ring-primary/30',
               className
             )}
           />
@@ -219,13 +224,16 @@ export const ValidatedInput = React.forwardRef<HTMLInputElement, ValidatedInputP
         {showValidation && touched && (
           <>
             {validation.errors.map((error, index) => (
-              <div key={index} className="flex items-center space-x-2 text-sm text-red-600">
+              <div key={index} className="flex items-center space-x-2 text-sm text-destructive">
                 <AlertCircle className="h-3 w-3" />
                 <span>{error}</span>
               </div>
             ))}
             {validation.warnings.map((warning, index) => (
-              <div key={index} className="flex items-center space-x-2 text-sm text-yellow-600">
+              <div
+                key={index}
+                className="flex items-center space-x-2 text-sm text-muted-foreground"
+              >
                 <AlertCircle className="h-3 w-3" />
                 <span>{warning}</span>
               </div>
@@ -299,7 +307,7 @@ export const ValidatedTextarea = React.forwardRef<HTMLTextAreaElement, Validated
           <div className="flex items-center space-x-2">
             <label className="text-sm font-medium">
               {label}
-              {rules.required && <span className="ml-1 text-red-500">*</span>}
+              {rules.required && <span className="ml-1 text-destructive">*</span>}
             </label>
             {helpText && <HelpIcon content={helpText} />}
           </div>
@@ -313,8 +321,13 @@ export const ValidatedTextarea = React.forwardRef<HTMLTextAreaElement, Validated
             onChange={handleChange}
             onBlur={handleBlur}
             className={cn(
-              !validation.isValid && touched && 'border-red-500 focus:border-red-500',
-              validation.isValid && touched && value && 'border-green-500 focus:border-green-500',
+              !validation.isValid &&
+                touched &&
+                'border-destructive focus-visible:ring-destructive/30',
+              validation.isValid &&
+                touched &&
+                value &&
+                'border-primary focus-visible:ring-primary/30',
               className
             )}
           />
@@ -330,13 +343,16 @@ export const ValidatedTextarea = React.forwardRef<HTMLTextAreaElement, Validated
         {showValidation && touched && (
           <>
             {validation.errors.map((error, index) => (
-              <div key={index} className="flex items-center space-x-2 text-sm text-red-600">
+              <div key={index} className="flex items-center space-x-2 text-sm text-destructive">
                 <AlertCircle className="h-3 w-3" />
                 <span>{error}</span>
               </div>
             ))}
             {validation.warnings.map((warning, index) => (
-              <div key={index} className="flex items-center space-x-2 text-sm text-yellow-600">
+              <div
+                key={index}
+                className="flex items-center space-x-2 text-sm text-muted-foreground"
+              >
                 <AlertCircle className="h-3 w-3" />
                 <span>{warning}</span>
               </div>
@@ -379,10 +395,10 @@ export const PasswordStrengthIndicator = ({ password }: PasswordStrengthIndicato
   const { score, checks } = getStrength(password);
 
   const getStrengthLabel = (score: number) => {
-    if (score < 2) return { label: 'Weak', color: 'text-red-600' };
-    if (score < 4) return { label: 'Fair', color: 'text-yellow-600' };
-    if (score < 5) return { label: 'Good', color: 'text-blue-600' };
-    return { label: 'Strong', color: 'text-green-600' };
+    if (score < 2) return { label: 'Weak', color: 'text-destructive' };
+    if (score < 4) return { label: 'Fair', color: 'text-muted-foreground' };
+    if (score < 5) return { label: 'Good', color: 'text-primary' };
+    return { label: 'Strong', color: 'text-primary' };
   };
 
   const strength = getStrengthLabel(score);
@@ -402,13 +418,13 @@ export const PasswordStrengthIndicator = ({ password }: PasswordStrengthIndicato
               'h-1 flex-1 rounded-full',
               i <= score
                 ? score < 2
-                  ? 'bg-red-500'
+                  ? 'bg-destructive'
                   : score < 4
-                    ? 'bg-yellow-500'
+                    ? 'bg-muted-foreground/60'
                     : score < 5
-                      ? 'bg-blue-500'
-                      : 'bg-green-500'
-                : 'bg-gray-200'
+                      ? 'bg-primary/70'
+                      : 'bg-primary'
+                : 'bg-muted'
             )}
           />
         ))}
@@ -418,11 +434,13 @@ export const PasswordStrengthIndicator = ({ password }: PasswordStrengthIndicato
         {checks.map((check, index) => (
           <div key={index} className="flex items-center space-x-2 text-xs">
             {check.passed ? (
-              <Check className="h-3 w-3 text-green-600" />
+              <Check className="h-3 w-3 text-primary" />
             ) : (
-              <X className="h-3 w-3 text-gray-400" />
+              <X className="h-3 w-3 text-muted-foreground" />
             )}
-            <span className={check.passed ? 'text-green-600' : 'text-gray-500'}>{check.label}</span>
+            <span className={check.passed ? 'text-primary' : 'text-muted-foreground'}>
+              {check.label}
+            </span>
           </div>
         ))}
       </div>

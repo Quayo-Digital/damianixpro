@@ -2,6 +2,17 @@ import express from 'express';
 import { supabaseAdmin } from './supabaseClient.mjs';
 
 const router = express.Router();
+const UUID_RE =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+function isUuid(s) {
+  return typeof s === 'string' && UUID_RE.test(s);
+}
+function asTrimmedString(v, maxLen) {
+  if (v == null) return null;
+  const out = String(v).trim();
+  if (!out) return null;
+  return out.length > maxLen ? out.slice(0, maxLen) : out;
+}
 
 function generateTicketNumber() {
   const now = new Date();
@@ -28,10 +39,16 @@ router.post('/api/maintenance', async (req, res) => {
       .status(400)
       .json({ error: 'tenant_id, property_id, and issue are all required fields.' });
   }
+  if (!isUuid(String(tenant_id)) || !isUuid(String(property_id))) {
+    return res.status(400).json({ error: 'tenant_id and property_id must be valid UUIDs.' });
+  }
 
   const ticketNumber = generateTicketNumber();
   const title = `Ticket ${ticketNumber}`;
-  const description = String(issue).trim();
+  const description = asTrimmedString(issue, 2000);
+  if (!description) {
+    return res.status(400).json({ error: 'issue must be a non-empty string.' });
+  }
 
   try {
     const { data, error } = await supabaseAdmin

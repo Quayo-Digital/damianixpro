@@ -23,7 +23,18 @@ interface ManageUserRolesSheetProps {
   onOpenChange: (isOpen: boolean) => void;
 }
 
-const allRoles: UserRole[] = ['admin', 'owner', 'agent', 'tenant', 'vendor', 'user', 'manager'];
+/** Assignable from Admin → Users (super_admin remains bootstrap-only, not listed here). */
+const allRoles: UserRole[] = [
+  'admin',
+  'owner',
+  'agent',
+  'tenant',
+  'vendor',
+  'user',
+  'manager',
+  'accountant',
+  'facility_manager',
+];
 
 async function updateUserRoles({ userId, roles }: { userId: string; roles: UserRole[] }) {
   const rolesToSet: UserRole[] = roles.length > 0 ? roles : ['user'];

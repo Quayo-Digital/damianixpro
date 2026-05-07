@@ -9,13 +9,18 @@
 
 import express from "express";
 import { supabaseAdmin } from "./supabaseClient.mjs";
+import { requireSupabaseJwt } from "./middleware/supabaseJwt.mjs";
+import { createAttachUserRole } from "./middleware/attachUserRole.mjs";
+import { createRequireRbacPermission } from "./middleware/requireRbacPermission.mjs";
 
 const router = express.Router();
+const attachUserRole = createAttachUserRole(supabaseAdmin);
+const requireReportsFinancial = createRequireRbacPermission("reports.financial");
 
 /**
  * GET /api/properties/:id/financials
  */
-router.get("/api/properties/:id/financials", async (req, res) => {
+router.get("/api/properties/:id/financials", requireSupabaseJwt, attachUserRole, requireReportsFinancial, async (req, res) => {
   try {
     if (!supabaseAdmin) {
       return res.status(500).json({ error: "Service not configured." });

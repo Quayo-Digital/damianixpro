@@ -18,15 +18,17 @@ export const PaymentReminder = ({ dueDate, amount }: PaymentReminderProps) => {
   }
 
   return (
-    <Alert className="border-amber-200 bg-amber-50 text-amber-800">
-      <Bell className="h-4 w-4" />
+    <Alert className="border-border bg-accent/40 text-foreground">
+      <Bell className="h-4 w-4 text-primary" />
       <AlertTitle>Upcoming Rent Payment</AlertTitle>
       <AlertDescription className="flex flex-col space-y-2">
         <p>
           Your rent payment of ₦{amount.toLocaleString()} is due on{' '}
           {format(paymentDue, 'MMMM d, yyyy')}.
         </p>
-        <p className="text-sm">Please ensure you make your payment on time to avoid late fees.</p>
+        <p className="text-sm text-muted-foreground">
+          Please ensure you make your payment on time to avoid late fees.
+        </p>
         <div className="mt-2 flex items-center">
           <Calendar className="mr-1 h-4 w-4" />
           <span className="text-sm font-medium">

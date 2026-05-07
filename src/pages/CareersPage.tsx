@@ -27,7 +27,7 @@ export default function CareersPage() {
           Send your CV, portfolio, or LinkedIn profile to{' '}
           <a
             href="mailto:careers@damianixpro.com"
-            className="font-medium text-green-600 hover:text-green-700"
+            className="font-medium text-primary hover:text-primary/90"
           >
             careers@damianixpro.com
           </a>{' '}
@@ -35,7 +35,7 @@ export default function CareersPage() {
         </p>
         <p className="text-muted-foreground">
           Prefer a form? Use the{' '}
-          <Link to="/contact" className="font-medium text-green-600 hover:text-green-700">
+          <Link to="/contact" className="font-medium text-primary hover:text-primary/90">
             contact page
           </Link>{' '}
           and choose the topic that best fits your message.

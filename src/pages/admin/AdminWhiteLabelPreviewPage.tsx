@@ -241,7 +241,7 @@ export default function AdminWhiteLabelPreviewPage() {
   return (
     <PageLayout>
       <PageContent
-        title="White Label Preview"
+        title="White label preview"
         description="Adjust branding, theme tokens, and template variables. Nothing here writes to the database — use export JSON when you are ready to publish via Supabase or your ops process."
         actions={
           <div className="flex flex-wrap gap-2">

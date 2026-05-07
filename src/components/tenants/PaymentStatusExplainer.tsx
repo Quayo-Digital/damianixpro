@@ -262,30 +262,30 @@ export function PaymentStatusExplainer() {
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'paid':
-        return 'bg-green-100 text-green-800 border-green-300';
+        return 'bg-primary/15 text-primary border-border';
       case 'current':
-        return 'bg-blue-100 text-blue-800 border-blue-300';
+        return 'bg-secondary text-secondary-foreground border-border';
       case 'partial':
-        return 'bg-yellow-100 text-yellow-800 border-yellow-300';
+        return 'bg-accent text-accent-foreground border-border';
       case 'overdue':
-        return 'bg-red-100 text-red-800 border-red-300';
+        return 'bg-destructive/10 text-destructive border-destructive/40';
       default:
-        return 'bg-gray-100 text-gray-800 border-gray-300';
+        return 'bg-muted text-muted-foreground border-border';
     }
   };
 
   const getStatusIcon = (status: string) => {
     switch (status) {
       case 'paid':
-        return <CheckCircle className="h-5 w-5 text-green-500" />;
+        return <CheckCircle className="h-5 w-5 text-primary" />;
       case 'current':
-        return <Info className="h-5 w-5 text-blue-500" />;
+        return <Info className="h-5 w-5 text-primary" />;
       case 'partial':
-        return <AlertTriangle className="h-5 w-5 text-yellow-500" />;
+        return <AlertTriangle className="h-5 w-5 text-accent-foreground" />;
       case 'overdue':
-        return <AlertTriangle className="h-5 w-5 text-red-500" />;
+        return <AlertTriangle className="h-5 w-5 text-destructive" />;
       default:
-        return <Info className="h-5 w-5 text-gray-500" />;
+        return <Info className="h-5 w-5 text-muted-foreground" />;
     }
   };
 
@@ -294,7 +294,7 @@ export function PaymentStatusExplainer() {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <DollarSign className="h-5 w-5 text-blue-500" />
+            <DollarSign className="h-5 w-5 text-primary" />
             Payment Status Explainer
           </CardTitle>
           <CardDescription>
@@ -418,11 +418,11 @@ export function PaymentStatusExplainer() {
                 {payments.map((payment, index) => (
                   <div
                     key={index}
-                    className="flex items-center justify-between rounded bg-gray-50 p-2"
+                    className="flex items-center justify-between rounded bg-muted/40 p-2"
                   >
                     <div className="flex-1">
                       <span className="font-medium">{formatDate(payment.date)}</span>
-                      <span className="ml-2 text-gray-600">
+                      <span className="ml-2 text-muted-foreground">
                         - {formatCurrency(payment.amount)} ({payment.description})
                       </span>
                     </div>
@@ -453,12 +453,12 @@ export function PaymentStatusExplainer() {
             <Alert
               className={
                 result.status === 'paid'
-                  ? 'border-green-200 bg-green-50'
+                  ? 'border-border bg-primary/10'
                   : result.status === 'current'
-                    ? 'border-blue-200 bg-blue-50'
+                    ? 'border-border bg-secondary/50'
                     : result.status === 'partial'
-                      ? 'border-yellow-200 bg-yellow-50'
-                      : 'border-red-200 bg-red-50'
+                      ? 'border-border bg-accent/40'
+                      : 'border-destructive/40 bg-destructive/10'
               }
             >
               <div className="flex items-start gap-3">
@@ -481,8 +481,8 @@ export function PaymentStatusExplainer() {
                 </h3>
                 <div className="space-y-2">
                   {result.timeline.map((event, index) => (
-                    <div key={index} className="flex items-start gap-3 rounded-lg bg-gray-50 p-3">
-                      <Clock className="mt-0.5 h-4 w-4 text-gray-500" />
+                    <div key={index} className="flex items-start gap-3 rounded-lg bg-muted/40 p-3">
+                      <Clock className="mt-0.5 h-4 w-4 text-muted-foreground" />
                       <span className="flex-1 text-sm">{event}</span>
                     </div>
                   ))}
@@ -498,8 +498,8 @@ export function PaymentStatusExplainer() {
                 <TrendingUp className="h-5 w-5" />
                 What You Need to Do Next
               </h3>
-              <Alert className="border-blue-200 bg-blue-50">
-                <FileText className="h-4 w-4 text-blue-500" />
+              <Alert className="border-border bg-accent/40">
+                <FileText className="h-4 w-4 text-primary" />
                 <AlertTitle>Next Action Required</AlertTitle>
                 <AlertDescription className="mt-2">{result.nextAction}</AlertDescription>
               </Alert>
@@ -512,7 +512,7 @@ export function PaymentStatusExplainer() {
                 <ul className="space-y-2">
                   {result.recommendations.map((rec, index) => (
                     <li key={index} className="flex items-start gap-2 text-sm">
-                      <CheckCircle className="mt-0.5 h-4 w-4 flex-shrink-0 text-green-500" />
+                      <CheckCircle className="mt-0.5 h-4 w-4 flex-shrink-0 text-primary" />
                       <span>{rec}</span>
                     </li>
                   ))}
@@ -521,29 +521,29 @@ export function PaymentStatusExplainer() {
             )}
 
             {/* Summary Box */}
-            <div className="rounded-lg border bg-gray-50 p-4">
+            <div className="rounded-lg border bg-muted/40 p-4">
               <h3 className="mb-3 font-semibold">Quick Summary</h3>
               <div className="grid grid-cols-1 gap-2 text-sm md:grid-cols-3">
                 <div>
-                  <span className="text-gray-600">Annual Rent:</span>
+                  <span className="text-muted-foreground">Annual Rent:</span>
                   <span className="ml-2 font-semibold">{formatCurrency(rentAmount)}</span>
                 </div>
                 <div>
-                  <span className="text-gray-600">Total Paid:</span>
+                  <span className="text-muted-foreground">Total Paid:</span>
                   <span className="ml-2 font-semibold">
                     {formatCurrency(calculateTotalPaid().toString())}
                   </span>
                 </div>
                 <div>
-                  <span className="text-gray-600">Outstanding:</span>
+                  <span className="text-muted-foreground">Outstanding:</span>
                   <span className="ml-2 font-semibold">
                     {formatCurrency(outstandingBalance || '0')}
                   </span>
                 </div>
                 {calculateTotalPenalties() > 0 && (
                   <div>
-                    <span className="text-gray-600">Penalties Due:</span>
-                    <span className="ml-2 font-semibold text-red-600">
+                    <span className="text-muted-foreground">Penalties Due:</span>
+                    <span className="ml-2 font-semibold text-destructive">
                       {formatCurrency(calculateTotalPenalties().toString())}
                     </span>
                   </div>

@@ -33,6 +33,10 @@ const Dashboard = () => {
         navigate('/agent/dashboard', { replace: true });
       } else if (userRole === 'vendor') {
         navigate('/vendor/dashboard', { replace: true });
+      } else if (userRole === 'accountant') {
+        navigate('/accountant/dashboard', { replace: true });
+      } else if (userRole === 'facility_manager') {
+        navigate('/facility-manager/dashboard', { replace: true });
       }
     }, 100);
 
@@ -48,7 +52,9 @@ const Dashboard = () => {
     userRole === 'owner' ||
     userRole === 'agent' ||
     userRole === 'manager' ||
-    userRole === 'vendor'
+    userRole === 'vendor' ||
+    userRole === 'accountant' ||
+    userRole === 'facility_manager'
   ) {
     return <PageLoader />;
   }

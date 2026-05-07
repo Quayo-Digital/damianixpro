@@ -45,32 +45,32 @@ export const TenantStats = () => {
       value: stats?.totalTenants || 0,
       description: `${stats?.activeTenants || 0} active`,
       icon: Users,
-      color: 'text-blue-600',
-      bgColor: 'bg-blue-50',
+      color: 'text-primary',
+      bgColor: 'bg-primary/15',
     },
     {
       title: 'Applications',
       value: stats?.totalApplications || 0,
       description: `${stats?.pendingApplications || 0} pending review`,
       icon: FileText,
-      color: 'text-orange-600',
-      bgColor: 'bg-orange-50',
+      color: 'text-accent-foreground',
+      bgColor: 'bg-accent',
     },
     {
       title: 'Approved',
       value: stats?.approvedApplications || 0,
       description: 'Applications approved',
       icon: CheckCircle,
-      color: 'text-green-600',
-      bgColor: 'bg-green-50',
+      color: 'text-primary',
+      bgColor: 'bg-primary/15',
     },
     {
       title: 'Screenings',
       value: stats?.totalScreenings || 0,
       description: 'Background checks',
       icon: UserCheck,
-      color: 'text-purple-600',
-      bgColor: 'bg-purple-50',
+      color: 'text-secondary-foreground',
+      bgColor: 'bg-secondary',
     },
   ];
 
@@ -101,21 +101,21 @@ export const TenantStats = () => {
 
 export const TenantStatusBadge = ({ status }: { status: string }) => {
   const statusConfig = {
-    active: { label: 'Active', variant: 'default' as const, color: 'bg-green-100 text-green-800' },
+    active: { label: 'Active', variant: 'default' as const, color: 'bg-primary/15 text-primary' },
     inactive: {
       label: 'Inactive',
       variant: 'secondary' as const,
-      color: 'bg-gray-100 text-gray-800',
+      color: 'bg-muted text-muted-foreground',
     },
     pending: {
       label: 'Pending',
       variant: 'outline' as const,
-      color: 'bg-yellow-100 text-yellow-800',
+      color: 'bg-accent text-accent-foreground',
     },
     terminated: {
       label: 'Terminated',
       variant: 'destructive' as const,
-      color: 'bg-red-100 text-red-800',
+      color: 'bg-destructive/10 text-destructive',
     },
   };
 
@@ -130,10 +130,10 @@ export const TenantStatusBadge = ({ status }: { status: string }) => {
 
 export const ApplicationStatusBadge = ({ status }: { status: string }) => {
   const statusConfig = {
-    pending: { label: 'Pending', color: 'bg-yellow-100 text-yellow-800' },
-    approved: { label: 'Approved', color: 'bg-green-100 text-green-800' },
-    rejected: { label: 'Rejected', color: 'bg-red-100 text-red-800' },
-    withdrawn: { label: 'Withdrawn', color: 'bg-gray-100 text-gray-800' },
+    pending: { label: 'Pending', color: 'bg-accent text-accent-foreground' },
+    approved: { label: 'Approved', color: 'bg-primary/15 text-primary' },
+    rejected: { label: 'Rejected', color: 'bg-destructive/10 text-destructive' },
+    withdrawn: { label: 'Withdrawn', color: 'bg-muted text-muted-foreground' },
   };
 
   const config = statusConfig[status as keyof typeof statusConfig] || statusConfig.pending;

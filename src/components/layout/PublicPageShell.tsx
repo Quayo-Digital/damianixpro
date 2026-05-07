@@ -7,6 +7,7 @@ import { useAuthSession } from '@/contexts/auth';
 import { Logo } from '@/components/ui/logo';
 import { BrandText } from '@/components/ui/brand-text';
 import { useWhiteLabel } from '@/contexts/WhiteLabelContext';
+import { BodyText, PageTitle } from '@/components/ui/typography';
 
 type PublicPageShellProps = {
   title: string;
@@ -28,7 +29,7 @@ export function PublicPageShell({ title, description, children }: PublicPageShel
   return (
     <div className="flex min-h-screen flex-col bg-background">
       <header className="sticky top-0 z-10 border-b border-border bg-background/95 text-foreground shadow-sm backdrop-blur-xl supports-[backdrop-filter]:bg-background/80">
-        <div className="container mx-auto flex h-16 flex-wrap items-center justify-between gap-2 px-4">
+        <div className="mx-auto flex h-14 w-full max-w-screen-2xl flex-wrap items-center justify-between gap-2 px-4 sm:h-16 sm:px-6 lg:px-8">
           <div className="flex min-w-0 flex-1 items-center gap-4">
             <Link to="/" className="flex shrink-0 items-center space-x-2">
               <Logo />
@@ -70,14 +71,12 @@ export function PublicPageShell({ title, description, children }: PublicPageShel
       </header>
 
       <main className="flex-grow">
-        <div className="container mx-auto max-w-3xl px-4 py-10 md:py-14">
-          <h1 className="mb-3 text-3xl font-bold tracking-tight md:text-4xl">{title}</h1>
-          {description ? (
-            <p className="mb-10 text-lg text-muted-foreground">{description}</p>
-          ) : (
-            <div className="mb-10" />
-          )}
-          <div className="space-y-6 leading-relaxed">{children}</div>
+        <div className="mx-auto w-full max-w-screen-lg px-4 py-8 sm:px-6 sm:py-10 md:py-14 lg:px-8">
+          <div className="mb-8 space-y-2 sm:mb-10">
+            <PageTitle>{title}</PageTitle>
+            {description ? <BodyText>{description}</BodyText> : null}
+          </div>
+          <div className="space-y-5 leading-relaxed sm:space-y-6">{children}</div>
         </div>
       </main>
 

@@ -85,7 +85,13 @@ const RegisterForm = () => {
         }
       }
 
-      navigate('/auth?tab=login', { replace: true, state: location.state });
+      navigate('/auth?tab=login', {
+        replace: true,
+        state: {
+          ...(typeof location.state === 'object' && location.state !== null ? location.state : {}),
+          fromRegistration: true,
+        },
+      });
     } catch (error: any) {
       logger.error('Registration failed', error);
       setError(error.message || 'Registration failed');
@@ -145,7 +151,15 @@ const RegisterForm = () => {
           }
         }
 
-        navigate('/auth?tab=login', { replace: true, state: location.state });
+        navigate('/auth?tab=login', {
+          replace: true,
+          state: {
+            ...(typeof location.state === 'object' && location.state !== null
+              ? location.state
+              : {}),
+            fromRegistration: true,
+          },
+        });
       }
     } catch (error: any) {
       logger.error('Phone authentication failed', error);

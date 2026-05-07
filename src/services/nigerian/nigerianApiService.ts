@@ -729,6 +729,20 @@ class NigerianAPIService {
       };
     }
 
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+    if (!session?.access_token) {
+      return {
+        youverify: false,
+        appruve: false,
+        paystack: false,
+        flutterwave: false,
+        nibss: false,
+        custom: false,
+      };
+    }
+
     const [youverifyReady, appruveReady, flutterwaveReady] = await Promise.all([
       this.testConnection('youverify'),
       this.testConnection('appruve'),

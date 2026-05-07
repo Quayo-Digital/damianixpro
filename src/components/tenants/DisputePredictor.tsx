@@ -443,28 +443,28 @@ export function DisputePredictor() {
   const getRiskColor = (risk: string) => {
     switch (risk) {
       case 'Critical':
-        return 'bg-red-100 text-red-800 border-red-300';
+        return 'bg-destructive/10 text-destructive border-destructive/40';
       case 'High':
-        return 'bg-orange-100 text-orange-800 border-orange-300';
+        return 'bg-destructive/10 text-destructive border-destructive/40';
       case 'Medium':
-        return 'bg-yellow-100 text-yellow-800 border-yellow-300';
+        return 'bg-accent text-accent-foreground border-border';
       case 'Low':
-        return 'bg-green-100 text-green-800 border-green-300';
+        return 'bg-primary/15 text-primary border-border';
       default:
-        return 'bg-gray-100 text-gray-800 border-gray-300';
+        return 'bg-muted text-muted-foreground border-border';
     }
   };
 
   const getLikelihoodColor = (likelihood: string) => {
     switch (likelihood) {
       case 'High':
-        return 'bg-red-100 text-red-800 border-red-300';
+        return 'bg-destructive/10 text-destructive border-destructive/40';
       case 'Medium':
-        return 'bg-yellow-100 text-yellow-800 border-yellow-300';
+        return 'bg-accent text-accent-foreground border-border';
       case 'Low':
-        return 'bg-blue-100 text-blue-800 border-blue-300';
+        return 'bg-secondary text-secondary-foreground border-border';
       default:
-        return 'bg-gray-100 text-gray-800 border-gray-300';
+        return 'bg-muted text-muted-foreground border-border';
     }
   };
 
@@ -473,7 +473,7 @@ export function DisputePredictor() {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Shield className="h-5 w-5 text-blue-500" />
+            <Shield className="h-5 w-5 text-primary" />
             Dispute Predictor
           </CardTitle>
           <CardDescription>
@@ -734,15 +734,15 @@ export function DisputePredictor() {
               <Alert
                 className={
                   prediction.riskLevel === 'Critical'
-                    ? 'border-red-200 bg-red-50'
+                    ? 'border-destructive/40 bg-destructive/10'
                     : prediction.riskLevel === 'High'
-                      ? 'border-orange-200 bg-orange-50'
+                      ? 'border-destructive/40 bg-destructive/10'
                       : prediction.riskLevel === 'Medium'
-                        ? 'border-yellow-200 bg-yellow-50'
-                        : 'border-green-200 bg-green-50'
+                        ? 'border-border bg-accent/40'
+                        : 'border-border bg-primary/10'
                 }
               >
-                <AlertTriangle className="h-5 w-5 text-red-500" />
+                <AlertTriangle className="h-5 w-5 text-destructive" />
                 <AlertTitle className="text-lg font-semibold">Risk Summary</AlertTitle>
                 <AlertDescription className="mt-2">{prediction.summary}</AlertDescription>
               </Alert>
@@ -766,13 +766,13 @@ export function DisputePredictor() {
                       key={index}
                       className={
                         dispute.likelihood === 'High'
-                          ? 'border-red-200 bg-red-50'
+                          ? 'border-destructive/40 bg-destructive/10'
                           : dispute.likelihood === 'Medium'
-                            ? 'border-yellow-200 bg-yellow-50'
-                            : 'border-blue-200 bg-blue-50'
+                            ? 'border-border bg-accent/40'
+                            : 'border-border bg-secondary/40'
                       }
                     >
-                      <AlertTriangle className="h-4 w-4 text-red-500" />
+                      <AlertTriangle className="h-4 w-4 text-destructive" />
                       <AlertTitle className="flex items-center gap-2">
                         {dispute.type}
                         <Badge className={getLikelihoodColor(dispute.likelihood)}>
@@ -793,7 +793,7 @@ export function DisputePredictor() {
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <AlertTriangle className="h-5 w-5 text-orange-500" />
+                  <AlertTriangle className="h-5 w-5 text-destructive" />
                   Risk Factors
                 </CardTitle>
                 <CardDescription>Issues contributing to dispute risk</CardDescription>
@@ -801,23 +801,23 @@ export function DisputePredictor() {
               <CardContent>
                 <div className="space-y-3">
                   {prediction.riskFactors.map((factor, index) => (
-                    <div key={index} className="rounded-lg border bg-gray-50 p-3">
+                    <div key={index} className="rounded-lg border bg-muted/40 p-3">
                       <div className="mb-2 flex items-center justify-between">
-                        <span className="font-semibold text-gray-800">{factor.category}</span>
+                        <span className="font-semibold text-foreground">{factor.category}</span>
                         <Badge
                           className={
                             factor.severity === 'High'
-                              ? 'bg-red-100 text-red-800'
+                              ? 'bg-destructive/10 text-destructive'
                               : factor.severity === 'Medium'
-                                ? 'bg-yellow-100 text-yellow-800'
-                                : 'bg-blue-100 text-blue-800'
+                                ? 'bg-accent text-accent-foreground'
+                                : 'bg-secondary text-secondary-foreground'
                           }
                         >
                           {factor.severity}
                         </Badge>
                       </div>
-                      <p className="mb-1 text-sm text-gray-700">{factor.factor}</p>
-                      <p className="text-xs text-gray-600">{factor.impact}</p>
+                      <p className="mb-1 text-sm text-foreground">{factor.factor}</p>
+                      <p className="text-xs text-muted-foreground">{factor.impact}</p>
                     </div>
                   ))}
                 </div>
@@ -830,7 +830,7 @@ export function DisputePredictor() {
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <CheckCircle className="h-5 w-5 text-green-500" />
+                  <CheckCircle className="h-5 w-5 text-primary" />
                   Preventive Actions
                 </CardTitle>
                 <CardDescription>Recommended actions to prevent disputes</CardDescription>
@@ -842,28 +842,28 @@ export function DisputePredictor() {
                       key={index}
                       className={`rounded-lg border p-4 ${
                         action.priority === 'High'
-                          ? 'border-red-200 bg-red-50'
+                          ? 'border-destructive/40 bg-destructive/10'
                           : action.priority === 'Medium'
-                            ? 'border-yellow-200 bg-yellow-50'
-                            : 'border-blue-200 bg-blue-50'
+                            ? 'border-border bg-accent/40'
+                            : 'border-border bg-secondary/40'
                       }`}
                     >
                       <div className="mb-2 flex items-center justify-between">
-                        <span className="font-semibold text-gray-800">{action.action}</span>
+                        <span className="font-semibold text-foreground">{action.action}</span>
                         <Badge
                           className={
                             action.priority === 'High'
-                              ? 'bg-red-100 text-red-800'
+                              ? 'bg-destructive/10 text-destructive'
                               : action.priority === 'Medium'
-                                ? 'bg-yellow-100 text-yellow-800'
-                                : 'bg-blue-100 text-blue-800'
+                                ? 'bg-accent text-accent-foreground'
+                                : 'bg-secondary text-secondary-foreground'
                           }
                         >
                           {action.priority} Priority
                         </Badge>
                       </div>
-                      <p className="mb-1 text-sm text-gray-700">{action.impact}</p>
-                      <p className="text-xs text-gray-600">
+                      <p className="mb-1 text-sm text-foreground">{action.impact}</p>
+                      <p className="text-xs text-muted-foreground">
                         <strong>Timeframe:</strong> {action.timeframe}
                       </p>
                     </div>

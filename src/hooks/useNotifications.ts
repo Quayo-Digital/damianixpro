@@ -1,9 +1,30 @@
 import { useEffect, useRef } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient, type QueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuthSession } from '@/contexts/auth';
 import { Notification } from '@/types/notification';
 import { toast } from '@/components/ui/sonner';
+
+export const NOTIFICATION_DROPDOWN_LIMIT = 20;
+
+export function invalidateNotificationQueries(queryClient: QueryClient, userId: string) {
+  queryClient.invalidateQueries({
+    predicate: (q) =>
+      Array.isArray(q.queryKey) && q.queryKey[0] === 'notifications' && q.queryKey[1] === userId,
+  });
+}
+
+export async function markNotificationAsRead(
+  userId: string,
+  notificationId: string
+): Promise<void> {
+  const { error } = await supabase
+    .from('notifications')
+    .update({ is_read: true })
+    .eq('id', notificationId)
+    .eq('user_id', userId);
+  if (error) throw new Error(error.message);
+}
 
 /** Keep first occurrence per id (defensive: duplicate rows or client quirks). */
 function dedupeNotificationsById(rows: Notification[]): Notification[] {
@@ -67,7 +88,7 @@ export function useNotificationRealtimeSubscription() {
             filter: `user_id=eq.${user.id}`,
           },
           (payload) => {
-            queryClient.invalidateQueries({ queryKey: ['notifications', user.id] });
+            invalidateNotificationQueries(queryClient, user.id);
 
             const row = payload.new as {
               id?: string;
@@ -115,8 +136,8 @@ export function useNotifications() {
     isLoading,
     error,
   } = useQuery({
-    queryKey: ['notifications', user?.id],
-    queryFn: () => fetchNotifications(user!.id, 10),
+    queryKey: ['notifications', user?.id, 'dropdown'],
+    queryFn: () => fetchNotifications(user!.id, NOTIFICATION_DROPDOWN_LIMIT),
     enabled: !!user,
   });
 
@@ -125,11 +146,18 @@ export function useNotifications() {
   const markAllAsReadMutation = useMutation({
     mutationFn: () => markAllNotificationsAsRead(user!.id),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['notifications', user?.id] });
+      if (user?.id) invalidateNotificationQueries(queryClient, user.id);
     },
     onError: (e) => {
       toast.error('Failed to mark notifications as read');
       console.error(e);
+    },
+  });
+
+  const markOneAsReadMutation = useMutation({
+    mutationFn: (notificationId: string) => markNotificationAsRead(user!.id, notificationId),
+    onSuccess: () => {
+      if (user?.id) invalidateNotificationQueries(queryClient, user.id);
     },
   });
 
@@ -139,5 +167,7 @@ export function useNotifications() {
     isLoading,
     error,
     markAllAsRead: markAllAsReadMutation.mutate,
+    markOneAsRead: markOneAsReadMutation.mutate,
+    isMarkingOne: markOneAsReadMutation.isPending,
   };
 }

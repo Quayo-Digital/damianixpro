@@ -11,15 +11,26 @@
 import express from "express";
 import { supabaseAdmin } from "./supabaseClient.mjs";
 import { recordManualTransaction } from "./accountingEngine.mjs";
+import { requireSupabaseJwt } from "./middleware/supabaseJwt.mjs";
+import { createAttachUserRole } from "./middleware/attachUserRole.mjs";
+import { createRequireRbacPermission } from "./middleware/requireRbacPermission.mjs";
 
 const router = express.Router();
+const attachUserRole = createAttachUserRole(supabaseAdmin);
+const requireAccountingPost = createRequireRbacPermission("accounting.post");
+const requireAccountingRead = createRequireRbacPermission("accounting.read");
 
 /**
  * POST /api/accounting/transactions
  *
  * Body: { type, amount, account, description?, property_id?, tenant_id? }
  */
-router.post("/api/accounting/transactions", async (req, res) => {
+router.post(
+  "/api/accounting/transactions",
+  requireSupabaseJwt,
+  attachUserRole,
+  requireAccountingPost,
+  async (req, res) => {
   try {
     if (!supabaseAdmin) {
       return res.status(500).json({ error: "Service not configured." });
@@ -100,14 +111,20 @@ router.post("/api/accounting/transactions", async (req, res) => {
     console.error("[accounting/transactions] POST", err?.message);
     return res.status(500).json({ error: "Failed to record transaction." });
   }
-});
+  }
+);
 
 /**
  * GET /api/accounting/transactions
  *
  * Query: type, account, property_id, tenant_id, date_from, date_to
  */
-router.get("/api/accounting/transactions", async (req, res) => {
+router.get(
+  "/api/accounting/transactions",
+  requireSupabaseJwt,
+  attachUserRole,
+  requireAccountingRead,
+  async (req, res) => {
   try {
     if (!supabaseAdmin) {
       return res.status(500).json({ error: "Service not configured." });
@@ -154,7 +171,8 @@ router.get("/api/accounting/transactions", async (req, res) => {
     console.error("[accounting/transactions] GET", err?.message);
     return res.status(500).json({ error: "Failed to fetch transactions." });
   }
-});
+  }
+);
 
 export function createAccountingTransactionRouter() {
   return router;

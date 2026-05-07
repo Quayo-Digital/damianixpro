@@ -17,11 +17,13 @@ import { PageLoader } from '@/components/ui/PageLoader';
 import { PropertyAnnouncementsManager } from '@/components/resident/PropertyAnnouncementsManager';
 import { fetchUnitsForProperty } from '@/services/property/unitsApi';
 import { listPropertyMedia } from '@/services/property/mediaService';
+import { SectionTitle } from '@/components/ui/typography';
 
 const PropertyDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { userRole, isLoading: authLoading } = useAuthSession();
+  const { userRole, isLoading: authLoading, hasPermission } = useAuthSession();
+  const canWriteProperties = hasPermission('properties.write');
   const queryClient = useQueryClient();
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [videoUrls, setVideoUrls] = useState<Array<{ url: string; posterUrl?: string | null }>>([]);
@@ -135,7 +137,7 @@ const PropertyDetail: React.FC = () => {
   return (
     <PageLayout>
       <PageContent title={property.name} description={property.location}>
-        <div className="mb-6">
+        <div className="mb-5 sm:mb-6">
           <Button asChild variant="outline">
             <Link to="/properties">
               <ArrowLeft className="mr-2" />
@@ -144,10 +146,10 @@ const PropertyDetail: React.FC = () => {
           </Button>
         </div>
 
-        <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+        <div className="grid grid-cols-1 gap-5 sm:gap-6 lg:grid-cols-3">
           <div className="lg:col-span-2">
-            <div className="mb-6">
-              <h3 className="mb-4 text-2xl font-semibold">Property View</h3>
+            <div className="mb-5 sm:mb-6">
+              <SectionTitle className="mb-3 sm:mb-4">Property View</SectionTitle>
               <PropertyVirtualTourViewer
                 images={property.images || (property.imageUrl ? [property.imageUrl] : [])}
                 videos={videoUrls}
@@ -160,7 +162,11 @@ const PropertyDetail: React.FC = () => {
               features={property.features || []}
             />
             {property.transaction_type === 'LEASE' && (
-              <PropertyUnitsManager propertyId={property.id} propertyName={property.name} />
+              <PropertyUnitsManager
+                propertyId={property.id}
+                propertyName={property.name}
+                readOnly={!canWriteProperties}
+              />
             )}
           </div>
 
@@ -177,12 +183,12 @@ const PropertyDetail: React.FC = () => {
               propertyOwnerId={property.owner_id}
               onManageProperty={() => setIsEditDialogOpen(true)}
             />
-            <PropertyAnnouncementsManager propertyId={property.id} />
+            <PropertyAnnouncementsManager propertyId={property.id} readOnly={!canWriteProperties} />
             <PropertyTabs />
           </div>
         </div>
 
-        {property && (
+        {property && canWriteProperties && (
           <EditPropertyDialog
             open={isEditDialogOpen}
             onOpenChange={setIsEditDialogOpen}
