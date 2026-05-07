@@ -8,6 +8,18 @@ import {
   SmartRecommendation,
 } from '@/types/preferences';
 
+/** Great-circle distance in kilometres (sufficient for residential proximity scoring). */
+function haversineKm(lat1: number, lng1: number, lat2: number, lng2: number): number {
+  const toRad = (deg: number) => (deg * Math.PI) / 180;
+  const R = 6371;
+  const dLat = toRad(lat2 - lat1);
+  const dLng = toRad(lng2 - lng1);
+  const a =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLng / 2) ** 2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+}
+
 export class SmartMatchingService {
   /**
    * Calculate compatibility score between user preferences and property
@@ -188,21 +200,106 @@ export class SmartMatchingService {
   }
 
   /**
-   * Calculate behavioral compatibility score based on user's past interactions
+   * Behavioral compatibility score derived from the user's own interaction history
+   * stored on `UserPreferences`. Strong signals (saved / applied) outweigh weaker
+   * ones (viewed); explicit rejection drops the score sharply.
+   *
+   * No async DB call: we use the lists already loaded with `UserPreferences`.
    */
   private static calculateBehavioralScore(preferences: UserPreferences, property: any): number {
-    // This would analyze user's past behavior patterns
-    // For now, return a baseline score
-    return 0.5;
+    const id = property?.id;
+    if (!id) return 0.5;
+
+    const saved = preferences.saved_properties || [];
+    const applied = preferences.applied_properties || [];
+    const viewed = preferences.viewed_properties || [];
+    const rejected = preferences.rejected_properties || [];
+
+    if (rejected.includes(id)) return 0.0;
+    if (applied.includes(id)) return 1.0;
+    if (saved.includes(id)) return 0.95;
+    if (viewed.includes(id)) return 0.65;
+
+    /**
+     * Engagement signal: a user with many saves/applications shows clear intent,
+     * which raises the floor for unseen properties. Many rejections moves it down.
+     */
+    const positiveSignals = saved.length * 1.0 + applied.length * 1.5;
+    const rejectedSignals = rejected.length;
+    const totalSignals = positiveSignals + rejectedSignals;
+    if (totalSignals === 0) return 0.5;
+
+    const engagementBias = (positiveSignals - rejectedSignals * 0.5) / Math.max(1, totalSignals);
+    const baseline = 0.5 + Math.max(-0.25, Math.min(0.25, engagementBias * 0.5));
+
+    /** Optional ML-derived booster when location_affinity_scores is populated. */
+    const calc = preferences.calculated_preferences;
+    if (calc?.location_affinity_scores && property.location) {
+      const loc = String(property.location).toLowerCase();
+      const matched = Object.entries(calc.location_affinity_scores).find(([area]) =>
+        loc.includes(area.toLowerCase())
+      );
+      if (matched) {
+        const [, affinity] = matched;
+        return Math.max(0, Math.min(1, baseline * 0.7 + Number(affinity) * 0.3));
+      }
+    }
+
+    return Math.max(0, Math.min(1, baseline));
   }
 
   /**
-   * Calculate commute score (simplified)
+   * Commute score: prefers properties whose location/address text mentions any of
+   * the user's commute locations, with a graceful fallback to preferred areas.
+   * If lat/lng exist on both sides, a Haversine bonus rewards closer properties.
+   *
+   * Range: 0..1. When no signal is available we return a conservative 0.5
+   * (down from the original constant 0.7, so commute now meaningfully penalises
+   * properties far from declared commute hubs).
    */
   private static calculateCommuteScore(preferences: UserPreferences, property: any): number {
-    // This would integrate with Google Maps API or similar
-    // For now, return a placeholder score
-    return 0.7;
+    const commuteLocations = (preferences.commute_locations || []).filter(Boolean);
+    if (commuteLocations.length === 0) return 0.5;
+
+    const haystack = `${property.location || ''} ${property.address || ''}`.toLowerCase();
+    let bestMatch = 0;
+    for (const loc of commuteLocations) {
+      const needle = String(loc).toLowerCase();
+      if (!needle) continue;
+      if (haystack.includes(needle)) {
+        bestMatch = Math.max(bestMatch, 1.0);
+      } else {
+        const tokens = needle.split(/\s+/).filter(Boolean);
+        const tokenHits = tokens.filter((t) => haystack.includes(t)).length;
+        if (tokenHits > 0) {
+          bestMatch = Math.max(bestMatch, tokenHits / tokens.length);
+        }
+      }
+    }
+
+    if (bestMatch === 0) {
+      const preferred = preferences.preferred_areas || [];
+      const areaMatch = preferred.some((area) => haystack.includes(String(area).toLowerCase()));
+      if (areaMatch) bestMatch = 0.55;
+    }
+
+    /** Haversine bonus when both sides have coordinates (e.g. property has latitude/longitude). */
+    const propLat = Number(property.latitude);
+    const propLng = Number(property.longitude);
+    const userLat = Number((preferences as any).preferred_latitude);
+    const userLng = Number((preferences as any).preferred_longitude);
+    if (
+      Number.isFinite(propLat) &&
+      Number.isFinite(propLng) &&
+      Number.isFinite(userLat) &&
+      Number.isFinite(userLng)
+    ) {
+      const km = haversineKm(userLat, userLng, propLat, propLng);
+      const proximity = km <= 2 ? 1 : km <= 5 ? 0.85 : km <= 10 ? 0.65 : km <= 20 ? 0.4 : 0.15;
+      bestMatch = Math.max(bestMatch, proximity);
+    }
+
+    return Math.max(0.15, Math.min(1, bestMatch));
   }
 
   /**
