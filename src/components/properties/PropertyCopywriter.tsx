@@ -13,8 +13,9 @@ import {
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Copy, CheckCircle, Sparkles } from 'lucide-react';
+import { Copy, CheckCircle, Loader2, Sparkles } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { generatePropertyCopy } from '@/services/ai/propertyCopywriterApi';
 
 interface PropertyDetails {
   propertyType: string;
@@ -40,6 +41,8 @@ export function PropertyCopywriter() {
     whatsapp: '',
   });
   const [copied, setCopied] = useState<string | null>(null);
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [generationSource, setGenerationSource] = useState<'ai' | 'fallback' | null>(null);
   const { toast } = useToast();
 
   const propertyTypes = [
@@ -214,7 +217,13 @@ export function PropertyCopywriter() {
     return description;
   };
 
-  const handleGenerate = () => {
+  const buildLocalCopy = (details: PropertyDetails) => ({
+    short: generateShortDescription(details),
+    professional: generateProfessionalDescription(details),
+    whatsapp: generateWhatsAppDescription(details),
+  });
+
+  const handleGenerate = async () => {
     if (!propertyType || !location || !targetTenant) {
       toast({
         title: 'Missing Information',
@@ -234,11 +243,54 @@ export function PropertyCopywriter() {
       price,
     };
 
-    const short = generateShortDescription(details);
-    const professional = generateProfessionalDescription(details);
-    const whatsapp = generateWhatsAppDescription(details);
+    setIsGenerating(true);
+    setGenerationSource(null);
 
-    setGeneratedCopy({ short, professional, whatsapp });
+    try {
+      const aiResult = await generatePropertyCopy({
+        propertyType,
+        location,
+        targetTenant,
+        amenities: selectedAmenities,
+        bedrooms: bedrooms || undefined,
+        bathrooms: bathrooms || undefined,
+        price: price || undefined,
+      });
+
+      if (aiResult.ok) {
+        setGeneratedCopy(aiResult.copy);
+        setGenerationSource('ai');
+        toast({
+          title: 'AI copy ready',
+          description: 'Three variants generated — review before publishing.',
+        });
+        return;
+      }
+
+      const local = buildLocalCopy(details);
+      setGeneratedCopy(local);
+      setGenerationSource('fallback');
+
+      if (aiResult.kind === 'unconfigured') {
+        toast({
+          title: 'Using local templates',
+          description: 'AI is not configured on the server. Generated with built-in templates.',
+        });
+      } else if (aiResult.kind === 'unauthorized') {
+        toast({
+          title: 'Sign-in required for AI',
+          description: 'Showing template copy. Sign in to enable AI generation.',
+        });
+      } else {
+        toast({
+          title: 'Falling back to templates',
+          description: aiResult.error,
+          variant: 'destructive',
+        });
+      }
+    } finally {
+      setIsGenerating(false);
+    }
   };
 
   const handleCopy = (text: string, type: string) => {
@@ -383,9 +435,13 @@ export function PropertyCopywriter() {
             </div>
           </div>
 
-          <Button onClick={handleGenerate} className="w-full" size="lg">
-            <Sparkles className="mr-2 h-4 w-4" />
-            Generate Descriptions
+          <Button onClick={handleGenerate} className="w-full" size="lg" disabled={isGenerating}>
+            {isGenerating ? (
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            ) : (
+              <Sparkles className="mr-2 h-4 w-4" />
+            )}
+            {isGenerating ? 'Generating…' : 'Generate Descriptions'}
           </Button>
         </CardContent>
       </Card>
@@ -394,7 +450,14 @@ export function PropertyCopywriter() {
       {generatedCopy.short && (
         <Card>
           <CardHeader>
-            <CardTitle>Generated Descriptions</CardTitle>
+            <CardTitle className="flex items-center justify-between gap-2">
+              <span>Generated Descriptions</span>
+              {generationSource && (
+                <Badge variant={generationSource === 'ai' ? 'default' : 'secondary'}>
+                  {generationSource === 'ai' ? 'AI generated' : 'Template fallback'}
+                </Badge>
+              )}
+            </CardTitle>
             <CardDescription>Copy and use these descriptions for your listings</CardDescription>
           </CardHeader>
           <CardContent>
