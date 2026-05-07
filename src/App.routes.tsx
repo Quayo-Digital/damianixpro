@@ -628,6 +628,7 @@ export const AppRoutes = () => {
             </ProtectedRoute>
           }
         />
+        <Route path="/organization-setup" element={<Navigate to="/organization/setup" replace />} />
         <Route
           path="/organization/setup"
           element={
