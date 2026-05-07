@@ -101,13 +101,11 @@ async function createMaintenanceRequest(tenantId, propertyId, issue) {
   return data.ticket_number || data.message;
 }
 
-async function getRentBalance(tenantId, authToken) {
-  if (!VOICE_SERVER_URL) return null;
-  const res = await fetch(`${VOICE_SERVER_URL}/api/tenant/rent-balance`, {
-    headers: { Authorization: `Bearer ${authToken}` },
-  });
-  if (!res.ok) return null;
-  return res.json();
+import { computeTenantRentBalance } from './rentBalanceCore.mjs';
+
+async function getRentBalance(tenantId) {
+  // Compute directly via supabaseAdmin so we don't need a tenant JWT.
+  return computeTenantRentBalance(tenantId);
 }
 
 async function generateTTS(text) {
@@ -290,8 +288,8 @@ async function handleAndReply(senderId, transcript) {
     }
   } else if (intent === 'check_rent_balance') {
     const tenant = await findTenantByPhone(senderId);
-    if (tenant?.authToken) {
-      context.rentBalance = await getRentBalance(tenant.id, tenant.authToken);
+    if (tenant?.id) {
+      context.rentBalance = await getRentBalance(tenant.id);
     }
   }
 
@@ -326,7 +324,6 @@ async function findTenantByPhone(waId) {
   return {
     id: tenant.id,
     property_id: lease?.property_id,
-    authToken: null,
   };
 }
 

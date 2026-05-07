@@ -21,7 +21,12 @@ export const useProperties = () => {
     }
 
     try {
-      let query = supabase.from('properties').select('*').order('created_at', { ascending: false });
+      let query = supabase
+        .from('properties')
+        .select(
+          'id,name,address,status,owner_id,agent_id,organization_id,created_at,amenities,features,shortlet_details,lease_terms,availability_date,latitude,longitude,tour_url,agent_commission_rate'
+        )
+        .order('created_at', { ascending: false });
 
       // 🔒 SECURITY FIX: Apply role-based filtering
       switch (userRole) {
@@ -39,8 +44,10 @@ export const useProperties = () => {
 
         case 'admin':
         case 'super_admin':
-          // Admins can see all properties (legitimate access)
-          console.log('Fetching all properties for admin');
+        case 'accountant':
+        case 'facility_manager':
+          // Staff roles: rely on RLS (migration extends SELECT for accountants / facility managers).
+          console.log('Fetching properties for staff role:', userRole);
           break;
 
         case 'tenant':

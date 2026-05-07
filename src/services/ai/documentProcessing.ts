@@ -597,9 +597,21 @@ export class IntelligentDocumentProcessor {
   }
 
   /**
-   * Generate document processing analytics
+   * Generate document processing analytics from the records the caller passes in.
+   * Computes rates from actual statuses rather than returning hard-coded constants.
+   * Optional `extras` carries information the metadata row alone can't provide
+   * (per-document processing time, validation/fraud signals).
    */
-  static generateAnalytics(documents: DocumentMetadata[]): DocumentAnalytics {
+  static generateAnalytics(
+    documents: DocumentMetadata[],
+    extras: {
+      processingTimesMs?: number[];
+      manualReviewIds?: string[];
+      fraudFlaggedIds?: string[];
+      complianceIssueIds?: string[];
+      complianceViolations?: Array<{ regulation: string; details?: string }>;
+    } = {}
+  ): DocumentAnalytics {
     const total = documents.length;
 
     const byType = documents.reduce(
@@ -618,26 +630,72 @@ export class IntelligentDocumentProcessor {
       {} as Record<string, number>
     );
 
+    const ratio = (numerator: number) => (total > 0 ? numerator / total : 0);
+
+    const successCount = documents.filter(
+      (d) => d.status === 'processed' || d.status === 'verified'
+    ).length;
+    const failedCount = documents.filter((d) => d.status === 'rejected').length;
+
+    const processingTimes = (extras.processingTimesMs ?? []).filter(
+      (n) => Number.isFinite(n) && n > 0
+    );
+    const avgProcessingTime =
+      processingTimes.length > 0
+        ? Math.round(processingTimes.reduce((sum, n) => sum + n, 0) / processingTimes.length)
+        : 0;
+
+    const manualReviewCount = extras.manualReviewIds?.length ?? 0;
+    const fraudCount = extras.fraudFlaggedIds?.length ?? 0;
+    const complianceIssueCount = extras.complianceIssueIds?.length ?? 0;
+
+    const violationsByRegulation = (extras.complianceViolations ?? []).reduce(
+      (acc, v) => {
+        acc[v.regulation] = (acc[v.regulation] || 0) + 1;
+        return acc;
+      },
+      {} as Record<string, number>
+    );
+    const commonViolations = Object.entries(violationsByRegulation)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 5)
+      .map(([reg]) => reg);
+
+    /**
+     * Time saved is estimated from observed processing time vs. a 15-min manual
+     * baseline (only when we actually have processing times). Cost savings use a
+     * conservative ₦1,200/hour fully-loaded review cost. These are derived, not
+     * fabricated — when there's no data, they read 0.
+     */
+    const manualBaselineMs = 15 * 60 * 1000;
+    const totalSavedMs = processingTimes.reduce(
+      (sum, ms) => sum + Math.max(0, manualBaselineMs - ms),
+      0
+    );
+    const timeSavedHours = Number((totalSavedMs / (1000 * 60 * 60)).toFixed(1));
+    const costSavings = Math.round(timeSavedHours * 1200);
+    const errorReductionPercentage = total === 0 ? 0 : Math.round((1 - ratio(failedCount)) * 100);
+
     return {
       total_documents: total,
       documents_by_type: byType,
-      documents_by_status: byStatus as any,
+      documents_by_status: byStatus as Record<DocumentMetadata['status'], number>,
       processing_metrics: {
-        average_processing_time_ms: 2500,
-        success_rate: 0.92,
-        manual_review_rate: 0.15,
-        fraud_detection_rate: 0.03,
+        average_processing_time_ms: avgProcessingTime,
+        success_rate: ratio(successCount),
+        manual_review_rate: ratio(manualReviewCount),
+        fraud_detection_rate: ratio(fraudCount),
       },
       compliance_metrics: {
-        compliance_rate: 0.96,
-        common_violations: ['Missing required fields', 'Invalid format'],
-        regulatory_updates_needed: 2,
+        compliance_rate: total === 0 ? 0 : 1 - ratio(complianceIssueCount),
+        common_violations: commonViolations,
+        regulatory_updates_needed: 0,
       },
       efficiency_metrics: {
-        automation_rate: 0.85,
-        time_saved_hours: 120,
-        cost_savings: 450000,
-        error_reduction_percentage: 78,
+        automation_rate: ratio(total - manualReviewCount),
+        time_saved_hours: timeSavedHours,
+        cost_savings: costSavings,
+        error_reduction_percentage: errorReductionPercentage,
       },
     };
   }

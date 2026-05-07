@@ -2,16 +2,29 @@
 
 This guide explains where and how to trigger the billing AI tools throughout the payment flow.
 
+> **Note on cron / production rent reminders.** The "daily reminder" path documented
+> below is a UI-side helper for _generating reminder copy_. The path that actually runs
+> in production — pulling tenants with rent due in N days, creating a Paystack payment
+> link, fanning out via the multi-channel notification outbox, placing the outbound
+> Twilio call with ElevenLabs TTS — lives in **`server/rentReminderService.mjs`**
+> (`POST /api/rent-reminders/queue`, `/trigger`, `/call/:id/action`, `/callback`).
+> Set `RENT_REMINDER_DAYS_AHEAD`, `PAYSTACK_SECRET_KEY`, `TWILIO_*`, and `TTS_URL`,
+> and trigger the queue endpoint from your scheduler. Don't wire `dailyReminderCron`
+> below as a separate cron — the helpers in `src/services/billing/integrations.ts`
+> are intended as **client-side composition helpers / UI demos**, not as the
+> production scheduler entry point.
+
 ## Quick Reference
 
-| Trigger          | Tool                   | Component Location                                        | Integration Function            |
-| ---------------- | ---------------------- | --------------------------------------------------------- | ------------------------------- |
-| Pay Now click    | Pre-Payment Validation | `src/components/billing/PaymentValidator.tsx`             | `triggerPrePaymentValidation()` |
-| Paystack webhook | Webhook Translator     | `src/components/billing/PaystackWebhookInterpreter.tsx`   | `triggerWebhookTranslation()`   |
-| Payment success  | Ledger Auto-Poster     | `src/components/billing/LedgerPosting.tsx`                | `triggerLedgerAutoPost()`       |
-| Payment failure  | Recovery Assistant     | `src/components/billing/FailedTransactionAnalyzer.tsx`    | `triggerRecoveryAssistant()`    |
-| Cron (daily)     | Reminder Generator     | `src/components/tenants/RentReminderMessageGenerator.tsx` | `triggerReminderGenerator()`    |
-| Dashboard load   | Insights Generator     | `src/components/owner/RentCollectionAnalyzer.tsx`         | `triggerInsightsGenerator()`    |
+| Trigger             | Tool                                        | Component Location                                        | Integration Function                 |
+| ------------------- | ------------------------------------------- | --------------------------------------------------------- | ------------------------------------ |
+| Pay Now click       | Pre-Payment Validation                      | `src/components/billing/PaymentValidator.tsx`             | `triggerPrePaymentValidation()`      |
+| Paystack webhook    | Webhook Translator                          | `src/components/billing/PaystackWebhookInterpreter.tsx`   | `triggerWebhookTranslation()`        |
+| Payment success     | Ledger Auto-Poster                          | `src/components/billing/LedgerPosting.tsx`                | `triggerLedgerAutoPost()`            |
+| Payment failure     | Recovery Assistant                          | `src/components/billing/FailedTransactionAnalyzer.tsx`    | `triggerRecoveryAssistant()`         |
+| Reminder copy       | Reminder Generator                          | `src/components/tenants/RentReminderMessageGenerator.tsx` | `triggerReminderGenerator()`         |
+| Dashboard load      | Insights Generator                          | `src/components/owner/RentCollectionAnalyzer.tsx`         | `triggerInsightsGenerator()`         |
+| **Production cron** | **AI Rent Reminder service (Twilio + TTS)** | **`server/rentReminderService.mjs`**                      | **`POST /api/rent-reminders/queue`** |
 
 ## Integration Service
 
@@ -239,9 +252,9 @@ async function handlePaymentFailure(failureData: PaymentFailureData) {
 
 **When to Use:**
 
-- Daily cron job to check for due/overdue payments
-- Scheduled reminder system
-- Before sending rent reminders
+- Composing reminder copy in admin UI (preview before send)
+- One-off reminder generation tied to a specific tenant action
+- **Not** the production daily-cron driver — that lives in `server/rentReminderService.mjs`
 
 **Integration Example:**
 

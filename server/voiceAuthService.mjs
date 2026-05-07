@@ -2,6 +2,8 @@ import express from 'express';
 import crypto from 'crypto';
 import { v4 as uuidv4 } from 'uuid';
 import { supabaseAdmin } from './supabaseClient.mjs';
+import { requireSupabaseJwt } from './middleware/supabaseJwt.mjs';
+import { sendSmsAbstract } from './notifications/channelDeliver.mjs';
 
 const router = express.Router();
 
@@ -145,16 +147,32 @@ router.post('/api/voice-auth/request-otp', async (req, res) => {
       return res.status(500).json({ error: 'Failed to create OTP.' });
     }
 
-    // TODO: Integrate SMS provider (Twilio, Termii, etc.) to send code
+    let smsDelivered = false;
     if (process.env.VOICE_OTP_SMS_ENABLED === 'true') {
-      // await sendSms(normalized, `Your DamianixPro verification code is: ${code}`);
+      try {
+        smsDelivered = await sendSmsAbstract(
+          normalized,
+          `Your DamianixPro verification code is: ${code}. Expires in ${OTP_TTL_MINUTES} minutes.`,
+          process.env.SMS_PROVIDER === 'noop' ? 'noop' : 'twilio'
+        );
+      } catch (smsErr) {
+        console.error('[voice-auth] OTP SMS delivery failed', smsErr);
+      }
     }
 
+    /**
+     * Only expose the OTP in the response in non-production environments AND
+     * when SMS isn't actually being delivered. Production never exposes it.
+     */
+    const exposeDevCode =
+      process.env.NODE_ENV !== 'production' &&
+      process.env.VOICE_OTP_SMS_ENABLED !== 'true';
+
     return res.json({
-      message: 'OTP sent.',
+      message: smsDelivered ? 'OTP sent via SMS.' : 'OTP generated.',
       expires_at: expiresAt.toISOString(),
-      // In dev, return code for testing; remove in production
-      ...(process.env.NODE_ENV !== 'production' && { dev_code: code }),
+      sms_delivered: smsDelivered,
+      ...(exposeDevCode ? { dev_code: code } : {}),
     });
   } catch (err) {
     console.error('[voice-auth] Unexpected error', err);
@@ -307,13 +325,12 @@ router.post('/api/voice-auth/verify-pin', async (req, res) => {
 });
 
 // --- 5) Set/update tenant voice PIN (requires auth) ---
-router.post('/api/voice-auth/set-pin', async (req, res) => {
+router.post('/api/voice-auth/set-pin', requireSupabaseJwt, async (req, res) => {
   if (!supabaseAdmin) {
     return res.status(500).json({ error: 'Voice auth service not configured.' });
   }
 
   const { tenant_id, pin } = req.body ?? {};
-  const authHeader = req.headers.authorization || req.headers.Authorization;
 
   if (!tenant_id || !pin) {
     return res.status(400).json({ error: 'tenant_id and pin required.' });
@@ -335,21 +352,8 @@ router.post('/api/voice-auth/set-pin', async (req, res) => {
       return res.status(404).json({ error: 'Tenant not found.' });
     }
 
-    if (authHeader) {
-      const secret = process.env.SUPABASE_JWT_SECRET;
-      if (secret) {
-        try {
-          const { default: jwt } = await import('jsonwebtoken');
-          const token = authHeader.replace(/Bearer\s+/i, '');
-          const payload = jwt.verify(token, secret);
-          const uid = payload.sub || payload.user_id;
-          if (uid !== tenant.user_id) {
-            return res.status(403).json({ error: 'Not authorized to set PIN for this tenant.' });
-          }
-        } catch {
-          return res.status(401).json({ error: 'Invalid or expired token.' });
-        }
-      }
+    if (req.auth?.sub !== tenant.user_id) {
+      return res.status(403).json({ error: 'Not authorized to set PIN for this tenant.' });
     }
 
     const pinHash = hashPin(pinStr);

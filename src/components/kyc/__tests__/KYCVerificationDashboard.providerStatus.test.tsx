@@ -45,29 +45,36 @@ function renderKyc(ui: ReactElement) {
   return render(<TestAppShell>{ui}</TestAppShell>);
 }
 
+/** Cold jsdom + first-import cost can exceed Vitest's default 5s in CI/smoke runs. */
+const KYC_RENDER_TEST_TIMEOUT_MS = 20_000;
+
 describe('KYCVerificationDashboard provider status contract', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
-  it('shows provider setup warning when at least one provider is not configured', () => {
-    mockUseNigerianApis.mockReturnValue({
-      ...baseHookValue,
-      providerStatus: {
-        youverify: false,
-        appruve: true,
-        paystack: false,
-        flutterwave: true,
-        nibss: false,
-        custom: false,
-      },
-    });
+  it(
+    'shows provider setup warning when at least one provider is not configured',
+    () => {
+      mockUseNigerianApis.mockReturnValue({
+        ...baseHookValue,
+        providerStatus: {
+          youverify: false,
+          appruve: true,
+          paystack: false,
+          flutterwave: true,
+          nibss: false,
+          custom: false,
+        },
+      });
 
-    renderKyc(<KYCVerificationDashboard />);
+      renderKyc(<KYCVerificationDashboard />);
 
-    expect(screen.getByText(/provider setup required:/i)).toBeInTheDocument();
-    expect(screen.getByText(/YouVerify \(YOUVERIFY_API_KEY\)/i)).toBeInTheDocument();
-  });
+      expect(screen.getByText(/provider setup required:/i)).toBeInTheDocument();
+      expect(screen.getByText(/YouVerify \(YOUVERIFY_API_KEY\)/i)).toBeInTheDocument();
+    },
+    KYC_RENDER_TEST_TIMEOUT_MS
+  );
 
   it('hides provider setup warning when all required providers are configured', () => {
     mockUseNigerianApis.mockReturnValue({

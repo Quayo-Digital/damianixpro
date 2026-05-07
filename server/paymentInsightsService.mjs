@@ -1,8 +1,56 @@
 import express from "express";
 import { supabaseAdmin } from "./supabaseClient.mjs";
 import { mapRentRowToLegacyPayment } from "./rentLedgerCompat.mjs";
+import { requireSupabaseJwt } from "./middleware/supabaseJwt.mjs";
+import { createAttachUserRole } from "./middleware/attachUserRole.mjs";
+import { createRequireRbacPermission } from "./middleware/requireRbacPermission.mjs";
+import { holtLinearForecast } from "./forecasting.mjs";
 
 const router = express.Router();
+const attachUserRole = createAttachUserRole(supabaseAdmin);
+const requirePaymentsRead = createRequireRbacPermission("payments.read");
+
+const UUID_RE =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+function isUuid(s) {
+  return typeof s === "string" && UUID_RE.test(s);
+}
+
+async function getTenantIdForUser(uid) {
+  const { data } = await supabaseAdmin
+    .from("tenants")
+    .select("id")
+    .eq("user_id", uid)
+    .maybeSingle();
+  return data?.id ?? null;
+}
+
+async function getVisiblePropertyIds(uid, role) {
+  if (
+    role === "admin" ||
+    role === "super_admin" ||
+    role === "accountant" ||
+    role === "facility_manager"
+  ) {
+    return null;
+  }
+  if (role === "owner") {
+    const { data } = await supabaseAdmin.from("properties").select("id").eq("owner_id", uid);
+    return (data || []).map((r) => r.id);
+  }
+  if (role === "agent") {
+    const { data } = await supabaseAdmin.from("properties").select("id").eq("agent_id", uid);
+    return (data || []).map((r) => r.id);
+  }
+  if (role === "manager") {
+    const { data } = await supabaseAdmin
+      .from("properties")
+      .select("id")
+      .or(`agent_id.eq.${uid},owner_id.eq.${uid}`);
+    return (data || []).map((r) => r.id);
+  }
+  return [];
+}
 
 function formatNaira(amount) {
   const n = Number(amount) || 0;
@@ -26,15 +74,18 @@ function formatNairaFull(amount) {
  * Query params:
  * - owner_id: filter by property owner (optional)
  */
-router.get("/api/payments/insights", async (req, res) => {
+router.get("/api/payments/insights", requireSupabaseJwt, attachUserRole, requirePaymentsRead, async (req, res) => {
   try {
     if (!supabaseAdmin) {
       return res.status(500).json({ error: "Service not configured." });
     }
 
     const ownerId = req.query.owner_id || null;
+    if (ownerId && !isUuid(String(ownerId))) {
+      return res.status(400).json({ error: "Invalid owner_id." });
+    }
 
-    const { data: rawRows, error } = await supabaseAdmin
+    let query = supabaseAdmin
       .from("rent_payments")
       .select(
         `
@@ -54,6 +105,52 @@ router.get("/api/payments/insights", async (req, res) => {
       `
       )
       .order("due_date", { ascending: false });
+
+    const uid = req.auth.sub;
+    const role = req.userRole;
+
+    // Enforce visibility on the DB query (avoid fetching global then filtering in JS).
+    if (role === "admin" || role === "super_admin") {
+      if (ownerId) {
+        query = query.eq("property_tenants.properties.owner_id", ownerId);
+      }
+    } else if (role === "tenant") {
+      const tid = await getTenantIdForUser(uid);
+      if (!tid) {
+        return res.json({
+          late_payments: { count: 0, total_amount: 0, items: [] },
+          top_tenants: [],
+          revenue_prediction: {
+            predicted_amount: 0,
+            predicted_formatted: formatNairaFull(0),
+            narrative: "No tenant profile linked.",
+            months_analyzed: 0,
+            monthly_breakdown: [],
+          },
+        });
+      }
+      query = query.eq("property_tenants.tenant_id", tid);
+      if (ownerId) return res.status(403).json({ error: "FORBIDDEN" });
+    } else {
+      const ids = await getVisiblePropertyIds(uid, role);
+      if (!ids || ids.length === 0) {
+        return res.json({
+          late_payments: { count: 0, total_amount: 0, items: [] },
+          top_tenants: [],
+          revenue_prediction: {
+            predicted_amount: 0,
+            predicted_formatted: formatNairaFull(0),
+            narrative: "No visible properties for this user.",
+            months_analyzed: 0,
+            monthly_breakdown: [],
+          },
+        });
+      }
+      query = query.in("property_tenants.property_id", ids);
+      if (ownerId) return res.status(403).json({ error: "FORBIDDEN" });
+    }
+
+    const { data: rawRows, error } = await query.limit(2500);
 
     if (error) {
       console.error("[payments/insights]", error);
@@ -75,13 +172,7 @@ router.get("/api/payments/insights", async (req, res) => {
       };
     });
 
-    // Filter by owner if specified
-    const filtered = ownerId
-      ? list.filter((p) => {
-          const owner = p.leases?.properties?.owner_id;
-          return owner === ownerId;
-        })
-      : list;
+    const filtered = list;
 
     // 1. Late payments: OVERDUE status, or PAID with paid_date > due_date
     const latePayments = filtered.filter((p) => {
@@ -149,25 +240,31 @@ router.get("/api/payments/insights", async (req, res) => {
       paidByMonth.set(month, (paidByMonth.get(month) || 0) + amt);
     }
 
-    const sortedMonths = Array.from(paidByMonth.keys()).sort().reverse();
-    const lastMonths = sortedMonths.slice(0, 6);
-    const monthlyAmounts = lastMonths.map((m) => paidByMonth.get(m) || 0);
+    /**
+     * Use Holt's linear (double exponential smoothing) over the most recent
+     * 6 months to forecast next month's collections, with a 95% interval
+     * derived from in-sample residuals. Falls back to mean / last-value when
+     * history is too short.
+     */
+    const sortedMonthsAsc = Array.from(paidByMonth.keys()).sort();
+    const lastMonthsAsc = sortedMonthsAsc.slice(-6);
+    const lastMonthsAmountsAsc = lastMonthsAsc.map((m) => paidByMonth.get(m) || 0);
 
-    let predictedNextMonth = 0;
-    if (monthlyAmounts.length > 0) {
-      const avg = monthlyAmounts.reduce((a, b) => a + b, 0) / monthlyAmounts.length;
-      // Simple trend: if recent months are higher, nudge up slightly
-      const recent = monthlyAmounts.slice(0, 2).reduce((a, b) => a + b, 0) / Math.min(2, monthlyAmounts.length);
-      const trend = recent > avg ? 1.05 : 1;
-      predictedNextMonth = Math.round(avg * trend);
+    const forecast = holtLinearForecast(lastMonthsAmountsAsc, { h: 1 });
+    const predictedNextMonth = forecast.point;
+
+    let narrative;
+    if (predictedNextMonth <= 0) {
+      narrative = "Insufficient payment history to predict next month's revenue.";
+    } else if (forecast.method === 'holt' && forecast.upper > forecast.lower) {
+      narrative = `Forecast: ${formatNaira(predictedNextMonth)} next month (likely ${formatNaira(
+        forecast.lower
+      )}\u2013${formatNaira(forecast.upper)} based on the last ${lastMonthsAsc.length} months).`;
+    } else {
+      narrative = `Forecast: ${formatNaira(predictedNextMonth)} next month based on the last ${
+        lastMonthsAsc.length
+      } months of paid rent.`;
     }
-
-    // Build the narrative message
-    const predictedFormatted = formatNaira(predictedNextMonth);
-    const narrative =
-      predictedNextMonth > 0
-        ? `You are expected to receive ${predictedFormatted} next month based on trends.`
-        : "Insufficient payment history to predict next month's revenue.";
 
     return res.json({
       late_payments: {
@@ -179,9 +276,12 @@ router.get("/api/payments/insights", async (req, res) => {
       revenue_prediction: {
         predicted_amount: predictedNextMonth,
         predicted_formatted: formatNairaFull(predictedNextMonth),
+        lower_amount: forecast.lower,
+        upper_amount: forecast.upper,
+        method: forecast.method,
         narrative,
-        months_analyzed: lastMonths.length,
-        monthly_breakdown: lastMonths.map((m) => ({
+        months_analyzed: lastMonthsAsc.length,
+        monthly_breakdown: lastMonthsAsc.map((m) => ({
           month: m,
           amount: paidByMonth.get(m) || 0,
         })),

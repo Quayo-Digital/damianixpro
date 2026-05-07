@@ -1,5 +1,5 @@
 import React, { lazy, Suspense } from 'react';
-import { Routes, Route } from 'react-router-dom';
+import { Routes, Route, Navigate } from 'react-router-dom';
 import { PublicRoutes } from './routes/PublicRoutes';
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute';
 import type { UserRole } from '@/contexts/auth/types';
@@ -7,8 +7,24 @@ import { PageLoader } from '@/components/ui/PageLoader';
 
 /** Role lists aligned with `nav-config` visibility (+ `super_admin` where admins have access). */
 const NAV_ANALYTICS_ROLES: UserRole[] = ['admin', 'super_admin', 'owner', 'agent', 'manager'];
+/** Portfolio KPIs API uses reports.financial | reports.operational */
+const NAV_EXECUTIVE_ANALYTICS_ROLES: UserRole[] = [
+  'admin',
+  'super_admin',
+  'owner',
+  'agent',
+  'manager',
+  'accountant',
+  'facility_manager',
+];
 const NAV_ANALYTICS_ADMIN_CHILD_ROLES: UserRole[] = ['admin', 'super_admin'];
 const NAV_PROPERTY_MGMT_ROLES: UserRole[] = ['owner', 'agent', 'manager', 'admin', 'super_admin'];
+/** Portfolio list + detail (read-oriented); includes staff with `properties.read` only. */
+const NAV_PROPERTY_PORTFOLIO_ROLES: UserRole[] = [
+  ...NAV_PROPERTY_MGMT_ROLES,
+  'facility_manager',
+  'accountant',
+];
 const NAV_AGENT_PORTAL_ROLES: UserRole[] = ['agent', 'manager'];
 const NAV_TENANT_MGMT_ROLES: UserRole[] = ['admin', 'super_admin', 'owner', 'agent', 'manager'];
 const NAV_MAINTENANCE_ROLES: UserRole[] = [
@@ -17,6 +33,7 @@ const NAV_MAINTENANCE_ROLES: UserRole[] = [
   'owner',
   'agent',
   'manager',
+  'facility_manager',
   'tenant',
 ];
 const NAV_TEMPLATES_REPORTS_ROLES: UserRole[] = [
@@ -27,6 +44,8 @@ const NAV_TEMPLATES_REPORTS_ROLES: UserRole[] = [
   'manager',
 ];
 const NAV_OWNER_FINANCE_ROLES: UserRole[] = ['owner', 'super_admin'];
+/** Excel-based portfolio migration wizard (writes properties as signing user). */
+const NAV_ORGANIZATION_SETUP_ROLES: UserRole[] = ['owner', 'admin', 'super_admin'];
 const NAV_BLOG_EDITOR_ROLES: UserRole[] = ['admin', 'super_admin'];
 const VERIFICATION_HUB_ROLES: UserRole[] = ['owner', 'tenant', 'agent', 'vendor', 'manager'];
 
@@ -86,6 +105,12 @@ const Documentation = lazy(() => import('@/pages/Documentation'));
 const Maintenance = lazy(() => import('@/pages/Maintenance'));
 const MaintenanceRequests = lazy(() => import('@/pages/MaintenanceRequests'));
 const MaintenanceVendors = lazy(() => import('@/pages/MaintenanceVendors'));
+const TenantMaintenanceTicketsPage = lazy(() => import('@/pages/TenantMaintenanceTicketsPage'));
+const AdminMaintenanceTicketsPage = lazy(() => import('@/pages/AdminMaintenanceTicketsPage'));
+const PortfolioServiceTicketsPage = lazy(() => import('@/pages/PortfolioServiceTicketsPage'));
+const FacilityManagerTicketsPage = lazy(() => import('@/pages/FacilityManagerTicketsPage'));
+const VendorMaintenanceTicketsPage = lazy(() => import('@/pages/VendorMaintenanceTicketsPage'));
+const MaintenanceTicketDetailPage = lazy(() => import('@/pages/MaintenanceTicketDetailPage'));
 const Settings = lazy(() => import('@/pages/Settings'));
 const VerificationHubPage = lazy(() => import('@/pages/VerificationHubPage'));
 const Inspections = lazy(() => import('@/pages/Inspections'));
@@ -93,6 +118,9 @@ const Templates = lazy(() => import('@/pages/Templates'));
 const Onboarding = lazy(() => import('@/pages/Onboarding'));
 const RedeemSuperAdmin = lazy(() => import('@/pages/RedeemSuperAdmin'));
 const PaymentAccountingPage = lazy(() => import('@/pages/PaymentAccounting'));
+const AccountingModulePage = lazy(() => import('@/pages/AccountingModulePage'));
+const AccountantDashboardPage = lazy(() => import('@/pages/AccountantDashboardPage'));
+const FacilityManagerDashboardPage = lazy(() => import('@/pages/FacilityManagerDashboardPage'));
 const OwnerPaymentsPage = lazy(() => import('@/pages/OwnerPayments'));
 const PaymentsRedirectPage = lazy(() => import('@/pages/PaymentsRedirectPage'));
 const OwnerSubscriptionPage = lazy(() => import('@/pages/OwnerSubscriptionPage'));
@@ -105,11 +133,14 @@ const EnhancedOwnerDashboardPage = lazy(() => import('@/pages/EnhancedOwnerDashb
 const EnhancedTenantDashboardPage = lazy(() => import('@/pages/EnhancedTenantDashboardPage'));
 const ResidentCenterPage = lazy(() => import('@/pages/ResidentCenterPage'));
 const Reports = lazy(() => import('@/pages/Reports'));
+const CrmPipelinePage = lazy(() => import('@/pages/CrmPipelinePage'));
+const CrmLeadDetailPage = lazy(() => import('@/pages/CrmLeadDetailPage'));
 const AdminUsersPage = lazy(() => import('@/pages/admin/AdminUsersPage'));
 const AdminRolesPage = lazy(() => import('@/pages/admin/AdminRolesPage'));
 const AdminSupportPage = lazy(() => import('@/pages/admin/AdminSupportPage'));
 const AdminBillingPage = lazy(() => import('@/pages/admin/AdminBillingPage'));
 const AdminFeaturesPage = lazy(() => import('@/pages/admin/AdminFeaturesPage'));
+const AdminActivationFunnelPage = lazy(() => import('@/pages/admin/AdminActivationFunnelPage'));
 const AdminTourRequestsPage = lazy(() => import('@/pages/admin/AdminTourRequestsPage'));
 const AdminWhiteLabelPreviewPage = lazy(() => import('@/pages/admin/AdminWhiteLabelPreviewPage'));
 const TestingPage = lazy(() => import('@/pages/TestingPage'));
@@ -123,6 +154,7 @@ const ComprehensiveOptimizationQAPage = lazy(
   () => import('@/pages/ComprehensiveOptimizationQAPage')
 );
 const AnalyticsPage = lazy(() => import('@/pages/AnalyticsPage'));
+const ExecutiveAnalyticsPage = lazy(() => import('@/pages/ExecutiveAnalyticsPage'));
 const AnalyticsTestingPage = lazy(() => import('@/pages/AnalyticsTestingPage'));
 const ProductionTestingPage = lazy(() => import('@/pages/ProductionTestingPage'));
 const LiveDataDemoPage = lazy(() => import('@/pages/LiveDataDemoPage'));
@@ -144,6 +176,7 @@ const PrivacyPolicyPage = lazy(() => import('@/pages/PrivacyPolicyPage'));
 const TermsOfServicePage = lazy(() => import('@/pages/TermsOfServicePage'));
 const Sales = lazy(() => import('@/pages/Sales'));
 const Unauthorized = lazy(() => import('@/pages/Unauthorized'));
+const OrganizationSetupPage = lazy(() => import('@/pages/OrganizationSetupPage'));
 
 export const AppRoutes = () => {
   return (
@@ -417,8 +450,18 @@ export const AppRoutes = () => {
         path="/analytics"
         element={
           <ProtectedRoute allowedRoles={NAV_ANALYTICS_ROLES}>
-            <Suspense fallback={<div>Loading...</div>}>
+            <Suspense fallback={<PageLoader />}>
               <AnalyticsPage />
+            </Suspense>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/analytics/executive"
+        element={
+          <ProtectedRoute allowedRoles={NAV_EXECUTIVE_ANALYTICS_ROLES}>
+            <Suspense fallback={<PageLoader />}>
+              <ExecutiveAnalyticsPage />
             </Suspense>
           </ProtectedRoute>
         }
@@ -427,7 +470,7 @@ export const AppRoutes = () => {
         path="/analytics-testing"
         element={
           <ProtectedRoute allowedRoles={NAV_ANALYTICS_ADMIN_CHILD_ROLES}>
-            <Suspense fallback={<div>Loading...</div>}>
+            <Suspense fallback={<PageLoader />}>
               <AnalyticsTestingPage />
             </Suspense>
           </ProtectedRoute>
@@ -437,7 +480,7 @@ export const AppRoutes = () => {
         path="/production-testing"
         element={
           <ProtectedRoute allowedRoles={NAV_ANALYTICS_ADMIN_CHILD_ROLES}>
-            <Suspense fallback={<div>Loading...</div>}>
+            <Suspense fallback={<PageLoader />}>
               <ProductionTestingPage />
             </Suspense>
           </ProtectedRoute>
@@ -447,7 +490,7 @@ export const AppRoutes = () => {
         path="/live-data-demo"
         element={
           <ProtectedRoute allowedRoles={NAV_ANALYTICS_ROLES}>
-            <Suspense fallback={<div>Loading...</div>}>
+            <Suspense fallback={<PageLoader />}>
               <LiveDataDemoPage />
             </Suspense>
           </ProtectedRoute>
@@ -474,6 +517,7 @@ export const AppRoutes = () => {
           }
         />
 
+        <Route path="/admin" element={<Navigate to="/admin/dashboard" replace />} />
         <Route
           path="/admin/dashboard"
           element={
@@ -535,6 +579,16 @@ export const AppRoutes = () => {
           }
         />
         <Route
+          path="/admin/activation-funnel"
+          element={
+            <ProtectedRoute allowedRoles={['admin', 'super_admin']}>
+              <Suspense fallback={<PageLoader />}>
+                <AdminActivationFunnelPage />
+              </Suspense>
+            </ProtectedRoute>
+          }
+        />
+        <Route
           path="/admin/tour-requests"
           element={
             <ProtectedRoute requiredRole="admin">
@@ -550,6 +604,37 @@ export const AppRoutes = () => {
             <ProtectedRoute requiredRole="admin">
               <Suspense fallback={<PageLoader />}>
                 <AdminWhiteLabelPreviewPage />
+              </Suspense>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/maintenance-tickets"
+          element={
+            <ProtectedRoute requiredRole="admin">
+              <Suspense fallback={<PageLoader />}>
+                <AdminMaintenanceTicketsPage />
+              </Suspense>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/maintenance-tickets/:ticketId"
+          element={
+            <ProtectedRoute requiredRole="admin">
+              <Suspense fallback={<PageLoader />}>
+                <MaintenanceTicketDetailPage />
+              </Suspense>
+            </ProtectedRoute>
+          }
+        />
+        <Route path="/organization-setup" element={<Navigate to="/organization/setup" replace />} />
+        <Route
+          path="/organization/setup"
+          element={
+            <ProtectedRoute allowedRoles={NAV_ORGANIZATION_SETUP_ROLES}>
+              <Suspense fallback={<PageLoader />}>
+                <OrganizationSetupPage />
               </Suspense>
             </ProtectedRoute>
           }
@@ -646,6 +731,26 @@ export const AppRoutes = () => {
           }
         />
         <Route
+          path="/tenant/maintenance-tickets"
+          element={
+            <ProtectedRoute requiredRole="tenant">
+              <Suspense fallback={<PageLoader />}>
+                <TenantMaintenanceTicketsPage />
+              </Suspense>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/tenant/maintenance-tickets/:ticketId"
+          element={
+            <ProtectedRoute requiredRole="tenant">
+              <Suspense fallback={<PageLoader />}>
+                <MaintenanceTicketDetailPage />
+              </Suspense>
+            </ProtectedRoute>
+          }
+        />
+        <Route
           path="/resident-center"
           element={
             <ProtectedRoute requiredRole="tenant">
@@ -729,7 +834,7 @@ export const AppRoutes = () => {
         <Route
           path="/properties"
           element={
-            <ProtectedRoute allowedRoles={NAV_PROPERTY_MGMT_ROLES}>
+            <ProtectedRoute allowedRoles={NAV_PROPERTY_PORTFOLIO_ROLES}>
               <Suspense fallback={<PageLoader />}>
                 <Properties />
               </Suspense>
@@ -739,7 +844,7 @@ export const AppRoutes = () => {
         <Route
           path="/properties/:id"
           element={
-            <ProtectedRoute allowedRoles={NAV_PROPERTY_MGMT_ROLES}>
+            <ProtectedRoute allowedRoles={NAV_PROPERTY_PORTFOLIO_ROLES}>
               <Suspense fallback={<PageLoader />}>
                 <PropertyDetail />
               </Suspense>
@@ -1015,6 +1120,26 @@ export const AppRoutes = () => {
             </ProtectedRoute>
           }
         />
+        <Route
+          path="/accounting"
+          element={
+            <ProtectedRoute requiredPermission="accounting.read">
+              <Suspense fallback={<PageLoader />}>
+                <AccountingModulePage />
+              </Suspense>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/accountant/dashboard"
+          element={
+            <ProtectedRoute requiredRole="accountant">
+              <Suspense fallback={<PageLoader />}>
+                <AccountantDashboardPage />
+              </Suspense>
+            </ProtectedRoute>
+          }
+        />
 
         <Route
           path="/vendor/dashboard"
@@ -1143,6 +1268,76 @@ export const AppRoutes = () => {
           }
         />
         <Route
+          path="/maintenance/service-tickets"
+          element={
+            <ProtectedRoute allowedRoles={['owner', 'agent', 'manager']}>
+              <Suspense fallback={<PageLoader />}>
+                <PortfolioServiceTicketsPage />
+              </Suspense>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/maintenance/service-tickets/:ticketId"
+          element={
+            <ProtectedRoute allowedRoles={['owner', 'agent', 'manager']}>
+              <Suspense fallback={<PageLoader />}>
+                <MaintenanceTicketDetailPage />
+              </Suspense>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/facility-manager/dashboard"
+          element={
+            <ProtectedRoute requiredRole="facility_manager">
+              <Suspense fallback={<PageLoader />}>
+                <FacilityManagerDashboardPage />
+              </Suspense>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/facility-manager/tickets"
+          element={
+            <ProtectedRoute requiredRole="facility_manager">
+              <Suspense fallback={<PageLoader />}>
+                <FacilityManagerTicketsPage />
+              </Suspense>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/facility-manager/tickets/:ticketId"
+          element={
+            <ProtectedRoute requiredRole="facility_manager">
+              <Suspense fallback={<PageLoader />}>
+                <MaintenanceTicketDetailPage />
+              </Suspense>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/vendor/maintenance-tickets"
+          element={
+            <ProtectedRoute requiredRole="vendor">
+              <Suspense fallback={<PageLoader />}>
+                <VendorMaintenanceTicketsPage />
+              </Suspense>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/vendor/maintenance-tickets/:ticketId"
+          element={
+            <ProtectedRoute requiredRole="vendor">
+              <Suspense fallback={<PageLoader />}>
+                <MaintenanceTicketDetailPage />
+              </Suspense>
+            </ProtectedRoute>
+          }
+        />
+        <Route
           path="/inspections"
           element={
             <ProtectedRoute allowedRoles={NAV_PROPERTY_MGMT_ROLES}>
@@ -1186,6 +1381,26 @@ export const AppRoutes = () => {
             <ProtectedRoute allowedRoles={NAV_TEMPLATES_REPORTS_ROLES}>
               <Suspense fallback={<PageLoader />}>
                 <Reports />
+              </Suspense>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/crm/pipeline"
+          element={
+            <ProtectedRoute requiredPermission="crm.read">
+              <Suspense fallback={<PageLoader />}>
+                <CrmPipelinePage />
+              </Suspense>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/crm/leads/:leadId"
+          element={
+            <ProtectedRoute requiredPermission="crm.read">
+              <Suspense fallback={<PageLoader />}>
+                <CrmLeadDetailPage />
               </Suspense>
             </ProtectedRoute>
           }

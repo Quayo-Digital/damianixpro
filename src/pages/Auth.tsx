@@ -1,11 +1,14 @@
 import { useState, useEffect } from 'react';
 import { useLocation, useNavigate, type Location } from 'react-router-dom';
 import { completePostAuthRedirect, persistAuthReturnTo } from '@/utils/authRedirect';
-import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+
+type AuthLocationState = { from?: Location; fromRegistration?: boolean };
+import { Card, CardHeader } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import LoginForm from '@/components/auth/LoginForm';
 import RegisterForm from '@/components/auth/RegisterForm';
 import { useAuthSession } from '@/contexts/auth';
+import { PageTitle, BodyText } from '@/components/ui/typography';
 
 const Auth = () => {
   const location = useLocation();
@@ -23,37 +26,47 @@ const Auth = () => {
   useEffect(() => {
     const searchParams = new URLSearchParams(location.search);
     const tab = searchParams.get('tab');
-
-    // Signed-up users briefly have a session before RegisterForm signs them out and sends them to login.
-    // Do not redirect away from the register tab during that window.
-    if (user) {
-      if (tab === 'register' || authMode === 'register') {
-        return;
-      }
-      completePostAuthRedirect(navigate, location, userRole, { replace: true });
-      return;
-    }
+    const state = location.state as AuthLocationState | null | undefined;
+    const fromRegistration = state?.fromRegistration === true;
 
     if (tab === 'register') {
       setAuthMode('register');
     } else if (tab === 'login') {
       setAuthMode('login');
     }
-  }, [location, user, userRole, navigate, authMode]);
+
+    if (user) {
+      if (tab === 'register') {
+        return;
+      }
+      if (tab === 'login' && fromRegistration) {
+        return;
+      }
+      completePostAuthRedirect(navigate, location, userRole, { replace: true });
+      return;
+    }
+
+    if (fromRegistration) {
+      navigate(
+        { pathname: location.pathname, search: location.search },
+        { replace: true, state: state?.from ? { from: state.from } : undefined }
+      );
+    }
+  }, [location, user, userRole, navigate]);
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-secondary/50">
-      <div className="w-full max-w-md p-4">
-        <Card>
-          <CardHeader className="space-y-1">
-            <CardTitle className="text-center text-2xl">
+    <div className="flex min-h-screen items-center justify-center bg-secondary/40 px-4 py-8 sm:py-12">
+      <div className="w-full max-w-md">
+        <Card className="shadow-card">
+          <CardHeader className="space-y-1.5">
+            <PageTitle as="h1" className="text-center text-2xl sm:text-3xl">
               {authMode === 'login' ? 'Sign In' : 'Create an Account'}
-            </CardTitle>
-            <CardDescription className="text-center">
+            </PageTitle>
+            <BodyText className="text-center">
               {authMode === 'login'
                 ? 'Enter your credentials to sign in'
                 : 'Enter your information to create an account'}
-            </CardDescription>
+            </BodyText>
           </CardHeader>
 
           <Tabs

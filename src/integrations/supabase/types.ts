@@ -2487,6 +2487,78 @@ export type Database = {
           },
         ];
       };
+      data_import_jobs: {
+        Row: {
+          created_at: string;
+          created_by: string;
+          error_report: Json;
+          file_name: string | null;
+          id: string;
+          import_kind: string;
+          organization_id: string | null;
+          processed_rows: number;
+          status: string;
+          summary: Json;
+          total_rows: number;
+          updated_at: string;
+        };
+        Insert: {
+          created_at?: string;
+          created_by: string;
+          error_report?: Json;
+          file_name?: string | null;
+          id?: string;
+          import_kind: string;
+          organization_id?: string | null;
+          processed_rows?: number;
+          status?: string;
+          summary?: Json;
+          total_rows?: number;
+          updated_at?: string;
+        };
+        Update: {
+          created_at?: string;
+          created_by?: string;
+          error_report?: Json;
+          file_name?: string | null;
+          id?: string;
+          import_kind?: string;
+          organization_id?: string | null;
+          processed_rows?: number;
+          status?: string;
+          summary?: Json;
+          total_rows?: number;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+      organization_setup_state: {
+        Row: {
+          id: string;
+          organization_id: string | null;
+          state: Json;
+          step: number;
+          updated_at: string;
+          user_id: string;
+        };
+        Insert: {
+          id?: string;
+          organization_id?: string | null;
+          state?: Json;
+          step?: number;
+          updated_at?: string;
+          user_id: string;
+        };
+        Update: {
+          id?: string;
+          organization_id?: string | null;
+          state?: Json;
+          step?: number;
+          updated_at?: string;
+          user_id?: string;
+        };
+        Relationships: [];
+      };
       organizations: {
         Row: {
           created_at: string | null;
@@ -2965,6 +3037,7 @@ export type Database = {
           latitude: number | null;
           lease_terms: string | null;
           longitude: number | null;
+          migration_external_ref: string | null;
           name: string | null;
           organization_id: string;
           owner_id: string | null;
@@ -2987,6 +3060,7 @@ export type Database = {
           latitude?: number | null;
           lease_terms?: string | null;
           longitude?: number | null;
+          migration_external_ref?: string | null;
           name?: string | null;
           organization_id?: string;
           owner_id?: string | null;
@@ -3009,6 +3083,7 @@ export type Database = {
           latitude?: number | null;
           lease_terms?: string | null;
           longitude?: number | null;
+          migration_external_ref?: string | null;
           name?: string | null;
           organization_id?: string;
           owner_id?: string | null;
@@ -3911,6 +3986,7 @@ export type Database = {
           application_status: string | null;
           background_check: Json | null;
           created_at: string | null;
+          created_by_import_user_id: string | null;
           credit_score: number | null;
           documents: Json | null;
           email: string;
@@ -3941,6 +4017,7 @@ export type Database = {
           application_status?: string | null;
           background_check?: Json | null;
           created_at?: string | null;
+          created_by_import_user_id?: string | null;
           credit_score?: number | null;
           documents?: Json | null;
           email: string;
@@ -3971,6 +4048,7 @@ export type Database = {
           application_status?: string | null;
           background_check?: Json | null;
           created_at?: string | null;
+          created_by_import_user_id?: string | null;
           credit_score?: number | null;
           documents?: Json | null;
           email?: string;
@@ -5150,6 +5228,14 @@ export type Database = {
       get_equipment_health_score: {
         Args: { condition: string };
         Returns: number;
+      };
+      get_public_landing_stats: {
+        Args: never;
+        Returns: {
+          landlords_managers_count: number;
+          properties_count: number;
+          successful_rent_volume_ngn: number;
+        }[];
       };
       get_voice_assistant_stats: {
         Args: { p_user_id: string };
