@@ -87,7 +87,7 @@
     "jspdf": "^4.1.0",
     "jspdf-autotable": "^5.0.7",
     "leaflet": "^1.9.4",
-    "lucide-react": "^0.462.0",
+    "lucide-react": "^1.14.0",
     "mapbox-gl": "^3.12.0",
     "maplibre-gl": "^4.7.1",
     "multer": "^2.1.1",
