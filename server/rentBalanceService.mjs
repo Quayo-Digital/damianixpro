@@ -2,12 +2,12 @@ import express from 'express';
 import jwt from 'jsonwebtoken';
 import { supabaseAdmin } from './supabaseClient.mjs';
 import {
-  apiStatusFromRent,
   legacyMatchesRefinedFilter,
   mapRentRowToLegacyPayment,
   needsLegacyStatusRefinement,
   rentStatusesMatchingApiFilter,
 } from './rentLedgerCompat.mjs';
+import { computeTenantRentBalance } from './rentBalanceCore.mjs';
 
 const router = express.Router();
 const jwtSecret = process.env.SUPABASE_JWT_SECRET;
@@ -48,96 +48,25 @@ router.get('/api/tenant/rent-balance', async (req, res) => {
 
     const { userId } = await getTenantContextFromToken(token);
 
-    // Find tenant record for this user
     const { data: tenant, error: tenantError } = await supabaseAdmin
       .from('tenants')
-      .select('id, first_name, last_name, phone, email')
+      .select('id')
       .eq('user_id', userId)
       .maybeSingle();
-
     if (tenantError) {
       console.error('[rent-balance] Failed to load tenant', tenantError);
       return res.status(500).json({ error: 'Failed to load tenant profile.' });
     }
-
     if (!tenant) {
       return res.status(404).json({ error: 'Tenant profile not found for this user.' });
     }
 
-    const { data: lease, error: leaseError } = await supabaseAdmin
-      .from('leases')
-      .select(
-        `
-        id,
-        tenant_id,
-        property_id,
-        start_date,
-        end_date,
-        monthly_rent,
-        status,
-        properties ( title )
-      `
-      )
-      .eq('tenant_id', tenant.id)
-      .eq('status', 'ACTIVE')
-      .order('start_date', { ascending: false })
-      .limit(1)
-      .maybeSingle();
-
-    if (leaseError) {
-      console.error('[rent-balance] Failed to load lease', leaseError);
-      return res.status(500).json({ error: 'Failed to load lease information.' });
-    }
-
-    if (!lease) {
+    const balance = await computeTenantRentBalance(tenant.id);
+    if (!balance) {
       return res.status(404).json({ error: 'No active lease found for tenant.' });
     }
 
-    const tenantName = `${tenant.first_name} ${tenant.last_name}`.trim();
-
-    const propertyName = lease.properties?.title ?? 'Unknown Property';
-
-    const { data: ptRow } = await supabaseAdmin
-      .from('property_tenants')
-      .select('id')
-      .eq('tenant_id', lease.tenant_id)
-      .eq('property_id', lease.property_id)
-      .limit(1)
-      .maybeSingle();
-
-    const { data: rentPayRows } = ptRow?.id
-      ? await supabaseAdmin
-          .from('rent_payments')
-          .select('amount, status, due_date')
-          .eq('property_tenant_id', ptRow.id)
-      : { data: [] };
-
-    const today = new Date();
-    const outstandingPayments = (rentPayRows || []).filter((p) => {
-      const st = apiStatusFromRent(p.status);
-      return st !== 'PAID';
-    });
-
-    const totalOutstanding = outstandingPayments.reduce((sum, p) => sum + Number(p.amount || 0), 0);
-
-    const nextDuePayment = outstandingPayments
-      .filter((p) => p.due_date)
-      .sort(
-        (a, b) => new Date(a.due_date).getTime() - new Date(b.due_date).getTime()
-      )[0];
-
-    const response = {
-      tenant_id: tenant.id,
-      tenant: tenantName,
-      property: propertyName,
-      balance: totalOutstanding,
-      currency: 'NGN',
-      due_date: nextDuePayment?.due_date ?? today.toISOString().slice(0, 10),
-      phone: tenant.phone,
-      email: tenant.email,
-    };
-
-    return res.json(response);
+    return res.json(balance);
   } catch (error) {
     console.error('[rent-balance] Unexpected error', error);
     return res.status(500).json({ error: 'Failed to calculate rent balance.' });

@@ -15,7 +15,7 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Separator } from '@/components/ui/separator';
 import { TenantScreening } from './TenantScreening';
 import { toast } from 'sonner';
-import { User, FileText, Clock, CheckCircle, XCircle } from 'lucide-react';
+import { Briefcase, CheckCircle, Clock, FileText, Home, Phone, User, XCircle } from 'lucide-react';
 
 interface ApplicationReviewProps {
   application?: any;
@@ -108,7 +108,7 @@ export function ApplicationReview({
             {status === 'pending' ? (
               <Badge variant="outline">Pending Review</Badge>
             ) : status === 'approved' ? (
-              <Badge className="bg-green-500">Approved</Badge>
+              <Badge className="bg-primary text-primary-foreground">Approved</Badge>
             ) : (
               <Badge variant="destructive">Rejected</Badge>
             )}
@@ -310,23 +310,23 @@ export function ApplicationReview({
                     <div className="space-y-4">
                       <div className="flex items-center justify-between rounded-md border p-3">
                         <div className="flex items-center">
-                          <CheckCircle className="mr-3 h-5 w-5 text-green-500" />
+                          <CheckCircle className="mr-3 h-5 w-5 text-primary" />
                           <span>Background Check</span>
                         </div>
-                        <Badge className="bg-green-500">Passed</Badge>
+                        <Badge className="bg-primary text-primary-foreground">Passed</Badge>
                       </div>
 
                       <div className="flex items-center justify-between rounded-md border p-3">
                         <div className="flex items-center">
-                          <CheckCircle className="mr-3 h-5 w-5 text-green-500" />
+                          <CheckCircle className="mr-3 h-5 w-5 text-primary" />
                           <span>Income Verification</span>
                         </div>
-                        <Badge className="bg-green-500">Verified</Badge>
+                        <Badge className="bg-primary text-primary-foreground">Verified</Badge>
                       </div>
 
                       <div className="flex items-center justify-between rounded-md border p-3">
                         <div className="flex items-center">
-                          <Clock className="mr-3 h-5 w-5 text-amber-500" />
+                          <Clock className="mr-3 h-5 w-5 text-accent-foreground" />
                           <span>Employment History</span>
                         </div>
                         <Badge variant="outline">Pending</Badge>
@@ -334,10 +334,10 @@ export function ApplicationReview({
 
                       <div className="flex items-center justify-between rounded-md border p-3">
                         <div className="flex items-center">
-                          <CheckCircle className="mr-3 h-5 w-5 text-green-500" />
+                          <CheckCircle className="mr-3 h-5 w-5 text-primary" />
                           <span>Identity Verification</span>
                         </div>
-                        <Badge className="bg-green-500">Verified</Badge>
+                        <Badge className="bg-primary text-primary-foreground">Verified</Badge>
                       </div>
                     </div>
                   </CardContent>
@@ -368,7 +368,7 @@ export function ApplicationReview({
               </Button>
             </div>
           ) : status === 'approved' ? (
-            <div className="flex w-full items-center justify-center text-center font-medium text-green-500">
+            <div className="flex w-full items-center justify-center text-center font-medium text-primary">
               <CheckCircle className="mr-2 h-5 w-5" />
               Application approved
             </div>
@@ -383,5 +383,3 @@ export function ApplicationReview({
     </div>
   );
 }
-
-import { Briefcase, Home, Phone } from 'lucide-react';
