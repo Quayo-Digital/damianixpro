@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { useAuthSession } from '@/contexts/auth';
 import {
   downloadImportTemplateXlsx,
@@ -128,6 +128,7 @@ const ACTIVATION_STEPS: Array<{
 export function OrganizationMigrationWizard() {
   const { user } = useAuthSession();
   const userId = user?.id ?? '';
+  const navigate = useNavigate();
 
   const [step, setStep] = useState(0);
   const [persistLoaded, setPersistLoaded] = useState(false);
@@ -548,8 +549,17 @@ export function OrganizationMigrationWizard() {
                           {cfg.linkLabel}
                         </Button>
                       ) : cfg.linkTo ? (
-                        <Button asChild size="sm" variant="outline">
-                          <Link to={cfg.linkTo}>{cfg.linkLabel}</Link>
+                        <Button
+                          type="button"
+                          size="sm"
+                          variant="outline"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            if (cfg.linkTo) navigate(cfg.linkTo);
+                          }}
+                        >
+                          {cfg.linkLabel}
                         </Button>
                       ) : null}
                       <Button
@@ -927,11 +937,11 @@ export function OrganizationMigrationWizard() {
               <p className="text-xs text-muted-foreground">Import Job ID: {activeJobId}</p>
             )}
             <div className="flex flex-wrap gap-3">
-              <Button asChild variant="default">
-                <Link to="/properties">Go to properties</Link>
+              <Button type="button" variant="default" onClick={() => navigate('/properties')}>
+                Go to properties
               </Button>
-              <Button asChild variant="outline">
-                <Link to="/tenants">View tenants module</Link>
+              <Button type="button" variant="outline" onClick={() => navigate('/tenants')}>
+                View tenants module
               </Button>
             </div>
           </CardContent>
