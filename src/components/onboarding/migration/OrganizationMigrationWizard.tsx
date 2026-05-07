@@ -76,7 +76,10 @@ const ACTIVATION_STEPS: Array<{
   title: string;
   detail: string;
   tooltip: string;
-  linkTo: string;
+  /** Route to navigate to. Omit when the action targets a step inside this same wizard. */
+  linkTo?: string;
+  /** Wizard step index to jump to when the activation step is in-page (e.g. company profile). */
+  wizardStep?: number;
   linkLabel: string;
 }> = [
   {
@@ -84,7 +87,7 @@ const ACTIVATION_STEPS: Array<{
     title: 'Create company',
     detail: 'Set identity, timezone, and operating profile.',
     tooltip: 'A complete profile improves defaults, billing setup, and team onboarding prompts.',
-    linkTo: '/organization/setup',
+    wizardStep: 1,
     linkLabel: 'Open company setup',
   },
   {
@@ -416,6 +419,24 @@ export function OrganizationMigrationWizard() {
     [step]
   );
 
+  const jumpToWizardStep = useCallback(
+    (targetStep: number) => {
+      const clamped = Math.max(0, Math.min(STEP_LABELS.length - 1, targetStep));
+      // Update UI immediately — awaiting persistence first felt broken when saves were slow or stalled.
+      setStep(clamped);
+      void persist(clamped, wizardState);
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          document.getElementById('wizard-main-step-panel')?.scrollIntoView({
+            behavior: 'smooth',
+            block: 'start',
+          });
+        });
+      });
+    },
+    [persist, wizardState]
+  );
+
   if (!persistLoaded || !userId) {
     return (
       <div className="flex items-center gap-2 text-muted-foreground">
@@ -426,7 +447,7 @@ export function OrganizationMigrationWizard() {
   }
 
   return (
-    <div className="mx-auto max-w-4xl">
+    <div id="organization-migration-wizard" className="mx-auto max-w-4xl">
       {stepper}
       <Card className="mb-6 border-border/80 shadow-sm">
         <CardHeader>
@@ -517,9 +538,20 @@ export function OrganizationMigrationWizard() {
                       </span>
                     </div>
                     <div className="mt-3 flex flex-wrap gap-2">
-                      <Button asChild size="sm" variant="outline">
-                        <Link to={cfg.linkTo}>{cfg.linkLabel}</Link>
-                      </Button>
+                      {typeof cfg.wizardStep === 'number' ? (
+                        <Button
+                          type="button"
+                          size="sm"
+                          variant="outline"
+                          onClick={() => jumpToWizardStep(cfg.wizardStep!)}
+                        >
+                          {cfg.linkLabel}
+                        </Button>
+                      ) : cfg.linkTo ? (
+                        <Button asChild size="sm" variant="outline">
+                          <Link to={cfg.linkTo}>{cfg.linkLabel}</Link>
+                        </Button>
+                      ) : null}
                       <Button
                         type="button"
                         size="sm"
@@ -543,6 +575,9 @@ export function OrganizationMigrationWizard() {
           </TooltipProvider>
         </CardContent>
       </Card>
+
+      {/* Anchor below guided activation — scroll target so “Open company setup” reveals the step panels */}
+      <div id="wizard-main-step-panel" className="scroll-mt-24" />
 
       {step === 0 && (
         <Card className="border-border/80 shadow-sm">
