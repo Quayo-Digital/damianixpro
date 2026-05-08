@@ -64,15 +64,13 @@ export const SubscriptionPlans: React.FC<SubscriptionPlansProps> = ({
 
   const hasEntitledSubscription = subscriptionGrantsOwnerPaidAccess(currentSubscription);
 
-  /** Paid tiers only — used for checkout-focused actions. */
+  /**
+   * Paid tiers only. The product has no free tier on the platform; if a free
+   * plan ever comes back from the API it is intentionally filtered out here so
+   * the marketing UI stays consistent with our pricing copy.
+   */
   const paidPlans = useMemo(
     () => (subscriptionPlans ?? []).filter((p) => p.tier !== 'free'),
-    [subscriptionPlans]
-  );
-  const freePlan = useMemo(
-    () =>
-      (subscriptionPlans ?? []).find((p) => p.tier === 'free') ??
-      SubscriptionService.getSubscriptionPlans().find((p) => p.tier === 'free'),
     [subscriptionPlans]
   );
 
@@ -273,65 +271,6 @@ export const SubscriptionPlans: React.FC<SubscriptionPlansProps> = ({
 
       {/* Plans Grid */}
       <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-        {freePlan && (
-          <Card className="relative transition-all duration-200 hover:shadow-lg">
-            <CardHeader className="pb-4 text-center">
-              <div className="mb-2 flex items-center justify-center">
-                <Star className="h-8 w-8 text-gray-700" />
-              </div>
-              <CardTitle className="text-xl font-bold">{freePlan.name}</CardTitle>
-              <Badge className={tierColors.free}>Free</Badge>
-              <CardDescription className="mt-2 text-sm">{freePlan.description}</CardDescription>
-              {freePlan.tagline && (
-                <p className="mt-1 text-xs font-medium text-primary">{freePlan.tagline}</p>
-              )}
-            </CardHeader>
-
-            <CardContent className="space-y-6">
-              <div className="text-center">
-                <div className="flex items-baseline justify-center">
-                  <span className="text-3xl font-bold text-foreground">
-                    {formatCurrency(0, freePlan.pricing.currency)}
-                  </span>
-                  <span className="ml-1 text-muted-foreground">/month</span>
-                </div>
-                <p className="mt-2 text-sm text-muted-foreground">
-                  Included automatically with your account
-                </p>
-              </div>
-
-              <div className="space-y-3">
-                <h4 className="text-sm font-semibold text-foreground">Features included:</h4>
-                <ul className="space-y-2.5 rounded-lg border border-border bg-muted/50 px-3 py-3 dark:bg-muted/30">
-                  {freePlan.features.slice(0, 5).map((feature, index) => (
-                    <li key={index} className="flex items-start gap-2 text-sm leading-snug">
-                      <Check
-                        className="mt-0.5 h-4 w-4 shrink-0 text-green-600 dark:text-green-400"
-                        aria-hidden
-                      />
-                      <span className="text-foreground">{feature.feature_name}</span>
-                    </li>
-                  ))}
-                  {freePlan.features.length > 5 && (
-                    <li className="text-sm text-muted-foreground">
-                      +{freePlan.features.length - 5} more features
-                    </li>
-                  )}
-                </ul>
-              </div>
-
-              <Button
-                onClick={() => handleSubscribe(freePlan)}
-                disabled={createCheckout.isPending || startSubscriptionTrial.isPending}
-                className="w-full"
-                variant="outline"
-              >
-                Continue with Free
-              </Button>
-            </CardContent>
-          </Card>
-        )}
-
         {paidPlans.map((plan) => {
           const TierIcon = tierIcons[plan.tier as keyof typeof tierIcons];
           const isCurrentPlan = currentSubscription?.plan_id === plan.id;
