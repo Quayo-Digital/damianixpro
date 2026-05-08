@@ -53,13 +53,17 @@ const FALLBACK_LOG_INTERVAL = 30 * 1000;
 let lastPropertiesFallbackLog = 0;
 let lastApiFallbackLog = 0;
 
-// Install event - Cache critical resources
+// Install event - Cache critical resources.
+// IMPORTANT: We intentionally do NOT call self.skipWaiting() here. The new SW
+// stays in 'waiting' state until the client explicitly opts in via the
+// 'SKIP_WAITING' postMessage below — this lets us surface a user-controlled
+// "Update available, refresh now?" prompt instead of swapping bundles in the
+// middle of an active session.
 self.addEventListener('install', (event) => {
   console.log('[SW] Enhanced service worker installing...');
-  
+
   event.waitUntil(
     Promise.all([
-      // Cache critical resources
       caches.open(STATIC_CACHE_NAME).then(async (cache) => {
         console.log('[SW] Caching critical resources');
         await Promise.all(
@@ -70,14 +74,17 @@ self.addEventListener('install', (event) => {
           )
         );
       }),
-      
-      // Initialize offline storage
       initializeOfflineStorage(),
-      
-      // Skip waiting to activate immediately
-      self.skipWaiting()
     ])
   );
+});
+
+// Allow the page to ask this waiting SW to take over immediately. The client
+// posts { type: 'SKIP_WAITING' } when the user accepts the update banner.
+self.addEventListener('message', (event) => {
+  if (event.data && event.data.type === 'SKIP_WAITING') {
+    self.skipWaiting();
+  }
 });
 
 // Activate event - Clean up old caches

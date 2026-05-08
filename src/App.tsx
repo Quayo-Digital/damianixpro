@@ -13,6 +13,7 @@ import PWAStatus from '@/components/pwa/PWAStatus';
 import { logger } from '@/utils/logger';
 import { WhiteLabelProvider } from '@/contexts/WhiteLabelContext';
 import { defaultRetryDelay, defaultShouldRetry } from '@/utils/reactQueryRetry';
+import { registerServiceWorkerWithUpdates } from '@/utils/swUpdate';
 
 /**
  * QueryClient tuned for offline-first usage on the Nigerian market.
@@ -83,16 +84,10 @@ function App() {
     }
 
     // PWA offline cache only in production — dev SW intercept breaks Vite dynamic imports (/src/*.tsx).
-    if ('serviceWorker' in navigator && import.meta.env.PROD) {
+    // Centralised in src/utils/swUpdate.ts so the registration also wires the "update available" toast.
+    if (import.meta.env.PROD) {
       window.addEventListener('load', () => {
-        navigator.serviceWorker
-          .register('/sw-enhanced.js')
-          .then((registration) => {
-            logger.debug('Enhanced SW registered', { registration });
-          })
-          .catch((registrationError) => {
-            logger.error('Enhanced SW registration failed', registrationError);
-          });
+        registerServiceWorkerWithUpdates();
       });
     }
   }, []);

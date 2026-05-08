@@ -101,11 +101,10 @@ class AdvancedCachingSystem {
   }
 
   private initializeOfflineSupport(): void {
-    // Never register legacy sw.js in Vite dev — it intercepts navigations and breaks SPA / lazy chunks.
-    if (!import.meta.env.PROD) return;
-    if ('serviceWorker' in navigator && this.config.offlineMode) {
-      navigator.serviceWorker.register('/sw.js').catch(console.error);
-    }
+    // SW registration is now centralized in src/utils/swUpdate.ts (called from App.tsx).
+    // We intentionally do NOT register a second worker here: doing so caused two
+    // competing service workers (legacy /sw.js and /sw-enhanced.js) to race for
+    // control of the page, with non-deterministic results in production.
   }
 
   private adjustCachingStrategy(): void {

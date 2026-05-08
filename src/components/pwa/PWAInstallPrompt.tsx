@@ -7,6 +7,7 @@ import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { X, Download, Smartphone, Wifi, Zap } from 'lucide-react';
+import { logger } from '@/utils/logger';
 
 interface BeforeInstallPromptEvent extends Event {
   prompt(): Promise<void>;
@@ -64,16 +65,12 @@ const PWAInstallPrompt: React.FC = () => {
       await deferredPrompt.prompt();
       const { outcome } = await deferredPrompt.userChoice;
 
-      if (outcome === 'accepted') {
-        console.log('PWA installation accepted');
-      } else {
-        console.log('PWA installation dismissed');
-      }
+      logger.debug('PWA install choice', { outcome });
 
       setDeferredPrompt(null);
       setShowPrompt(false);
     } catch (error) {
-      console.error('Error during PWA installation:', error);
+      logger.error('Error during PWA installation', error);
     }
   };
 
