@@ -6,6 +6,8 @@ import { MfaGate } from '@/components/security/MfaGate';
 import { NotificationRealtimeSubscriber } from '@/components/notifications/NotificationRealtimeSubscriber';
 import { WebPushSubscriber } from '@/components/notifications/WebPushSubscriber';
 import { SupportChatbot } from '@/components/support/SupportChatbot';
+import { OfflineQueueGate } from '@/components/offline/OfflineQueueGate';
+import { PendingSyncBadge } from '@/components/offline/PendingSyncBadge';
 
 export function AppContent() {
   return (
@@ -13,11 +15,13 @@ export function AppContent() {
       <SessionTimeoutGuard />
       <NotificationRealtimeSubscriber />
       <WebPushSubscriber />
+      <OfflineQueueGate />
       <Toaster richColors visibleToasts={5} closeButton />
       <MfaGate>
         <AppRoutes />
       </MfaGate>
       <SupportChatbot />
+      <PendingSyncBadge />
     </div>
   );
 }

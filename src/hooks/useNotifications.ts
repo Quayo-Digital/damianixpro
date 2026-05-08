@@ -4,6 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuthSession } from '@/contexts/auth';
 import { Notification } from '@/types/notification';
 import { toast } from '@/components/ui/sonner';
+import { tryOnlineThenEnqueue } from '@/lib/offlineQueue';
 
 export const NOTIFICATION_DROPDOWN_LIMIT = 20;
 
@@ -14,16 +15,19 @@ export function invalidateNotificationQueries(queryClient: QueryClient, userId: 
   });
 }
 
+/**
+ * Marks one notification as read. Routed through the offline write queue —
+ * the operation is naturally idempotent (UPDATE … SET is_read = true), so a
+ * replayed request is a no-op.
+ */
 export async function markNotificationAsRead(
   userId: string,
   notificationId: string
 ): Promise<void> {
-  const { error } = await supabase
-    .from('notifications')
-    .update({ is_read: true })
-    .eq('id', notificationId)
-    .eq('user_id', userId);
-  if (error) throw new Error(error.message);
+  await tryOnlineThenEnqueue('mark-notification-read', {
+    user_id: userId,
+    notification_id: notificationId,
+  });
 }
 
 /** Keep first occurrence per id (defensive: duplicate rows or client quirks). */

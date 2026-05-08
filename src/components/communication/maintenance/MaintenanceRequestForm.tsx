@@ -10,10 +10,12 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { MaintenanceRequest } from './maintenance-data';
 import { FormFields } from './form/FormFields';
 import { ImageUploadSection } from './form/ImageUploadSection';
-import { supabase } from '@/integrations/supabase/client';
 import { Loader2 } from 'lucide-react';
 import { useAuthSession } from '@/contexts/auth';
 import { useTenantDetails } from '@/hooks/useTenantDetails';
+import { tryOnlineThenEnqueue } from '@/lib/offlineQueue';
+import type { CreateMaintenanceRequestPayload } from '@/lib/offlineQueue/handlers/createMaintenanceRequest';
+import { logger } from '@/utils/logger';
 
 const requestSchema = z.object({
   title: z.string().min(3, { message: 'Title must be at least 3 characters.' }),
@@ -71,42 +73,55 @@ export function MaintenanceRequestForm({ onClose, onSuccess }: MaintenanceReques
     try {
       setIsSubmitting(true);
 
-      // Create a new maintenance request
-      const { error } = await supabase.from('maintenance_requests').insert([
-        {
-          user_id: user.id,
-          title: data.title,
-          description: data.description,
-          priority: data.urgency,
-          status: 'pending',
-          image_url: imageUrl,
-          property_id: propertyId,
-          property_name: propertyName,
-          tenant_name: tenantName,
-          updates: [],
-          category: 'maintenance',
-        },
-      ]);
+      // The same client_request_id is used for both the inline online attempt
+      // and any subsequent retries, so a UNIQUE index server-side guarantees
+      // no duplicate row even if the network drops mid-response.
+      const clientRequestId = crypto.randomUUID();
 
-      if (error) {
-        throw error;
-      }
+      const payload: CreateMaintenanceRequestPayload = {
+        client_request_id: clientRequestId,
+        user_id: user.id,
+        title: data.title,
+        description: data.description,
+        priority: data.urgency,
+        status: 'pending',
+        image_url: imageUrl,
+        property_id: propertyId,
+        property_name: propertyName,
+        tenant_name: tenantName,
+        category: 'maintenance',
+      };
 
-      // Create a temporary request object for the UI
+      const result = await tryOnlineThenEnqueue('create-maintenance-request', payload);
+
+      // Show an optimistic UI row regardless of whether the request actually
+      // hit the server — if it was queued, it'll sync on reconnect.
       const newRequest: MaintenanceRequest = {
-        id: crypto.randomUUID(), // Generate a random UUID string
+        id: clientRequestId,
         title: data.title,
         description: data.description,
         priority: data.urgency,
         status: 'pending',
         created_at: new Date().toISOString(),
         image_url: imageUrl,
-        updates: [], // Empty array for updates
+        updates: [],
         category: 'maintenance',
         property_id: propertyId,
         property_name: propertyName || undefined,
         tenant_name: tenantName || undefined,
       };
+
+      if (result.mode === 'submitted') {
+        toast({
+          title: 'Request submitted',
+          description: 'Your maintenance request has been sent.',
+        });
+      } else {
+        toast({
+          title: 'Saved offline',
+          description: "We'll send your request as soon as you're back online.",
+        });
+      }
 
       if (onSuccess) {
         onSuccess(newRequest);
@@ -116,7 +131,7 @@ export function MaintenanceRequestForm({ onClose, onSuccess }: MaintenanceReques
       form.reset();
       setImageUrl(null);
     } catch (error) {
-      console.error('Error submitting maintenance request:', error);
+      logger.error('MaintenanceRequestForm: submit failed', { error });
       toast({
         title: 'Error',
         description: 'Failed to submit maintenance request. Please try again.',
