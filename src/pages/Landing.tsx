@@ -6,6 +6,8 @@ import { useAuthSession } from '@/contexts/auth';
 import { HeroSection } from '@/components/landing/HeroSection';
 import { FeaturedPropertiesSection } from '@/components/landing/FeaturedPropertiesSection';
 import { SalesSection } from '@/components/landing/SalesSection';
+import { AiFeaturesSection } from '@/components/landing/AiFeaturesSection';
+import { LandingFaqSection } from '@/components/landing/LandingFaqSection';
 import { SubscriptionPlans } from '@/components/subscription/SubscriptionPlans';
 import { Building2, CheckCircle2, Home, LineChart, ShieldCheck, Users } from 'lucide-react';
 
@@ -13,22 +15,24 @@ const LandingPage = () => {
   const { user } = useAuthSession();
   const location = useLocation();
 
-  // If user arrives with `/#pricing`, scroll to the pricing section after render.
+  // If user arrives with `/#pricing`, `/#faq`, etc., scroll to that section after render.
   useEffect(() => {
-    if (location.hash !== '#pricing') return;
+    const hash = location.hash.replace(/^#/, '');
+    if (!hash) return;
 
-    const scrollToPricing = () => {
-      const el = document.getElementById('pricing');
+    const scrollToId = (id: string) => {
+      const el = document.getElementById(id);
       if (!el) return;
 
-      // Adjust for sticky header height (roughly).
       const headerOffset = 90;
       const top = el.getBoundingClientRect().top + window.scrollY - headerOffset;
       window.scrollTo({ top, behavior: 'auto' });
     };
 
-    const t1 = window.setTimeout(scrollToPricing, 50);
-    const t2 = window.setTimeout(scrollToPricing, 250);
+    const run = () => scrollToId(hash);
+
+    const t1 = window.setTimeout(run, 50);
+    const t2 = window.setTimeout(run, 250);
 
     return () => {
       window.clearTimeout(t1);
@@ -59,8 +63,14 @@ const LandingPage = () => {
             <Link to="/sales" className="transition-colors hover:text-foreground">
               Sales
             </Link>
+            <a href="#ai-features" className="transition-colors hover:text-foreground">
+              AI features
+            </a>
             <a href="#pricing" className="transition-colors hover:text-foreground">
               Pricing
+            </a>
+            <a href="#faq" className="transition-colors hover:text-foreground">
+              FAQ
             </a>
           </nav>
           <div className="flex items-center gap-2">
@@ -88,6 +98,8 @@ const LandingPage = () => {
       <main className="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-12 px-4 py-10 md:px-6 md:py-16">
         <SalesSection />
 
+        <AiFeaturesSection />
+
         <section id="pricing" className="scroll-mt-24">
           <div className="glass-panel overflow-hidden rounded-3xl p-6 md:p-8">
             <div className="mb-8 text-center">
@@ -100,6 +112,8 @@ const LandingPage = () => {
             <SubscriptionPlans showCompareLink={false} />
           </div>
         </section>
+
+        <LandingFaqSection />
 
         <section className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
           {[
